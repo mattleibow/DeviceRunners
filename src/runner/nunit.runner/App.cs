@@ -20,13 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using NUnit.Framework.Api;
-using NUnit.Framework.Interfaces;
-using NUnit.Framework.Internal;
 using NUnit.Runner.View;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
@@ -40,9 +34,7 @@ namespace NUnit.Runner
         public App()
         {
             _model = new TestViewModel();
-            var testView = new TestView();
-            testView.BindingContext = _model;
-            MainPage = new NavigationPage(testView);
+            MainPage = new NavigationPage(new TestView {BindingContext = _model});
             AddTest(Assembly.GetCallingAssembly());
         }
 
@@ -54,21 +46,6 @@ namespace NUnit.Runner
         public bool AddTest(Assembly testAssembly)
         {
             return _model.AddTest(testAssembly);
-        }
-
-        protected override void OnStart()
-        {
-            // Handle when your app starts
-        }
-
-        protected override void OnSleep()
-        {
-            // Handle when your app sleeps
-        }
-
-        protected override void OnResume()
-        {
-            // Handle when your app resumes
         }
     }
 }

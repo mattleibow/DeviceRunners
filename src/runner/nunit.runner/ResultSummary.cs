@@ -151,8 +151,6 @@ namespace NUnit.Runner
                         InconclusiveCount++;
                         break;
                 }
-
-                return;
             }
         }
 

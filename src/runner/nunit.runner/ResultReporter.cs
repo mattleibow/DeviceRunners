@@ -23,7 +23,6 @@
 
 using System.IO;
 using System.Globalization;
-using NUnit.Common;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
@@ -44,29 +43,26 @@ namespace NUnit.Runner
         }
     }
 
-    /// <summar.y>
+    /// <summary>
     /// ResultReporter writes the test results to a TextWriter.
     /// </summary>
     public class ResultReporter
     {
-        private TextWriter _writer;
-        private ITestResult _result;
-        private bool _stopOnFirstError;
-        private string _overallResult;
+        private readonly TextWriter _writer;
+        private readonly ITestResult _result;
+        private readonly string _overallResult;
 
-        private int _reportIndex = 0;
+        private int _reportIndex;
 
         /// <summary>
         /// Constructs an instance of ResultReporter
         /// </summary>
         /// <param name="result">The top-level result being reported</param>
         /// <param name="writer">A TextWriter to which the report is written</param>
-        /// <param name="stopOnFirstError">True if user requested stop after first error</param>
-        public ResultReporter(ITestResult result, TextWriter writer, bool stopOnFirstError)
+        public ResultReporter(ITestResult result, TextWriter writer)
         {
             _result = result;
             _writer = writer;
-            _stopOnFirstError = stopOnFirstError;
 
             _overallResult = result.ResultState.Status.ToString();
             if (_overallResult == "Skipped")
@@ -78,7 +74,7 @@ namespace NUnit.Runner
         /// <summary>
         /// Gets the ResultSummary created by the ResultReporter
         /// </summary>
-        public ResultSummary Summary { get; private set; }
+        private ResultSummary Summary { get; set; }
 
         /// <summary>
         /// Produces the standard output reports.
@@ -89,12 +85,6 @@ namespace NUnit.Runner
                 _writer.WriteLine("Warning: No tests found");
 
             _writer.WriteLine();
-
-            if (_stopOnFirstError && Summary.FailureCount + Summary.ErrorCount > 0)
-            {
-                _writer.WriteLine("Execution terminated after first error");
-                _writer.WriteLine();
-            }
 
             WriteSummaryReport();
 
@@ -110,10 +100,8 @@ namespace NUnit.Runner
         /// <summary>
         /// Prints the Summary Report
         /// </summary>
-        public void WriteSummaryReport()
+        private void WriteSummaryReport()
         {
-            var status = _result.ResultState.Status;
-
             _writer.WriteLine("Test Run Summary");
             _writer.WriteLabelLine("   Overall result: ", _overallResult);
 
@@ -139,7 +127,7 @@ namespace NUnit.Runner
 
         #region Errors and Failures Report
 
-        public void WriteErrorsAndFailuresReport()
+        private void WriteErrorsAndFailuresReport()
         {
             _reportIndex = 0;
             _writer.WriteLine("Errors and Failures");
@@ -155,7 +143,7 @@ namespace NUnit.Runner
                 {
                     var suite = result.Test as TestSuite;
                     var site = result.ResultState.Site;
-                    if (suite.TestType == "Theory" || site == FailureSite.SetUp || site == FailureSite.TearDown)
+                    if (suite != null && (suite.TestType == "Theory" || site == FailureSite.SetUp || site == FailureSite.TearDown))
                             WriteSingleResult(result);
                     if (site == FailureSite.SetUp) return;
                 }
@@ -174,7 +162,7 @@ namespace NUnit.Runner
         /// <summary>
         /// Prints the Not Run Report
         /// </summary>
-        public void WriteNotRunReport()
+        private void WriteNotRunReport()
         {
             _reportIndex = 0;
             _writer.WriteLine("Tests Not Run");
@@ -197,14 +185,7 @@ namespace NUnit.Runner
 
         #region Helper Methods
 
-        private void PrintTestProperties(ITest test)
-        {
-            foreach (string key in test.Properties.Keys)
-                foreach (object value in test.Properties[key])
-                    _writer.WriteLabelLine(string.Format("  {0}: ", key), value);
-        }
-
-        private static readonly char[] EOL_CHARS = new char[] { '\r', '\n' };
+        private static readonly char[] EOL_CHARS = { '\r', '\n' };
 
         private void WriteSingleResult(ITestResult result)
         {
@@ -222,10 +203,10 @@ namespace NUnit.Runner
             _writer.WriteLine();
             _writer.WriteLine("{0}) {1} : {2}", ++_reportIndex, status, result.FullName);
 
-            if (result.Message != null && result.Message != string.Empty)
+            if (!string.IsNullOrEmpty(result.Message))
                 _writer.WriteLine(result.Message.TrimEnd(EOL_CHARS));
 
-            if (result.StackTrace != null && result.StackTrace != string.Empty)
+            if (!string.IsNullOrEmpty(result.StackTrace))
                 _writer.WriteLine(result.StackTrace.TrimEnd(EOL_CHARS));
         }
 

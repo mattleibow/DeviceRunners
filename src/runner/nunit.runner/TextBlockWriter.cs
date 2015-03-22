@@ -23,10 +23,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
-using NUnit.Framework.Internal;
 using NUnit.Runner.ViewModel;
-using Xamarin.Forms;
 
 namespace NUnit.Runner
 {
@@ -59,7 +58,7 @@ namespace NUnit.Runner
         /// </exception>
         public override void Write(char value)
         {
-            _model.Results += value.ToString();
+            _model.Results += value.ToString(CultureInfo.CurrentCulture);
         }
 
         /// <summary>

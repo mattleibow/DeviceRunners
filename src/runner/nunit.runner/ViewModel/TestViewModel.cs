@@ -59,7 +59,7 @@ namespace NUnit.Runner.ViewModel
             }
         }
 
-        public ICommand RunTestsCommand { protected set; get; }
+        internal ICommand RunTestsCommand { set; get; }
 
         /// <summary>
         /// Adds an assembly to be tested.
@@ -80,7 +80,7 @@ namespace NUnit.Runner.ViewModel
 
             ITestResult result = _runner.Run(TestListener.NULL, TestFilter.Empty);
 
-            var reporter = new ResultReporter(result, _writer, false);
+            var reporter = new ResultReporter(result, _writer);
 
             reporter.ReportResults();
 
