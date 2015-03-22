@@ -24,6 +24,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using NUnit.Framework.Internal;
+using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
 
 namespace NUnit.Runner
@@ -34,15 +36,15 @@ namespace NUnit.Runner
     /// </summary>
     public class TextBlockWriter : TextWriter
     {
-        private readonly Label _textBlock;
+        private readonly TestViewModel _model;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextBlockWriter"/> class.
         /// </summary>
-        /// <param name="textBlock">The text block.</param>
-        public TextBlockWriter(Label textBlock)
+        /// <param name="model">The test view model.</param>
+        public TextBlockWriter(TestViewModel model)
         {
-            _textBlock = textBlock;
+            _model = model;
         }
 
         /// <summary>
@@ -57,7 +59,7 @@ namespace NUnit.Runner
         /// </exception>
         public override void Write(char value)
         {
-            _textBlock.Text += value;
+            _model.Results += value.ToString();
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace NUnit.Runner
         /// </exception>
         public override void Write(string value)
         {
-            _textBlock.Text += value;
+            _model.Results += value;
         }
 
         /// <summary>
