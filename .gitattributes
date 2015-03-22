@@ -61,3 +61,10 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+
+###############################################################################
+# Xamarin and NUnit Specific
+###############################################################################
+*.DotSettings text eol=lf
+AndroidManifest.xml text eol=lf

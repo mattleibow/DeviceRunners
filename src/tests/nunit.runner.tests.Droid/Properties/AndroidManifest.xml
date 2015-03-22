@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="nunit.runner.tests" android:versionCode="3" android:versionName="3.0">
+	<uses-sdk android:minSdkVersion="15" />
+	<application android:label="NUnit" android:icon="@drawable/icon"></application>
+</manifest>
