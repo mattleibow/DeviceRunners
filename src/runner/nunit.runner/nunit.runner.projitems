@@ -11,5 +11,11 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ResultReporter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ResultSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TextBlockWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Views\" />
   </ItemGroup>
 </Project>

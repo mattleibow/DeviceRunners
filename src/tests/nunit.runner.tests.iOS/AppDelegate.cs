@@ -42,7 +42,7 @@ namespace NUnit.Runner.Tests.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
-            LoadApplication(new App());
+            LoadApplication(new NUnit.Runner.App());
 
             return base.FinishedLaunching(app, options);
         }

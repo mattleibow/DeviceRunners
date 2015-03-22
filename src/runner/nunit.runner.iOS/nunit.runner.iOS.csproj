@@ -41,6 +41,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\..\packages\NUnit.3.0.0-alpha-5\lib\portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />

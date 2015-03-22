@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestsSample.cs" />
   </ItemGroup>
 </Project>
