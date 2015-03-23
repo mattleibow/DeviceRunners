@@ -23,6 +23,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using System.Windows.Input;
@@ -33,33 +34,22 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class TestViewModel : BaseViewModel
+    public class TestViewModel : BaseViewModel, ITestListener
     {
         private readonly ITestAssemblyRunner _runner;
-        private readonly TextWriter _writer;
         private bool _running;
-
-        private string _results;
 
         public TestViewModel()
         {
-            _writer = new TextBlockWriter(this);
+            Results = new ObservableCollection<ITestResult>();
+            //_writer = new TextBlockWriter(this);
             _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
             RunTestsCommand = new Command(o => ExecuteTests(), o => !_running);
         }
 
-        public string Results
-        {
-            get { return _results; }
-            set
-            {
-                if (value == _results) return;
-                _results = value;
-                OnPropertyChanged();
-            }
-        }
+        public ObservableCollection<ITestResult> Results { get; set; }
 
-        internal ICommand RunTestsCommand { set; get; }
+        public ICommand RunTestsCommand { set; get; }
 
         /// <summary>
         /// Adds an assembly to be tested.
@@ -74,15 +64,15 @@ namespace NUnit.Runner.ViewModel
         private void ExecuteTests()
         {
             _running = true;
-            Results = string.Empty;
-            WriteHeader(_writer);
-            WriteRuntimeEnvironment(_writer);
+            Results.Clear();
+            //WriteHeader(_writer);
+            //WriteRuntimeEnvironment(_writer);
 
-            ITestResult result = _runner.Run(TestListener.NULL, TestFilter.Empty);
+            ITestResult result = _runner.Run(this, TestFilter.Empty);
 
-            var reporter = new ResultReporter(result, _writer);
+            //var reporter = new ResultReporter(result, _writer);
 
-            reporter.ReportResults();
+            //reporter.ReportResults();
 
             //ResultSummary summary = reporter.Summary;
 
@@ -102,43 +92,63 @@ namespace NUnit.Runner.ViewModel
         /// Writes the header.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        private static void WriteHeader(TextWriter writer)
-        {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            AssemblyName assemblyName = AssemblyHelper.GetAssemblyName(executingAssembly);
-            Version version = assemblyName.Version;
-            string copyright = "Copyright (C) 2015, Charlie Poole";
-            string build = "";
+        //private static void WriteHeader(TextWriter writer)
+        //{
+        //    Assembly executingAssembly = Assembly.GetExecutingAssembly();
+        //    AssemblyName assemblyName = AssemblyHelper.GetAssemblyName(executingAssembly);
+        //    Version version = assemblyName.Version;
+        //    string copyright = "Copyright (C) 2015, Charlie Poole";
+        //    string build = "";
 
-            object[] attrs = executingAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-            if (attrs.Length > 0)
-            {
-                var copyrightAttr = (AssemblyCopyrightAttribute)attrs[0];
-                copyright = copyrightAttr.Copyright;
-            }
+        //    object[] attrs = executingAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
+        //    if (attrs.Length > 0)
+        //    {
+        //        var copyrightAttr = (AssemblyCopyrightAttribute)attrs[0];
+        //        copyright = copyrightAttr.Copyright;
+        //    }
 
-            attrs = executingAssembly.GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false);
-            if (attrs.Length > 0)
-            {
-                var configAttr = (AssemblyConfigurationAttribute)attrs[0];
-                build = string.Format("({0})", configAttr.Configuration);
-            }
+        //    attrs = executingAssembly.GetCustomAttributes(typeof(AssemblyConfigurationAttribute), false);
+        //    if (attrs.Length > 0)
+        //    {
+        //        var configAttr = (AssemblyConfigurationAttribute)attrs[0];
+        //        build = string.Format("({0})", configAttr.Configuration);
+        //    }
 
-            writer.WriteLine("NUnit {0} {1}", version.ToString(3), build);
-            writer.WriteLine(copyright);
-            writer.WriteLine();
-        }
+        //    writer.WriteLine("NUnit {0} {1}", version.ToString(3), build);
+        //    writer.WriteLine(copyright);
+        //    writer.WriteLine();
+        //}
 
         /// <summary>
         /// Writes the runtime environment.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        private static void WriteRuntimeEnvironment(TextWriter writer)
+        //private static void WriteRuntimeEnvironment(TextWriter writer)
+        //{
+        //    writer.WriteLine("Runtime Environment -");
+        //    writer.WriteLabelLine("   OS Version: ", Environment.OSVersion);
+        //    writer.WriteLabelLine("  CLR Version: ", Environment.Version);
+        //    writer.WriteLine();
+        //}
+
+        /// <summary>
+        /// Called when a test has just started
+        /// </summary>
+        /// <param name="test">The test that is starting</param>
+        public void TestStarted(ITest test)
         {
-            writer.WriteLine("Runtime Environment -");
-            writer.WriteLabelLine("   OS Version: ", Environment.OSVersion);
-            writer.WriteLabelLine("  CLR Version: ", Environment.Version);
-            writer.WriteLine();
+        }
+
+        /// <summary>
+        /// Called when a test has finished
+        /// </summary>
+        /// <param name="result">The result of the test</param>
+        public void TestFinished(ITestResult result)
+        {
+            if (result.ResultState != ResultState.Success)
+            {
+                Results.Add(result);
+            }
         }
     }
 }

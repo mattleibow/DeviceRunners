@@ -14,7 +14,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ResultReporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ResultSummary.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TextBlockWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\BaseViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TestViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\TestView.xaml.cs">

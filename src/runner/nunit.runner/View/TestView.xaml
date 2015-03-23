@@ -4,6 +4,6 @@
              x:Class="NUnit.Runner.View.TestView">
     <StackLayout Orientation="Vertical">
         <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand" />
-        <Label Text="{Binding Results}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+        <ListView ItemsSource="{Binding Results}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
     </StackLayout>
 </ContentPage>
