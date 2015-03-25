@@ -24,6 +24,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.IO;
 using System.Reflection;
 using System.Windows.Input;
@@ -38,13 +39,18 @@ namespace NUnit.Runner.ViewModel
     public class TestViewModel : BaseViewModel
     {
         private readonly ITestAssemblyRunner _runner;
-        private bool _running;
         private ResultSummary _results;
+        private bool _running;
 
         public TestViewModel()
         {
             _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            RunTestsCommand = new Command(o => ExecuteTests(), o => !_running);
+            RunTestsCommand = new Command(o => ExecuteTests(), o => !Running);
+            ViewResultsCommand = new Command(o =>
+            {
+                // TODO: View the results   
+            }, 
+            o => !HasResults);
         }
 
         public ResultSummary Results
@@ -55,10 +61,28 @@ namespace NUnit.Runner.ViewModel
                 if (Equals(value, _results)) return;
                 _results = value;
                 OnPropertyChanged();
+                OnPropertyChanged("HasResults");
             }
         }
 
+        public bool Running
+        {
+            get { return _running; }
+            set
+            {
+                if (value.Equals(_running)) return;
+                _running = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool HasResults
+        {
+            get { return Results != null; }
+        }
+
         public ICommand RunTestsCommand { set; get; }
+        public ICommand ViewResultsCommand { set; get; }
 
         /// <summary>
         /// Adds an assembly to be tested.
@@ -72,14 +96,14 @@ namespace NUnit.Runner.ViewModel
 
         private void ExecuteTests()
         {
-            _running = true;
+            Running = true;
             Results = null;
 
             // TODO: Wrap the runner in an async operation and await the result
             ITestResult result = _runner.Run(TestListener.NULL, TestFilter.Empty);
             Results = new ResultSummary(result);
 
-            _running = false;
+            Running = false;
         }
     }
 }
