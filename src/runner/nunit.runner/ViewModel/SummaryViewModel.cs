@@ -44,10 +44,10 @@ namespace NUnit.Runner.ViewModel
             _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
             RunTestsCommand = new Command(o => ExecuteTests(), o => !Running);
             ViewAllResultsCommand = new Command(
-                o => Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
+                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
                 o => !HasResults);
             ViewFailedResultsCommand = new Command(
-                o => Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, false))),
+                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, false))),
                 o => !HasResults);
         }
 
