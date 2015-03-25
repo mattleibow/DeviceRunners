@@ -43,8 +43,11 @@ namespace NUnit.Runner.ViewModel
         {
             _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
             RunTestsCommand = new Command(o => ExecuteTests(), o => !Running);
-            ViewResultsCommand = new Command(
-                o => Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult))), 
+            ViewAllResultsCommand = new Command(
+                o => Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
+                o => !HasResults);
+            ViewFailedResultsCommand = new Command(
+                o => Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, false))),
                 o => !HasResults);
         }
 
@@ -86,7 +89,8 @@ namespace NUnit.Runner.ViewModel
         }
 
         public ICommand RunTestsCommand { set; get; }
-        public ICommand ViewResultsCommand { set; get; }
+        public ICommand ViewAllResultsCommand { set; get; }
+        public ICommand ViewFailedResultsCommand { set; get; }
 
         /// <summary>
         /// Adds an assembly to be tested.

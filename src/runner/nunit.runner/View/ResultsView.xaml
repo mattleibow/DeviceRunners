@@ -17,8 +17,8 @@
                         <ViewCell>
                             <ViewCell.View>
                                 <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
-                                    <Label Text="{Binding Name}" TextColor="{Binding Color}"  FontAttributes="Bold" FontSize="Large" />
-                                    <Label Text="{Binding Message}" />
+                                    <Label Text="{Binding Name}" TextColor="{Binding Color}" LineBreakMode="MiddleTruncation" FontAttributes="Bold" FontSize="Medium" />
+                                    <Label Text="{Binding Message}" LineBreakMode="WordWrap" FontSize="Small"/>
                                 </StackLayout>
                             </ViewCell.View>
                         </ViewCell>

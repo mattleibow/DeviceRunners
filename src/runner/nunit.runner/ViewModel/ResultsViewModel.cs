@@ -23,39 +23,21 @@
 
 using System.Collections.ObjectModel;
 using NUnit.Framework.Interfaces;
-using NUnit.Runner.Extensions;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class ResultViewModel
-    {
-        public ResultViewModel(ITestResult result)
-        {
-            TestResult = result;
-            Name = result.FullName;
-            Message = result.Message;
-        }
-
-        public ITestResult TestResult { get; private set; }
-        public string Name { get; private set; }
-        public string Message { get; private set; }
-
-        /// <summary>
-        /// Gets the color for this result.
-        /// </summary>
-        public Color Color
-        {
-            get { return TestResult.Color(); }
-        }
-    }
-
     public class ResultsViewModel : BaseViewModel
     {
-        public ResultsViewModel(ITestResult testResult)
+        /// <summary>
+        /// Constructs the view model
+        /// </summary>
+        /// <param name="testResult">The top level test results</param>
+        /// <param name="viewAll">If true, views all tests, otherwise only shows those
+        /// that did not pass</param>
+        public ResultsViewModel(ITestResult testResult, bool viewAll)
         {
             Results = new ObservableCollection<ResultViewModel>();
-            AddTestResults(testResult);
+            AddTestResults(testResult, viewAll);
         }
 
         /// <summary>
@@ -67,14 +49,15 @@ namespace NUnit.Runner.ViewModel
         /// Add all tests that did not pass to the Results collection
         /// </summary>
         /// <param name="result"></param>
-        private void AddTestResults(ITestResult result)
+        /// <param name="viewAll"></param>
+        private void AddTestResults(ITestResult result, bool viewAll)
         {
             if (result.Test.IsSuite)
             {
                 foreach (var childResult in result.Children) 
-                    AddTestResults(childResult);
+                    AddTestResults(childResult, viewAll);
             }
-            else if (result.ResultState.Status != TestStatus.Passed)
+            else if (viewAll || result.ResultState.Status != TestStatus.Passed)
             {
                 Results.Add(new ResultViewModel(result));
             }

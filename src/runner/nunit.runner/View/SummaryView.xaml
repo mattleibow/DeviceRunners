@@ -4,17 +4,10 @@
              x:Class="NUnit.Runner.View.SummaryView"
              Title="NUnit 3.0"
              Padding="6">
-    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
+    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand">
             <Button.Triggers>
                 <DataTrigger TargetType="Button" Binding="{Binding Running}" Value="True">
-                    <Setter Property="IsEnabled" Value="False" />
-                </DataTrigger>
-            </Button.Triggers>
-        </Button>
-        <Button Text="View Results" Command="{Binding ViewResultsCommand}" HorizontalOptions="FillAndExpand" >
-            <Button.Triggers>
-                <DataTrigger TargetType="Button" Binding="{Binding HasResults}" Value="False">
                     <Setter Property="IsEnabled" Value="False" />
                 </DataTrigger>
             </Button.Triggers>
@@ -110,5 +103,20 @@
             </Grid>
 
         </ScrollView>
+
+        <Button Text="All Results" Command="{Binding ViewAllResultsCommand}" HorizontalOptions="FillAndExpand" VerticalOptions="End" >
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding HasResults}" Value="False">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+        <Button Text="Failed Results" Command="{Binding ViewFailedResultsCommand}" HorizontalOptions="FillAndExpand" VerticalOptions="End" >
+            <Button.Triggers>
+                <DataTrigger TargetType="Button" Binding="{Binding HasResults}" Value="False">
+                    <Setter Property="IsEnabled" Value="False" />
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
     </StackLayout>
 </ContentPage>
