@@ -23,6 +23,7 @@
 
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
@@ -42,7 +43,7 @@ namespace NUnit.Runner.ViewModel
         public SummaryViewModel()
         {
             _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            RunTestsCommand = new Command(o => ExecuteTests(), o => !Running);
+            RunTestsCommand = new Command(async o => await ExecuteTestsAync(), o => !Running);
             ViewAllResultsCommand = new Command(
                 async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
                 o => !HasResults);
@@ -102,13 +103,12 @@ namespace NUnit.Runner.ViewModel
             return _runner.Load(testAssembly, new Dictionary<string, string>()) != null;
         }
 
-        private void ExecuteTests()
+        private async Task ExecuteTestsAync()
         {
             Running = true;
             Results = null;
-
-            // TODO: Wrap the runner in an async operation and await the result
-            ITestResult result = _runner.Run(TestListener.NULL, TestFilter.Empty);
+            
+            ITestResult result = await Task.Run(() => _runner.Run(TestListener.NULL, TestFilter.Empty));
             Results = new ResultSummary(result);
 
             Running = false;
