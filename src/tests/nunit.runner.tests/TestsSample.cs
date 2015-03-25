@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using NUnit.Framework;
 
 namespace NUnit.Runner.Tests
@@ -8,7 +6,6 @@ namespace NUnit.Runner.Tests
     [TestFixture]
     public class TestsSample
     {
-
         [SetUp]
         public void Setup() { }
 
