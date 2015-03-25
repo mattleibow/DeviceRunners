@@ -22,8 +22,10 @@
 // ***********************************************************************
 
 using NUnit.Framework.Interfaces;
+using NUnit.Runner.ViewModel;
+using Xamarin.Forms;
 
-namespace NUnit.Runner
+namespace Nunit.Runner.ViewModel
 {
     /// <summary>
     /// Helper class used to summarize the result of a test run
@@ -38,14 +40,50 @@ namespace NUnit.Runner
         /// <param name="result">The result.</param>
         public ResultSummary(ITestResult result)
         {
+            TestResult = result;
             InitializeCounters();
-
             Summarize(result);
+
+            OverallResult = result.ResultState.Status.ToString();
+            if (OverallResult == "Skipped")
+                OverallResult = "Warning";
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the test result this summary was created with
+        /// </summary>
+        public ITestResult TestResult { get; private set; }
+
+        /// <summary>
+        /// A string representation of the overall result of the test run.
+        /// </summary>
+        public string OverallResult { get; private set; }
+
+        /// <summary>
+        /// Gets the color for the overall result.
+        /// </summary>
+        public Color OverallResultColor
+        {
+            get
+            {
+                switch (TestResult.ResultState.Status)
+                {
+                    case TestStatus.Passed:
+                        return Color.Green;
+                    case TestStatus.Skipped:
+                        return Color.Yellow;
+                    case TestStatus.Failed:
+                        return Color.Red;
+                    case TestStatus.Inconclusive:
+                    default:
+                        return Color.Gray;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the number of test cases for which results
@@ -97,6 +135,14 @@ namespace NUnit.Runner
         /// Gets the ignore count
         /// </summary>
         public int IgnoreCount { get; private set; }
+
+        /// <summary>
+        /// Gets the number of tests not run
+        /// </summary>
+        public int NotRunCount
+        {
+            get { return SkipCount + IgnoreCount + InvalidCount; }
+        }
 
         #endregion
 

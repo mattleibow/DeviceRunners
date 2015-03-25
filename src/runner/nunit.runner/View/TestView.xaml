@@ -2,8 +2,42 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.TestView">
-    <StackLayout Orientation="Vertical">
+    <StackLayout Orientation="Vertical" Padding="6" Spacing="4">
         <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand" />
-        <ListView ItemsSource="{Binding Results}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+        <ScrollView Orientation="Horizontal"
+                    VerticalOptions="FillAndExpand" 
+                    HorizontalOptions="FillAndExpand" >
+            <ListView ItemsSource="{Binding Results}" 
+                      VerticalOptions="FillAndExpand" 
+                      HorizontalOptions="FillAndExpand" 
+                      HasUnevenRows="True">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <ViewCell.View>
+                                <Grid HorizontalOptions="FillAndExpand">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition />
+                                        <RowDefinition />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                        <ColumnDefinition />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4" Text="{Binding FullName}" FontAttributes="Bold" FontSize="Large" />
+
+                                    <Label Grid.Row="1" Grid.Column="0" Text="{Binding PassCount, StringFormat='Pass: {0}'}" TextColor="Green" />
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding FailCount, StringFormat='Fail: {0}'}" TextColor="Red" />
+                                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding SkipCount, StringFormat='Skip: {0}'}" TextColor="Yellow"/>
+                                    <Label Grid.Row="1" Grid.Column="3" Text="{Binding InconclusiveCount, StringFormat='Inconclusive: {0}'}" />
+                                </Grid>
+                            </ViewCell.View>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </ScrollView>
     </StackLayout>
 </ContentPage>

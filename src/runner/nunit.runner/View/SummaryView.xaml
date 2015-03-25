@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NUnit.Runner.View.SummaryView"
+             Title="NUnit 3.0"
+             Padding="6">
+    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
+        <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand" />
+        <ScrollView Orientation="Horizontal"
+                    VerticalOptions="FillAndExpand" 
+                    HorizontalOptions="FillAndExpand" >
+
+            <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="Overall result:" TextColor="{Binding Results.OverallResultColor}" FontAttributes="Bold" FontSize="Large"/>
+                    <Label Text="{Binding Results.OverallResult}" TextColor="{Binding Results.OverallResultColor}" FontAttributes="Bold" FontSize="Large" />
+                </StackLayout>
+
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="Tests run:" FontSize="Large" />
+                    <Label Text="{Binding Results.RunCount}" FontSize="Large" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Passed:" />
+                    <Label Text="{Binding Results.PassCount}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Errors:" />
+                    <Label Text="{Binding Results.ErrorCount}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Failures:" />
+                    <Label Text="{Binding Results.FailureCount}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Inconclusive:" />
+                    <Label Text="{Binding Results.InconclusiveCount}" />
+                </StackLayout>
+
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="Not run:" FontSize="Large" />
+                    <Label Text="{Binding Results.NotRunCount}" FontSize="Large" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Invalid:" />
+                    <Label Text="{Binding Results.InvalidCount}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Ignored:" />
+                    <Label Text="{Binding Results.IgnoreCount}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Skipped:" />
+                    <Label Text="{Binding Results.SkipCount}" />
+                </StackLayout>
+
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="Start time:" />
+                    <Label Text="{Binding Results.TestResult.StartTime, StringFormat='{0:u}'}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="End time:" />
+                    <Label Text="{Binding Results.TestResult.EndTime, StringFormat='{0:u}'}" />
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="4">
+                    <Label Text="Duration:" />
+                    <Label Text="{Binding Results.TestResult.Duration.TotalSeconds, StringFormat='{0:F3} seconds'}" />
+                </StackLayout>
+            </StackLayout>
+
+        </ScrollView>
+    </StackLayout>
+</ContentPage>

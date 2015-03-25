@@ -34,7 +34,10 @@ namespace NUnit.Runner
         public App()
         {
             _model = new TestViewModel();
-            MainPage = new NavigationPage(new TestView {BindingContext = _model});
+            MainPage = new NavigationPage(new SummaryView{BindingContext = _model})
+            {
+                Title = "NUnit 3.0"
+            };
             AddTest(Assembly.GetCallingAssembly());
         }
 
