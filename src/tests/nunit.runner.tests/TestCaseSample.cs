@@ -21,27 +21,27 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using NUnit.Runner.Annotations;
-using Xamarin.Forms;
+using NUnit.Framework;
 
-namespace NUnit.Runner.ViewModel
+namespace NUnit.Runner.Tests
 {
-    public class BaseViewModel : INotifyPropertyChanged
+    [TestFixture]
+    public class TestCaseSample
     {
-        /// <summary>
-        /// So that we can navigate from within the view model
-        /// </summary>
-        public INavigation Navigation { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        [TestCase(1, 1, ExpectedResult = 2)]
+        [TestCase(10, 10, ExpectedResult = 20)]
+        [TestCase(12, 13, ExpectedResult = 24)] // Deliberate failure
+        public int TestAddWithResult(int x, int y)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            return x + y;
+        }
+
+        [TestCase(1, 1, 2)]
+        [TestCase(10, 10, 20)]
+        [TestCase(12, 13, 24)] // Deliberate failure
+        public void TestAddWithExpected(int x, int y, int expected)
+        {
+            Assert.That(x + y, Is.EqualTo(expected));
         }
     }
 }

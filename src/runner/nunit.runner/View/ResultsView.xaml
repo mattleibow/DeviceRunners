@@ -1,8 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="NUnit.Runner.View.TestView">
-    <StackLayout Orientation="Vertical" Padding="6" Spacing="4">
+             x:Class="NUnit.Runner.View.ResultsView"
+             Title="Test Results"
+             Padding="6">
+    <StackLayout Orientation="Vertical" Spacing="4">
         <ScrollView Orientation="Horizontal"
                     VerticalOptions="FillAndExpand" 
                     HorizontalOptions="FillAndExpand" >
@@ -15,12 +17,8 @@
                         <ViewCell>
                             <ViewCell.View>
                                 <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
-                                    <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="Large" />
-
-                                    <Label Text="{Binding PassCount, StringFormat='Pass: {0}'}" TextColor="Green" />
-                                    <Label Text="{Binding FailCount, StringFormat='Fail: {0}'}" TextColor="Red" />
-                                    <Label Text="{Binding SkipCount, StringFormat='Skip: {0}'}" TextColor="Yellow"/>
-                                    <Label Text="{Binding InconclusiveCount, StringFormat='Inconclusive: {0}'}" />
+                                    <Label Text="{Binding Name}" TextColor="{Binding Color}"  FontAttributes="Bold" FontSize="Large" />
+                                    <Label Text="{Binding Message}" />
                                 </StackLayout>
                             </ViewCell.View>
                         </ViewCell>

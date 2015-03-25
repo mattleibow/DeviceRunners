@@ -27,17 +27,17 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class App : Application
     {
-        private readonly TestViewModel _model;
+        private readonly SummaryViewModel _model;
 
         public App()
         {
-            _model = new TestViewModel();
-            MainPage = new NavigationPage(new SummaryView{BindingContext = _model})
-            {
-                Title = "NUnit 3.0"
-            };
+            _model = new SummaryViewModel();
+            MainPage = new NavigationPage(new SummaryView(_model));
             AddTest(Assembly.GetCallingAssembly());
         }
 
@@ -45,7 +45,7 @@ namespace NUnit.Runner
         /// Adds an assembly to be tested.
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
-        /// <returns></returns>
+        /// <returns>True if the assembly was added successfully</returns>
         public bool AddTest(Assembly testAssembly)
         {
             return _model.AddTest(testAssembly);

@@ -10,11 +10,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)App.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\XamarinExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\Annotations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\BaseViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultsViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\SummaryViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\TestViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\ResultsView.xaml.cs">
+      <DependentUpon>ResultsView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\SummaryView.xaml.cs">
       <DependentUpon>SummaryView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -32,6 +39,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)View\SummaryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)View\ResultsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>

@@ -22,7 +22,7 @@
 // ***********************************************************************
 
 using NUnit.Framework.Interfaces;
-using NUnit.Runner.ViewModel;
+using NUnit.Runner.Extensions;
 using Xamarin.Forms;
 
 namespace Nunit.Runner.ViewModel
@@ -68,21 +68,7 @@ namespace Nunit.Runner.ViewModel
         /// </summary>
         public Color OverallResultColor
         {
-            get
-            {
-                switch (TestResult.ResultState.Status)
-                {
-                    case TestStatus.Passed:
-                        return Color.Green;
-                    case TestStatus.Skipped:
-                        return Color.Yellow;
-                    case TestStatus.Failed:
-                        return Color.Red;
-                    case TestStatus.Inconclusive:
-                    default:
-                        return Color.Gray;
-                }
-            }
+            get { return TestResult.Color(); }
         }
 
         /// <summary>

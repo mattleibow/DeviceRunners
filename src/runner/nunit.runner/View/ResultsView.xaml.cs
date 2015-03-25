@@ -21,27 +21,18 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using NUnit.Runner.Annotations;
+using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
 
-namespace NUnit.Runner.ViewModel
+namespace NUnit.Runner.View
 {
-    public class BaseViewModel : INotifyPropertyChanged
-    {
-        /// <summary>
-        /// So that we can navigate from within the view model
-        /// </summary>
-        public INavigation Navigation { get; set; }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+	public partial class ResultsView : ContentPage
+	{
+		public ResultsView (ResultsViewModel model)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
+            model.Navigation = Navigation;
+            BindingContext = model;
+            InitializeComponent();
+		}
+	}
 }
