@@ -12,7 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\XamarinExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\Annotations.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\BaseViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultSummary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultsViewModel.cs" />
