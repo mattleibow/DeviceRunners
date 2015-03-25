@@ -27,6 +27,7 @@ using NUnit.Framework;
 namespace NUnit.Runner.Tests
 {
     [TestFixture]
+    [Author("Rob Prouse")]
     public class TestsSample
     {
         [SetUp]
@@ -37,13 +38,16 @@ namespace NUnit.Runner.Tests
         public void Tear() { }
 
         [Test]
+        [Category("Passing")]
         public void Pass()
         {
-            Console.WriteLine("test1");
+            TestContext.WriteLine("Capture some output");
             Assert.True(true);
         }
 
         [Test]
+        [Category("Failing")]
+        [Author("Code Monkey")]
         public void Fail()
         {
             Assert.False(true);
@@ -65,6 +69,7 @@ namespace NUnit.Runner.Tests
         [Test]
         public void Error()
         {
+            TestContext.WriteLine("I am about to throw!!!");
             throw new NotSupportedException("This method isn't ready yet");
         }
     }

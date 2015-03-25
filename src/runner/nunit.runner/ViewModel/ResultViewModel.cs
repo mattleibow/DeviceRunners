@@ -21,8 +21,10 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System.Windows.Input;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
+using NUnit.Runner.View;
 using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
@@ -32,12 +34,14 @@ namespace NUnit.Runner.ViewModel
         public ResultViewModel(ITestResult result)
         {
             TestResult = result;
-            Name = result.FullName;
+            Name = result.Name;
+            Parent = result.Test.Parent.FullName;
             Message = result.Message;
         }
 
         public ITestResult TestResult { get; private set; }
         public string Name { get; private set; }
+        public string Parent { get; private set; }
         public string Message { get; private set; }
 
         /// <summary>

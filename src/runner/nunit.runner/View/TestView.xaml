@@ -1,32 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="NUnit.Runner.View.TestView">
-    <StackLayout Orientation="Vertical" Padding="6" Spacing="4">
-        <ScrollView Orientation="Horizontal"
-                    VerticalOptions="FillAndExpand" 
-                    HorizontalOptions="FillAndExpand" >
-            <ListView ItemsSource="{Binding Results}" 
-                      VerticalOptions="FillAndExpand" 
-                      HorizontalOptions="FillAndExpand" 
-                      HasUnevenRows="True">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <ViewCell.View>
-                                <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
-                                    <Label Text="{Binding FullName}" FontAttributes="Bold" FontSize="Large" />
+             x:Class="NUnit.Runner.View.TestView"
+             Title="Test"
+             Padding="6">
+    <ScrollView Orientation="Vertical"
+                VerticalOptions="FillAndExpand" 
+                HorizontalOptions="FillAndExpand" >
+        <StackLayout Orientation="Vertical" Spacing="6" HorizontalOptions="FillAndExpand">
+            <Label Text="{Binding TestResult.Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Large" />
+            <Label Text="{Binding TestResult.Test.Parent.FullName}" LineBreakMode="MiddleTruncation" FontSize="Medium" />
+            
+            <StackLayout Orientation="Horizontal" Spacing="4">
+                <Label Text="Duration:" FontSize="Medium" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.Duration.TotalSeconds, StringFormat='{0:F3} seconds'}" FontSize="Medium" />
+            </StackLayout>
 
-                                    <Label Text="{Binding PassCount, StringFormat='Pass: {0}'}" TextColor="Green" />
-                                    <Label Text="{Binding FailCount, StringFormat='Fail: {0}'}" TextColor="Red" />
-                                    <Label Text="{Binding SkipCount, StringFormat='Skip: {0}'}" TextColor="Yellow"/>
-                                    <Label Text="{Binding InconclusiveCount, StringFormat='Inconclusive: {0}'}" />
-                                </StackLayout>
-                            </ViewCell.View>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-        </ScrollView>
-    </StackLayout>
+            <StackLayout Orientation="Horizontal" Spacing="4">
+                <Label Text="Asserts:" FontSize="Medium" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.AssertCount}" FontSize="Medium" />
+            </StackLayout>
+
+            <Label Text="Properties:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Properties}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Message:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Message}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Output:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding Output}" LineBreakMode="WordWrap" FontSize="Small" />
+
+            <Label Text="Stack Trace:" FontAttributes="Bold" FontSize="Medium" />
+            <Label Text="{Binding StackTrace}" LineBreakMode="CharacterWrap" FontSize="Small" />
+        </StackLayout>
+    </ScrollView>
 </ContentPage>

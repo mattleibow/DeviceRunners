@@ -12,8 +12,8 @@
                 </DataTrigger>
             </Button.Triggers>
         </Button>
-        
-        <ScrollView Orientation="Horizontal"
+
+        <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 
                     HorizontalOptions="FillAndExpand" >
 

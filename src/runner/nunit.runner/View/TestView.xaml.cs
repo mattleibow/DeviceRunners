@@ -30,7 +30,6 @@ namespace NUnit.Runner.View
 	{
 		public TestView(TestViewModel model)
         {
-            model.Navigation = Navigation;
             BindingContext = model;
             InitializeComponent();
 		}

@@ -22,7 +22,10 @@
 // ***********************************************************************
 
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using NUnit.Framework.Interfaces;
+using NUnit.Runner.View;
+using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {

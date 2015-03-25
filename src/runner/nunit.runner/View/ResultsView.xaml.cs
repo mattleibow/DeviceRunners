@@ -21,6 +21,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System.Threading.Tasks;
+using NUnit.Framework.Interfaces;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
 
@@ -34,5 +36,12 @@ namespace NUnit.Runner.View
             BindingContext = model;
             InitializeComponent();
 		}
+
+        internal async void ViewTest(object sender, SelectedItemChangedEventArgs e)
+        {
+                var result = e.SelectedItem as ResultViewModel;
+                if (result != null)
+                    await Navigation.PushAsync(new TestView(new TestViewModel(result.TestResult)));
+        }
 	}
 }

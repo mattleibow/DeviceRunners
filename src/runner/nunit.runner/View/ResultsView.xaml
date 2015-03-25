@@ -5,10 +5,11 @@
              Title="Test Results"
              Padding="6">
     <StackLayout Orientation="Vertical" Spacing="4">
-        <ScrollView Orientation="Horizontal"
+        <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 
                     HorizontalOptions="FillAndExpand" >
             <ListView ItemsSource="{Binding Results}" 
+                      ItemSelected="ViewTest"
                       VerticalOptions="FillAndExpand" 
                       HorizontalOptions="FillAndExpand" 
                       HasUnevenRows="True">
@@ -16,8 +17,9 @@
                     <DataTemplate>
                         <ViewCell>
                             <ViewCell.View>
-                                <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand">
-                                    <Label Text="{Binding Name}" TextColor="{Binding Color}" LineBreakMode="MiddleTruncation" FontAttributes="Bold" FontSize="Medium" />
+                                <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" Padding="4">
+                                    <Label Text="{Binding Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Medium" />
+                                    <Label Text="{Binding Parent}" LineBreakMode="MiddleTruncation" FontAttributes="Bold" FontSize="Small" />
                                     <Label Text="{Binding Message}" LineBreakMode="WordWrap" FontSize="Small"/>
                                 </StackLayout>
                             </ViewCell.View>
