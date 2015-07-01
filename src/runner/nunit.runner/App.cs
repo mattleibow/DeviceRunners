@@ -46,9 +46,9 @@ namespace NUnit.Runner
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
         /// <returns>True if the assembly was added successfully</returns>
-        public bool AddTest(Assembly testAssembly)
+        public void AddTest(Assembly testAssembly)
         {
-            return _model.AddTest(testAssembly);
+            _model.AddTest(testAssembly);
         }
     }
 }

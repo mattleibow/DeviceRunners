@@ -35,7 +35,9 @@ namespace NUnit.Runner.Tests.Droid
             base.OnCreate(bundle);
 
             global::Xamarin.Forms.Forms.Init(this, bundle);
-            LoadApplication(new NUnit.Runner.App());
+            var app = new NUnit.Runner.App();
+            app.AddTest(typeof(NUnit.Framework.Api.FrameworkControllerTests).Assembly);
+            LoadApplication(app);
         }
     }
 }

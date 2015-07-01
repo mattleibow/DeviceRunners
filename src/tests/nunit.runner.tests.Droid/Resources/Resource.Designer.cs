@@ -28,6 +28,8 @@ namespace NUnit.Runner.Tests.Droid
 		{
 			global::Nunit.Runner.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Droid.Resource.String.ApplicationName;
 			global::Nunit.Runner.Resource.String.Hello = global::NUnit.Runner.Tests.Droid.Resource.String.Hello;
+			global::Xamarin.Forms.Platform.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Droid.Resource.String.ApplicationName;
+			global::Xamarin.Forms.Platform.Resource.String.Hello = global::NUnit.Runner.Tests.Droid.Resource.String.Hello;
 		}
 		
 		public partial class Attribute

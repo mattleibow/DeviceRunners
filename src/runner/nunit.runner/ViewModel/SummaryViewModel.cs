@@ -36,13 +36,13 @@ namespace NUnit.Runner.ViewModel
 {
     public class SummaryViewModel : BaseViewModel
     {
-        private readonly ITestAssemblyRunner _runner;
+        private readonly IList<Assembly> _testAssemblies;
         private ResultSummary _results;
         private bool _running;
 
         public SummaryViewModel()
         {
-            _runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
+            _testAssemblies = new List<Assembly>();
             RunTestsCommand = new Command(async o => await ExecuteTestsAync(), o => !Running);
             ViewAllResultsCommand = new Command(
                 async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
@@ -98,17 +98,21 @@ namespace NUnit.Runner.ViewModel
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
         /// <returns></returns>
-        internal bool AddTest(Assembly testAssembly)
+        internal void AddTest(Assembly testAssembly)
         {
-            return _runner.Load(testAssembly, new Dictionary<string, string>()) != null;
+            _testAssemblies.Add(testAssembly);
         }
 
         private async Task ExecuteTestsAync()
         {
             Running = true;
             Results = null;
-            
-            ITestResult result = await Task.Run(() => _runner.Run(TestListener.NULL, TestFilter.Empty));
+
+            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
+            foreach(var testAssembly in _testAssemblies)
+                runner.Load(testAssembly, new Dictionary<string, string>());
+
+            ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty));
             Results = new ResultSummary(result);
 
             Running = false;
