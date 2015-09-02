@@ -25,9 +25,9 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 
-namespace NUnit.Runner.Tests.Droid
+namespace $rootnamespace$
 {
-    [Activity(Label = "nunit.runner", Icon = "@drawable/icon", Theme= "@android:style/Theme.Holo.Light", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "NUnit 3.0", MainLauncher = true, Theme= "@android:style/Theme.Holo.Light, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation")]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -35,7 +35,13 @@ namespace NUnit.Runner.Tests.Droid
             base.OnCreate(savedInstanceState);
 
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
-            var nunit = new NUnit.Runner.App();            
+
+            // This will load all tests within the current project
+            var nunit = new NUnit.Runner.App();
+
+            // If you want to add tests in another assembly
+            //nunit.AddTestAssembly(typof(MyTests).Assembly);
+
             LoadApplication(nunit);
         }
     }

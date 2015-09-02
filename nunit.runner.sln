@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		NUnit.proj = NUnit.proj
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -25,6 +26,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.runner.tests.Droid", "src\tests\nunit.runner.tests.Droid\nunit.runner.tests.Droid.csproj", "{391CE92C-08F6-4DDF-941C-A8980DCC196E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.runner.tests.iOS", "src\tests\nunit.runner.tests.iOS\nunit.runner.tests.iOS.csproj", "{17A2B97C-56EA-40B8-8901-5E0728876657}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{9535215D-5DAC-4E52-A0F2-5216F933234B}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\AppDelegate.cs.txt.pp = nuget\AppDelegate.cs.txt.pp
+		nuget\MainActivity.cs.txt.pp = nuget\MainActivity.cs.txt.pp
+		nuget\nunit.runners.xamarin.nuspec = nuget\nunit.runners.xamarin.nuspec
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
