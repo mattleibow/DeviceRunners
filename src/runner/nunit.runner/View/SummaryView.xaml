@@ -80,12 +80,16 @@
                     <Label Text="{Binding Results.IgnoreCount}" FontSize="Medium" />
                 </StackLayout>
                 <StackLayout Grid.Row="7" Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                    <Label Text="  Invalid:" FontSize="Medium" FontAttributes="Bold" />
-                    <Label Text="{Binding Results.InvalidCount}" FontSize="Medium" />
+                    <Label Text="  Explicit:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.ExplicitCount}" FontSize="Medium" />
                 </StackLayout>
                 <StackLayout Grid.Row="8" Grid.Column="0" Orientation="Horizontal" Spacing="4">
                     <Label Text="  Skipped:" FontSize="Medium" FontAttributes="Bold" />
                     <Label Text="{Binding Results.SkipCount}" FontSize="Medium" />
+                </StackLayout>
+                <StackLayout Grid.Row="8" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                    <Label Text="  Invalid:" FontSize="Medium" FontAttributes="Bold" />
+                    <Label Text="{Binding Results.InvalidCount}" FontSize="Medium" />
                 </StackLayout>
 
                 <StackLayout Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">

@@ -61,6 +61,13 @@ namespace NUnit.Runner.Tests
         }
 
         [Test]
+        [Explicit("This is only run on demand")]
+        public void Explicit()
+        {
+            Assert.True(true);
+        }
+
+        [Test]
         public void Inconclusive()
         {
             Assert.Inconclusive("Inconclusive");

@@ -79,11 +79,17 @@ namespace Nunit.Runner.ViewModel
         public int TestCount { get; private set; }
 
         /// <summary>
-        /// Returns the number of test cases actually run, which
-        /// is the same as TestCount, less any Skipped, Ignored
-        /// or NonRunnable tests.
+        /// Returns the number of test cases actually run.
         /// </summary>
-        public int RunCount { get; private set; }
+        public int RunCount { get { return PassCount + FailureCount + ErrorCount + InconclusiveCount; } }
+        
+        /// <summary>
+        /// Returns the number of test cases not run for any reason.
+        /// </summary>
+        public int NotRunCount
+        {
+            get { return IgnoreCount + ExplicitCount + InvalidCount + SkipCount;  }
+        }
 
         /// <summary>
         /// Gets the count of passed tests
@@ -113,7 +119,7 @@ namespace Nunit.Runner.ViewModel
         public int InvalidCount { get; private set; }
 
         /// <summary>
-        /// Gets the count of skipped tests, excluding ignored tests
+        /// Gets the count of skipped tests, excluding ignored and explicit tests
         /// </summary>
         public int SkipCount { get; private set; }
 
@@ -123,12 +129,9 @@ namespace Nunit.Runner.ViewModel
         public int IgnoreCount { get; private set; }
 
         /// <summary>
-        /// Gets the number of tests not run
+        /// Gets the count of tests not run because the are Explicit
         /// </summary>
-        public int NotRunCount
-        {
-            get { return SkipCount + IgnoreCount + InvalidCount; }
-        }
+        public int ExplicitCount { get; private set; }
 
         #endregion
 
@@ -137,13 +140,13 @@ namespace Nunit.Runner.ViewModel
         private void InitializeCounters()
         {
             TestCount = 0;
-            RunCount = 0;
             PassCount = 0;
             FailureCount = 0;
             ErrorCount = 0;
             InconclusiveCount = 0;
             SkipCount = 0;
             IgnoreCount = 0;
+            ExplicitCount = 0;
             InvalidCount = 0;
         }
 
@@ -161,16 +164,8 @@ namespace Nunit.Runner.ViewModel
                 {
                     case TestStatus.Passed:
                         PassCount++;
-                        RunCount++;
-                        break;
-                    case TestStatus.Skipped:
-                        if (result.ResultState == ResultState.Ignored)
-                            IgnoreCount++;
-                        else if (result.ResultState == ResultState.Skipped)
-                            SkipCount++;
                         break;
                     case TestStatus.Failed:
-                        RunCount++;
                         if (result.ResultState == ResultState.Failure)
                             FailureCount++;
                         else if (result.ResultState == ResultState.NotRunnable)
@@ -178,8 +173,15 @@ namespace Nunit.Runner.ViewModel
                         else
                             ErrorCount++;
                         break;
+                    case TestStatus.Skipped:
+                        if (result.ResultState == ResultState.Ignored)
+                            IgnoreCount++;
+                        else if (result.ResultState == ResultState.Explicit)
+                            ExplicitCount++;
+                        else
+                            SkipCount++;
+                        break;
                     case TestStatus.Inconclusive:
-                        RunCount++;
                         InconclusiveCount++;
                         break;
                 }
