@@ -1,12 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DABD2667-0EF4-4814-8353-8675E1C8F95E}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Runner", "Runner", "{B3AE763A-DC9C-4F5D-B5F0-97A1B10D147B}"
@@ -28,7 +29,6 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{391ce92c-08f6-4ddf-941c-a8980dcc196e}*SharedItemsImports = 4
-		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{17a2b97c-56ea-40b8-8901-5e0728876657}*SharedItemsImports = 4
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{af293652-baa0-4813-b4f3-2d5a2cdde0b4}*SharedItemsImports = 13
 		src\runner\nunit.runner\nunit.runner.projitems*{3bf3745a-8491-46a9-af66-f8de22accf31}*SharedItemsImports = 4
 		src\runner\nunit.runner\nunit.runner.projitems*{c9209134-aea3-4c7f-ad74-00d578a6f208}*SharedItemsImports = 13
