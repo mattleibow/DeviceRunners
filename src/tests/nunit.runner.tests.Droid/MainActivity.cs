@@ -30,13 +30,12 @@ namespace NUnit.Runner.Tests.Droid
     [Activity(Label = "nunit.runner", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
     {
-        protected override void OnCreate(Bundle bundle)
+        protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(bundle);
+            base.OnCreate(savedInstanceState);
 
-            global::Xamarin.Forms.Forms.Init(this, bundle);
+            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             var app = new NUnit.Runner.App();
-            app.AddTest(typeof(NUnit.Framework.Api.FrameworkControllerTests).Assembly);
             LoadApplication(app);
         }
     }
