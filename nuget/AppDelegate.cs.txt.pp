@@ -21,23 +21,37 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using Android.App;
-using Android.Content.PM;
-using Android.OS;
+using Foundation;
+using UIKit;
 
-namespace NUnit.Runner.Tests.Droid
+namespace $rootnamespace$
 {
-    [Activity(Label = "nunit.runner", Icon = "@drawable/icon", Theme= "@android:style/Theme.Holo.Light", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
+    // The UIApplicationDelegate for the application. This class is responsible for launching the 
+    // User Interface of the application, as well as listening (and optionally responding) to 
+    // application events from iOS.
+    [Register("AppDelegate")]
+    public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
-        protected override void OnCreate(Bundle savedInstanceState)
+        //
+        // This method is invoked when the application has loaded and is ready to run. In this 
+        // method you should instantiate the window, load the UI into it and then make the window
+        // visible.
+        //
+        // You have 17 seconds to return from this method, or iOS will terminate your application.
+        //
+        public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            base.OnCreate(savedInstanceState);
+            global::Xamarin.Forms.Forms.Init();            
 
-            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
-            var nunit = new NUnit.Runner.App();            
+            // This will load all tests within the current project
+            var nunit = new NUnit.Runner.App();
+
+            // If you want to add tests in another assembly
+            //nunit.AddTestAssembly(typof(MyTests).Assembly);
+
             LoadApplication(nunit);
-        }
+
+            return base.FinishedLaunching(app, options);
+		}
     }
 }
-

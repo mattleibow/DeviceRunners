@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("NUnit Software")]
-[assembly: AssemblyProduct("NUnit 3.0")]
+[assembly: AssemblyProduct("NUnit 3.0 Xamarin Runner")]
 [assembly: AssemblyCopyright("Copyright (C) 2015 Charlie Poole")]
 [assembly: AssemblyTrademark("NUnit is a trademark of NUnit Software")]
 [assembly: AssemblyCulture("")]
@@ -46,9 +46,9 @@ using System.Runtime.InteropServices;
 #endif
 #else
 #if __IOS__
-[assembly: AssemblyConfiguration("iOS 4.5")]
+[assembly: AssemblyConfiguration("iOS")]
 #elif __DROID__
-[assembly: AssemblyConfiguration("Android 4.0")]
+[assembly: AssemblyConfiguration("Android")]
 #else
 [assembly: AssemblyConfiguration("")]
 #endif
