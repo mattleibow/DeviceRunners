@@ -37,6 +37,7 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{391ce92c-08f6-4ddf-941c-a8980dcc196e}*SharedItemsImports = 4
+		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{17a2b97c-56ea-40b8-8901-5e0728876657}*SharedItemsImports = 4
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{af293652-baa0-4813-b4f3-2d5a2cdde0b4}*SharedItemsImports = 13
 		src\runner\nunit.runner\nunit.runner.projitems*{3bf3745a-8491-46a9-af66-f8de22accf31}*SharedItemsImports = 4
 		src\runner\nunit.runner\nunit.runner.projitems*{c9209134-aea3-4c7f-ad74-00d578a6f208}*SharedItemsImports = 13
