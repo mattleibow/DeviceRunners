@@ -1,4 +1,4 @@
-# nunit.runners
+# NUnit 3.0 Xamarin Runners
 
 NUnit test runners for Xamarin and mobile devices
 
