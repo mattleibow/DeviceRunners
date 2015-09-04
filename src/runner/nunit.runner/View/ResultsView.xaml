@@ -11,8 +11,7 @@
             <ListView ItemsSource="{Binding Results}" 
                       ItemSelected="ViewTest"
                       VerticalOptions="FillAndExpand" 
-                      HorizontalOptions="FillAndExpand" 
-                      HasUnevenRows="True">
+                      HorizontalOptions="FillAndExpand">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
@@ -20,7 +19,6 @@
                                 <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" Padding="4">
                                     <Label Text="{Binding Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Medium" />
                                     <Label Text="{Binding Parent}" LineBreakMode="MiddleTruncation" FontAttributes="Bold" FontSize="Small" />
-                                    <Label Text="{Binding Message}" LineBreakMode="WordWrap" FontSize="Small"/>
                                 </StackLayout>
                             </ViewCell.View>
                         </ViewCell>
