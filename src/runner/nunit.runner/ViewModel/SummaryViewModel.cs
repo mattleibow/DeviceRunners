@@ -34,7 +34,7 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class SummaryViewModel : BaseViewModel
+    class SummaryViewModel : BaseViewModel
     {
         private readonly IList<Assembly> _testAssemblies;
         private ResultSummary _results;

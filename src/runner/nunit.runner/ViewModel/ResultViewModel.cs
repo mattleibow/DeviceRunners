@@ -21,15 +21,13 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System.Windows.Input;
 using NUnit.Framework.Interfaces;
 using NUnit.Runner.Extensions;
-using NUnit.Runner.View;
 using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class ResultViewModel
+    internal class ResultViewModel
     {
         public ResultViewModel(ITestResult result)
         {

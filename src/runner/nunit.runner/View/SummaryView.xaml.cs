@@ -26,9 +26,12 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.View
 {
+    /// <summary>
+    /// The main Xamarin.Forms view of the application
+    /// </summary>
 	public partial class SummaryView : ContentPage
 	{
-		public SummaryView (SummaryViewModel model)
+		internal SummaryView (SummaryViewModel model)
 		{
 		    model.Navigation = Navigation;
 		    BindingContext = model;

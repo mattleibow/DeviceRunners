@@ -26,9 +26,12 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.View
 {
+    /// <summary>
+    /// Xamarin.Forms view of an individual test result
+    /// </summary>
 	public partial class TestView : ContentPage
 	{
-		public TestView(TestViewModel model)
+		internal TestView(TestViewModel model)
         {
             BindingContext = model;
             InitializeComponent();

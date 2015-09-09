@@ -21,16 +21,17 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System.Threading.Tasks;
-using NUnit.Framework.Interfaces;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
 
 namespace NUnit.Runner.View
 {
-	public partial class ResultsView : ContentPage
+    /// <summary>
+    /// Xamarin.Forms view of a list of test results
+    /// </summary>
+    public partial class ResultsView : ContentPage
 	{
-		public ResultsView (ResultsViewModel model)
+		internal ResultsView (ResultsViewModel model)
         {
             model.Navigation = Navigation;
             BindingContext = model;
