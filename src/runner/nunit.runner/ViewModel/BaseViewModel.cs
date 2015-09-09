@@ -28,7 +28,7 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class BaseViewModel : INotifyPropertyChanged
+    class BaseViewModel : INotifyPropertyChanged
     {
         /// <summary>
         /// So that we can navigate from within the view model

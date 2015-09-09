@@ -11,7 +11,8 @@
             <ListView ItemsSource="{Binding Results}" 
                       ItemSelected="ViewTest"
                       VerticalOptions="FillAndExpand" 
-                      HorizontalOptions="FillAndExpand">
+                      HorizontalOptions="FillAndExpand"
+                      HasUnevenRows="true">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>

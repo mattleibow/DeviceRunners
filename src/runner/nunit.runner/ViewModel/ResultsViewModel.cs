@@ -29,7 +29,7 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class ResultsViewModel : BaseViewModel
+    class ResultsViewModel : BaseViewModel
     {
         /// <summary>
         /// Constructs the view model

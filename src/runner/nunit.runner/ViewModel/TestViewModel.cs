@@ -29,7 +29,7 @@ using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
-    public class TestViewModel : BaseViewModel
+    class TestViewModel : BaseViewModel
     {
         public TestViewModel(ITestResult result) 
         {
