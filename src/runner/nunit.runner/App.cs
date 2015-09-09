@@ -52,5 +52,15 @@ namespace NUnit.Runner
         {
             _model.AddTest(testAssembly);
         }
+
+        /// <summary>
+        /// If True, the tests will run automatically when the app starts
+        /// otherwise you must run them manually.
+        /// </summary>
+        public bool AutoRun
+        {
+            get { return _model.AutoRun; }
+            set { _model.AutoRun = value; }
+        }
     }
 }

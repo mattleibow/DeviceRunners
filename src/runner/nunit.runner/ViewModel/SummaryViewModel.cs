@@ -36,9 +36,9 @@ namespace NUnit.Runner.ViewModel
 {
     class SummaryViewModel : BaseViewModel
     {
-        private readonly IList<Assembly> _testAssemblies;
-        private ResultSummary _results;
-        private bool _running;
+        readonly IList<Assembly> _testAssemblies;
+        ResultSummary _results;
+        bool _running;
 
         public SummaryViewModel()
         {
@@ -50,6 +50,25 @@ namespace NUnit.Runner.ViewModel
             ViewFailedResultsCommand = new Command(
                 async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, false))),
                 o => !HasResults);
+        }
+
+        /// <summary>
+        /// If True, the tests will run automatically when the app starts
+        /// otherwise you must run them manually.
+        /// </summary>
+        public bool AutoRun { get; set; }
+
+        /// <summary>
+        /// Called from the view when the view is appearing
+        /// </summary>
+        public void OnAppearing()
+        {
+            if(AutoRun)
+            {
+                // Don't rerun if we navigate back
+                AutoRun = false;
+                RunTestsCommand.Execute(null);
+            }
         }
 
         /// <summary>
