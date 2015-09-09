@@ -4,6 +4,11 @@
              x:Class="NUnit.Runner.View.SummaryView"
              Title="NUnit 3.0"
              Padding="6">
+    <ContentPage.Triggers>
+        <DataTrigger TargetType="ContentPage" Binding="{Binding Running}" Value="True">
+            <Setter Property="IsBusy" Value="True" />
+        </DataTrigger>
+    </ContentPage.Triggers>
     <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand">
             <Button.Triggers>

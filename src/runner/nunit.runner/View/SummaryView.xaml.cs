@@ -35,7 +35,7 @@ namespace NUnit.Runner.View
 		{
 		    model.Navigation = Navigation;
 		    BindingContext = model;
-			InitializeComponent ();
+			InitializeComponent();
 		}
 	}
 }

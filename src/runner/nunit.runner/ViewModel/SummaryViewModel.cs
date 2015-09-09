@@ -103,19 +103,25 @@ namespace NUnit.Runner.ViewModel
             _testAssemblies.Add(testAssembly);
         }
 
-        private async Task ExecuteTestsAync()
+        async Task ExecuteTestsAync()
         {
             Running = true;
             Results = null;
 
-            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            foreach(var testAssembly in _testAssemblies)
-                runner.Load(testAssembly, new Dictionary<string, string>());
+            var runner = await LoadTestAssembliesAsync();
 
             ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty));
             Results = new ResultSummary(result);
 
             Running = false;
+        }
+
+        async Task<NUnitTestAssemblyRunner> LoadTestAssembliesAsync()
+        {
+            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
+            foreach (var testAssembly in _testAssemblies)
+                await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, string>()));
+            return runner;
         }
     }
 }
