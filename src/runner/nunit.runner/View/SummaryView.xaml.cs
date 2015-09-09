@@ -31,11 +31,20 @@ namespace NUnit.Runner.View
     /// </summary>
 	public partial class SummaryView : ContentPage
 	{
-		internal SummaryView (SummaryViewModel model)
+        SummaryViewModel _model;
+
+        internal SummaryView (SummaryViewModel model)
 		{
-		    model.Navigation = Navigation;
-		    BindingContext = model;
+            _model = model;
+		    _model.Navigation = Navigation;
+		    BindingContext = _model;
 			InitializeComponent();
 		}
-	}
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            _model.OnAppearing();
+        }
+    }
 }

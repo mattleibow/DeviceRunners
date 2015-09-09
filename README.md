@@ -4,8 +4,8 @@ NUnit test runners for Xamarin and mobile devices
 
 ## How to Use ##
 
-We will be producing downloadable NuGet packages and likely project templates, but until that is done,
-you will need to build from source. You will need a Xamarin trial or subscription.
+The NuGet packages are nearly ready and we will likely create project templates, but until that is done,
+you will need to build from source. For this, you will need a Xamarin trial or subscription.
 
 1. Clone this repository
 2. Open `nunit.runner.sln` in Visual Studio with Xamarin installed, or in Xamarin Studio.
@@ -25,13 +25,23 @@ Then in your solution;
 ### Android ###
 
 ```C#
-protected override void OnCreate(Bundle bundle)
+protected override void OnCreate(Bundle savedInstanceState)
 {
-    base.OnCreate(bundle);
+    base.OnCreate(savedInstanceState);
 
-    global::Xamarin.Forms.Forms.Init(this, bundle);
-    LoadApplication(new NUnit.Runner.App());
-    }
+    global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
+    // This will load all tests within the current project
+    var nunit = new NUnit.Runner.App();
+
+    // If you want to add tests in another assembly
+    //nunit.AddTestAssembly(typof(MyTests).Assembly);
+
+    // Do you want to automatically run tests when the app starts?
+    nunit.AutoRun = true;
+
+    LoadApplication(nunit);
+}
 ```
 ### iOS ###
 
@@ -39,7 +49,17 @@ protected override void OnCreate(Bundle bundle)
 public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 {
     global::Xamarin.Forms.Forms.Init();
-    LoadApplication(new NUnit.Runner.App());
+
+    // This will load all tests within the current project
+    var nunit = new NUnit.Runner.App();
+
+    // If you want to add tests in another assembly
+    //nunit.AddTestAssembly(typof(MyTests).Assembly);
+
+    // Do you want to automatically run tests when the app starts?
+    nunit.AutoRun = true;
+
+    LoadApplication(nunit);
 
     return base.FinishedLaunching(app, options);
 }
