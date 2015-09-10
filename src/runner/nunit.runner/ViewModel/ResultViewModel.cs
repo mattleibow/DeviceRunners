@@ -32,12 +32,14 @@ namespace NUnit.Runner.ViewModel
         public ResultViewModel(ITestResult result)
         {
             TestResult = result;
+            Result = result.ResultState.Status.ToString().ToUpperInvariant();
             Name = result.Name;
             Parent = result.Test.Parent.FullName;
             Message = result.Message;
         }
 
         public ITestResult TestResult { get; private set; }
+        public string Result { get; set; }
         public string Name { get; private set; }
         public string Parent { get; private set; }
         public string Message { get; private set; }

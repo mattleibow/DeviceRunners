@@ -2,23 +2,25 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.TestView"
-             Title="Test"
-             Padding="6">
+             Title="{Binding TestResult.ResultState.Status}"
+             Padding="0">
     <ScrollView Orientation="Vertical"
                 VerticalOptions="FillAndExpand" 
-                HorizontalOptions="FillAndExpand" >
-        <StackLayout Orientation="Vertical" Spacing="6" HorizontalOptions="FillAndExpand">
+                HorizontalOptions="FillAndExpand" 
+                Padding="10"
+                BackgroundColor="#F7F7F7">
+        <StackLayout Orientation="Vertical" Spacing="8" Padding="8"  HorizontalOptions="FillAndExpand" BackgroundColor="White">
             <Label Text="{Binding TestResult.Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Large" />
-            <Label Text="{Binding TestResult.Test.Parent.FullName}" LineBreakMode="MiddleTruncation" FontSize="Medium" />
+            <Label Text="{Binding TestResult.Test.Parent.FullName}" LineBreakMode="MiddleTruncation" FontSize="Small" />
             
             <StackLayout Orientation="Horizontal" Spacing="4">
-                <Label Text="Duration:" FontSize="Medium" FontAttributes="Bold" />
-                <Label Text="{Binding TestResult.Duration.TotalSeconds, StringFormat='{0:F3} seconds'}" FontSize="Medium" />
+                <Label Text="Duration:" FontSize="Small" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.Duration, StringFormat='{0:F3} seconds'}" FontSize="Small" />
             </StackLayout>
 
             <StackLayout Orientation="Horizontal" Spacing="4">
-                <Label Text="Asserts:" FontSize="Medium" FontAttributes="Bold" />
-                <Label Text="{Binding TestResult.AssertCount}" FontSize="Medium" />
+                <Label Text="Asserts:" FontSize="Small" FontAttributes="Bold" />
+                <Label Text="{Binding TestResult.AssertCount}" FontSize="Small" />
             </StackLayout>
 
             <Label Text="Properties:" FontAttributes="Bold" FontSize="Medium" />
