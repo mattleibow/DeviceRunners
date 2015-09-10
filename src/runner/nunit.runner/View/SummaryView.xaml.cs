@@ -41,6 +41,9 @@ namespace NUnit.Runner.View
 			InitializeComponent();
 		}
 
+        /// <summary>
+        /// Called when the view is appearing
+        /// </summary>
         protected override void OnAppearing()
         {
             base.OnAppearing();
