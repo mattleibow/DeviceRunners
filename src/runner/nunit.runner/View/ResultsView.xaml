@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.ResultsView"
              Title="Test Results"
-             Padding="6">
+             Padding="0">
     <StackLayout Orientation="Vertical" Spacing="4">
         <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 
@@ -17,9 +17,14 @@
                     <DataTemplate>
                         <ViewCell>
                             <ViewCell.View>
-                                <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" Padding="4">
-                                    <Label Text="{Binding Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Medium" />
-                                    <Label Text="{Binding Parent}" LineBreakMode="MiddleTruncation" FontAttributes="Bold" FontSize="Small" />
+                                <StackLayout Orientation="Horizontal" HorizontalOptions="StartAndExpand" BackgroundColor="White" Spacing="4" Padding="0">
+                                    <BoxView Color="{Binding Color}" 
+                                           WidthRequest="10"
+                                           VerticalOptions="FillAndExpand"/>
+		                            <StackLayout Orientation="Vertical" Spacing="4" Padding="4" HorizontalOptions="StartAndExpand">
+		                                <Label Text="{Binding Name}" FontSize="Medium" />
+                                        <Label Text="{Binding Parent}" LineBreakMode="MiddleTruncation" TextColor="#4C4C4C" FontSize="Small" />
+		                            </StackLayout>
                                 </StackLayout>
                             </ViewCell.View>
                         </ViewCell>

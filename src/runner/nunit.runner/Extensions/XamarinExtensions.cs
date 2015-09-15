@@ -17,12 +17,12 @@ namespace NUnit.Runner.Extensions
                 case TestStatus.Passed:
                     return Xamarin.Forms.Color.Green;
                 case TestStatus.Skipped:
-                    return Xamarin.Forms.Color.Yellow;
+                    return Xamarin.Forms.Color.FromRgb(206, 172, 0);    // Dark Yellow
                 case TestStatus.Failed:
                     if (result.ResultState == ResultState.Failure)
                         return Xamarin.Forms.Color.Red;
                     if (result.ResultState == ResultState.NotRunnable)
-                        return Xamarin.Forms.Color.FromRgb(255, 106, 0);  // Dark Red
+                        return Xamarin.Forms.Color.FromRgb(255, 106, 0);  // Orange
 
                     return Xamarin.Forms.Color.FromRgb(170, 0, 0); // Dark Red
                     

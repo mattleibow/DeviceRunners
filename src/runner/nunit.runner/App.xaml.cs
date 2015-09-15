@@ -30,15 +30,16 @@ namespace NUnit.Runner
     /// <summary>
     /// The NUnit Xamarin test runner
     /// </summary>
-    public class App : Application
+	public partial class App : Application
     {
         private readonly SummaryViewModel _model;
 
         /// <summary>
         /// Constructs a new app adding the current assembly to be tested
         /// </summary>
-        public App()
-        {
+		public App ()
+		{
+			InitializeComponent ();
             _model = new SummaryViewModel();
             MainPage = new NavigationPage(new SummaryView(_model));
             AddTestAssembly(Assembly.GetCallingAssembly());
