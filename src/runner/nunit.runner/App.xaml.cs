@@ -42,7 +42,9 @@ namespace NUnit.Runner
 			InitializeComponent ();
             _model = new SummaryViewModel();
             MainPage = new NavigationPage(new SummaryView(_model));
+#if !WINDOWS_PHONE_APP
             AddTestAssembly(Assembly.GetCallingAssembly());
+#endif
         }
 
         /// <summary>
