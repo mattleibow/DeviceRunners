@@ -47,7 +47,7 @@ namespace $rootnamespace$
             var nunit = new NUnit.Runner.App();
 
             // If you want to add tests in another assembly
-            //nunit.AddTestAssembly(typof(MyTests).Assembly);
+            //nunit.AddTestAssembly(typeof(MyTests).Assembly);
 
             // Do you want to automatically run tests when the app starts?
             nunit.AutoRun = true;
