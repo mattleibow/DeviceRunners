@@ -24,8 +24,8 @@
             
             <group targetFramework="monoandroid">
                 <dependency id="nunit" version="[$version$]" />
-                <dependency id="Xamarin.Forms" version="1.5.0.6446" />
-                <dependency id="Xamarin.Android.Support.v4" version="22.2.1.0" />
+                <dependency id="Xamarin.Forms" version="1.5.0.6447" />
+                <dependency id="Xamarin.Android.Support.v4" version="23.0.1.3" />
             </group>
         </dependencies>
     </metadata>
