@@ -3,12 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.TestView"
              Title="{Binding TestResult.ResultState.Status}"
-             Padding="0">
+             Padding="0"
+             BackgroundColor="{DynamicResource defaultBackground}" >
     <ScrollView Orientation="Vertical"
                 VerticalOptions="FillAndExpand" 
                 HorizontalOptions="FillAndExpand" 
                 Padding="10"
-                BackgroundColor="#F7F7F7">
+                BackgroundColor="{DynamicResource defaultBackground}" >
         <StackLayout Orientation="Vertical" Spacing="8" Padding="8"  HorizontalOptions="FillAndExpand" BackgroundColor="White">
             <Label Text="{Binding TestResult.Name}" TextColor="{Binding Color}" FontAttributes="Bold" FontSize="Large" />
             <Label Text="{Binding TestResult.Test.Parent.FullName}" LineBreakMode="MiddleTruncation" FontSize="Small" />
