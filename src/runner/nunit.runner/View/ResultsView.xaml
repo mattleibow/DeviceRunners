@@ -3,8 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.ResultsView"
              Title="Test Results"
-             Padding="0">
-    <StackLayout Orientation="Vertical" Spacing="4">
+             Padding="0"
+             BackgroundColor="{DynamicResource defaultBackground}" >
+    <StackLayout Orientation="Vertical" Spacing="4" BackgroundColor="{DynamicResource defaultBackground}" >
         <ScrollView Orientation="Vertical"
                     VerticalOptions="FillAndExpand" 
                     HorizontalOptions="FillAndExpand" >

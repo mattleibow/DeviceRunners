@@ -5,10 +5,20 @@
     x:Class="NUnit.Runner.App">
     <Application.Resources>
         <ResourceDictionary>
+            <!-- Visual Elements -->
+            <Style x:Key="defaultBackground" TargetType="VisualElement">
+                <Setter Property="BackgroundColor" Value="#F7F7F7" />
+            </Style>
+            <Style x:Key="windowsBackground" TargetType="VisualElement">
+                <Setter Property="BackgroundColor" Value="#000000" />
+            </Style>
+            
         	<!-- Buttons -->
             <Style TargetType="Button">
                 <Setter Property="BackgroundColor" Value="#005B0C" />
+                <Setter Property="BorderColor" Value="#005B0C" />
                 <Setter Property="BorderRadius" Value="0" />
+                <Setter Property="BorderWidth" Value="1" />
                 <Setter Property="HeightRequest" Value="42" />
                 <Setter Property="TextColor" Value="White" />
             </Style>

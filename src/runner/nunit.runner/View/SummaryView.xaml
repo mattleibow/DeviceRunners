@@ -4,13 +4,13 @@
              x:Class="NUnit.Runner.View.SummaryView"
              Title="NUnit 3.0"
              Padding="10"
-             BackgroundColor="#F7F7F7">
+             BackgroundColor="{DynamicResource defaultBackground}" >
     <ContentPage.Triggers>
         <DataTrigger TargetType="ContentPage" Binding="{Binding Running}" Value="True">
             <Setter Property="IsBusy" Value="True" />
         </DataTrigger>
     </ContentPage.Triggers>
-    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="#F7F7F7">
+    <StackLayout Orientation="Vertical" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" BackgroundColor="{DynamicResource defaultBackground}">
         <Button Text="Run Tests" Command="{Binding RunTestsCommand}"  HorizontalOptions="FillAndExpand">
             <Button.Triggers>
                 <DataTrigger TargetType="Button" Binding="{Binding Running}" Value="True">

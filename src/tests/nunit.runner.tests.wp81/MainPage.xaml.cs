@@ -1,5 +1,4 @@
-﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+﻿// Copyright (c) 2015 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,40 +20,34 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using Foundation;
-using UIKit;
+using System.Reflection;
+using Windows.UI.Xaml.Navigation;
 
-namespace $rootnamespace$
+namespace NUnit.Runner.Tests
 {
-    // The UIApplicationDelegate for the application. This class is responsible for launching the 
-    // User Interface of the application, as well as listening (and optionally responding) to 
-    // application events from iOS.
-    [Register("AppDelegate")]
-    public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
+    /// <summary>
+    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// </summary>
+    public sealed partial class MainPage
     {
-        //
-        // This method is invoked when the application has loaded and is ready to run. In this 
-        // method you should instantiate the window, load the UI into it and then make the window
-        // visible.
-        //
-        // You have 17 seconds to return from this method, or iOS will terminate your application.
-        //
-        public override bool FinishedLaunching(UIApplication app, NSDictionary options)
+        public MainPage()
         {
-            global::Xamarin.Forms.Forms.Init();            
+            InitializeComponent();
 
-            // This will load all tests within the current project
+            // Windows Phone will not load all tests within the current project,
+            // you must do it explicitly below
             var nunit = new NUnit.Runner.App();
 
-            // If you want to add tests in another assembly
-            //nunit.AddTestAssembly(typeof(MyTests).Assembly);
+            // If you want to add tests in another assembly, add a reference and
+            // duplicate the following line with a type from the referenced assembly
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
 
             // Do you want to automatically run tests when the app starts?
             nunit.AutoRun = true;
 
             LoadApplication(nunit);
 
-            return base.FinishedLaunching(app, options);
-		}
+            this.NavigationCacheMode = NavigationCacheMode.Required;
+        }
     }
 }
