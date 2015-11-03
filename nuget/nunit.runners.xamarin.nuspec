@@ -26,6 +26,11 @@
                 <dependency id="nunit" version="[$version$]" />
                 <dependency id="Xamarin.Forms" version="1.5.1.6471" />
             </group>
+
+            <group targetFramework="wpa81">
+                <dependency id="nunit" version="[$version$]" />
+                <dependency id="Xamarin.Forms" version="1.5.1.6471" />
+            </group>
         </dependencies>
     </metadata>
     <files>
@@ -36,5 +41,9 @@
         <file src="nuget\AppDelegate.cs.txt.pp" target="content\Xamarin.iOS10\AppDelegate.cs.txt.pp" />
         <file src="bin\Release\nunit.runner.iOS.dll" target="lib\Xamarin.iOS10\nunit.runner.iOS.dll" />
         <file src="bin\Release\nunit.runner.iOS.xml" target="lib\Xamarin.iOS10\nunit.runner.iOS.xml" />
+
+        <file src="nuget\MainPage.xaml.cs.txt.pp" target="content\wpa81\MainPage.xaml.cs.txt.pp" />
+        <file src="bin\Release\nunit.runner.wp81.dll" target="lib\wpa81\nunit.runner.wp81.dll" />
+        <file src="bin\Release\nunit.runner.wp81.xml" target="lib\wpa81\nunit.runner.wp81.xml" />
     </files>
 </package>

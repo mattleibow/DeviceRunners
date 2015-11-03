@@ -27,39 +27,6 @@ namespace Nunit.Runner
 		public partial class Attribute
 		{
 			
-			// aapt resource value: 0x7f010000
-			public static int cardBackgroundColor = 2130771968;
-			
-			// aapt resource value: 0x7f010001
-			public static int cardCornerRadius = 2130771969;
-			
-			// aapt resource value: 0x7f010002
-			public static int cardElevation = 2130771970;
-			
-			// aapt resource value: 0x7f010003
-			public static int cardMaxElevation = 2130771971;
-			
-			// aapt resource value: 0x7f010005
-			public static int cardPreventCornerOverlap = 2130771973;
-			
-			// aapt resource value: 0x7f010004
-			public static int cardUseCompatPadding = 2130771972;
-			
-			// aapt resource value: 0x7f010006
-			public static int contentPadding = 2130771974;
-			
-			// aapt resource value: 0x7f01000a
-			public static int contentPaddingBottom = 2130771978;
-			
-			// aapt resource value: 0x7f010007
-			public static int contentPaddingLeft = 2130771975;
-			
-			// aapt resource value: 0x7f010008
-			public static int contentPaddingRight = 2130771976;
-			
-			// aapt resource value: 0x7f010009
-			public static int contentPaddingTop = 2130771977;
-			
 			static Attribute()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -70,61 +37,14 @@ namespace Nunit.Runner
 			}
 		}
 		
-		public partial class Color
-		{
-			
-			// aapt resource value: 0x7f020000
-			public static int cardview_dark_background = 2130837504;
-			
-			// aapt resource value: 0x7f020001
-			public static int cardview_light_background = 2130837505;
-			
-			// aapt resource value: 0x7f020002
-			public static int cardview_shadow_end_color = 2130837506;
-			
-			// aapt resource value: 0x7f020003
-			public static int cardview_shadow_start_color = 2130837507;
-			
-			static Color()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Color()
-			{
-			}
-		}
-		
-		public partial class Dimension
-		{
-			
-			// aapt resource value: 0x7f030000
-			public static int cardview_compat_inset_shadow = 2130903040;
-			
-			// aapt resource value: 0x7f030001
-			public static int cardview_default_elevation = 2130903041;
-			
-			// aapt resource value: 0x7f030002
-			public static int cardview_default_radius = 2130903042;
-			
-			static Dimension()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Dimension()
-			{
-			}
-		}
-		
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7f050001
-			public static int ApplicationName = 2131034113;
+			// aapt resource value: 0x7f020001
+			public static int ApplicationName = 2130837505;
 			
-			// aapt resource value: 0x7f050000
-			public static int Hello = 2131034112;
+			// aapt resource value: 0x7f020000
+			public static int Hello = 2130837504;
 			
 			static String()
 			{
@@ -132,87 +52,6 @@ namespace Nunit.Runner
 			}
 			
 			private String()
-			{
-			}
-		}
-		
-		public partial class Style
-		{
-			
-			// aapt resource value: 0x7f040000
-			public static int CardView = 2130968576;
-			
-			// aapt resource value: 0x7f040001
-			public static int CardView_Dark = 2130968577;
-			
-			// aapt resource value: 0x7f040002
-			public static int CardView_Light = 2130968578;
-			
-			static Style()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Style()
-			{
-			}
-		}
-		
-		public partial class Styleable
-		{
-			
-			public static int[] CardView = new int[] {
-					2130771968,
-					2130771969,
-					2130771970,
-					2130771971,
-					2130771972,
-					2130771973,
-					2130771974,
-					2130771975,
-					2130771976,
-					2130771977,
-					2130771978};
-			
-			// aapt resource value: 0
-			public static int CardView_cardBackgroundColor = 0;
-			
-			// aapt resource value: 1
-			public static int CardView_cardCornerRadius = 1;
-			
-			// aapt resource value: 2
-			public static int CardView_cardElevation = 2;
-			
-			// aapt resource value: 3
-			public static int CardView_cardMaxElevation = 3;
-			
-			// aapt resource value: 5
-			public static int CardView_cardPreventCornerOverlap = 5;
-			
-			// aapt resource value: 4
-			public static int CardView_cardUseCompatPadding = 4;
-			
-			// aapt resource value: 6
-			public static int CardView_contentPadding = 6;
-			
-			// aapt resource value: 10
-			public static int CardView_contentPaddingBottom = 10;
-			
-			// aapt resource value: 7
-			public static int CardView_contentPaddingLeft = 7;
-			
-			// aapt resource value: 8
-			public static int CardView_contentPaddingRight = 8;
-			
-			// aapt resource value: 9
-			public static int CardView_contentPaddingTop = 9;
-			
-			static Styleable()
-			{
-				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
-			}
-			
-			private Styleable()
 			{
 			}
 		}

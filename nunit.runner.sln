@@ -31,6 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{9535215D
 	ProjectSection(SolutionItems) = preProject
 		nuget\AppDelegate.cs.txt.pp = nuget\AppDelegate.cs.txt.pp
 		nuget\MainActivity.cs.txt.pp = nuget\MainActivity.cs.txt.pp
+		MainPage.xaml.cs.txt.pp = MainPage.xaml.cs.txt.pp
 		nuget\nunit.runners.xamarin.nuspec = nuget\nunit.runners.xamarin.nuspec
 	EndProjectSection
 EndProject
