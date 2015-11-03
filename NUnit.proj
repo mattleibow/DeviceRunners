@@ -7,8 +7,8 @@
 	<PropertyGroup Label="Common Properties">
 		<ProjectName>nunit-xamarin</ProjectName>
 		<PackageVersion>3.0.0</PackageVersion>
-		<PackageModifier>-beta-5</PackageModifier>
-		<DisplayVersion>3.0 Beta 5</DisplayVersion>
+		<PackageModifier>-RC</PackageModifier>
+		<DisplayVersion>3.0 RC</DisplayVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Project Directories">
