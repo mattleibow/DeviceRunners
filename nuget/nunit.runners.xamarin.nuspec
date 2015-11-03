@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package>
-    <metadata>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+    <metadata minClientVersion="2.8.5">
         <id>nunit.runner.xamarin</id>
         <version>$version$</version>
-        <title>NUnit 3.0 Xamarin iOS and Android Runner</title>
+        <title>NUnit 3.0 Xamarin Android, iOS and WinPhone 8.1 Runner</title>
         <authors>Rob Prouse</authors>
         <owners>Charlie Poole</owners>
         <description>Adds support for running NUnit 3.0 unit tests on Android, iOS and Windows Phone 8.1</description>
@@ -11,23 +11,13 @@
         <tags>nunit xamarin android ios monoandroid monotouch tdd unit test testing</tags>
         <language>en-US</language>
         <licenseUrl>http://nunit.org/nuget/nunit3-license.txt</licenseUrl>
-        <projectUrl>http://nunit.org</projectUrl>
+        <projectUrl>https://github.com/nunit/nunit.xamarin</projectUrl>
         <iconUrl>http://nunit.org/nuget/nunitv3_32x32.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <copyright>Copyright (c) 2015 Charlie Poole</copyright>
 
         <dependencies>
-            <group targetFramework="Xamarin.iOS10">
-                <dependency id="nunit" version="[$version$]" />
-                <dependency id="Xamarin.Forms" version="1.5.1.6471" />
-            </group>
-            
-            <group targetFramework="MonoAndroid10">
-                <dependency id="nunit" version="[$version$]" />
-                <dependency id="Xamarin.Forms" version="1.5.1.6471" />
-            </group>
-
-            <group targetFramework="wpa81">
+            <group>
                 <dependency id="nunit" version="[$version$]" />
                 <dependency id="Xamarin.Forms" version="1.5.1.6471" />
             </group>
@@ -35,15 +25,15 @@
     </metadata>
     <files>
         <file src="nuget\MainActivity.cs.txt.pp" target="content\MonoAndroid10\MainActivity.cs.txt.pp" />
-        <file src="bin\Release\nunit.runner.Droid.dll" target="lib\MonoAndroid10\nunit.runner.Droid.dll" />
-        <file src="bin\Release\nunit.runner.Droid.xml" target="lib\MonoAndroid10\nunit.runner.Droid.xml" />
+        <file src="src\runner\nunit.runner.Droid\bin\Release\nunit.runner.Droid.dll" target="lib\MonoAndroid10\nunit.runner.Droid.dll" />
+        <file src="src\runner\nunit.runner.Droid\bin\Release\nunit.runner.Droid.xml" target="lib\MonoAndroid10\nunit.runner.Droid.xml" />
 
         <file src="nuget\AppDelegate.cs.txt.pp" target="content\Xamarin.iOS10\AppDelegate.cs.txt.pp" />
-        <file src="bin\Release\nunit.runner.iOS.dll" target="lib\Xamarin.iOS10\nunit.runner.iOS.dll" />
-        <file src="bin\Release\nunit.runner.iOS.xml" target="lib\Xamarin.iOS10\nunit.runner.iOS.xml" />
+        <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.dll" target="lib\Xamarin.iOS10\nunit.runner.iOS.dll" />
+        <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.xml" target="lib\Xamarin.iOS10\nunit.runner.iOS.xml" />
 
         <file src="nuget\MainPage.xaml.cs.txt.pp" target="content\wpa81\MainPage.xaml.cs.txt.pp" />
-        <file src="bin\Release\nunit.runner.wp81.dll" target="lib\wpa81\nunit.runner.wp81.dll" />
-        <file src="bin\Release\nunit.runner.wp81.xml" target="lib\wpa81\nunit.runner.wp81.xml" />
+        <file src="src\runner\nunit.runner.wp81\bin\Release\nunit.runner.wp81.dll" target="lib\wpa81\nunit.runner.wp81.dll" />
+        <file src="src\runner\nunit.runner.wp81\bin\Release\nunit.runner.wp81.xml" target="lib\wpa81\nunit.runner.wp81.xml" />
     </files>
 </package>

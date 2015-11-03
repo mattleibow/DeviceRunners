@@ -83,7 +83,7 @@
 	<Target Name="Build" Label="Build the Xamarin runner projects" DependsOnTargets="BuildRunner" />
 
 	<Target Name="BuildAll" Label="Build the Xamarin runner projects and the platform specific test projects" 
-					DependsOnTargets="BuildRunner,BuildAndroid,BuildIos" />
+					DependsOnTargets="BuildRunner;BuildAndroid;BuildIos;BuildWp81" />
 
 	<Target Name="BuildRunner" Label="Build the Xamarin runner projects">
 		<MSBuild Targets="Build" Projects="@(RunnerProjects)" Properties="Configuration=$(Configuration); Platform=AnyCPU" />
@@ -97,6 +97,10 @@
 		<MSBuild Targets="Build" Projects="@(IosProjects)" Properties="Configuration=$(Configuration); Platform=iPhone" />
 	</Target>
 
+	<Target Name="BuildWp81" Label="Build the WinPhone 8.1 test project">
+		<MSBuild Targets="Build" Projects="@(Wp81Projects)" Properties="Configuration=$(Configuration); Platform=AnyCPU" />
+	</Target>
+
 	<!-- End Region -->
 
 	<!-- Region Packaging Targets -->
@@ -108,7 +112,7 @@
 	<!--   creates the package to first make sure that the build is up to date.  -->
 	<!-- *********************************************************************** -->
 
-	<Target Name="PackageNuGet" Label="Creates the NuGet package">
+	<Target Name="PackageNuGet" Label="Creates the NuGet package" DependsOnTargets="_CreateConfigurationBuildDir">
 
 		<Message Text="******************************************************************" />
 		<Message Text="* Creating the Nuget $(Configuration) package" />
@@ -119,6 +123,10 @@
 
 	</Target>
 
+	<Target Name="_CreateConfigurationBuildDir">
+		<MakeDir Directories="$(ConfigurationBuildDir)"  Condition="!Exists('$(ConfigurationBuildDir)')"/>
+	</Target>
+
 	<!-- End Region -->
 
 	<!-- Region Item Groups -->
@@ -126,6 +134,7 @@
 	<ItemGroup Label="Projects for building Xamarin runners">
 		<RunnerProjects Include="$(ProjectSrcDir)\runner\nunit.runner.Droid\nunit.runner.Droid.csproj" />
 		<RunnerProjects Include="$(ProjectSrcDir)\runner\nunit.runner.iOS\nunit.runner.iOS.csproj" />
+		<RunnerProjects Include="$(ProjectSrcDir)\runner\nunit.runner.wp81\nunit.runner.wp81.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Label="Android test project">
@@ -134,6 +143,10 @@
 
 	<ItemGroup Label="iOS test project">
 		<IosProjects Include="$(ProjectSrcDir)\tests\nunit.runner.tests.iOS\nunit.runner.tests.iOS.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Label="WinPhone 8.1 test project">
+		<Wp81Projects Include="$(ProjectSrcDir)\tests\nunit.runner.tests.wp81\nunit.runner.tests.wp81.csproj" />
 	</ItemGroup>
 
 	<!-- End Region -->
