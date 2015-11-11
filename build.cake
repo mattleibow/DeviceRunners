@@ -90,7 +90,7 @@ Task("Build")
     }
 });
 
-Task("Package")
+Task("Create-NuGet-Packages")
     .IsDependentOn("Build")
     .Does(() =>
 {
@@ -102,7 +102,33 @@ Task("Package")
     });        
 });
 
+Task("Publish-NuGet")
+  .IsDependentOn("Create-NuGet-Packages")
+  .WithCriteria(() => local)
+  .Does(() =>
+{
+    // Resolve the API key.
+    var apiKey = EnvironmentVariable("NUGET_API_KEY");
+    if(string.IsNullOrEmpty(apiKey)) {
+        throw new InvalidOperationException("Could not resolve NuGet API key.");
+    }
+    
+    // Get the path to the package.
+    var packagePath = outputDirectory + File(string.Concat("nunit.runner.xamarin.", semVersion, ".nupkg"));
+
+    // Push the package.
+    NuGetPush(packagePath, new NuGetPushSettings {
+      ApiKey = apiKey
+    });
+});
+
 Task("Default")
-  .IsDependentOn("Build");
+  .IsDependentOn("Build");  
+  
+Task("Package")
+  .IsDependentOn("Create-NuGet-Packages");
+  
+Task("Publish")
+  .IsDependentOn("Publish-NuGet");
 
 RunTarget(target);
