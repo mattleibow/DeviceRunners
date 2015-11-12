@@ -41,6 +41,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("iOS Debug")]
 #elif __DROID__
 [assembly: AssemblyConfiguration("Android Debug")]
+#elif WINDOWS_PHONE_APP
+[assembly: AssemblyConfiguration("Windows Phone 8.1 Debug")]
+#elif WINDOWS_UWP
+[assembly: AssemblyConfiguration("Universal Windows Debug")]
 #else
 [assembly: AssemblyConfiguration("Debug")]
 #endif
@@ -49,6 +53,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("iOS")]
 #elif __DROID__
 [assembly: AssemblyConfiguration("Android")]
+#elif WINDOWS_PHONE_APP
+[assembly: AssemblyConfiguration("Windows Phone 8.1")]
+#elif WINDOWS_UWP
+[assembly: AssemblyConfiguration("Universal Windows")]
 #else
 [assembly: AssemblyConfiguration("")]
 #endif

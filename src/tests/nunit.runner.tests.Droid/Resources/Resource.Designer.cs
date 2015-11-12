@@ -9,9 +9,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-[assembly: global::Android.Runtime.ResourceDesignerAttribute("NUnit.Runner.Tests.Droid.Resource", IsApplication=true)]
+[assembly: global::Android.Runtime.ResourceDesignerAttribute("NUnit.Runner.Tests.Resource", IsApplication=true)]
 
-namespace NUnit.Runner.Tests.Droid
+namespace NUnit.Runner.Tests
 {
 	
 	
@@ -26,10 +26,10 @@ namespace NUnit.Runner.Tests.Droid
 		
 		public static void UpdateIdValues()
 		{
-			global::Nunit.Runner.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Droid.Resource.String.ApplicationName;
-			global::Nunit.Runner.Resource.String.Hello = global::NUnit.Runner.Tests.Droid.Resource.String.Hello;
-			global::Xamarin.Forms.Platform.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Droid.Resource.String.ApplicationName;
-			global::Xamarin.Forms.Platform.Resource.String.Hello = global::NUnit.Runner.Tests.Droid.Resource.String.Hello;
+			global::Nunit.Runner.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Resource.String.ApplicationName;
+			global::Nunit.Runner.Resource.String.Hello = global::NUnit.Runner.Tests.Resource.String.Hello;
+			global::Xamarin.Forms.Platform.Resource.String.ApplicationName = global::NUnit.Runner.Tests.Resource.String.ApplicationName;
+			global::Xamarin.Forms.Platform.Resource.String.Hello = global::NUnit.Runner.Tests.Resource.String.Hello;
 		}
 		
 		public partial class Attribute
