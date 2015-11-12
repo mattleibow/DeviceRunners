@@ -50,7 +50,7 @@ namespace NUnit.Runner
 
             _model = new SummaryViewModel();
             MainPage = new NavigationPage(new SummaryView(_model));
-#if !WINDOWS_PHONE_APP
+#if !WINDOWS_PHONE_APP && !NETFX_CORE
             AddTestAssembly(Assembly.GetCallingAssembly());
 #endif
         }
