@@ -24,7 +24,7 @@ Supported Xamarin platforms:
 
         <dependencies>
             <group>
-                <dependency id="nunit" version="[$version$]" />
+                <dependency id="nunit" version="[3.0.0]" />
                 <dependency id="Xamarin.Forms" version="1.5.1.6471" />
             </group>
         </dependencies>
