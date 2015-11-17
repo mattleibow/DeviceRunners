@@ -29,9 +29,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.runner.tests.iOS", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{9535215D-5DAC-4E52-A0F2-5216F933234B}"
 	ProjectSection(SolutionItems) = preProject
-		nuget\AppDelegate.cs.txt.pp = nuget\AppDelegate.cs.txt.pp
-		nuget\MainActivity.cs.txt.pp = nuget\MainActivity.cs.txt.pp
-		MainPage.xaml.cs.txt.pp = MainPage.xaml.cs.txt.pp
 		nuget\nunit.runners.xamarin.nuspec = nuget\nunit.runners.xamarin.nuspec
 	EndProjectSection
 EndProject
@@ -42,6 +39,26 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.runner.uwp", "src\runner\nunit.runner.uwp\nunit.runner.uwp.csproj", "{C9775283-C274-4BA9-A1BC-49418D7840E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.runner.tests.uwp", "src\tests\nunit.runner.tests.uwp\nunit.runner.tests.uwp.csproj", "{B0040786-1AB0-4FD6-93D2-E5BA330FB4BC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonoAndroid10", "MonoAndroid10", "{82E94D4E-EB38-4D00-A900-EA83CB465DEA}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\MonoAndroid10\MainActivity.cs.txt.pp = nuget\MonoAndroid10\MainActivity.cs.txt.pp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "uap10.0", "uap10.0", "{6B2E96B2-DED0-4541-97CE-416C0C6A38DD}"
+	ProjectSection(SolutionItems) = preProject
+		MainPage.xaml.cs.txt.pp = MainPage.xaml.cs.txt.pp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wpa81", "wpa81", "{20C1F6F6-6CA3-4C75-9058-90A8CDABCEE9}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\wpa81\MainPage.xaml.cs.txt.pp = nuget\wpa81\MainPage.xaml.cs.txt.pp
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.iOS10", "Xamarin.iOS10", "{30BB9B64-B2B7-4F09-BF00-D4C76849A540}"
+	ProjectSection(SolutionItems) = preProject
+		nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp = nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -550,5 +567,9 @@ Global
 		{2A198895-EDFB-4A82-899E-E7D1D1C592E8} = {040381B1-C9E8-4D7C-8A60-EF4C343C7374}
 		{C9775283-C274-4BA9-A1BC-49418D7840E5} = {B3AE763A-DC9C-4F5D-B5F0-97A1B10D147B}
 		{B0040786-1AB0-4FD6-93D2-E5BA330FB4BC} = {040381B1-C9E8-4D7C-8A60-EF4C343C7374}
+		{82E94D4E-EB38-4D00-A900-EA83CB465DEA} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
+		{6B2E96B2-DED0-4541-97CE-416C0C6A38DD} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
+		{20C1F6F6-6CA3-4C75-9058-90A8CDABCEE9} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
+		{30BB9B64-B2B7-4F09-BF00-D4C76849A540} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
 	EndGlobalSection
 EndGlobal
