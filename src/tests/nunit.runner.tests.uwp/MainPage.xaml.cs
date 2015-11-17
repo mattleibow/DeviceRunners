@@ -1,5 +1,4 @@
-﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+﻿// Copyright (c) 2015 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,18 +20,28 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using UIKit;
+using System.Reflection;
 
 namespace NUnit.Runner.Tests
 {
-    public class Application
+    public sealed partial class MainPage
     {
-        // This is the main entry point of the application.
-        static void Main(string[] args)
+        public MainPage()
         {
-            // if you want to use a different Application Delegate class from "AppDelegate"
-            // you can specify it here.
-            UIApplication.Main(args, null, "AppDelegate");
+            InitializeComponent();
+
+            // Windows Universal will not load all tests within the current project,
+            // you must do it explicitly below
+            var nunit = new NUnit.Runner.App();
+
+            // If you want to add tests in another assembly, add a reference and
+            // duplicate the following line with a type from the referenced assembly
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+
+            // Do you want to automatically run tests when the app starts?
+            nunit.AutoRun = true;
+
+            LoadApplication(nunit);
         }
     }
 }

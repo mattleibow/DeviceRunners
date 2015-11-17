@@ -18,7 +18,7 @@ var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 // Versioning
 var packageVersion = "3.0.0";
-var packageModifier = "-rc-2";
+var packageModifier = "";
 var displayVersion = "3.0.0";
 
 var semVersion = packageVersion + packageModifier;
@@ -29,8 +29,6 @@ var outputDirectory = basePath + Directory("bin") + Directory(configuration);
 var androidDirectory = basePath + Directory("src/runner/nunit.runner.Droid/bin") + Directory(configuration);
 var iosDirectory = basePath + Directory("src/runner/nunit.runner.iOS/bin/AnyCPU") + Directory(configuration);
 var wp81Directory = basePath + Directory("src/runner/nunit.runner.wp81/bin") + Directory(configuration);
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN

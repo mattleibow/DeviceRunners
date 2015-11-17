@@ -1,5 +1,4 @@
-﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+﻿// Copyright (c) 2015 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,18 +20,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using UIKit;
+using System.Reflection;
 
-namespace NUnit.Runner.Tests
-{
-    public class Application
-    {
-        // This is the main entry point of the application.
-        static void Main(string[] args)
-        {
-            // if you want to use a different Application Delegate class from "AppDelegate"
-            // you can specify it here.
-            UIApplication.Main(args, null, "AppDelegate");
-        }
-    }
-}
+[assembly: AssemblyTitle("NUnit.Runner.UWP")]
+[assembly: AssemblyDescription("NUnit Test Runner for Universal Windows")]

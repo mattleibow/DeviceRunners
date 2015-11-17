@@ -25,7 +25,7 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 
-namespace NUnit.Runner.Tests.Droid
+namespace NUnit.Runner.Tests
 {
     [Activity(Label = "nunit.runner", Icon = "@drawable/icon", Theme= "@android:style/Theme.Holo.Light", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
