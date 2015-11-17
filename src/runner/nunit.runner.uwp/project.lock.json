@@ -201,7 +201,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -1803,7 +1803,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -3438,7 +3438,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -5078,7 +5078,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -6713,7 +6713,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -8353,7 +8353,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -9988,7 +9988,7 @@
           "lib/dotnet/Microsoft.Win32.Primitives.dll": {}
         }
       },
-      "NUnit/3.0.0-rc-2": {
+      "NUnit/3.0.0": {
         "compile": {
           "lib/dotnet/nunit.framework.dll": {}
         },
@@ -12036,8 +12036,8 @@
         "ref/xamarinmac20/_._"
       ]
     },
-    "NUnit/3.0.0-rc-2": {
-      "sha512": "ieIXPYakCLxL6RZUJzhxNCU8xZXlLQO5Cc1bxBMUdI1R8gwVHlntinVPFm31gudRQ8I14FMAqpSNQxrhjh5lGg==",
+    "NUnit/3.0.0": {
+      "sha512": "/7lqdUb+/e1NAd3NDhY05ppjQUieAamnUxHzhKgaxWVNyTJqhdR0z73MXNc2VV2dignM4MieF3Tzs1wXsWx8/w==",
       "type": "Package",
       "files": [
         "[Content_Types].xml",
@@ -12056,7 +12056,7 @@
         "LICENSE.txt",
         "NOTICES.txt",
         "NUnit.nuspec",
-        "package/services/metadata/core-properties/05b8a80e1a3443a89339966d61987ccc.psmdcp"
+        "package/services/metadata/core-properties/45d9d63e089a4fbb8ffafab5905528b3.psmdcp"
       ]
     },
     "System.AppContext/4.0.0": {
@@ -14837,7 +14837,7 @@
   "projectFileDependencyGroups": {
     "": [
       "Microsoft.NETCore.UniversalWindowsPlatform >= 5.0.0",
-      "NUnit >= 3.0.0-rc-2",
+      "NUnit >= 3.0.0",
       "Xamarin.Forms >= 1.5.0.6447"
     ],
     "UAP,Version=v10.0": []

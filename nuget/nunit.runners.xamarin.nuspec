@@ -7,9 +7,12 @@
         <authors>Rob Prouse</authors>
         <owners>Charlie Poole</owners>
         <description>Adds support for running NUnit 3.0 unit tests on Xamarin
-        
-        
-        </description>
+   
+Supported Xamarin platforms:
+  - Android
+  - iOS
+  - Windows Phone 8.1
+  - Windows 10 Universal</description>
         <summary>NUnit 3.0 runner components for Xamarin</summary>
         <tags>nunit xamarin android ios monoandroid monotouch winphone uwp tdd unit test testing</tags>
         <language>en-US</language>
