@@ -52,7 +52,6 @@ Task("Clean")
 });
 
 Task("Restore-NuGet-Packages")
-    .IsDependentOn("Clean")
     .Does(() =>
 {
     NuGetRestore("./nunit.runner.sln", new NuGetRestoreSettings {
