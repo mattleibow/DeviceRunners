@@ -47,7 +47,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonoAndroid10", "MonoAndroi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "uap10.0", "uap10.0", "{6B2E96B2-DED0-4541-97CE-416C0C6A38DD}"
 	ProjectSection(SolutionItems) = preProject
-		MainPage.xaml.cs.txt.pp = MainPage.xaml.cs.txt.pp
+		nuget\uap10.0\MainPage.xaml.cs.txt.pp = nuget\uap10.0\MainPage.xaml.cs.txt.pp
+		nuget\uap10.0\MainPage.xaml.txt.pp = nuget\uap10.0\MainPage.xaml.txt.pp
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wpa81", "wpa81", "{20C1F6F6-6CA3-4C75-9058-90A8CDABCEE9}"
