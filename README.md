@@ -8,7 +8,10 @@ Project templates will be coming soon, in the meantime...
 
 In your solution;
 
-1. Add a new `Blank App (Android)`, `Blank App (iOS)` and/or `Blank App (Windows Phone)` project to your solution
+1. Add a new project to your solution
+  - `Blank App (Android)` for Android,
+  - `Blank App (iOS)` for iOS,
+  - `Blank App (Windows Phone)` for Windows Phone 8.1
 2. Add the `nunit.xamarin` NuGet package to your projects
 3. Text files will be added to your project, open them and copy over the coresponding file in each project as appropriate.
   - `MainActivity.cs.txt` for Android,
