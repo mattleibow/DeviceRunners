@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>xunit.extensions.uitest</id>
+    <version>$version$</version>
+    <title>xUnit.net Extensions for UI Test Attributes</title>
+    <authors>Oren Novotny</authors>
+    <owners />
+    <description>Support for running xUnit.net v2 tests on the UI thread</description>
+    <summary>Xamarin xUnit.net UIFact and UITheory attributes for iOS, Android, WP8, Win 8.1 and UWP</summary>
+    <tags>xunit uwp xamarin android ios monoandroid monotouch wp8 wpa81 win81 tdd unit test</tags>
+    <language>en-US</language>
+    <projectUrl>https://github.com/xunit/extensions.xunit</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/xunit/media/master/logo-512-transparent.png</iconUrl>
+    <licenseUrl>https://raw.githubusercontent.com/xunit/extensions.xunit/master/license.txt</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <dependencies>
+      <group targetFramework="portable-net45+win8+wp8+wpa81">
+        <dependency id="xunit.core" version="2.1.0" />
+        <dependency id="Xamarin.Forms" version="2.0.0.6484" />
+      </group>
+      <group targetFramework="uap10.0">
+        <dependency id="xunit.core" version="2.1.0" />
+        <dependency id="System.Collections" version="4.0.10" />
+        <dependency id="System.Linq" version="4.0.0" />
+        <dependency id="System.Runtime" version="4.0.20" />
+        <dependency id="System.Threading.Tasks" version="4.0.10" />
+        <dependency id="xunit.abstractions" version="2.0.0" />
+        <dependency id="xunit.extensibility.core" version="2.1.0" />
+        <dependency id="xunit.extensibility.execution" version="2.1.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\portable-net45+win8+wp8+wpa81\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\portable-net45+win8+wp8+wpa81\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\portable-net45+win8+wp8+wpa81\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.dll" target="lib\uap10.0\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.pdb" target="lib\uap10.0\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.xml" target="lib\uap10.0\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.pri" target="lib\uap10.0\xunit.extensions.uitest.pri" />
+  </files>
+</package>

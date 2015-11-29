@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>3a17f1e8-2df8-4c6d-bf9c-c9dfa2b149a0</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>xunit.extensions.uitest</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Sdk\UIFactAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sdk\UIFactDiscoverer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sdk\UITheoryAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Sdk\UITheoryDiscoverer.cs" />
+  </ItemGroup>
+</Project>

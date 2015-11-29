@@ -1,0 +1,10 @@
+{
+    "dependencies": {
+        "Xamarin.Forms": "2.0.0.6484",
+        "xunit.core": "2.1.0"
+    },
+    "frameworks": {
+        ".NETPortable,Version=v4.5,Profile=Profile259": { }
+    },
+    "supports": { }
+}
