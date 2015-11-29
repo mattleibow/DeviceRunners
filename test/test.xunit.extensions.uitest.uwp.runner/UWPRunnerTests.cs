@@ -41,4 +41,15 @@ public class UWPRunnerTests
         Assert.Equal(3, ele.QueryText.Length);
     }
 
+    [Fact]
+    public void SomethingNotOnUIThreadThrows()
+    {
+        Assert.Throws<Exception>(() =>
+                                 {
+                                     var ele = new SearchBox();
+                                     ele.Visibility = Visibility.Collapsed;
+                                 });
+        
+    }
+
 }
