@@ -19,9 +19,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{98950ECA
 		src\xunit.extensions.uitest.nuspec = src\xunit.extensions.uitest.nuspec
 	EndProjectSection
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "xunit.runner.uitest", "src\xunit.extensions.uitest\xunit.runner.uitest.shproj", "{3A17F1E8-2DF8-4C6D-BF9C-C9DFA2B149A0}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "xunit.extensions.uitest", "src\xunit.extensions.uitest\xunit.extensions.uitest.shproj", "{3A17F1E8-2DF8-4C6D-BF9C-C9DFA2B149A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.runner.sdk.uwp", "src\xunit.extensions.uitest.uwp\xunit.runner.sdk.uwp.csproj", "{8D14B08F-B43B-49C7-87C0-2E0B37CC456A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.extensions.uitesst.uwp", "src\xunit.extensions.uitest.uwp\xunit.extensions.uitesst.uwp.csproj", "{8D14B08F-B43B-49C7-87C0-2E0B37CC456A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "xunit.extensions.uitest.xamarin", "src\xunit.extensions.uitest.xamarin\xunit.extensions.uitest.xamarin.csproj", "{E924AFAB-B6A9-4E6D-B25F-349FE15CEF72}"
 EndProject

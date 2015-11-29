@@ -123,9 +123,9 @@
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\xunit.extensions.uitest.uwp\xunit.runner.sdk.uwp.csproj">
+    <ProjectReference Include="..\..\src\xunit.extensions.uitest.uwp\xunit.extensions.uitesst.uwp.csproj">
       <Project>{8d14b08f-b43b-49c7-87c0-2e0b37cc456a}</Project>
-      <Name>xunit.runner.sdk.uwp</Name>
+      <Name>xunit.extensions.uitesst.uwp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
