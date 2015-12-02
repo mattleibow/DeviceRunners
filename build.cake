@@ -17,9 +17,9 @@ var isPullRequest = AppVeyor.Environment.PullRequest.IsPullRequest;
 
 
 // Versioning
-var packageVersion = "3.0.0";
+var packageVersion = "3.0.1";
 var packageModifier = "";
-var displayVersion = "3.0.0";
+var displayVersion = "3.0.1";
 
 var semVersion = packageVersion + packageModifier;
 
