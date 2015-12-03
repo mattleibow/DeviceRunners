@@ -9,6 +9,7 @@
     <Import_RootNamespace>NUnit.Runner.Tests</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AsyncTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyInfoCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestCaseSample.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestsSample.cs" />
