@@ -6,12 +6,13 @@
     <SharedGUID>3a17f1e8-2df8-4c6d-bf9c-c9dfa2b149a0</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>xunit.extensions.uitest</Import_RootNamespace>
+    <Import_RootNamespace>Xunit.Extensions.UITest</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Sdk\UIFactAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sdk\UIFactDiscoverer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sdk\UITheoryAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Sdk\UITheoryDiscoverer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UITestCase.cs" />
   </ItemGroup>
 </Project>

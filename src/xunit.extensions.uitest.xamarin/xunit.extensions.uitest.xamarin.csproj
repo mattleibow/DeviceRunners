@@ -8,7 +8,7 @@
     <ProjectGuid>{E924AFAB-B6A9-4E6D-B25F-349FE15CEF72}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>xunit.extensions.uitest</RootNamespace>
+    <RootNamespace>Xunit.Extensions.UITest</RootNamespace>
     <AssemblyName>xunit.extensions.uitest</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
@@ -37,10 +37,10 @@
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
     <None Include="project.json" />
+    <Compile Include="UITestCase.RunTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UITestCase.cs" />
   </ItemGroup>
   <Import Project="..\xunit.extensions.uitest\xunit.extensions.uitest.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
