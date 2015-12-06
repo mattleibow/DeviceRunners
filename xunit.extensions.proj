@@ -1,0 +1,137 @@
+<Project DefaultTargets="Test" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <UsingTask
+      AssemblyFile="packages\xunit.buildtasks\tools\CodePlex.MSBuildTasks.dll"
+      TaskName="CodePlex.MSBuildTasks.RegexReplace"/>
+  <UsingTask
+      AssemblyFile="packages\xunit.buildtasks\tools\CodePlex.MSBuildTasks.dll"
+      TaskName="CodePlex.MSBuildTasks.Zip"/>
+
+  <!-- Settings -->
+
+  <PropertyGroup>
+    <SolutionName Condition="'$(SolutionName)' == ''">xUnit.Extensions.sln</SolutionName>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">Any CPU</Platform>
+    <ParallelizeTests Condition="'$(ParallelizeTests)' == ''">true</ParallelizeTests>
+    <MaxParallelThreads Condition="'$(MaxParallelThreads)' == ''">0</MaxParallelThreads>
+    <TrackFileAccess>false</TrackFileAccess>
+    <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildProjectDirectory)</SolutionDir>
+    <NuGetExePath Condition=" '$(NuGetExePath)' == '' ">$(SolutionDir)\.nuget\nuget.exe</NuGetExePath>
+    <RequestedVerbosity Condition=" '$(RequestedVerbosity)' == '' ">normal</RequestedVerbosity>
+  </PropertyGroup>
+  <ItemGroup>
+    <NuspecFiles Include="**\*.nuspec" />
+    <NuGetNuspecTargets Include="src\*.nuspec" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageSources)' == '' ">
+    <PackageSource Include="https://nuget.org/api/v2/" />
+    <PackageSource Include="https://www.myget.org/F/xunit-xamarin/" />
+    <PackageSource Include="https://www.myget.org/F/xunit/" />
+    <PackageSource Include="https://www.myget.org/F/b4ff5f68eccf4f6bbfed74f055f88d8f/" />
+  </ItemGroup>
+
+  <!-- Build server targets -->
+  <!-- Note GitVersion is not here intentionally. It's called via its own build step first -->
+  <Target Name="TeamCity" DependsOnTargets="PackageRestore;Test;GitLink;Packages;ZipArtifacts;PushMyGet" />
+
+  <!-- Individiual targets -->
+
+  <Target Name="PackageRestore" DependsOnTargets="_DownloadNuGet">
+    <Message Text="Restoring NuGet packages..." Importance="High" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; install xunit.buildtasks -Source @(PackageSource) -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion" Condition="!Exists('$(SolutionDir)packages\xunit.buildtasks\')" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; install gitlink -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion -pre" Condition="!Exists('$(SolutionDir)\packages\gitlink\')" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; install gitversion.commandline -SolutionDir &quot;$(SolutionDir)&quot; -Verbosity quiet -ExcludeVersion -pre" Condition="!Exists('$(SolutionDir)\packages\gitversion.commandline\')" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; restore &quot;$(SolutionDir)\$(SolutionName)&quot; -NonInteractive -Source @(PackageSource) -Verbosity quiet" />
+  </Target>
+
+  <Target Name="GitVersion" DependsOnTargets="PackageRestore">
+    <Exec Command="packages\gitversion.commandline\tools\GitVersion.exe /output buildserver /updateassemblyinfo true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="PackageRestore">
+    <MSBuild
+        Projects="xunit.extensions.sln"
+        Targets="Build"
+        Properties="Configuration=$(Configuration);Platform=$(Platform);TrackFileAccess=$(TrackFileAccess)"/>
+  </Target>
+
+  <Target Name="Test" DependsOnTargets="Build">
+    <!-- TODO: add unit tests here, if desired -->
+  </Target>
+
+
+  <Target Name='GitLink'>
+    <Warning Condition=" '$(CommitHash)' == '' "
+        Text="Skipping GitLink because CommitHash was not specified." />
+    <Exec Condition=" '$(CommitHash)' != '' "
+        Command='packages\gitlink\lib\net45\GitLink.exe $(MSBuildThisFileDirectory) -f $(SolutionName) -u https://github.com/xunit/extensions.xunit -s $(CommitHash)' IgnoreExitCode='true' />
+  </Target>
+
+  <Target Name='Packages'>
+    <!-- If build metadata is empty, we're in Continuous Deploy mode so we'll always get incrementing versions -->
+    <PropertyGroup Condition="'$(GitVersion_BuildMetaData)' != ''">      
+      <NuGetPackageVersion>$(GitVersion_LegacySemVer)-build$(GitVersion_BuildMetaDataPadded)</NuGetPackageVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(NuGetPackageVersion)' == ''">
+      <NuGetPackageVersion>$(GitVersion_NuGetVersion)</NuGetPackageVersion>
+    </PropertyGroup>
+    <Exec Command='.nuget\NuGet.exe pack %(NuGetNuspecTargets.Identity) -version $(NuGetPackageVersion) -NoPackageAnalysis -NonInteractive' />
+  </Target>
+
+  <Target Name='ZipArtifacts'>
+    <ItemGroup>
+      <TestResults Include="TestResults*.*" />
+      <Binaries Include="*.nupkg" />
+    </ItemGroup>
+
+    <Delete Files="test-results.zip" />
+    <Zip Files="@(TestResults)" ZipFileName="test-results.zip" />
+
+    <Delete Files="binaries.zip" />
+    <Zip Files="@(Binaries)" ZipFileName="binaries.zip" StripPath="true" />
+  </Target>
+
+  <Target Name="PushMyGet">
+    <ItemGroup>
+      <NupkgFiles Include="*.nupkg" />
+    </ItemGroup>
+    <Exec Command=".nuget\NuGet.exe push %(NupkgFiles.Identity) -NonInteractive -Source https://www.myget.org/F/xunit/api/v2/package" />
+  </Target>
+
+  <Target Name="_DownloadNuGet">
+    <MakeDir Directories="$(SolutionDir)\.nuget" />
+    <DownloadNuGet OutputFilename="$(NuGetExePath)" Condition="!Exists('$(NuGetExePath)')" />
+  </Target>
+
+  <UsingTask TaskName="DownloadNuGet" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <OutputFilename ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.Core" />
+      <Using Namespace="System" />
+      <Using Namespace="System.IO" />
+      <Using Namespace="System.Net" />
+      <Using Namespace="Microsoft.Build.Framework" />
+      <Using Namespace="Microsoft.Build.Utilities" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          try {
+              OutputFilename = Path.GetFullPath(OutputFilename);
+
+              Log.LogMessage("Downloading latest version of NuGet.exe...");
+              WebClient webClient = new WebClient();
+              webClient.DownloadFile("https://dist.nuget.org/win-x86-commandline/latest/nuget.exe", OutputFilename);
+
+              return true;
+          }
+          catch (Exception ex) {
+              Log.LogErrorFromException(ex);
+              return false;
+          }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+</Project>
