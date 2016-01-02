@@ -4,25 +4,27 @@ NUnit test runners for Xamarin and mobile devices
 
 ## How to Use ##
 
-**Project templates will be coming soon**, in the meantime...
+The easiest way to get started is to install the [NUnit Templates extension for Visual Studio](https://visualstudiogallery.msdn.microsoft.com/6cd55f79-4936-49e7-b81d-c40fcd81abc7). It will add project templates for the various Xamarin platforms.
 
 In your solution;
 
-1. Add a new project to your solution
-  - `Blank App (Android)` for Android,
-  - `Blank App (iOS)` for iOS,
-  - `Blank App (Windows Phone)` for Windows Phone 8.1
-  - `Blank App (Universal Windows)` for Windows 10 Universal
-2. Add the `nunit.xamarin` NuGet package to your projects
-3. Text files will be added to your project, open them and copy over the coresponding file in each project as appropriate.
-  - `MainActivity.cs.txt` for Android,
-  - `AppDelegate.cs.txt` for iOS, or 
-  - `MainPage.xaml.txt` and `MainPage.xaml.cs.txt` for WinPhone.
-  - Windows 10 Universal doesn't currently add files, see below for what to change.
-4. Once you are done with them, you can delete the text files that were added to your project.
-5. On Windows Phone and Windows Universal, you will also need to add `Xamarin.Forms.Forms.Init(e);` to `App.OnLaunched()`.
-6. Write your unit tests in this project, or in a shared project
-7. Build and run the tests on your device or emulator
+1. Add new test projects to your solution. These project types are included in the [NUnit Templates Extension](https://visualstudiogallery.msdn.microsoft.com/6cd55f79-4936-49e7-b81d-c40fcd81abc7)
+  - NUnit 3 Test Project (Android)
+  - NUnit 3 Test Project (iOS)
+  - NUnit 3 Test Project (Windows Phone 8.1)
+  - NUnit 3 Test Project (Universal Windows) 
+2. Write your unit tests in this project, in a portable project, or in a shared project, referencing the project with the tests
+3. Build and run the tests on your device or emulator
+
+If your tests are in a portable project, you need to add that assembly to the `NUnit.Runner.App` in the startup code.
+
+For more information, see [Testing Xamarin Projects using NUnit 3](http://www.alteridem.net/2015/12/21/testing-xamarin-projects-using-nunit-3/).
+
+```C#
+nunit.AddTestAssembly(typeof(MyTests).Assembly);
+```
+
+The startup code for each platform is as follows;
 
 ### Android ###
 
