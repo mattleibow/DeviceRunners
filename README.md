@@ -259,7 +259,7 @@ protected override void OnLaunched(LaunchActivatedEventArgs e)
 
 If you're using Xamarin Studio the templates above won't work. This guide assumes that you have a solution with either a PCL or a Shared project and a number of platform specific projects. It doesn't matter if you're using Xamarin.Forms or Xamarin.iOS/Xamarin.Android directly. Your solution might look something like this:
 
-```C#
+```
 Project Solution
 ...Project (Contains Shared Code)
 ...Project.iOS
@@ -270,7 +270,7 @@ Project Solution
 
 First, create a new PCL that holds your shared testing code, so the test code doesn't end up in production builds. Right Click on the Project Solution and Add a new project using the Cross-Platform Shared Library Template. Use Project.Tests as a name. Afterwards, your solution should look like this:
 
-```C#
+```
 Project Solution
 ...Project (Contains Shared Code)
 ...Project.iOS
@@ -284,7 +284,7 @@ Edit the references of the newly created test project so that it contains a refe
 
 In order to run the tests it's necessary to create a project for each platform you'd like to support (iOS, Android and so on). Do so using the standard Xamarin templates for new platform projects. It's probably sensible to use a naming scheme like Project.Tests.iOS for the individual test projects do keep your solution structured.
 
-```C#
+```
 Project Solution
 ...Project (Contains Shared Code)
 ...Project.iOS
