@@ -45,6 +45,8 @@ namespace NUnit.Runner.Tests
             // Do you want to automatically run tests when the app starts?
             nunit.AutoRun = true;
 
+            nunit.CreateXmlResultFile = true;
+
             LoadApplication(nunit);
         }
     }

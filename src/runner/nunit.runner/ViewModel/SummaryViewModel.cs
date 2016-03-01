@@ -21,16 +21,25 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
+
 using NUnit.Framework.Api;
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 using NUnit.Runner.View;
 using Nunit.Runner.ViewModel;
+
+using PCLStorage;
+
 using Xamarin.Forms;
+
+using FileAccess = PCLStorage.FileAccess;
 
 namespace NUnit.Runner.ViewModel
 {
@@ -57,6 +66,11 @@ namespace NUnit.Runner.ViewModel
         /// otherwise you must run them manually.
         /// </summary>
         public bool AutoRun { get; set; }
+
+        /// <summary>
+        /// Creates a NUnit Xml result file on the host file system.
+        /// </summary>
+        public bool CreateXmlResultFile { get; set; }
 
         /// <summary>
         /// Called from the view when the view is appearing
@@ -130,6 +144,11 @@ namespace NUnit.Runner.ViewModel
             var runner = await LoadTestAssembliesAsync();
 
             ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty));
+            if (CreateXmlResultFile)
+            {
+                await WriteXmlResultFile(result);
+            }
+            
             Results = new ResultSummary(result);
 
             Running = false;
@@ -141,6 +160,36 @@ namespace NUnit.Runner.ViewModel
             foreach (var testAssembly in _testAssemblies)
                 await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, string>()));
             return runner;
+        }
+
+        private async Task WriteXmlResultFile(ITestResult testResult)
+        {
+            const string OutputFolderName = "NUnitTestsOutput";
+            const string OutputXmlReportName = "nunit_result.xml";
+            var localStorageFolder = FileSystem.Current.LocalStorage;
+
+            try
+            {
+                var existResult = await localStorageFolder.CheckExistsAsync(OutputFolderName);
+                if (existResult == ExistenceCheckResult.FileExists)
+                {
+                    var existingFile = await localStorageFolder.GetFileAsync(OutputFolderName);
+                    await existingFile.DeleteAsync();
+                }
+
+                var outputFolder = await localStorageFolder.CreateFolderAsync(OutputFolderName, CreationCollisionOption.OpenIfExists);
+                IFile xmlResultFile = await outputFolder.CreateFileAsync(OutputXmlReportName, CreationCollisionOption.ReplaceExisting);
+                using (var resultFileStream = new StreamWriter(await xmlResultFile.OpenAsync(FileAccess.ReadAndWrite)))
+                {
+                    string xmlString = testResult.ToXml(true).OuterXml;
+                    await resultFileStream.WriteAsync(xmlString);
+                }
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Fatal error while trying to write xml result file!");
+                throw;
+            }
         }
     }
 }

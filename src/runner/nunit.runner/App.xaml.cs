@@ -73,5 +73,14 @@ namespace NUnit.Runner
             get { return _model.AutoRun; }
             set { _model.AutoRun = value; }
         }
+
+        /// <summary>
+        /// Creates a NUnit Xml result file on the host file system.
+        /// </summary>
+        public bool CreateXmlResultFile
+        {
+            get { return _model.CreateXmlResultFile; }
+            set { _model.CreateXmlResultFile = value; }
+        }
     }
 }
