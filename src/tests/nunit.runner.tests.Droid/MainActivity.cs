@@ -25,6 +25,8 @@ using Android.App;
 using Android.Content.PM;
 using Android.OS;
 
+using NUnit.Runner.Services;
+
 namespace NUnit.Runner.Tests
 {
     [Activity(Label = "nunit.runner", Icon = "@drawable/icon", Theme= "@android:style/Theme.Holo.Light", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
@@ -43,9 +45,10 @@ namespace NUnit.Runner.Tests
             //nunit.AddTestAssembly(typeof(MyTests).Assembly);
 
             // Do you want to automatically run tests when the app starts?
-            nunit.AutoRun = true;
+            nunit.Options = new TestOptions { AutoRun = true };
 
-            nunit.CreateXmlResultFile = true;
+            // Available options so far
+            //nunit.Options = new TestOptions { AutoRun = true, TcpWriterParamaters = new TcpWriterInfo("10.0.2.2", 13000), CreateXmlResultFile = true };
 
             LoadApplication(nunit);
         }

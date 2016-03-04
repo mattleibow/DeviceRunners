@@ -23,6 +23,8 @@
 using System.Reflection;
 using Windows.UI.Xaml.Navigation;
 
+using NUnit.Runner.Services;
+
 namespace NUnit.Runner.Tests
 {
     public sealed partial class MainPage
@@ -40,7 +42,10 @@ namespace NUnit.Runner.Tests
             nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
 
             // Do you want to automatically run tests when the app starts?
-            nunit.AutoRun = true;
+            nunit.Options = new TestOptions { AutoRun = true };
+
+            // Available options so far
+            // nunit.Options = new TestOptions { AutoRun = true, TcpWriterParamaters = new TcpWriterInfo("10.0.2.2", 13000), CreateXmlResultFile = true };
 
             LoadApplication(nunit);
 
