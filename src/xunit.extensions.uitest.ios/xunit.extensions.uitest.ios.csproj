@@ -46,6 +46,6 @@
   <ItemGroup>
     <BundleResource Include="project.json" />
   </ItemGroup>
-  <Import Project="..\src\xunit.extensions.uitest\xunit.extensions.uitest.projitems" Label="Shared" />
+  <Import Project="..\xunit.extensions.uitest\xunit.extensions.uitest.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
