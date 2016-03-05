@@ -17,7 +17,6 @@
     <dependencies>
       <group targetFramework="portable-net45+win8+wp8+wpa81">
         <dependency id="xunit.core" version="2.1.0" />
-        <dependency id="Xamarin.Forms" version="2.0.0.6484" />
       </group>
       <group targetFramework="uap10.0">
         <dependency id="xunit.core" version="2.1.0" />
@@ -32,24 +31,19 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\win8\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\win8\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\win8\xunit.extensions.uitest.xml" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\wp8\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\wp8\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\wp8\xunit.extensions.uitest.xml" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\wpa81\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\wpa81\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\wpa81\xunit.extensions.uitest.xml" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\MonoAndroid10\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\MonoAndroid10\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\MonoAndroid10\xunit.extensions.uitest.xml" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\MonoTouch10\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\MonoTouch10\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\MonoTouch10\xunit.extensions.uitest.xml" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.dll" target="lib\Xamarin.iOS10\xunit.extensions.uitest.dll" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.pdb" target="lib\Xamarin.iOS10\xunit.extensions.uitest.pdb" />
-    <file src="xunit.extensions.uitest.xamarin\bin\Release\xunit.extensions.uitest.xml" target="lib\Xamarin.iOS10\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.win81-wpa81\bin\Release\xunit.extensions.uitest.dll" target="lib\portable-win81+wpa81\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.win81-wpa81\bin\Release\xunit.extensions.uitest.pdb" target="lib\portable-win81+wpa81\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.win81-wpa81\bin\Release\xunit.extensions.uitest.xml" target="lib\portable-win81+wpa81\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.win81-wpa81\bin\Release\xunit.extensions.uitest.pri" target="lib\portable-win81+wpa81\xunit.extensions.uitest.pri" />
+    <file src="xunit.extensions.uitest.wp8\bin\Release\xunit.extensions.uitest.dll" target="lib\wp8\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.wp8\bin\Release\xunit.extensions.uitest.pdb" target="lib\wp8\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.wp8\bin\Release\xunit.extensions.uitest.xml" target="lib\wp8\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.android\bin\Release\xunit.extensions.uitest.dll" target="lib\MonoAndroid10\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.android\bin\Release\xunit.extensions.uitest.pdb" target="lib\MonoAndroid10\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.android\bin\Release\xunit.extensions.uitest.xml" target="lib\MonoAndroid10\xunit.extensions.uitest.xml" />
+    <file src="xunit.extensions.uitest.ios\bin\Release\xunit.extensions.uitest.dll" target="lib\Xamarin.iOS10\xunit.extensions.uitest.dll" />
+    <file src="xunit.extensions.uitest.ios\bin\Release\xunit.extensions.uitest.pdb" target="lib\Xamarin.iOS10\xunit.extensions.uitest.pdb" />
+    <file src="xunit.extensions.uitest.ios\bin\Release\xunit.extensions.uitest.xml" target="lib\Xamarin.iOS10\xunit.extensions.uitest.xml" />
     <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.dll" target="lib\uap10.0\xunit.extensions.uitest.dll" />
     <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.pdb" target="lib\uap10.0\xunit.extensions.uitest.pdb" />
     <file src="xunit.extensions.uitest.uwp\bin\Release\xunit.extensions.uitest.xml" target="lib\uap10.0\xunit.extensions.uitest.xml" />
