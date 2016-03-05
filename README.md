@@ -23,7 +23,7 @@ The extensions aim to support as many platforms as possible. Some extensions may
  
 - Windows Phone 8 Silverlight
 - Xamarin.Android
-- Xamarin.iOS (Classic and Unified)
+- Xamarin.iOS (Unified)
 - Windows Runtime 8.1 
 - WPF/Desktop (future support planned)
 - Windows 10 
