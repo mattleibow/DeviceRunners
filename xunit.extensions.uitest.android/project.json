@@ -1,0 +1,9 @@
+{
+    "dependencies": {
+        "xunit.core": "2.1.0"
+    },
+    "frameworks": {
+        "MonoAndroid,Version=6.0": { }
+    },
+    "supports": { }
+}
