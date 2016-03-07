@@ -52,11 +52,20 @@ namespace NUnit.Runner.Tests
             // If you want to add tests in another assembly
             //nunit.AddTestAssembly(typeof(MyTests).Assembly);
 
-            // Do you want to automatically run tests when the app starts?
-            nunit.Options = new TestOptions { AutoRun = true };
+            // Available options for testing
+            nunit.Options = new TestOptions
+            {
+                // If True, the tests will run automatically when the app starts
+                // otherwise you must run them manually.
+                AutoRun = true,
 
-            // Available options so far
-            // nunit.Options = new TestOptions { AutoRun = true, TcpWriterParamaters = new TcpWriterInfo("10.0.2.2", 13000), CreateXmlResultFile = true };
+                // Information about the tcp listener host and port.
+                // For now, send result as XML to the listening server.
+                // TcpWriterParamaters = new TcpWriterInfo("10.0.2.2", 13000),
+
+                // Creates a NUnit Xml result file on the host file system using PCLStorage library.
+                CreateXmlResultFile = false
+            };
 
             LoadApplication(nunit);
 
