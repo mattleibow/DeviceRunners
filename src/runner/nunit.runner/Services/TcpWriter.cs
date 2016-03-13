@@ -1,5 +1,5 @@
 ﻿// ***********************************************************************
-// Copyright (c) 2008 Charlie Poole
+// Copyright (c) 2016 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -25,6 +25,9 @@ using System;
 using System.IO;
 
 using System.Threading.Tasks;
+using Xamarin.Forms;
+using NUnit.Runner.Messages;
+using System.Threading;
 
 #if NETFX_CORE
 using Windows.Networking;
@@ -40,69 +43,88 @@ namespace NUnit.Runner.Services
     /// </summary>
     class TcpWriter : TextWriter
     {
-        private readonly string hostName;
-        private readonly int port;
-        
-        private StreamWriter writer;
+#if NETFX_CORE
+        StreamSocket _socket;
+#endif
+        StreamWriter _writer;
+        readonly TcpWriterInfo _info;
 
-        public TcpWriter(string hostName, int port)
+        public TcpWriter(TcpWriterInfo info)
         {
-            if (string.IsNullOrWhiteSpace(hostName))
-            {
-                throw new ArgumentNullException(nameof(hostName));
-            }
+            if (info == null)
+                throw new ArgumentNullException(nameof(info));
 
-            if ((port < 0) || (port > ushort.MaxValue))
-            {
-                throw new ArgumentException(nameof(port));
-            }
-
-            this.hostName = hostName;
-            this.port = port;
+            _info = info;
         }
 
         public async Task Connect()
         {
 #if NETFX_CORE
-            var socket = new StreamSocket();
-            await
-                socket.ConnectAsync(new HostName(hostName), port.ToString())
-                      .AsTask()
-                      .ContinueWith(@object => writer = new StreamWriter(socket.OutputStream.AsStreamForWrite()));
+            try
+            {
+                _socket = new StreamSocket();
+                var cts = new CancellationTokenSource();
+                cts.CancelAfter(TimeSpan.FromSeconds(_info.Timeout));
+
+                await _socket.ConnectAsync(new HostName(_info.Hostname), _info.Port.ToString()).AsTask();
+                _writer = new StreamWriter(_socket.OutputStream.AsStreamForWrite());
+            }
+            catch (TaskCanceledException)
+            {
+                MessagingCenter.Send(new ErrorMessage($"Timeout connecting to {_info} after {_info.Timeout} seconds.\n\nIs your server running?"), ErrorMessage.Name);
+            }
+            catch (Exception ex)
+            {
+                MessagingCenter.Send(new ErrorMessage(ex.Message), ErrorMessage.Name);
+            }
 #else
-            TcpClient client;
-            NetworkStream stream;
-            await Task.Run(
-                () =>
+            try
+            {
+                TcpClient client = new TcpClient();
+                Task connect = client.ConnectAsync(_info.Hostname, _info.Port);
+                Task timeout = Task.Delay(TimeSpan.FromSeconds(_info.Timeout));
+                if(await Task.WhenAny(connect, timeout) == timeout)
                 {
-                    client = new TcpClient(hostName, port);
-                    stream = client.GetStream();
-                    this.writer = new StreamWriter(stream);
-                }).ConfigureAwait(false);
+                    throw new TimeoutException();
+                }
+                NetworkStream stream = client.GetStream();
+                _writer = new StreamWriter(stream);
+            }
+            catch (TimeoutException)
+            {
+                MessagingCenter.Send(new ErrorMessage($"Timeout connecting to {_info} after {_info.Timeout} seconds.\n\nIs your server running?"), ErrorMessage.Name);
+            }
+            catch (Exception ex)
+            {
+                MessagingCenter.Send(new ErrorMessage(ex.Message), ErrorMessage.Name);
+            }
 #endif
         }
 
         public override void Write(char value)
         {
-            writer.Write(value);
+            _writer?.Write(value);
         }
 
         public override void Write(string value)
         {
-            writer.Write(value);
+            _writer?.Write(value);
         }
 
         public override void WriteLine(string value)
         {
-            writer.WriteLine(value);
-            writer.Flush();
+            _writer?.WriteLine(value);
+            _writer?.Flush();
         }
 
         public override System.Text.Encoding Encoding => System.Text.Encoding.UTF8;
 
         protected override void Dispose(bool disposing)
         {
-            writer?.Dispose();
+            _writer?.Dispose();
+#if NETFX_CORE
+            _socket?.Dispose();
+#endif
         }
     }
 }

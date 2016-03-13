@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using NUnit.Runner.Messages;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
 
@@ -39,7 +40,11 @@ namespace NUnit.Runner.View
 		    _model.Navigation = Navigation;
 		    BindingContext = _model;
 			InitializeComponent();
-		}
+
+            MessagingCenter.Subscribe<ErrorMessage>(this, ErrorMessage.Name, error => {
+                Device.BeginInvokeOnMainThread(async () => await DisplayAlert("Error", error.Message, "OK"));
+            });
+        }
 
         /// <summary>
         /// Called when the view is appearing

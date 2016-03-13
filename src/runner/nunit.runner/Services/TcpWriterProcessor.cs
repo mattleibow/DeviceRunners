@@ -1,12 +1,36 @@
+// ***********************************************************************
+// Copyright (c) 2016 Charlie Poole
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// ***********************************************************************
+
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 using NUnit.Framework.Interfaces;
+using Xamarin.Forms;
+using NUnit.Runner.Messages;
 
 namespace NUnit.Runner.Services
 {
-    public class TcpWriterProcessor : TestResultProcessor
+    class TcpWriterProcessor : TestResultProcessor
     {
         public TcpWriterProcessor(TestOptions options)
             : base(options)
@@ -15,7 +39,7 @@ namespace NUnit.Runner.Services
 
         public override async Task Process(ITestResult testResult)
         {
-            if (Options.TcpWriterParamaters != null)
+            if (Options.TcpWriterParameters != null)
             {
                 try
                 {
@@ -23,8 +47,8 @@ namespace NUnit.Runner.Services
                 }
                 catch (Exception exception)
                 {
-                    string message = $"Fatal error while trying to send xml result by TCP to {Options.TcpWriterParamaters}\nDoes your server is running ?";
-                    throw new InvalidOperationException(message, exception);
+                    string message = $"Fatal error while trying to send xml result by TCP to {Options.TcpWriterParameters}\n\n{exception.Message}\n\nIs your server running?";
+                    MessagingCenter.Send(new ErrorMessage(message), ErrorMessage.Name);
                 }
             }
 
@@ -36,7 +60,7 @@ namespace NUnit.Runner.Services
 
         private async Task WriteResult(ITestResult testResult)
         {
-            using (var tcpWriter = new TcpWriter(Options.TcpWriterParamaters.Hostname, Options.TcpWriterParamaters.Port))
+            using (var tcpWriter = new TcpWriter(Options.TcpWriterParameters))
             {
                 await tcpWriter.Connect().ConfigureAwait(false);
                 tcpWriter.Write(testResult.ToXml(true).OuterXml);

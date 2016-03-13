@@ -11705,7 +11705,7 @@
       ]
     },
     "Microsoft.ApplicationInsights.WindowsApps/1.0.0": {
-      "sha512": "NvBQnFeiFd0O1QdBz06UGApD7zn7ztVi7qO18IsM3EjiXRNgfrEBXB+azNm8XqLY8xGFAqh3HAuSd/wHZMe0XA==",
+      "sha512": "fNCAjIwvbTV+G0dT14bgM5tptsqeSaKQaCrlq7QknOq1Xdm8ZmgsDYddMgXkvykyKLjWyU6fKuOpj6fsQJy+wQ==",
       "type": "Package",
       "files": [
         "[Content_Types].xml",
@@ -15138,7 +15138,7 @@
       ]
     },
     "Xamarin.Forms/1.5.0.6447": {
-      "sha512": "iPmiog6UF5ZZNyE0faRdWhGlVaoqVRi193wyeStwRxX6l3QNomMFBaHN58ly2vOuKD2KYk+McjBOEQi6HfNwEA==",
+      "sha512": "0oBfhFmKt4kxFK+iBdTtZaW6Ys/adM7fH/47EcHLXfsNoe34xtYAqEZ7A4lGMnzg/5hgRVHmiOV2Z0cmZvuTwg==",
       "type": "Package",
       "files": [
         "[Content_Types].xml",

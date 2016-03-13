@@ -14,6 +14,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\XamarinExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Messages\ErrorMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\Annotations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\TcpWriterInfo.cs" />

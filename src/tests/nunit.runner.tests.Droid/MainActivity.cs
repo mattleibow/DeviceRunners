@@ -46,18 +46,18 @@ namespace NUnit.Runner.Tests
 
             // Available options for testing
             nunit.Options = new TestOptions
-                {
-                    // If True, the tests will run automatically when the app starts
-                    // otherwise you must run them manually.
-                    AutoRun = true,
+            {
+                // If True, the tests will run automatically when the app starts
+                // otherwise you must run them manually.
+                AutoRun = true,
 
-                    // Information about the tcp listener host and port.
-                    // For now, send result as XML to the listening server.
-                    // TcpWriterParamaters = new TcpWriterInfo("10.0.2.2", 13000),
+                // Information about the tcp listener host and port.
+                // For now, send result as XML to the listening server.
+                //TcpWriterParameters = new TcpWriterInfo("192.168.0.108", 13000),
 
-                    // Creates a NUnit Xml result file on the host file system using PCLStorage library.
-                    CreateXmlResultFile = false
-                };
+                // Creates a NUnit Xml result file on the host file system using PCLStorage library.
+                CreateXmlResultFile = true
+            };
             
             LoadApplication(nunit);
         }
