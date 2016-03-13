@@ -26,6 +26,7 @@ Supported Xamarin platforms:
             <group>
                 <dependency id="nunit" version="[3.0.1]" />
                 <dependency id="Xamarin.Forms" version="1.5.0.6447" />
+                <dependency id="PCLStorage" version="1.0.2" />
             </group>
         </dependencies>
     </metadata>

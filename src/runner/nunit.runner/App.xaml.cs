@@ -21,6 +21,8 @@
 // ***********************************************************************
 
 using System.Reflection;
+
+using NUnit.Runner.Services;
 using NUnit.Runner.View;
 using NUnit.Runner.ViewModel;
 using Xamarin.Forms;
@@ -65,13 +67,12 @@ namespace NUnit.Runner
         }
 
         /// <summary>
-        /// If True, the tests will run automatically when the app starts
-        /// otherwise you must run them manually.
+        /// User options for the test suite.
         /// </summary>
-        public bool AutoRun
+        public TestOptions Options
         {
-            get { return _model.AutoRun; }
-            set { _model.AutoRun = value; }
-        }
+            get { return _model.Options; }
+            set { _model.Options = value; }
+        }        
     }
 }

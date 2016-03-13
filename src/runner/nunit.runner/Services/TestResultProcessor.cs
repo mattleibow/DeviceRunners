@@ -1,5 +1,5 @@
 ﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+// Copyright (c) 2016 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,38 +21,32 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using NUnit.Runner.Messages;
-using NUnit.Runner.ViewModel;
-using Xamarin.Forms;
+using System.Threading.Tasks;
 
-namespace NUnit.Runner.View
+using NUnit.Framework.Interfaces;
+
+namespace NUnit.Runner.Services
 {
-    /// <summary>
-    /// The main Xamarin.Forms view of the application
-    /// </summary>
-	public partial class SummaryView : ContentPage
-	{
-        SummaryViewModel _model;
-
-        internal SummaryView (SummaryViewModel model)
-		{
-            _model = model;
-		    _model.Navigation = Navigation;
-		    BindingContext = _model;
-			InitializeComponent();
-
-            MessagingCenter.Subscribe<ErrorMessage>(this, ErrorMessage.Name, error => {
-                Device.BeginInvokeOnMainThread(async () => await DisplayAlert("Error", error.Message, "OK"));
-            });
+    abstract class TestResultProcessor
+    {
+        protected TestResultProcessor(TestOptions options)
+        {
+            Options = options;
         }
 
-        /// <summary>
-        /// Called when the view is appearing
-        /// </summary>
-        protected override void OnAppearing()
+        protected TestOptions Options { get; private set; }
+
+        public TestResultProcessor Successor { get; set; }
+
+        public abstract Task Process(ITestResult testResult);
+
+        public static TestResultProcessor BuildChainOfResponsability(TestOptions options)
         {
-            base.OnAppearing();
-            _model.OnAppearing();
+            var tcpWriter = new TcpWriterProcessor(options);
+            var xmlFileWriter = new XmlFileProcessor(options);
+
+            tcpWriter.Successor = xmlFileWriter;
+            return tcpWriter;
         }
     }
 }

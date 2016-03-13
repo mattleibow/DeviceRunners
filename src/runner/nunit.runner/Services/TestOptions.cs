@@ -1,5 +1,5 @@
 ﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+// Copyright (c) 2016 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,38 +21,28 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using NUnit.Runner.Messages;
-using NUnit.Runner.ViewModel;
-using Xamarin.Forms;
-
-namespace NUnit.Runner.View
+namespace NUnit.Runner.Services
 {
     /// <summary>
-    /// The main Xamarin.Forms view of the application
+    /// Options for the device test suite.
     /// </summary>
-	public partial class SummaryView : ContentPage
-	{
-        SummaryViewModel _model;
-
-        internal SummaryView (SummaryViewModel model)
-		{
-            _model = model;
-		    _model.Navigation = Navigation;
-		    BindingContext = _model;
-			InitializeComponent();
-
-            MessagingCenter.Subscribe<ErrorMessage>(this, ErrorMessage.Name, error => {
-                Device.BeginInvokeOnMainThread(async () => await DisplayAlert("Error", error.Message, "OK"));
-            });
-        }
+    public class TestOptions
+    {
+        /// <summary>
+        /// If True, the tests will run automatically when the app starts
+        /// otherwise you must run them manually.
+        /// </summary>
+        public bool AutoRun { get; set; }
 
         /// <summary>
-        /// Called when the view is appearing
+        /// Information about the tcp listener host and port.
+        /// For now, send result as XML to the listening server.
         /// </summary>
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            _model.OnAppearing();
-        }
+        public TcpWriterInfo TcpWriterParameters { get; set; }
+
+        /// <summary>
+        /// Creates a NUnit Xml result file on the host file system using PCLStorage library.
+        /// </summary>
+        public bool CreateXmlResultFile { get; set; }
     }
 }
