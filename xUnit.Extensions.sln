@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25029.0
+VisualStudioVersion = 14.0.25115.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{6B0F38C9-7CEE-4181-A47A-D9F4C626E618}"
 EndProject
@@ -195,8 +195,6 @@ Global
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|iPhone.ActiveCfg = Release|x86
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|iPhoneSimulator.ActiveCfg = Release|x86
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|Mixed Platforms.Build.0 = Release|x86
-		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|Mixed Platforms.Deploy.0 = Release|x86
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|x64.ActiveCfg = Release|x64
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|x64.Build.0 = Release|x64
 		{9BB35FDE-DF6C-4E6A-AD45-3FA1F3553CEB}.Release|x64.Deploy.0 = Release|x64
@@ -267,8 +265,6 @@ Global
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|iPhone.ActiveCfg = Release|x86
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|iPhoneSimulator.ActiveCfg = Release|x86
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|Mixed Platforms.Build.0 = Release|x86
-		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|Mixed Platforms.Deploy.0 = Release|x86
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|x64.ActiveCfg = Release|x64
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|x64.Build.0 = Release|x64
 		{CCA2772D-2E6D-49FF-90E8-E055EEC623B5}.Release|x64.Deploy.0 = Release|x64
