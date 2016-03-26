@@ -14,7 +14,7 @@ install:
   - cmd: nuget install gitlink -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre
      
 before_build:
-  - cmd: nuget xUnit.Extensions.sln
+  - cmd: nuget restore xUnit.Extensions.sln
   - cmd: '.\packages\GitVersion.CommandLine\tools\GitVersion.exe /l console /output buildserver /updateAssemblyInfo'
   
 build:
