@@ -1,0 +1,44 @@
+configuration: Release
+branches:
+  only:
+  - master
+  - dev
+  - /hotfix\/.*/
+
+init:
+  - cmd: set
+  
+install:
+  - cmd: appveyor DownloadFile https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+  - cmd: nuget install GitVersion.CommandLine -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre  
+  - cmd: nuget install gitlink -SolutionDir %APPVEYOR_BUILD_FOLDER% -Verbosity quiet -ExcludeVersion -pre
+     
+before_build:
+  - cmd: nuget xUnit.Extensions.sln
+  - cmd: '.\packages\GitVersion.CommandLine\tools\GitVersion.exe /l console /output buildserver /updateAssemblyInfo'
+  
+build:
+  verbosity: normal
+  parallel: true
+  project: xUnit.Extensions.sln
+  
+after_build:
+  - cmd: '.\packages\gitlink\lib\net45\GitLink.exe . -f xUnit.Extensions.sln -u https://github.com/xunit/extensions.xunit -s %APPVEYOR_REPO_COMMIT% -errorsaswarnings'
+  - ps: |
+      $nugetVer = $env:GitVersion_NuGetVersion
+      if(![string]::IsNullOrWhiteSpace($env:GitVersion_BuildMetaDataPadded)) {
+        $nugetVer = $nugetVer + "-build$env:GitVersion_BuildMetaDataPadded"
+      }  
+      ls .\src\*.nuspec | %{ nuget pack $_.FullName -version "$nugetVer" -BasePath "src" -NoPackageAnalysis }
+  - ps: 'ls *.nupkg | %{ appveyor PushArtifact $_.Name}'
+  
+test:
+  assemblies:
+    - '**\*.Tests.dll'
+  
+deploy:
+  provider: NuGet
+  server: https://www.myget.org/F/xunit-xamarin/api/v2/package
+  api_key:
+    secure: bmqlJK8a5HYiUXOT99HXT1j7JiM5+fpR4kHhxIC30oaaEXbv94f0fKdiKlU1QC/l
+  artifact: /.*\.nupkg/
