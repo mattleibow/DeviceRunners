@@ -64,23 +64,42 @@ namespace NUnit.Runner.Services
 
         async Task WriteXmlResultFile(ITestResult testResult)
         {
-            const string OutputFolderName = "NUnitTestOutput";
-            const string OutputXmlReportName = "TestResults.xml";
-            var localStorageFolder = FileSystem.Current.LocalStorage;
+            string outputFolderName = Path.GetDirectoryName(Options.ResultFilePath);
+            string outputXmlReportName = Path.GetFileName(Options.ResultFilePath);
 
-            var existResult = await localStorageFolder.CheckExistsAsync(OutputFolderName);
-            if (existResult == ExistenceCheckResult.FileExists)
-            {
-                var existingFile = await localStorageFolder.GetFileAsync(OutputFolderName);
-                await existingFile.DeleteAsync();
-            }
+            await CreateFolderRecursive(outputFolderName);
 
-            var outputFolder = await localStorageFolder.CreateFolderAsync(OutputFolderName, CreationCollisionOption.OpenIfExists);
-            IFile xmlResultFile = await outputFolder.CreateFileAsync(OutputXmlReportName, CreationCollisionOption.ReplaceExisting);
+            IFolder outputFolder = new FileSystemFolder(outputFolderName);
+            IFile xmlResultFile = await outputFolder.CreateFileAsync(outputXmlReportName, CreationCollisionOption.ReplaceExisting);
             using (var resultFileStream = new StreamWriter(await xmlResultFile.OpenAsync(FileAccess.ReadAndWrite)))
             {
                 string xmlString = testResult.ToXml(true).OuterXml;
                 await resultFileStream.WriteAsync(xmlString);
+            }
+        }
+
+        /// <summary>
+        /// Create a folder from the full folder path if it does not exist
+        /// Throws exception if acess to the path is denied
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        private static async Task CreateFolderRecursive(string folderPath)
+        {
+            string[] segments = new Uri(folderPath).Segments;
+
+            string path = segments[0];
+
+            for (int i = 0; i < segments.Length - 1; i++)
+            {
+                IFolder folder = new FileSystemFolder(path);
+
+                var res = await folder.CheckExistsAsync(segments[i + 1]);
+                if (res != ExistenceCheckResult.FolderExists)
+                {
+                    await folder.CreateFolderAsync(segments[i + 1], CreationCollisionOption.OpenIfExists);
+                }
+                path = Path.Combine(path, segments[i + 1]);
             }
         }
     }
