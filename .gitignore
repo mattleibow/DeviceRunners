@@ -191,3 +191,6 @@ ModelManifest.xml
 
 # Cake tools
 tools/*
+
+# NuGet restore
+*/project.lock.json
