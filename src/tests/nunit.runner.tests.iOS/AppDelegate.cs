@@ -21,6 +21,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
+using System.IO;
 using Foundation;
 
 using NUnit.Runner.Services;
@@ -64,7 +66,10 @@ namespace NUnit.Runner.Tests
                 //TcpWriterParameters = new TcpWriterInfo("192.168.0.108", 13000),
 
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
-                CreateXmlResultFile = false
+                CreateXmlResultFile = true,
+
+                // Choose a diffrent path for the xml result file (ios file share / library directory)
+                ResultFilePath = Path.Combine(NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User)[0].Path, "Results.xml")
             };
 
             LoadApplication(nunit);

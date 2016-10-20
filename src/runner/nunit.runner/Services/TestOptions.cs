@@ -30,7 +30,6 @@ namespace NUnit.Runner.Services
     /// </summary>
     public class TestOptions
     {
-        const string OutputFolderName = "NUnitTestOutput";
         const string OutputXmlReportName = "TestResults.xml";
 
         private string _resultFilePath;
@@ -40,7 +39,7 @@ namespace NUnit.Runner.Services
         /// </summary>
         public TestOptions()
         {
-            _resultFilePath = System.IO.Path.Combine(FileSystem.Current.LocalStorage.Path, OutputFolderName, OutputXmlReportName);
+            _resultFilePath = System.IO.Path.Combine(FileSystem.Current.LocalStorage.Path, OutputXmlReportName);
         }
 
         /// <summary>

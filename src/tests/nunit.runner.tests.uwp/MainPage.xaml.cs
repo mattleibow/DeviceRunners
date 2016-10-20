@@ -53,7 +53,11 @@ namespace NUnit.Runner.Tests
                 //TcpWriterParameters = new TcpWriterInfo("192.168.0.108", 13000),
 
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
-                CreateXmlResultFile = false
+                CreateXmlResultFile = false,
+
+                // Choose a diffrent path for the xml result file
+                // Windows phone 8.1 no permission to create subfolder in Windows.Storage.ApplicationData.Current.LocalFolder
+                // ResultFilePath = System.IO.Path.Combine(Windows.Storage.ApplicationData.Current.TemporaryFolder.Path, "Nunit", "Results.xml")
             };
             
             LoadApplication(nunit);
