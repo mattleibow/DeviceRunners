@@ -17,9 +17,9 @@ var packageModifier = configuration == "Debug" ? "-dbg" : "";
 
 // Directories
 var basePath = Context.Environment.WorkingDirectory.FullPath;
-var outputDirectory = basePath + "bin" + configuration;
-var androidDirectory = basePath + "src/runner/nunit.runner.Droid/bin" + configuration;
-var iosDirectory = basePath + "src/runner/nunit.runner.iOS/bin/AnyCPU" + configuration;
+var outputDirectory = basePath + "/bin/" + configuration;
+var androidDirectory = basePath + "/src/runner/nunit.runner.Droid/bin/" + configuration;
+var iosDirectory = basePath + "/src/runner/nunit.runner.iOS/bin/AnyCPU/" + configuration;
 
 //////////////////////////////////////////////////////////////////////
 // SET VERSION
