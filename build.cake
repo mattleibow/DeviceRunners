@@ -17,10 +17,9 @@ var packageModifier = configuration == "Debug" ? "-dbg" : "";
 
 // Directories
 var basePath = Context.Environment.WorkingDirectory.FullPath;
-var outputDirectory = basePath + "bin" + configuration;
-var androidDirectory = basePath + "src/runner/nunit.runner.Droid/bin" + configuration;
-var iosDirectory = basePath + "src/runner/nunit.runner.iOS/bin/AnyCPU" + configuration;
-var wp81Directory = basePath + "src/runner/nunit.runner.wp81/bin" + configuration;
+var outputDirectory = basePath + "/bin/" + configuration;
+var androidDirectory = basePath + "/src/runner/nunit.runner.Droid/bin/" + configuration;
+var iosDirectory = basePath + "/src/runner/nunit.runner.iOS/bin/AnyCPU/" + configuration;
 
 //////////////////////////////////////////////////////////////////////
 // SET VERSION
@@ -75,8 +74,7 @@ Task("Set-Appveyor-Tag")
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectories(new DirectoryPath[] {
-        outputDirectory, androidDirectory, iosDirectory, wp81Directory});
+    CleanDirectories(new DirectoryPath[] {outputDirectory, androidDirectory, iosDirectory});
 });
 
 Task("Restore-NuGet-Packages")

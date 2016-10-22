@@ -193,4 +193,4 @@ ModelManifest.xml
 tools/*
 
 # NuGet restore
-*/project.lock.json
+*project.lock.json
