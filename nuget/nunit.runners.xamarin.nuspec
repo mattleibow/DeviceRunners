@@ -11,7 +11,6 @@
 Supported Xamarin platforms:
   - Android
   - iOS
-  - Windows Phone 8.1
   - Windows 10 Universal Apps</description>
         <summary>NUnit 3.0 runner components for Xamarin</summary>
         <tags>nunit xamarin android ios monoandroid monotouch winphone tdd unit test testing</tags>
@@ -38,11 +37,6 @@ Supported Xamarin platforms:
         <file src="nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp" target="content\Xamarin.iOS\AppDelegate.cs.txt.pp" />
         <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.dll" target="lib\Xamarin.iOS\nunit.runner.iOS.dll" />
         <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.xml" target="lib\Xamarin.iOS\nunit.runner.iOS.xml" />
-
-        <file src="nuget\wpa81\MainPage.xaml.txt.pp" target="content\wpa81\MainPage.xaml.txt.pp" />
-        <file src="nuget\wpa81\MainPage.xaml.cs.txt.pp" target="content\wpa81\MainPage.xaml.cs.txt.pp" />
-        <file src="src\runner\nunit.runner.wp81\bin\Release\nunit.runner.wp81.dll" target="lib\wpa81\nunit.runner.wp81.dll" />
-        <file src="src\runner\nunit.runner.wp81\bin\Release\nunit.runner.wp81.xml" target="lib\wpa81\nunit.runner.wp81.xml" />
         
         <file src="src\runner\nunit.runner.uwp\bin\Release\nunit.runner.uwp.dll" target="lib\uap10.0\nunit.runner.uwp.dll" />
         <file src="src\runner\nunit.runner.uwp\bin\Release\nunit.runner.uwp.xml" target="lib\uap10.0\nunit.runner.uwp.xml" />
