@@ -1,4 +1,4 @@
-# NUnit 3.0 Xamarin Runners
+# NUnit 3 Xamarin Runners
 
 NUnit test runners for Xamarin and mobile devices
 
@@ -31,7 +31,7 @@ The startup code for each platform is as follows;
 **MainActivity.cs**
 
 ```C#
-[Activity(Label = "NUnit 3.0", MainLauncher = true, Theme = "@android:style/Theme.Holo.Light", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+[Activity(Label = "NUnit 3", MainLauncher = true, Theme = "@android:style/Theme.Holo.Light", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
 {
     protected override void OnCreate(Bundle savedInstanceState)
@@ -303,7 +303,7 @@ If you've followed the steps above, you can now replace the AppDelegate.cs or Ma
 **MainActivity.cs**
 
 ```C#
-[Activity(Label = "NUnit 3.0", MainLauncher = true, Theme = "@android:style/Theme.Holo.Light", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+[Activity(Label = "NUnit 3", MainLauncher = true, Theme = "@android:style/Theme.Holo.Light", ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
 public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
 {
     protected override void OnCreate(Bundle savedInstanceState)
