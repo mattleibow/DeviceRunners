@@ -3,16 +3,16 @@
     <metadata minClientVersion="2.8.5">
         <id>nunit.xamarin</id>
         <version>$version$</version>
-        <title>NUnit 3.0 Xamarin Runner</title>
+        <title>NUnit 3 Xamarin Runner</title>
         <authors>Rob Prouse</authors>
         <owners>Charlie Poole</owners>
-        <description>Adds support for running NUnit 3.0 unit tests on Xamarin
+        <description>Adds support for running NUnit 3 unit tests on Xamarin
    
 Supported Xamarin platforms:
   - Android
   - iOS
   - Windows 10 Universal Apps</description>
-        <summary>NUnit 3.0 runner components for Xamarin</summary>
+        <summary>NUnit 3 runner components for Xamarin</summary>
         <tags>nunit xamarin android ios monoandroid monotouch winphone tdd unit test testing</tags>
         <language>en-US</language>
         <licenseUrl>http://nunit.org/nuget/nunit3-license.txt</licenseUrl>
