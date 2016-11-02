@@ -61,7 +61,7 @@ namespace NUnit.Runner.Services
 
         /// <summary>
         /// File path for the xml result file
-        /// Default is [LocalStorage]/NUnitTestOutput/TestResults.xml
+        /// Default is [LocalStorage]/TestResults.xml
         /// </summary>
         public string ResultFilePath
         {
