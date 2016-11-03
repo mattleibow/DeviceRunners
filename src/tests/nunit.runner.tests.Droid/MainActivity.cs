@@ -60,7 +60,7 @@ namespace NUnit.Runner.Tests
                 CreateXmlResultFile = true,
 
                 // Choose a diffrent path for the xml result file
-                ResultFilePath = Path.Combine(Environment.ExternalStorageDirectory.Path, Environment.DirectoryDownloads, "Nunit_123", "Results.xml")
+                ResultFilePath = Path.Combine(Environment.ExternalStorageDirectory.Path, Environment.DirectoryDownloads, "Nunit", "Results.xml")
             };
             
             LoadApplication(nunit);

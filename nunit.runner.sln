@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DABD2667-0EF4-4814-8353-8675E1C8F95E}"
 	ProjectSection(SolutionItems) = preProject
@@ -64,16 +64,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.iOS10", "Xamarin.iO
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{391ce92c-08f6-4ddf-941c-a8980dcc196e}*SharedItemsImports = 4
-		src\runner\nunit.runner\nunit.runner.projitems*{47b8b14f-da28-4188-becb-23c4ee51e0f5}*SharedItemsImports = 4
+		src\runner\nunit.runner\nunit.runner.projitems*{09bcb5fa-30ad-49af-8034-5670ccb320b5}*SharedItemsImports = 4
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{17a2b97c-56ea-40b8-8901-5e0728876657}*SharedItemsImports = 4
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{2a198895-edfb-4a82-899e-e7d1d1c592e8}*SharedItemsImports = 4
-		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{af293652-baa0-4813-b4f3-2d5a2cdde0b4}*SharedItemsImports = 13
-		src\runner\nunit.runner\nunit.runner.projitems*{c9775283-c274-4ba9-a1bc-49418d7840e5}*SharedItemsImports = 4
+		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{391ce92c-08f6-4ddf-941c-a8980dcc196e}*SharedItemsImports = 4
 		src\runner\nunit.runner\nunit.runner.projitems*{3bf3745a-8491-46a9-af66-f8de22accf31}*SharedItemsImports = 4
+		src\runner\nunit.runner\nunit.runner.projitems*{47b8b14f-da28-4188-becb-23c4ee51e0f5}*SharedItemsImports = 4
+		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{af293652-baa0-4813-b4f3-2d5a2cdde0b4}*SharedItemsImports = 13
 		src\tests\nunit.runner.tests\nunit.runner.tests.projitems*{b0040786-1ab0-4fd6-93d2-e5ba330fb4bc}*SharedItemsImports = 4
 		src\runner\nunit.runner\nunit.runner.projitems*{c9209134-aea3-4c7f-ad74-00d578a6f208}*SharedItemsImports = 13
-		src\runner\nunit.runner\nunit.runner.projitems*{09bcb5fa-30ad-49af-8034-5670ccb320b5}*SharedItemsImports = 4
+		src\runner\nunit.runner\nunit.runner.projitems*{c9775283-c274-4ba9-a1bc-49418d7840e5}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Ad-Hoc|Any CPU = Ad-Hoc|Any CPU
@@ -225,6 +225,7 @@ Global
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|ARM.ActiveCfg = Debug|Any CPU
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|iPhone.Deploy.0 = Debug|Any CPU
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{391CE92C-08F6-4DDF-941C-A8980DCC196E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
