@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("NUnit Software")]
-[assembly: AssemblyProduct("NUnit 3.0")]
+[assembly: AssemblyProduct("NUnit 3")]
 [assembly: AssemblyCopyright("Copyright (C) 2015 Charlie Poole")]
 [assembly: AssemblyTrademark("NUnit is a trademark of NUnit Software")]
 [assembly: AssemblyCulture("")]

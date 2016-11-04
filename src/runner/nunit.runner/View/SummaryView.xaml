@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="NUnit.Runner.View.SummaryView"
-             Title="NUnit 3.0"
+             Title="NUnit 3"
              Padding="10"
              BackgroundColor="{DynamicResource defaultBackground}" >
     <ContentPage.Triggers>
