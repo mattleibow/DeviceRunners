@@ -24,12 +24,12 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
-
 using NUnit.Framework.Interfaces;
 
 using PCLStorage;
-
+using CreationCollisionOption = PCLStorage.CreationCollisionOption;
 using FileAccess = PCLStorage.FileAccess;
 
 namespace NUnit.Runner.Services
@@ -37,9 +37,7 @@ namespace NUnit.Runner.Services
     class XmlFileProcessor : TestResultProcessor
     {
         public XmlFileProcessor(TestOptions options)
-            : base(options)
-        {
-        }
+            : base(options) { }
 
         public override async Task Process(ITestResult testResult)
         {
@@ -64,23 +62,56 @@ namespace NUnit.Runner.Services
 
         async Task WriteXmlResultFile(ITestResult testResult)
         {
-            const string OutputFolderName = "NUnitTestOutput";
-            const string OutputXmlReportName = "TestResults.xml";
-            var localStorageFolder = FileSystem.Current.LocalStorage;
+            string outputFolderName = Path.GetDirectoryName(Options.ResultFilePath);
+            string outputXmlReportName = Path.GetFileName(Options.ResultFilePath);
 
-            var existResult = await localStorageFolder.CheckExistsAsync(OutputFolderName);
-            if (existResult == ExistenceCheckResult.FileExists)
-            {
-                var existingFile = await localStorageFolder.GetFileAsync(OutputFolderName);
-                await existingFile.DeleteAsync();
-            }
+            await CreateFolderRecursive(outputFolderName);
 
-            var outputFolder = await localStorageFolder.CreateFolderAsync(OutputFolderName, CreationCollisionOption.OpenIfExists);
-            IFile xmlResultFile = await outputFolder.CreateFileAsync(OutputXmlReportName, CreationCollisionOption.ReplaceExisting);
+            IFolder outputFolder =
+                await FileSystem.Current.GetFolderFromPathAsync(outputFolderName, CancellationToken.None);
+
+            IFile xmlResultFile =
+                await outputFolder.CreateFileAsync(outputXmlReportName, CreationCollisionOption.ReplaceExisting);
             using (var resultFileStream = new StreamWriter(await xmlResultFile.OpenAsync(FileAccess.ReadAndWrite)))
             {
                 string xmlString = testResult.ToXml(true).OuterXml;
                 await resultFileStream.WriteAsync(xmlString);
+            }
+        }
+
+        /// <summary>
+        /// Create a folder from the full folder path if it does not exist
+        /// Throws exception if acess to the path is denied
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        private static async Task CreateFolderRecursive(string folderPath)
+        {
+            string[] segments = new Uri(folderPath).Segments;
+
+            string path = segments[0];
+
+            for (int i = 0; i < segments.Length - 1; i++)
+            {
+                try
+                {
+#if __DROID__ || __IOS__
+                    IFolder folder = await FileSystem.Current.GetFolderFromPathAsync(path, CancellationToken.None);
+#else
+                    IFolder folder = await FileSystem.Current.GetFolderFromPathAsync(path.Replace('/', '\\'), CancellationToken.None);
+#endif
+                    var res = await folder.CheckExistsAsync(segments[i + 1]);
+                    if (res != ExistenceCheckResult.FolderExists)
+                    {
+                        await folder.CreateFolderAsync(segments[i + 1], CreationCollisionOption.OpenIfExists);
+                    }
+                }
+                catch (Exception)
+                {
+                  // ignore
+                }
+
+                path = Path.Combine(path, segments[i + 1]);
             }
         }
     }

@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System.IO;
 using Android.App;
 using Android.Content.PM;
 using Android.OS;
@@ -56,7 +57,10 @@ namespace NUnit.Runner.Tests
                 //TcpWriterParameters = new TcpWriterInfo("192.168.0.108", 13000),
 
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
-                CreateXmlResultFile = true
+                CreateXmlResultFile = true,
+
+                // Choose a diffrent path for the xml result file
+                ResultFilePath = Path.Combine(Environment.ExternalStorageDirectory.Path, Environment.DirectoryDownloads, "Nunit", "Results.xml")
             };
             
             LoadApplication(nunit);

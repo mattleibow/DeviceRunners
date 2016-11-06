@@ -21,6 +21,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using PCLStorage;
+
 namespace NUnit.Runner.Services
 {
     /// <summary>
@@ -28,6 +30,18 @@ namespace NUnit.Runner.Services
     /// </summary>
     public class TestOptions
     {
+        const string OutputXmlReportName = "TestResults.xml";
+
+        private string _resultFilePath;
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public TestOptions()
+        {
+            _resultFilePath = System.IO.Path.Combine(FileSystem.Current.LocalStorage.Path, OutputXmlReportName);
+        }
+
         /// <summary>
         /// If True, the tests will run automatically when the app starts
         /// otherwise you must run them manually.
@@ -44,5 +58,15 @@ namespace NUnit.Runner.Services
         /// Creates a NUnit Xml result file on the host file system using PCLStorage library.
         /// </summary>
         public bool CreateXmlResultFile { get; set; }
+
+        /// <summary>
+        /// File path for the xml result file
+        /// Default is [LocalStorage]/TestResults.xml
+        /// </summary>
+        public string ResultFilePath
+        {
+            get { return _resultFilePath; }
+            set { _resultFilePath = value; }
+        }
     }
 }
