@@ -59,7 +59,7 @@ namespace NUnit.Runner.Tests
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
                 CreateXmlResultFile = true,
 
-                // Choose a diffrent path for the xml result file
+                // Choose a different path for the xml result file
                 ResultFilePath = Path.Combine(Environment.ExternalStorageDirectory.Path, Environment.DirectoryDownloads, "Nunit", "Results.xml")
             };
             

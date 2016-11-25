@@ -68,7 +68,7 @@ namespace NUnit.Runner.Tests
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
                 CreateXmlResultFile = true,
 
-                // Choose a diffrent path for the xml result file (ios file share / library directory)
+                // Choose a different path for the xml result file (ios file share / library directory)
                 ResultFilePath = Path.Combine(NSFileManager.DefaultManager.GetUrls(NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User)[0].Path, "Results.xml")
             };
 

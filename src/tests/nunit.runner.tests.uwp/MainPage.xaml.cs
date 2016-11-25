@@ -55,8 +55,7 @@ namespace NUnit.Runner.Tests
                 // Creates a NUnit Xml result file on the host file system using PCLStorage library.
                 CreateXmlResultFile = false,
 
-                // Choose a diffrent path for the xml result file
-                // Windows phone 8.1 no permission to create subfolder in Windows.Storage.ApplicationData.Current.LocalFolder
+                // Choose a different path for the xml result file
                 // ResultFilePath = System.IO.Path.Combine(Windows.Storage.ApplicationData.Current.TemporaryFolder.Path, "Nunit", "Results.xml")
             };
             
