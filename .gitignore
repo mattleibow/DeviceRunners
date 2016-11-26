@@ -57,6 +57,7 @@ dlldata.c
 *.pidb
 *.svclog
 *.scc
+*.csproj.bak
 
 # Chutzpah Test files
 _Chutzpah*
