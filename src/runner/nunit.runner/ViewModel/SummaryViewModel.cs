@@ -149,7 +149,7 @@ namespace NUnit.Runner.ViewModel
         {
             var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
             foreach (var testAssembly in _testAssemblies)
-                await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, string>()));
+                await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, object>()));
             return runner;
         }
     }
