@@ -22,12 +22,13 @@
 // ***********************************************************************
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework.Interfaces;
-
+using NUnit.Runner.Helpers;
 using PCLStorage;
 using CreationCollisionOption = PCLStorage.CreationCollisionOption;
 using FileAccess = PCLStorage.FileAccess;
@@ -39,28 +40,28 @@ namespace NUnit.Runner.Services
         public XmlFileProcessor(TestOptions options)
             : base(options) { }
 
-        public override async Task Process(ITestResult testResult)
+        public override async Task Process(ResultSummary result)
         {
-            if (Options.CreateXmlResultFile)
+            if (Options.CreateXmlResultFile == false)
+                return;
+
+            try
             {
-                try
-                {
-                    await WriteXmlResultFile(testResult).ConfigureAwait(false);
-                }
-                catch (Exception)
-                {
-                    Debug.WriteLine("Fatal error while trying to write xml result file!");
-                    throw;
-                }
+                await WriteXmlResultFile(result).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                Debug.WriteLine("Fatal error while trying to write xml result file!");
+                throw;
             }
 
             if (Successor != null)
             {
-                await Successor.Process(testResult).ConfigureAwait(false);
+                await Successor.Process(result).ConfigureAwait(false);
             }
         }
 
-        async Task WriteXmlResultFile(ITestResult testResult)
+        async Task WriteXmlResultFile(ResultSummary result)
         {
             string outputFolderName = Path.GetDirectoryName(Options.ResultFilePath);
             string outputXmlReportName = Path.GetFileName(Options.ResultFilePath);
@@ -74,8 +75,8 @@ namespace NUnit.Runner.Services
                 await outputFolder.CreateFileAsync(outputXmlReportName, CreationCollisionOption.ReplaceExisting);
             using (var resultFileStream = new StreamWriter(await xmlResultFile.OpenAsync(FileAccess.ReadAndWrite)))
             {
-                string xmlString = testResult.ToXml(true).OuterXml;
-                await resultFileStream.WriteAsync(xmlString);
+                var xml = result.GetTestXml().ToString();
+                await resultFileStream.WriteAsync(xml);
             }
         }
 

@@ -61,7 +61,7 @@ namespace NUnit.Runner.ViewModel
         /// </summary>
         public Color Color
         {
-            get { return TestResult.Color(); }
+            get { return TestResult.ResultState.Color(); }
         }
 
         private string StringOrNone(string str)

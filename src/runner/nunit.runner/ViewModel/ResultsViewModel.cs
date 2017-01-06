@@ -21,11 +21,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Windows.Input;
 using NUnit.Framework.Interfaces;
-using NUnit.Runner.View;
-using Xamarin.Forms;
 
 namespace NUnit.Runner.ViewModel
 {
@@ -34,13 +32,14 @@ namespace NUnit.Runner.ViewModel
         /// <summary>
         /// Constructs the view model
         /// </summary>
-        /// <param name="testResult">The top level test results</param>
+        /// <param name="results">The package of all results in run</param>
         /// <param name="viewAll">If true, views all tests, otherwise only shows those
         /// that did not pass</param>
-        public ResultsViewModel(ITestResult testResult, bool viewAll)
+        public ResultsViewModel(IReadOnlyCollection<ITestResult> results, bool viewAll)
         {
             Results = new ObservableCollection<ResultViewModel>();
-            AddTestResults(testResult, viewAll);
+            foreach (var result in results)
+                AddTestResults(result, viewAll);
         }
 
         /// <summary>
