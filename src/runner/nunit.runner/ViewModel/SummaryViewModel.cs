@@ -162,7 +162,7 @@ namespace NUnit.Runner.ViewModel
             var selector = new ObjCRuntime.Selector("terminateWithSuccess");
             UIKit.UIApplication.SharedApplication.PerformSelector(selector, UIKit.UIApplication.SharedApplication, 0);
 #elif __DROID__
-            Environment.Exit(0);
+            System.Environment.Exit(0);
 #elif WINDOWS_UWP
             Windows.UI.Xaml.Application.Current.Exit();
 #endif
