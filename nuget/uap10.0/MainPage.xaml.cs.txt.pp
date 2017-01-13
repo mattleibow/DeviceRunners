@@ -45,7 +45,7 @@ namespace $rootnamespace$
                 // otherwise you must run them manually.
                 AutoRun = true,
 
-				// If True, the application will terminate automatically after running the tests.
+                // If True, the application will terminate automatically after running the tests.
                 //TerminateAfterExecution = true,
 
                 // Information about the tcp listener host and port.
