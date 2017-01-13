@@ -49,6 +49,11 @@ namespace NUnit.Runner.Services
         public bool AutoRun { get; set; }
 
         /// <summary>
+        /// If True, the application will terminate automatically after running the tests.
+        /// </summary>
+        public bool TerminateAfterExecution { get; set; }
+
+        /// <summary>
         /// Information about the tcp listener host and port.
         /// For now, send result as XML to the listening server.
         /// </summary>
