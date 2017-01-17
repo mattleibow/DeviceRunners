@@ -142,7 +142,10 @@ namespace NUnit.Runner.ViewModel
                     {
                         Results = new ResultSummary(result);
                         Running = false;
-                    });
+
+                    if (Options.TerminateAfterExecution)
+                        TerminateWithSuccess();
+                });
         }
 
         async Task<NUnitTestAssemblyRunner> LoadTestAssembliesAsync()
@@ -151,6 +154,18 @@ namespace NUnit.Runner.ViewModel
             foreach (var testAssembly in _testAssemblies)
                 await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, object>()));
             return runner;
+        }
+
+        public static void TerminateWithSuccess()
+        {
+#if __IOS__
+            var selector = new ObjCRuntime.Selector("terminateWithSuccess");
+            UIKit.UIApplication.SharedApplication.PerformSelector(selector, UIKit.UIApplication.SharedApplication, 0);
+#elif __DROID__
+            System.Environment.Exit(0);
+#elif WINDOWS_UWP
+            Windows.UI.Xaml.Application.Current.Exit();
+#endif
         }
     }
 }
