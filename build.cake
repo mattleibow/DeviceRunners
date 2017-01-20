@@ -100,6 +100,15 @@ Task("Build")
         .SetVerbosity(Verbosity.Minimal)
         .SetNodeReuse(false)
     );
+
+    MSBuild("./src/tests/nunit.runner.tests.uwp/nunit.runner.tests.uwp.csproj", new MSBuildSettings()
+        .SetConfiguration(configuration)
+        .SetPlatformTarget(PlatformTarget.x86)
+        .WithProperty("TreatWarningsAsErrors", "true")
+        .WithProperty("AppxPackageSigningEnabled", "false")
+        .SetVerbosity(Verbosity.Minimal)
+        .SetNodeReuse(false)
+    );
 });
 
 //////////////////////////////////////////////////////////////////////
