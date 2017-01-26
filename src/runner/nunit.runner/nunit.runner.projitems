@@ -14,6 +14,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\XamarinExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestRunResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\TestPackage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Messages\ErrorMessage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\Annotations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Properties\AssemblyCommon.cs" />
@@ -24,7 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Services\TestOptions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\XmlFileProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\BaseViewModel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultSummary.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\ResultSummary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultsViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ResultViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\SummaryViewModel.cs" />

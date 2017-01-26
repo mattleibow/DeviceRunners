@@ -21,18 +21,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Input;
-
-using NUnit.Framework.Api;
-using NUnit.Framework.Interfaces;
-using NUnit.Framework.Internal;
+using NUnit.Runner.Helpers;
 using NUnit.Runner.View;
-using Nunit.Runner.ViewModel;
 
 using NUnit.Runner.Services;
 
@@ -42,20 +35,20 @@ namespace NUnit.Runner.ViewModel
 {
     class SummaryViewModel : BaseViewModel
     {
-        readonly IList<Assembly> _testAssemblies;
+        readonly TestPackage _testPackage;
         ResultSummary _results;
         bool _running;
         TestResultProcessor _resultProcessor;
 
         public SummaryViewModel()
         {
-            _testAssemblies = new List<Assembly>();
+            _testPackage = new TestPackage();
             RunTestsCommand = new Command(async o => await ExecuteTestsAync(), o => !Running);
             ViewAllResultsCommand = new Command(
-                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, true))),
+                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(_results.GetTestResults(), true))),
                 o => !HasResults);
             ViewFailedResultsCommand = new Command(
-                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(Results.TestResult, false))),
+                async o => await Navigation.PushAsync(new ResultsView(new ResultsViewModel(_results.GetTestResults(), false))),
                 o => !HasResults);
         }
 
@@ -122,38 +115,28 @@ namespace NUnit.Runner.ViewModel
         /// <returns></returns>
         internal void AddTest(Assembly testAssembly)
         {
-            _testAssemblies.Add(testAssembly);
+            _testPackage.AddAssembly(testAssembly);
         }
 
         async Task ExecuteTestsAync()
         {
             Running = true;
             Results = null;
-
-            var runner = await LoadTestAssembliesAsync().ConfigureAwait(false);
-
-            ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty)).ConfigureAwait(false);
+            TestRunResult results = await _testPackage.ExecuteTests();
+            ResultSummary summary = new ResultSummary(results);
 
             _resultProcessor = TestResultProcessor.BuildChainOfResponsability(Options);
-            await _resultProcessor.Process(result).ConfigureAwait(false);
+            await _resultProcessor.Process(summary).ConfigureAwait(false);
 
             Device.BeginInvokeOnMainThread(
                 () =>
                     {
-                        Results = new ResultSummary(result);
+                        Results = summary;
                         Running = false;
 
                     if (Options.TerminateAfterExecution)
                         TerminateWithSuccess();
                 });
-        }
-
-        async Task<NUnitTestAssemblyRunner> LoadTestAssembliesAsync()
-        {
-            var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            foreach (var testAssembly in _testAssemblies)
-                await Task.Run(() => runner.Load(testAssembly, new Dictionary<string, object>()));
-            return runner;
         }
 
         public static void TerminateWithSuccess()

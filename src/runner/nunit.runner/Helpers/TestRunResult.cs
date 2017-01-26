@@ -1,5 +1,5 @@
-// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+﻿// ***********************************************************************
+// Copyright (c) 2017 Charlie Poole
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -21,35 +21,37 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
+using System.Collections.Generic;
 using NUnit.Framework.Interfaces;
-using NUnit.Runner.Extensions;
-using Xamarin.Forms;
 
-namespace NUnit.Runner.ViewModel
+namespace NUnit.Runner.Helpers
 {
-    internal class ResultViewModel
+    /// <summary>
+    /// Contains all results from all tests in a <see cref="TestPackage"/>
+    /// </summary>
+    internal class TestRunResult
     {
-        public ResultViewModel(ITestResult result)
+        private readonly List<ITestResult> _results = new List<ITestResult>();
+
+        public DateTime StartTime { get; private set; }
+        public DateTime EndTime { get; private set; }
+
+        public TestRunResult()
         {
-            TestResult = result;
-            Result = result.ResultState.Status.ToString().ToUpperInvariant();
-            Name = result.Name;
-            Parent = result.Test.Parent.FullName;
-            Message = result.Message;
+            StartTime = DateTime.Now;
         }
 
-        public ITestResult TestResult { get; private set; }
-        public string Result { get; set; }
-        public string Name { get; private set; }
-        public string Parent { get; private set; }
-        public string Message { get; private set; }
-
-        /// <summary>
-        /// Gets the color for this result.
-        /// </summary>
-        public Color Color
+        public void AddResult(ITestResult result)
         {
-            get { return TestResult.ResultState.Color(); }
+            _results.Add(result);
         }
+
+        public void CompleteTestRun()
+        {
+            EndTime = DateTime.Now;
+        }
+
+        public IReadOnlyCollection<ITestResult> TestResults => _results;
     }
 }

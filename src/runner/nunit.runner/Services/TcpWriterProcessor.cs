@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using NUnit.Framework.Interfaces;
 using Xamarin.Forms;
 using NUnit.Runner.Messages;
+using NUnit.Runner.Helpers;
 
 namespace NUnit.Runner.Services
 {
@@ -37,13 +38,13 @@ namespace NUnit.Runner.Services
         {
         }
 
-        public override async Task Process(ITestResult testResult)
+        public override async Task Process(ResultSummary result)
         {
             if (Options.TcpWriterParameters != null)
             {
                 try
                 {
-                    await WriteResult(testResult);
+                    await WriteResult(result);
                 }
                 catch (Exception exception)
                 {
@@ -54,16 +55,16 @@ namespace NUnit.Runner.Services
 
             if (Successor != null)
             {
-                await Successor.Process(testResult);
+                await Successor.Process(result);
             }
         }
 
-        private async Task WriteResult(ITestResult testResult)
+        private async Task WriteResult(ResultSummary testResult)
         {
             using (var tcpWriter = new TcpWriter(Options.TcpWriterParameters))
             {
                 await tcpWriter.Connect().ConfigureAwait(false);
-                tcpWriter.Write(testResult.ToXml(true).OuterXml);
+                tcpWriter.Write(testResult.GetTestXml());
             }
         }
     }

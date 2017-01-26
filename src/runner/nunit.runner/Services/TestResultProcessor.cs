@@ -22,8 +22,7 @@
 // ***********************************************************************
 
 using System.Threading.Tasks;
-
-using NUnit.Framework.Interfaces;
+using NUnit.Runner.Helpers;
 
 namespace NUnit.Runner.Services
 {
@@ -36,9 +35,9 @@ namespace NUnit.Runner.Services
 
         protected TestOptions Options { get; private set; }
 
-        public TestResultProcessor Successor { get; set; }
+        protected TestResultProcessor Successor { get; private set; }
 
-        public abstract Task Process(ITestResult testResult);
+        public abstract Task Process(ResultSummary testResult);
 
         public static TestResultProcessor BuildChainOfResponsability(TestOptions options)
         {
