@@ -1,0 +1,12 @@
+﻿{
+  "dependencies": {
+    "NUnit": "3.6.0",
+    "Xamarin.Forms": "1.5.0.6447"
+  },
+  "frameworks": {
+    "xamarinios10": {}
+  },
+  "runtimes": {
+    "win": {}
+  }
+}
