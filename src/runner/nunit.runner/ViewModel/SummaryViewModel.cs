@@ -52,10 +52,25 @@ namespace NUnit.Runner.ViewModel
                 o => !HasResults);
         }
 
+        private TestOptions options;
+
         /// <summary>
         /// User options for the test suite.
         /// </summary>
-        public TestOptions Options { get; set; }
+        public TestOptions Options {
+            get
+            {
+                if(options == null)
+                {
+                    options = new TestOptions();
+                }
+                return options;
+            }
+            set
+            {
+                options = value;
+            }
+        }
         
         /// <summary>
         /// Called from the view when the view is appearing
