@@ -12,7 +12,7 @@ var configuration = Argument("configuration", "Release");
 var isLocal = BuildSystem.IsLocalBuild;
 var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
 
-var version = "3.0.1";
+var version = "3.6.1";
 var packageModifier = configuration == "Debug" ? "-dbg" : "";
 
 // Directories

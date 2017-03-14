@@ -19,7 +19,7 @@ Supported Xamarin platforms:
         <projectUrl>https://github.com/nunit/nunit.xamarin</projectUrl>
         <iconUrl>https://cdn.rawgit.com/nunit/resources/master/images/icon/nunit_256.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <copyright>Copyright (c) 2015 Charlie Poole</copyright>
+        <copyright>Copyright (c) 2017 Charlie Poole</copyright>
 
         <dependencies>
             <group>
@@ -30,6 +30,8 @@ Supported Xamarin platforms:
         </dependencies>
     </metadata>
     <files>
+        <file src="LICENSE.txt" />
+        <file src="CHANGES.md" />
         <file src="nuget\MonoAndroid10\MainActivity.cs.txt.pp" target="content\MonoAndroid\MainActivity.cs.txt.pp" />
         <file src="src\runner\nunit.runner.Droid\bin\Release\nunit.runner.Droid.dll" target="lib\MonoAndroid\nunit.runner.Droid.dll" />
         <file src="src\runner\nunit.runner.Droid\bin\Release\nunit.runner.Droid.xml" target="lib\MonoAndroid\nunit.runner.Droid.xml" />
