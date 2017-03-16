@@ -26,12 +26,12 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("NUnit Software")]
 [assembly: AssemblyProduct("NUnit 3 Xamarin Runner")]
-[assembly: AssemblyCopyright("Copyright (C) 2015 Charlie Poole")]
+[assembly: AssemblyCopyright("Copyright (C) 2017 Charlie Poole")]
 [assembly: AssemblyTrademark("NUnit is a trademark of NUnit Software")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.0.*")]
-[assembly: AssemblyFileVersion("3.0.0.0")]
+[assembly: AssemblyVersion("3.6.1")]
+[assembly: AssemblyFileVersion("3.6.1.0")]
 
 [assembly: ComVisible(false)]
 
