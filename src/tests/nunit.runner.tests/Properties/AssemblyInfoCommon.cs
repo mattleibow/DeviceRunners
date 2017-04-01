@@ -30,8 +30,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("NUnit is a trademark of NUnit Software")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.6.1")]
-[assembly: AssemblyFileVersion("3.6.1.0")]
+[assembly: AssemblyVersion("3.7.0")]
+[assembly: AssemblyFileVersion("3.7.0.0")]
 
 [assembly: ComVisible(false)]
 
