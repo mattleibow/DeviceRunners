@@ -1,5 +1,5 @@
 ﻿// ***********************************************************************
-// Copyright (c) 2015 Charlie Poole
+// Copyright (c) 2015 NUnit Project
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -8,10 +8,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -31,7 +31,7 @@ namespace NUnit.Runner.ViewModel
 {
     class TestViewModel : BaseViewModel
     {
-        public TestViewModel(ITestResult result) 
+        public TestViewModel(ITestResult result)
         {
             TestResult = result;
             Message = StringOrNone(result.Message);
@@ -44,7 +44,7 @@ namespace NUnit.Runner.ViewModel
             {
                 foreach (var value in props[key])
                 {
-                    builder.AppendFormat("{0} = {1}{2}", key, value, Environment.NewLine); 
+                    builder.AppendFormat("{0} = {1}{2}", key, value, Environment.NewLine);
                 }
             }
             Properties = StringOrNone(builder.ToString());
