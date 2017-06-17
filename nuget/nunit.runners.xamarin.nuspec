@@ -5,9 +5,9 @@
         <version>$version$</version>
         <title>NUnit 3 Xamarin Runner</title>
         <authors>Rob Prouse</authors>
-        <owners>Charlie Poole</owners>
+        <owners>NUnit Project</owners>
         <description>Adds support for running NUnit 3 unit tests on Xamarin
-   
+
 Supported Xamarin platforms:
   - Android
   - iOS
@@ -19,7 +19,7 @@ Supported Xamarin platforms:
         <projectUrl>https://github.com/nunit/nunit.xamarin</projectUrl>
         <iconUrl>https://cdn.rawgit.com/nunit/resources/master/images/icon/nunit_256.png</iconUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <copyright>Copyright (c) 2017 Charlie Poole</copyright>
+        <copyright>Copyright (c) 2017 NUnit Project</copyright>
 
         <dependencies>
             <group>
@@ -39,7 +39,7 @@ Supported Xamarin platforms:
         <file src="nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp" target="content\Xamarin.iOS\AppDelegate.cs.txt.pp" />
         <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.dll" target="lib\Xamarin.iOS\nunit.runner.iOS.dll" />
         <file src="src\runner\nunit.runner.iOS\bin\Release\nunit.runner.iOS.xml" target="lib\Xamarin.iOS\nunit.runner.iOS.xml" />
-        
+
         <file src="src\runner\nunit.runner.uwp\bin\Release\nunit.runner.uwp.dll" target="lib\uap10.0\nunit.runner.uwp.dll" />
         <file src="src\runner\nunit.runner.uwp\bin\Release\nunit.runner.uwp.xml" target="lib\uap10.0\nunit.runner.uwp.xml" />
     </files>

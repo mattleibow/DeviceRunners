@@ -1,5 +1,5 @@
 ﻿// ***********************************************************************
-// Copyright (c) 2016 Charlie Poole
+// Copyright (c) 2016 NUnit Project
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -8,10 +8,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -62,7 +62,7 @@ namespace NUnit.Runner.Services
         /// The host to connect to
         /// </summary>
         public string Hostname { get; set; }
-        
+
         /// <summary>
         /// The port to connect to
         /// </summary>
@@ -80,7 +80,7 @@ namespace NUnit.Runner.Services
         /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
         /// </returns>
         /// <param name="other">An object to compare with this object.</param>
-        public bool Equals(TcpWriterInfo other) => 
+        public bool Equals(TcpWriterInfo other) =>
             Hostname.Equals(other.Hostname, StringComparison.OrdinalIgnoreCase) && Port == other.Port;
 
         /// <summary>
