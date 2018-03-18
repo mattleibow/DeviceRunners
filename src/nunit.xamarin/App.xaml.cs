@@ -43,9 +43,7 @@ namespace NUnit.Runner
 		{
             InitializeComponent ();
 
-            // OnPlatform only reports WinPhone for WinPhone Silverlight, so swap
-            // out the background color in code instead
-            if(Device.OS == TargetPlatform.Windows)
+            if(Device.RuntimePlatform == Device.UWP)
             {
                 Resources["defaultBackground"] = Resources["windowsBackground"];
             }

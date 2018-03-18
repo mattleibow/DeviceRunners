@@ -21,7 +21,8 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using PCLStorage;
+using System;
+using System.IO;
 
 namespace NUnit.Runner.Services
 {
@@ -32,14 +33,13 @@ namespace NUnit.Runner.Services
     {
         const string OutputXmlReportName = "TestResults.xml";
 
-        private string _resultFilePath;
-
         /// <summary>
         /// Constructor
         /// </summary>
         public TestOptions()
         {
-            _resultFilePath = System.IO.Path.Combine(FileSystem.Current.LocalStorage.Path, OutputXmlReportName);
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            ResultFilePath = Path.Combine(path, OutputXmlReportName);
         }
 
         /// <summary>
@@ -68,10 +68,6 @@ namespace NUnit.Runner.Services
         /// File path for the xml result file
         /// Default is [LocalStorage]/TestResults.xml
         /// </summary>
-        public string ResultFilePath
-        {
-            get { return _resultFilePath; }
-            set { _resultFilePath = value; }
-        }
+        public string ResultFilePath { get; set; }
     }
 }

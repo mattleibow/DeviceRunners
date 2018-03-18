@@ -22,16 +22,10 @@
 // ***********************************************************************
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework.Interfaces;
 using NUnit.Runner.Helpers;
-using PCLStorage;
-using CreationCollisionOption = PCLStorage.CreationCollisionOption;
-using FileAccess = PCLStorage.FileAccess;
 
 namespace NUnit.Runner.Services
 {
@@ -64,55 +58,13 @@ namespace NUnit.Runner.Services
         async Task WriteXmlResultFile(ResultSummary result)
         {
             string outputFolderName = Path.GetDirectoryName(Options.ResultFilePath);
-            string outputXmlReportName = Path.GetFileName(Options.ResultFilePath);
 
-            await CreateFolderRecursive(outputFolderName);
+            Directory.CreateDirectory(outputFolderName);
 
-            IFolder outputFolder =
-                await FileSystem.Current.GetFolderFromPathAsync(outputFolderName, CancellationToken.None);
-
-            IFile xmlResultFile =
-                await outputFolder.CreateFileAsync(outputXmlReportName, CreationCollisionOption.ReplaceExisting);
-            using (var resultFileStream = new StreamWriter(await xmlResultFile.OpenAsync(FileAccess.ReadAndWrite)))
+            using (var resultFileStream = new StreamWriter(Options.ResultFilePath, false))
             {
                 var xml = result.GetTestXml().ToString();
                 await resultFileStream.WriteAsync(xml);
-            }
-        }
-
-        /// <summary>
-        /// Create a folder from the full folder path if it does not exist
-        /// Throws exception if acess to the path is denied
-        /// </summary>
-        /// <param name="folderPath"></param>
-        /// <returns></returns>
-        private static async Task CreateFolderRecursive(string folderPath)
-        {
-            string[] segments = new Uri(folderPath).Segments;
-
-            string path = segments[0];
-
-            for (int i = 0; i < segments.Length - 1; i++)
-            {
-                try
-                {
-#if __DROID__ || __IOS__
-                    IFolder folder = await FileSystem.Current.GetFolderFromPathAsync(path, CancellationToken.None);
-#else
-                    IFolder folder = await FileSystem.Current.GetFolderFromPathAsync(path.Replace('/', '\\'), CancellationToken.None);
-#endif
-                    var res = await folder.CheckExistsAsync(segments[i + 1]);
-                    if (res != ExistenceCheckResult.FolderExists)
-                    {
-                        await folder.CreateFolderAsync(segments[i + 1], CreationCollisionOption.OpenIfExists);
-                    }
-                }
-                catch (Exception)
-                {
-                  // ignore
-                }
-
-                path = Path.Combine(path, segments[i + 1]);
             }
         }
     }

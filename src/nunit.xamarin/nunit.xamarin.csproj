@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="PCLStorage" Version="1.0.2" />
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
   </ItemGroup>
 
