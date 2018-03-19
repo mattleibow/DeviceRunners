@@ -1,5 +1,5 @@
-﻿// ***********************************************************************
-// Copyright (c) 2015 NUnit Project
+﻿// *********************b**************************************************
+// Copyright (c) 2018 NUnit Project
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -24,14 +24,13 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyCompany("NUnit Software")]
 [assembly: AssemblyProduct("NUnit 3")]
-[assembly: AssemblyCopyright("Copyright (C) 2017 NUnit Project")]
+[assembly: AssemblyCopyright("Copyright (C) 2018 NUnit Project")]
 [assembly: AssemblyTrademark("NUnit is a trademark of NUnit Software")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("3.7.0")]
-[assembly: AssemblyFileVersion("3.7.0.0")]
+[assembly: AssemblyVersion("3.10.1")]
+[assembly: AssemblyFileVersion("3.10.1.0")]
 
 [assembly: ComVisible(false)]
 
