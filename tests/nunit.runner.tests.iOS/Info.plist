@@ -21,7 +21,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>MinimumOSVersion</key>
-	<string>6.0</string>
+	<string>7.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>nunit.runner</string>
 	<key>CFBundleIdentifier</key>
@@ -50,7 +50,7 @@
 	<string>LaunchScreen</string>
 	<key>CFBundleShortVersionString</key>
 	<string></string>
-  <key>UIFileSharingEnabled</key>
-  <true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 </dict>
 </plist>
