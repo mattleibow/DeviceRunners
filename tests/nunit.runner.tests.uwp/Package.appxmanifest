@@ -4,7 +4,7 @@
   <mp:PhoneIdentity PhoneProductId="b4d9fd97-b889-4078-90b0-c76cd1b46dde" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>nunit.runner.tests.uwp</DisplayName>
-    <PublisherDisplayName>Rob</PublisherDisplayName>
+    <PublisherDisplayName>Rob Prouse</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Dependencies>
