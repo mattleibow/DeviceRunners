@@ -12,14 +12,12 @@ var configuration = Argument("configuration", "Release");
 var isLocal = BuildSystem.IsLocalBuild;
 var isRunningOnAppVeyor = AppVeyor.IsRunningOnAppVeyor;
 
-var version = "3.7.0";
+var version = "3.10.1";
 var packageModifier = configuration == "Debug" ? "-dbg" : "";
 
 // Directories
 var basePath = Context.Environment.WorkingDirectory.FullPath;
-var outputDirectory = basePath + "/bin/" + configuration;
-var androidDirectory = basePath + "/src/runner/nunit.runner.Droid/bin/" + configuration;
-var iosDirectory = basePath + "/src/runner/nunit.runner.iOS/bin/AnyCPU/" + configuration;
+var outputDirectory = basePath + "/src/nunit.xamarin/bin/" + configuration;
 
 //////////////////////////////////////////////////////////////////////
 // SET VERSION
@@ -74,26 +72,26 @@ Task("Set-Appveyor-Tag")
 Task("Clean")
     .Does(() =>
 {
-    CleanDirectories(new DirectoryPath[] {outputDirectory, androidDirectory, iosDirectory});
+    CleanDirectory(outputDirectory);
 });
 
-Task("Restore-NuGet-Packages")
+Task("Restore")
     .Does(() =>
 {
-    NuGetRestore("./nunit.runner.sln", new NuGetRestoreSettings {
+    NuGetRestore("./nunit.xamarin.sln", new NuGetRestoreSettings {
         Source = new List<string> {
             "https://www.nuget.org/api/v2/",
             "https://www.myget.org/F/nunit/api/v2"
         },
-        Verbosity = NuGetVerbosity.Quiet 
+        Verbosity = NuGetVerbosity.Quiet
     });
 });
 
 Task("Build")
-    .IsDependentOn("Restore-NuGet-Packages")
+    .IsDependentOn("Restore")
     .Does(() =>
 {
-    MSBuild("./nunit.runner.sln", new MSBuildSettings()
+    MSBuild("./nunit.xamarin.sln", new MSBuildSettings()
         .SetConfiguration(configuration)
         .SetPlatformTarget(PlatformTarget.MSIL)
         .WithProperty("TreatWarningsAsErrors", "true")
@@ -101,7 +99,7 @@ Task("Build")
         .SetNodeReuse(false)
     );
 
-    MSBuild("./src/tests/nunit.runner.tests.uwp/nunit.runner.tests.uwp.csproj", new MSBuildSettings()
+    MSBuild("./tests/nunit.runner.tests.uwp/nunit.runner.tests.uwp.csproj", new MSBuildSettings()
         .SetConfiguration(configuration)
         .SetPlatformTarget(PlatformTarget.x86)
         .WithProperty("TreatWarningsAsErrors", "true")
@@ -115,18 +113,18 @@ Task("Build")
 // PACKAGE/PUBLISH
 //////////////////////////////////////////////////////////////////////
 
-Task("Create-NuGet-Packages")
+Task("Package")
     .IsDependentOn("Build")
     .Does(() =>
 {
-    CreateDirectory(outputDirectory);
-
-    NuGetPack("nuget/nunit.runners.xamarin.nuspec", new NuGetPackSettings
-    {
-        Version = version,
-        BasePath = basePath,
-        OutputDirectory = outputDirectory,
-    });        
+    MSBuild("./src/nunit.xamarin/nunit.xamarin.csproj", new MSBuildSettings()
+        .SetConfiguration(configuration)
+        .SetPlatformTarget(PlatformTarget.MSIL)
+        .WithProperty("TreatWarningsAsErrors", "true")
+        .WithTarget("Pack")
+        .SetVerbosity(Verbosity.Minimal)
+        .SetNodeReuse(false)
+    );
 });
 
 Task("UploadArtifacts")
@@ -138,34 +136,8 @@ Task("UploadArtifacts")
         AppVeyor.UploadArtifact(package);
 });
 
-Task("Publish-NuGet")
-  .IsDependentOn("Create-NuGet-Packages")
-  .WithCriteria(() => isLocal)
-  .Does(() =>
-{
-    // Resolve the API key.
-    var apiKey = EnvironmentVariable("NUGET_API_KEY");
-    if(string.IsNullOrEmpty(apiKey)) {
-        throw new InvalidOperationException("Could not resolve NuGet API key.");
-    }
-    
-    // Get the path to the package.
-    var packagePath = outputDirectory + File(string.Concat("nunit.runner.xamarin.", version, ".nupkg"));
-
-    // Push the package.
-    NuGetPush(packagePath, new NuGetPushSettings {
-        ApiKey = apiKey
-    });
-});
-
 Task("Default")
-  .IsDependentOn("Build");  
-  
-Task("Package")
-  .IsDependentOn("Create-NuGet-Packages");
-  
-Task("Publish")
-  .IsDependentOn("Publish-NuGet");
+  .IsDependentOn("Build");
 
 Task("Appveyor")
   .IsDependentOn("Set-Appveyor-Tag")
