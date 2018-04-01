@@ -97,6 +97,7 @@ Task("Build")
         .WithProperty("TreatWarningsAsErrors", "true")
         .SetVerbosity(Verbosity.Minimal)
         .SetNodeReuse(false)
+        .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 
     MSBuild("./tests/nunit.runner.tests.uwp/nunit.runner.tests.uwp.csproj", new MSBuildSettings()
@@ -106,6 +107,7 @@ Task("Build")
         .WithProperty("AppxPackageSigningEnabled", "false")
         .SetVerbosity(Verbosity.Minimal)
         .SetNodeReuse(false)
+        .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 });
 
@@ -124,6 +126,7 @@ Task("Package")
         .WithTarget("Pack")
         .SetVerbosity(Verbosity.Minimal)
         .SetNodeReuse(false)
+        .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 });
 
