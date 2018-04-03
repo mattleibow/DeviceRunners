@@ -15,27 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{B3AE763A-DC9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{040381B1-C9E8-4D7C-8A60-EF4C343C7374}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet", "NuGet", "{9535215D-5DAC-4E52-A0F2-5216F933234B}"
-	ProjectSection(SolutionItems) = preProject
-		nuget\nunit.runners.xamarin.nuspec = nuget\nunit.runners.xamarin.nuspec
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonoAndroid10", "MonoAndroid10", "{82E94D4E-EB38-4D00-A900-EA83CB465DEA}"
-	ProjectSection(SolutionItems) = preProject
-		nuget\MonoAndroid10\MainActivity.cs.txt.pp = nuget\MonoAndroid10\MainActivity.cs.txt.pp
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "uap10.0", "uap10.0", "{6B2E96B2-DED0-4541-97CE-416C0C6A38DD}"
-	ProjectSection(SolutionItems) = preProject
-		nuget\uap10.0\MainPage.xaml.cs.txt.pp = nuget\uap10.0\MainPage.xaml.cs.txt.pp
-		nuget\uap10.0\MainPage.xaml.txt.pp = nuget\uap10.0\MainPage.xaml.txt.pp
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Xamarin.iOS10", "Xamarin.iOS10", "{30BB9B64-B2B7-4F09-BF00-D4C76849A540}"
-	ProjectSection(SolutionItems) = preProject
-		nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp = nuget\Xamarin.iOS10\AppDelegate.cs.txt.pp
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nunit.xamarin", "src\nunit.xamarin\nunit.xamarin.csproj", "{A9479AD9-EE64-4590-927C-FFDC13AC7C70}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "nunit.runner.tests", "tests\nunit.runner.tests\nunit.runner.tests.shproj", "{AF293652-BAA0-4813-B4F3-2D5A2CDDE0B4}"
@@ -341,9 +320,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{82E94D4E-EB38-4D00-A900-EA83CB465DEA} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
-		{6B2E96B2-DED0-4541-97CE-416C0C6A38DD} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
-		{30BB9B64-B2B7-4F09-BF00-D4C76849A540} = {9535215D-5DAC-4E52-A0F2-5216F933234B}
 		{A9479AD9-EE64-4590-927C-FFDC13AC7C70} = {B3AE763A-DC9C-4F5D-B5F0-97A1B10D147B}
 		{AF293652-BAA0-4813-B4F3-2D5A2CDDE0B4} = {040381B1-C9E8-4D7C-8A60-EF4C343C7374}
 		{FEC118A7-A5B1-4058-898E-2DE513708A07} = {040381B1-C9E8-4D7C-8A60-EF4C343C7374}

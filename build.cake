@@ -96,7 +96,6 @@ Task("Build")
         .SetPlatformTarget(PlatformTarget.MSIL)
         .WithProperty("TreatWarningsAsErrors", "true")
         .SetVerbosity(Verbosity.Minimal)
-        .SetNodeReuse(false)
         .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 
@@ -106,7 +105,6 @@ Task("Build")
         .WithProperty("TreatWarningsAsErrors", "true")
         .WithProperty("AppxPackageSigningEnabled", "false")
         .SetVerbosity(Verbosity.Minimal)
-        .SetNodeReuse(false)
         .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 });
@@ -125,7 +123,6 @@ Task("Package")
         .WithProperty("TreatWarningsAsErrors", "true")
         .WithTarget("Pack")
         .SetVerbosity(Verbosity.Minimal)
-        .SetNodeReuse(false)
         .UseToolVersion(MSBuildToolVersion.VS2017)
     );
 });
