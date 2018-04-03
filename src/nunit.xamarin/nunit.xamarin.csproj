@@ -7,7 +7,7 @@
     <Copyright>Copyright (C) 2018, Rob Prouse</Copyright>
     <Title>NUnit.Xamarin</Title>
     <Description>NUnit 3 Test Runner for Xamarin</Description>
-    <Version>3.10.1</Version>
+    <Version Condition="'$(Version)' == ''">3.10.1</Version>
 
     <!-- NuGet Package Info -->
     <PackageId>nunit.xamarin</PackageId>
