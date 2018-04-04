@@ -191,6 +191,7 @@ _Pvt_Extensions/
 ModelManifest.xml
 
 # Cake tools
+.dotnet
 tools/*
 
 # NuGet restore
