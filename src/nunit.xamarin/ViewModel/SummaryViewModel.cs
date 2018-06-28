@@ -22,6 +22,7 @@
 // ***********************************************************************
 
 using System.Reflection;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using NUnit.Runner.Helpers;
@@ -128,9 +129,9 @@ namespace NUnit.Runner.ViewModel
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
         /// <returns></returns>
-        internal void AddTest(Assembly testAssembly)
+        internal void AddTest(Assembly testAssembly, Dictionary<string, object> options = null)
         {
-            _testPackage.AddAssembly(testAssembly);
+            _testPackage.AddAssembly(testAssembly, options);
         }
 
         async Task ExecuteTestsAync()

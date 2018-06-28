@@ -59,9 +59,9 @@ namespace NUnit.Runner
         /// Adds an assembly to be tested.
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
-        public void AddTestAssembly(Assembly testAssembly)
+        public void AddTestAssembly(Assembly testAssembly, Dictionary<string, object> options = null)
         {
-            _model.AddTest(testAssembly);
+            _model.AddTest(testAssembly, options);
         }
 
         /// <summary>

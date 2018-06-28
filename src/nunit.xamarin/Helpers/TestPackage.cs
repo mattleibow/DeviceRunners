@@ -35,20 +35,20 @@ namespace NUnit.Runner.Helpers
     /// </summary>
     internal class TestPackage
     {
-        private readonly List<Assembly> _testAssemblies = new List<Assembly>();
+        private readonly List<(Assembly, Dictionary<string,object>)> _testAssemblies = new List<(Assembly, Dictionary<string,object>)>();
 
-        public void AddAssembly(Assembly testAssembly)
+        public void AddAssembly(Assembly testAssembly, Dictionary<string,object> options = null)
         {
-            _testAssemblies.Add(testAssembly);
+            _testAssemblies.Add( (testAssembly, options) );
         }
 
         public async Task<TestRunResult> ExecuteTests()
         {
             var resultPackage = new TestRunResult();
 
-            foreach (var assembly in _testAssemblies)
+            foreach (var (assembly,options) in _testAssemblies)
             {
-                NUnitTestAssemblyRunner runner = await LoadTestAssemblyAsync(assembly).ConfigureAwait(false);
+                NUnitTestAssemblyRunner runner = await LoadTestAssemblyAsync(assembly, options).ConfigureAwait(false);
                 ITestResult result = await Task.Run(() => runner.Run(TestListener.NULL, TestFilter.Empty)).ConfigureAwait(false);
                 resultPackage.AddResult(result);
             }
@@ -56,10 +56,10 @@ namespace NUnit.Runner.Helpers
             return resultPackage;
         }
 
-        private static async Task<NUnitTestAssemblyRunner> LoadTestAssemblyAsync(Assembly assembly)
+        private static async Task<NUnitTestAssemblyRunner> LoadTestAssemblyAsync(Assembly assembly, Dictionary<string, object> options)
         {
             var runner = new NUnitTestAssemblyRunner(new DefaultTestAssemblyBuilder());
-            await Task.Run(() => runner.Load(assembly, new Dictionary<string, object>()));
+            await Task.Run(() => runner.Load(assembly, options ?? new Dictionary<string, object>()));
             return runner;
         }
     }
