@@ -15,6 +15,7 @@
     <PackageIconUrl>https://cdn.rawgit.com/nunit/resources/master/images/icon/nunit_256.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/nunit/nunit.xamarin</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nunit/nunit.xamarin</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageTags>nunit xamarin android ios monoandroid monotouch tdd unit test testing</PackageTags>
     <Description>
 Adds support for running NUnit 3 unit tests on Xamarin
