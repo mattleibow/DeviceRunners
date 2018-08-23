@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -46,6 +47,8 @@ namespace NUnit.Runner.Helpers
             _results = results;
             Initialize();
             Summarize(results.TestResults);
+            StartTime = results.StartTime;
+            EndTime = results.EndTime;
         }
 
         #endregion
@@ -109,8 +112,7 @@ namespace NUnit.Runner.Helpers
         /// <summary>
         /// Gets the color for the overall result.
         /// </summary>
-        public Color OverallResultColor
-        {
+        public Color OverallResultColor {
             get { return new ResultState(OverallResult).Color(); }
         }
 
@@ -134,8 +136,7 @@ namespace NUnit.Runner.Helpers
         /// <summary>
         /// Returns the number of test cases not run for any reason.
         /// </summary>
-        public int NotRunCount
-        {
+        public int NotRunCount {
             get { return IgnoreCount + ExplicitCount + InvalidCount + SkipCount; }
         }
 
@@ -180,6 +181,23 @@ namespace NUnit.Runner.Helpers
         /// Gets the count of tests not run because the are Explicit
         /// </summary>
         public int ExplicitCount { get; private set; }
+
+        /// <summary>
+        /// Gets the time when the tests started running
+        /// </summary>
+        public DateTime StartTime { get; private set; }
+
+        /// <summary>
+        /// Gets the time when the tests ended it's execution
+        /// </summary>
+        public DateTime EndTime { get; private set; }
+
+        /// <summary>
+        /// Gets how long it took to execute the tests
+        /// </summary>
+        public TimeSpan Duration {
+            get { return EndTime.Subtract(StartTime); }
+        }
 
         #endregion
 
