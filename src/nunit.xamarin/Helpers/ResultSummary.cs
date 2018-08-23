@@ -112,7 +112,8 @@ namespace NUnit.Runner.Helpers
         /// <summary>
         /// Gets the color for the overall result.
         /// </summary>
-        public Color OverallResultColor {
+        public Color OverallResultColor
+        {
             get { return new ResultState(OverallResult).Color(); }
         }
 
@@ -136,7 +137,8 @@ namespace NUnit.Runner.Helpers
         /// <summary>
         /// Returns the number of test cases not run for any reason.
         /// </summary>
-        public int NotRunCount {
+        public int NotRunCount
+        {
             get { return IgnoreCount + ExplicitCount + InvalidCount + SkipCount; }
         }
 
@@ -195,7 +197,8 @@ namespace NUnit.Runner.Helpers
         /// <summary>
         /// Gets how long it took to execute the tests
         /// </summary>
-        public TimeSpan Duration {
+        public TimeSpan Duration 
+        {
             get { return EndTime.Subtract(StartTime); }
         }
 
