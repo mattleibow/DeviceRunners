@@ -185,12 +185,12 @@ namespace NUnit.Runner.Helpers
         public int ExplicitCount { get; private set; }
 
         /// <summary>
-        /// Gets the time when the tests started running
+        /// Gets the time when the test suite started running
         /// </summary>
         public DateTime StartTime { get; private set; }
 
         /// <summary>
-        /// Gets the time when the tests ended it's execution
+        /// Gets the time when the test suite completed execution
         /// </summary>
         public DateTime EndTime { get; private set; }
 
