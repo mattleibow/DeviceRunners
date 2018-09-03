@@ -101,15 +101,15 @@
 
                 <StackLayout Grid.Row="10" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
                     <Label Text="Start time:" FontSize="Small" FontAttributes="Bold" />
-                    <Label Text="{Binding Results.TestResult.StartTime, StringFormat='{0:u}'}" FontSize="Small" />
+                    <Label Text="{Binding Results.StartTime, StringFormat='{0:u}'}" FontSize="Small" />
                 </StackLayout>
                 <StackLayout Grid.Row="11" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
                     <Label Text="End time:" FontSize="Small" FontAttributes="Bold" />
-                    <Label Text="{Binding Results.TestResult.EndTime, StringFormat='{0:u}'}" FontSize="Small" />
+                    <Label Text="{Binding Results.EndTime, StringFormat='{0:u}'}" FontSize="Small" />
                 </StackLayout>
                 <StackLayout Grid.Row="12" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="4">
                     <Label Text="Duration:" FontSize="Small" FontAttributes="Bold" />
-                    <Label Text="{Binding Results.TestResult.Duration, StringFormat='{0:F3} seconds'}" FontSize="Small" />
+                    <Label Text="{Binding Results.Duration, StringFormat='{0:s\\.fff} seconds'}" FontSize="Small" />
                 </StackLayout>
             </Grid>
 

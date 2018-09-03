@@ -21,6 +21,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
@@ -46,6 +47,8 @@ namespace NUnit.Runner.Helpers
             _results = results;
             Initialize();
             Summarize(results.TestResults);
+            StartTime = results.StartTime;
+            EndTime = results.EndTime;
         }
 
         #endregion
@@ -180,6 +183,24 @@ namespace NUnit.Runner.Helpers
         /// Gets the count of tests not run because the are Explicit
         /// </summary>
         public int ExplicitCount { get; private set; }
+
+        /// <summary>
+        /// Gets the time when the test suite started running
+        /// </summary>
+        public DateTime StartTime { get; private set; }
+
+        /// <summary>
+        /// Gets the time when the test suite completed execution
+        /// </summary>
+        public DateTime EndTime { get; private set; }
+
+        /// <summary>
+        /// Gets how long it took to execute the tests
+        /// </summary>
+        public TimeSpan Duration 
+        {
+            get { return EndTime.Subtract(StartTime); }
+        }
 
         #endregion
 
