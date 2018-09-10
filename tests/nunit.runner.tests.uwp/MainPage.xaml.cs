@@ -41,7 +41,9 @@ namespace NUnit.Runner.Tests
             // duplicate the following line with a type from the referenced assembly
             //nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
             // Or, if you want to add tests with an extra test options dictionary
-            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly, new Dictionary<string, object>());
+            var parameters = new Dictionary<string, string> { { "Parameter", "Value" } };
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly, 
+                new Dictionary<string, object> { { FrameworkPackageSettings.TestParametersDictionary, parameters} });
 
             // Available options for testing
             nunit.Options = new TestOptions
