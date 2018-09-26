@@ -53,6 +53,8 @@ namespace NUnit.Runner.Tests
 
             // If you want to add tests in another assembly
             //nunit.AddTestAssembly(typeof(MyTests).Assembly);
+            // Or, if you want to add tests with an extra test options dictionary
+            //nunit.AddTestAssembly(typeof(MyTests).Assembly, new Dictionary<string, object>());
 
             // Available options for testing
             nunit.Options = new TestOptions

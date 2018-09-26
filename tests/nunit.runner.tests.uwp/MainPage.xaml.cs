@@ -21,6 +21,7 @@
 // ***********************************************************************
 
 using System.Reflection;
+using System.Collections.Generic;
 
 using NUnit.Runner.Services;
 
@@ -38,7 +39,11 @@ namespace NUnit.Runner.Tests
 
             // If you want to add tests in another assembly, add a reference and
             // duplicate the following line with a type from the referenced assembly
-            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+            //nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly);
+            // Or, if you want to add tests with an extra test options dictionary
+            var parameters = new Dictionary<string, string> { { "Parameter", "Value" } };
+            nunit.AddTestAssembly(typeof(MainPage).GetTypeInfo().Assembly, 
+                new Dictionary<string, object> { { FrameworkPackageSettings.TestParametersDictionary, parameters} });
 
             // Available options for testing
             nunit.Options = new TestOptions

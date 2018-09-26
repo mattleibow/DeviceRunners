@@ -21,6 +21,7 @@
 // ***********************************************************************
 
 using System.Reflection;
+using System.Collections.Generic;
 
 using NUnit.Runner.Services;
 using NUnit.Runner.View;
@@ -59,9 +60,10 @@ namespace NUnit.Runner
         /// Adds an assembly to be tested.
         /// </summary>
         /// <param name="testAssembly">The test assembly.</param>
-        public void AddTestAssembly(Assembly testAssembly)
+        /// <param name="options">An optional dictionary of options for loading the assembly.</param>
+        public void AddTestAssembly(Assembly testAssembly, Dictionary<string, object> options = null)
         {
-            _model.AddTest(testAssembly);
+            _model.AddTest(testAssembly, options);
         }
 
         /// <summary>

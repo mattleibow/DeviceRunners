@@ -43,5 +43,13 @@ namespace NUnit.Runner.Tests
         {
             Assert.That(x + y, Is.EqualTo(expected));
         }
-    }
+
+        [Test]
+        public void TestPassedInParameter()
+        {
+            var val = TestContext.Parameters.Get("Parameter");
+            TestContext.WriteLine("The passed-in value associated with 'Parameter' is: {0}", val?? "null");
+            Assert.True(val == null || val == "Value");
+        }
+}
 }
