@@ -22,7 +22,6 @@
 
 using System.Reflection;
 using System.Collections.Generic;
-
 using NUnit.Runner.Services;
 using NUnit.Runner.View;
 using NUnit.Runner.ViewModel;
