@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:devices="clr-namespace:Xunit.Runner.Devices;assembly=Xunit.Runner.Devices"
+             xmlns:local="using:Xunit.Runner.Devices.Maui"
+             x:Class="Xunit.Runner.Devices.Maui.Pages.CreditsPage"
+             Title="Credits">
+
+    <WebView Navigating="OnNavigating">
+        <WebView.Source>
+            <HtmlWebViewSource Html="{Binding CreditsHtml}" />
+        </WebView.Source>
+    </WebView>
+
+</ContentPage>
