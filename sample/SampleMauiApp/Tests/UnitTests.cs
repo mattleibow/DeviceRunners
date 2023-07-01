@@ -1,69 +1,44 @@
-﻿using System;
-using Xunit;
-using Xunit.Abstractions;
+﻿namespace Microsoft.Maui.TestUtils.DeviceTests.Sample;
 
-namespace Microsoft.Maui.TestUtils.DeviceTests.Sample
+public class UnitTests
 {
-	public class UnitTests
+	[Fact]
+	public void SuccessfulTest()
 	{
-		readonly ITestOutputHelper _output;
+		Assert.True(true);
+	}
 
-		public UnitTests(ITestOutputHelper output)
-		{
-			_output = output;
-		}
+	[Fact(Skip = "This test is skipped.")]
+	public void SkippedTest()
+	{
+	}
 
-		[Fact]
-		public void SuccessfulTest()
-		{
-			Assert.True(true);
-		}
+	[Fact]
+	public void FailingTest()
+	{
+		throw new Exception("This is meant to fail.");
+	}
 
-		[Fact(Skip = "This test is skipped.")]
-		public void SkippedTest()
-		{
-		}
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(3)]
+	public void ParameterizedTest(int number)
+	{
+		Assert.NotEqual(0, number);
+	}
 
-		[Fact]
-		public void FailingTest()
-		{
-			throw new Exception("This is meant to fail.");
-		}
+	[Fact]
+	public async Task LongRunningSuccess()
+	{
+		await Task.Delay(2000);
+		Assert.True(true);
+	}
 
-		[Theory]
-		[InlineData(1)]
-		[InlineData(2)]
-		[InlineData(3)]
-		public void ParameterizedTest(int number)
-		{
-			Assert.NotEqual(0, number);
-		}
-
-		[Fact]
-		public void OutputTest()
-		{
-			_output.WriteLine("This is test output.");
-		}
-
-		[Fact]
-		public void FailingOutputTest()
-		{
-			_output.WriteLine("This is test output.");
-			throw new Exception("This is meant to fail.");
-		}
-
-		[Fact]
-		public async Task LongRunningSuccess()
-		{
-			await Task.Delay(2000);
-			Assert.True(true);
-		}
-
-		[Fact]
-		public async Task LongRunningFail()
-		{
-			await Task.Delay(2000);
-			throw new Exception("This is meant to fail.");
-		}
+	[Fact]
+	public async Task LongRunningFail()
+	{
+		await Task.Delay(2000);
+		throw new Exception("This is meant to fail.");
 	}
 }

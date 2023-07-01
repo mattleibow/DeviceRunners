@@ -54,6 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\TestProject\TestProject.csproj" />
 		<ProjectReference Include="..\..\src\Xunit.Runner.Devices.Maui\Xunit.Runner.Devices.Maui.csproj" />
 	</ItemGroup>
 

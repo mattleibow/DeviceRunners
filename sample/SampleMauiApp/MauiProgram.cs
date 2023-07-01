@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Xunit.Runner.Devices;
 using Xunit.Runner.Devices.Maui;
+using TestProject;
 
 namespace SampleMauiApp;
 
@@ -18,7 +19,11 @@ public static class MauiProgram
 			})
 			.ConfigureRunner(new RunnerOptions
 			{
-				Assemblies = { typeof(MauiProgram).Assembly },
+				Assemblies =
+				{
+					typeof(MauiProgram).Assembly,
+					typeof(UnitTest1).Assembly,
+				},
 				AutoStart = true,
 			});
 

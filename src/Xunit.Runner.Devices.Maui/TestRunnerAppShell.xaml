@@ -6,10 +6,28 @@
     xmlns:local="clr-namespace:Xunit.Runner.Devices.Maui"
     xmlns:pages="clr-namespace:Xunit.Runner.Devices.Maui.Pages">
 
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid ColumnDefinitions="0.2*,0.8*">
+                <Image Source="{Binding FlyoutIcon}"
+                       Margin="5"
+                       HeightRequest="45" />
+                <Label Grid.Column="1"
+                       Text="{Binding Title}"
+                       VerticalTextAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
     <ShellContent
         Title="Test Runner"
         ContentTemplate="{DataTemplate pages:HomePage}"
         Route="runner" />
+
+    <ShellContent
+        Title="Diagnostics"
+        ContentTemplate="{DataTemplate pages:DiagnosticsPage}"
+        Route="diagnostics" />
 
     <ShellContent
         Title="Credits"

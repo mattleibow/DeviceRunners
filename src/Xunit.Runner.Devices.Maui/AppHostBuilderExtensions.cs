@@ -11,8 +11,9 @@ namespace Xunit.Runner.Devices.Maui
 			appHostBuilder.Services.AddSingleton<ITestRunner, DeviceRunner>();
 
 			// only register the "root" view models and the others are created by the ITestRunner
-			appHostBuilder.Services.AddTransient<HomeViewModel>();
-			appHostBuilder.Services.AddTransient<CreditsViewModel>();
+			appHostBuilder.Services.AddSingleton<HomeViewModel>();
+			appHostBuilder.Services.AddSingleton<DiagnosticsViewModel>();
+			appHostBuilder.Services.AddSingleton<CreditsViewModel>();
 
 			// register app components
 			appHostBuilder.Services.AddSingleton<TestRunnerApp>();
@@ -24,6 +25,7 @@ namespace Xunit.Runner.Devices.Maui
 			appHostBuilder.Services.AddTransient<TestAssemblyPage>();
 			appHostBuilder.Services.AddTransient<TestResultPage>();
 			appHostBuilder.Services.AddTransient<CreditsPage>();
+			appHostBuilder.Services.AddTransient<DiagnosticsPage>();
 
 			return appHostBuilder;
 		}

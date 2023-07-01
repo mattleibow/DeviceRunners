@@ -6,24 +6,28 @@ namespace Xunit.Runner.Devices;
 public class HomeViewModel : AbstractBaseViewModel
 {
 	readonly ITestRunner _runner;
+	readonly DiagnosticsViewModel _diagnosticsViewModel;
 
-	string _diagnosticMessages = string.Empty;
 	bool _loaded;
 	bool _isBusy;
+	ObservableCollection<TestAssemblyViewModel> _testAssemblies = new();
 
-	public HomeViewModel(ITestRunner runner)
+	public HomeViewModel(ITestRunner runner, DiagnosticsViewModel diagnosticsViewModel)
 	{
 		_runner = runner;
-
-		_runner.OnDiagnosticMessage += RunnerOnOnDiagnosticMessage;
-
-		TestAssemblies = new ObservableCollection<TestAssemblyViewModel>();
+		_diagnosticsViewModel = diagnosticsViewModel;
 
 		RunEverythingCommand = new Command(RunEverythingExecute, () => !_isBusy);
 		NavigateToTestAssemblyCommand = new Command<TestAssemblyViewModel?>(NavigateToTestAssemblyExecute);
 	}
 
-	public ObservableCollection<TestAssemblyViewModel> TestAssemblies { get; private set; }
+	public DiagnosticsViewModel Diagnostics => _diagnosticsViewModel;
+
+	public ObservableCollection<TestAssemblyViewModel> TestAssemblies
+	{
+		get => _testAssemblies;
+		private set => Set(ref _testAssemblies, value);
+	}
 
 	public ICommand RunEverythingCommand { get; }
 
@@ -37,12 +41,6 @@ public class HomeViewModel : AbstractBaseViewModel
 		private set => Set(ref _isBusy, value, ((Command)RunEverythingCommand).ChangeCanExecute);
 	}
 
-	public string DiagnosticMessages
-	{
-		get => _diagnosticMessages;
-		private set => Set(ref _diagnosticMessages, value);
-	}
-
 	public async Task StartAssemblyScanAsync()
 	{
 		if (_loaded)
@@ -50,15 +48,20 @@ public class HomeViewModel : AbstractBaseViewModel
 
 		IsBusy = true;
 
+		_diagnosticsViewModel.PostDiagnosticMessage("Discovering test assemblies...");
+
 		try
 		{
 			var allTests = await _runner.DiscoverAsync();
 
 			TestAssemblies = new ObservableCollection<TestAssemblyViewModel>(allTests);
 			RaisePropertyChanged(nameof(TestAssemblies));
+
+			_diagnosticsViewModel.PostDiagnosticMessage($"Discovered {allTests.Count} test assemblies.");
 		}
 		finally
 		{
+
 			IsBusy = false;
 			_loaded = true;
 		}
@@ -70,13 +73,15 @@ public class HomeViewModel : AbstractBaseViewModel
 		{
 			IsBusy = true;
 
-			if (!string.IsNullOrWhiteSpace(DiagnosticMessages))
-				DiagnosticMessages += $"----------{Environment.NewLine}";
+			_diagnosticsViewModel.Clear();
+			_diagnosticsViewModel.PostDiagnosticMessage("Starting a new test run of everything...");
 
 			await _runner.RunAsync(TestAssemblies.Select(t => t.RunInfo).ToList(), "Run Everything");
 		}
 		finally
 		{
+			_diagnosticsViewModel.PostDiagnosticMessage("Test run complete.");
+
 			IsBusy = false;
 		}
 	}
@@ -87,10 +92,5 @@ public class HomeViewModel : AbstractBaseViewModel
 			return;
 
 		TestAssemblySelected?.Invoke(this, vm);
-	}
-
-	void RunnerOnOnDiagnosticMessage(string s)
-	{
-		DiagnosticMessages += $"{s}{Environment.NewLine}{Environment.NewLine}";
 	}
 }

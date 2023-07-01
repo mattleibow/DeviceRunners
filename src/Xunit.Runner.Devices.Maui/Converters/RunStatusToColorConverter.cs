@@ -14,11 +14,11 @@ class RunStatusToColorConverter : IValueConverter
 
 		return status switch
 		{
-			RunStatus.Ok => Application.Current.Resources["VisualRunnerSuccessfulTestsColor"],
-			RunStatus.Failed => Application.Current.Resources["VisualRunnerFailedTestsColor"],
-			RunStatus.NoTests => Application.Current.Resources["VisualRunnerNoTestsColor"],
-			RunStatus.NotRun => Application.Current.Resources["VisualRunnerNotRunTestsColor"],
-			RunStatus.Skipped => Application.Current.Resources["VisualRunnerSkippedTestsColor"],
+			RunStatus.Ok => Application.Current.Resources["SuccessfulTestsColor"],
+			RunStatus.Failed => Application.Current.Resources["FailedTestsColor"],
+			RunStatus.NoTests => Application.Current.Resources["NoTestsColor"],
+			RunStatus.NotRun => Application.Current.Resources["NotRunTestsColor"],
+			RunStatus.Skipped => Application.Current.Resources["SkippedTestsColor"],
 			_ => throw new ArgumentOutOfRangeException(nameof(value)),
 		};
 	}

@@ -10,5 +10,5 @@ public interface ITestRunner
 
 	Task RunAsync(IReadOnlyList<AssemblyRunInfo> runInfos, string? message = null);
 
-	event Action<string> OnDiagnosticMessage;
+	event EventHandler<string> DiagnosticMessageRecieved;
 }

@@ -63,7 +63,7 @@ public class DeviceRunner : ITestListener, ITestRunner
 		}
 	}
 
-	public event Action<string>? OnDiagnosticMessage;
+	public event EventHandler<string>? DiagnosticMessageRecieved;
 
 	public Task<IReadOnlyList<TestAssemblyViewModel>> DiscoverAsync()
 	{
@@ -216,7 +216,7 @@ public class DeviceRunner : ITestListener, ITestRunner
 
 		var executionOptions = TestFrameworkOptions.ForExecution(runInfo.Configuration);
 
-		var diagSink = new DiagnosticMessageSink(d => context.Post(_ => OnDiagnosticMessage?.Invoke(d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
+		var diagSink = new DiagnosticMessageSink(d => context.Post(_ => DiagnosticMessageRecieved?.Invoke(this, d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
 
 		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, context);
 
