@@ -1,4 +1,4 @@
 {
     "cmake.configureOnOpen": false,
-    "dotnet.defaultSolution": "Xunit.Runner.Devices.Maui.sln"
+    "dotnet.defaultSolution": "Xunit.Runner.Devices.sln"
 }
