@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+
+using TestProject;
+
 using Xunit.Runner.Devices;
 using Xunit.Runner.Devices.Maui;
-using TestProject;
 
 namespace SampleMauiApp;
 

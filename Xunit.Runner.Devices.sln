@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.Maui", "src\Xunit.Runner.Devices.Maui\Xunit.Runner.Devices.Maui.csproj", "{8ED8336F-C961-4E5E-9D60-0B110A66FA93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Extensions.UITest.Maui", "src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj", "{98D577B3-F915-4C12-8963-BA16876662E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{8F6B02F0-9CB3-4B82-BDFD-91CF9B34D138}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8F6B02F0-9CB3-4B82-BDFD-91CF9B34D138}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8F6B02F0-9CB3-4B82-BDFD-91CF9B34D138}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98D577B3-F915-4C12-8963-BA16876662E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98D577B3-F915-4C12-8963-BA16876662E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98D577B3-F915-4C12-8963-BA16876662E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98D577B3-F915-4C12-8963-BA16876662E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

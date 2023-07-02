@@ -13,7 +13,7 @@ partial class HomePage : ContentPage
 		ViewModel = homeViewModel;
 	}
 
-	
+
 	public HomeViewModel? ViewModel
 	{
 		get => BindingContext as HomeViewModel;

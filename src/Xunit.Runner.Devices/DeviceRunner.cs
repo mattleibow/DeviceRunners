@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+
 using Microsoft.Extensions.Logging;
 
 namespace Xunit.Runner.Devices;

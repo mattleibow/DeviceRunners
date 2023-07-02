@@ -42,10 +42,10 @@ internal class FileSystemUtils
 #if IOS || MACCATALYST || MACOS
 		// macOS/iOS: we use a path next to the executable
 		var root = NSBundle.MainBundle.BundlePath;
-	#if MACCATALYST || MACOS
+#if MACCATALYST || MACOS
 		// macOS is actually in a sub folder
 		root = Path.Combine(root, "Contents", "Resources");
-	#endif
+#endif
 		var file = Path.Combine(root, filename);
 #endif
 
