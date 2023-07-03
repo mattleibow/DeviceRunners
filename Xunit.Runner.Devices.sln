@@ -7,11 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleMauiApp", "sample\Sam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "sample\TestProject\TestProject.csproj", "{8F6B02F0-9CB3-4B82-BDFD-91CF9B34D138}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices", "src\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj", "{8ED8336F-4E5E-9D60-C961-0B110A66FA93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.VisualRunner", "src\Xunit.Runner.Devices.VisualRunner\Xunit.Runner.Devices.VisualRunner.csproj", "{8ED8336F-4E5E-9D60-C961-0B110A66FA93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.Maui", "src\Xunit.Runner.Devices.Maui\Xunit.Runner.Devices.Maui.csproj", "{8ED8336F-C961-4E5E-9D60-0B110A66FA93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.VisualRunner.Maui", "src\Xunit.Runner.Devices.VisualRunner.Maui\Xunit.Runner.Devices.VisualRunner.Maui.csproj", "{8ED8336F-C961-4E5E-9D60-0B110A66FA93}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Extensions.UITest.Maui", "src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj", "{98D577B3-F915-4C12-8963-BA16876662E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.XHarness.Maui", "src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj", "{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{98D577B3-F915-4C12-8963-BA16876662E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98D577B3-F915-4C12-8963-BA16876662E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98D577B3-F915-4C12-8963-BA16876662E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,8 +2,9 @@
 
 using TestProject;
 
-using Xunit.Runner.Devices;
-using Xunit.Runner.Devices.Maui;
+using Xunit.Runner.Devices.VisualRunner;
+using Xunit.Runner.Devices.VisualRunner.Maui;
+using Xunit.Runner.Devices.XHarness.Maui;
 
 namespace SampleMauiApp;
 
@@ -13,12 +14,14 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
-			.UseMauiApp<TestRunnerApp>()
+			// .UseMauiApp<TestRunnerApp>()
+			.UseMauiApp<XHarnessApp>()
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			})
+			.ConfigureXHarness()
 			.ConfigureRunner(new RunnerOptions
 			{
 				Assemblies =
@@ -26,7 +29,6 @@ public static class MauiProgram
 					typeof(MauiProgram).Assembly,
 					typeof(UnitTest1).Assembly,
 				},
-				AutoStart = true,
 			});
 
 #if DEBUG

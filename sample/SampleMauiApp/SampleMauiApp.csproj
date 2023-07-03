@@ -53,8 +53,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.Maui\Xunit.Runner.Devices.Maui.csproj" />
+    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.VisualRunner.Maui\Xunit.Runner.Devices.VisualRunner.Maui.csproj" />
     <ProjectReference Include="..\..\src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj" />
+    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj" />
   </ItemGroup>
 
 </Project>

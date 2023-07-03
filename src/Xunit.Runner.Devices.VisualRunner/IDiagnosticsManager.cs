@@ -1,0 +1,8 @@
+﻿namespace Xunit.Runner.Devices.VisualRunner;
+
+public interface IDiagnosticsManager
+{
+	void PostDiagnosticMessage(string message);
+
+	event EventHandler<string>? DiagnosticMessageRecieved;
+}
