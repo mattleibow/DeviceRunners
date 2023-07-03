@@ -9,6 +9,7 @@ namespace Xunit.Runner.Devices.Maui
 			// register runner components
 			appHostBuilder.Services.AddSingleton(options);
 			appHostBuilder.Services.AddSingleton<ITestRunner, DeviceRunner>();
+			appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
 
 			// only register the "root" view models and the others are created by the ITestRunner
 			appHostBuilder.Services.AddSingleton<HomeViewModel>();

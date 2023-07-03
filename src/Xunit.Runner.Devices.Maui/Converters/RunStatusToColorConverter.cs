@@ -15,7 +15,7 @@ class RunStatusToColorConverter : IValueConverter
 
 		return status switch
 		{
-			RunStatus.Ok => Application.Current.Resources["SuccessfulTestsColor"],
+			RunStatus.Passed => Application.Current.Resources["SuccessfulTestsColor"],
 			RunStatus.Failed => Application.Current.Resources["FailedTestsColor"],
 			RunStatus.NoTests => Application.Current.Resources["NoTestsColor"],
 			RunStatus.NotRun => Application.Current.Resources["NotRunTestsColor"],

@@ -1,6 +1,7 @@
+using System.Collections;
+
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using System.Collections;
 
 namespace SampleMauiApp;
 
@@ -15,7 +16,7 @@ public class DynamicUITests : UITests<ContentPage>
 		{
 			Background = Brush.White,
 			Children =
-			{ 
+			{
 				new Grid
 				{
 					WidthRequest = 50,

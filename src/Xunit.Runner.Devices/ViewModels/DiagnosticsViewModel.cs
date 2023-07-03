@@ -6,18 +6,18 @@ namespace Xunit.Runner.Devices;
 
 public class DiagnosticsViewModel : AbstractBaseViewModel
 {
-	readonly ITestRunner _runner;
+	readonly IDiagnosticsManager _diagnosticsManager;
 
 	string _messagesString = "";
 
-	public DiagnosticsViewModel(ITestRunner runner)
+	public DiagnosticsViewModel(IDiagnosticsManager diagnosticsManager)
 	{
-		_runner = runner;
-		_runner.DiagnosticMessageRecieved += OnDiagnosticMessageRecieved;
+		_diagnosticsManager = diagnosticsManager;
+		_diagnosticsManager.DiagnosticMessageRecieved += OnDiagnosticMessageRecieved;
 
 		Messages.CollectionChanged += OnDiagnosticMessagesCollectionChanged;
 
-		ClearMessagesCommand = new Command(Clear);
+		ClearMessagesCommand = new Command(ClearExecute);
 	}
 
 	public ICommand ClearMessagesCommand { get; }
@@ -30,19 +30,14 @@ public class DiagnosticsViewModel : AbstractBaseViewModel
 		private set => Set(ref _messagesString, value);
 	}
 
-	public void PostDiagnosticMessage(string message)
-	{
-		Messages.Add(message);
-	}
-
-	public void Clear()
+	void ClearExecute()
 	{
 		Messages.Clear();
 	}
 
 	void OnDiagnosticMessageRecieved(object? sender, string message)
 	{
-		PostDiagnosticMessage(message);
+		Messages.Add(message);
 	}
 
 	void OnDiagnosticMessagesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

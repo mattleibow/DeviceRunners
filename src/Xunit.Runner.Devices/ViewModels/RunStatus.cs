@@ -2,7 +2,7 @@
 
 public enum RunStatus
 {
-	Ok,
+	Passed,
 	Failed,
 	NoTests,
 	Skipped,

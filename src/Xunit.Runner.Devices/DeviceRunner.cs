@@ -9,13 +9,16 @@ public class DeviceRunner : ITestListener, ITestRunner
 {
 	readonly SynchronizationContext context = SynchronizationContext.Current;
 	readonly AsyncLock executionLock = new();
+	readonly IDiagnosticsManager _diagnosticsManager;
 	readonly TestRunLogger _logger;
 	volatile bool cancelled;
 
-	public DeviceRunner(RunnerOptions options, ILogger<DeviceRunner> logger)
+	public DeviceRunner(RunnerOptions options, IDiagnosticsManager diagnosticsManager, ILogger<DeviceRunner> logger)
 	{
-		TestAssemblies = options.Assemblies;
 		_logger = new TestRunLogger(logger);
+		_diagnosticsManager = diagnosticsManager;
+
+		TestAssemblies = options.Assemblies;
 	}
 
 	public IReadOnlyCollection<Assembly> TestAssemblies { get; }
@@ -63,8 +66,6 @@ public class DeviceRunner : ITestListener, ITestRunner
 			}
 		}
 	}
-
-	public event EventHandler<string>? DiagnosticMessageRecieved;
 
 	public Task<IReadOnlyList<TestAssemblyViewModel>> DiscoverAsync()
 	{
@@ -217,7 +218,7 @@ public class DeviceRunner : ITestListener, ITestRunner
 
 		var executionOptions = TestFrameworkOptions.ForExecution(runInfo.Configuration);
 
-		var diagSink = new DiagnosticMessageSink(d => context.Post(_ => DiagnosticMessageRecieved?.Invoke(this, d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
+		var diagSink = new DiagnosticMessageSink(d => context.Post(_ => _diagnosticsManager.PostDiagnosticMessage(d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
 
 		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, context);
 

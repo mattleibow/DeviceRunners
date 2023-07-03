@@ -6,28 +6,27 @@ namespace Xunit.Runner.Devices;
 public class HomeViewModel : AbstractBaseViewModel
 {
 	readonly ITestRunner _runner;
-	readonly DiagnosticsViewModel _diagnosticsViewModel;
+	readonly RunnerOptions _runnerOptions;
+	readonly IDiagnosticsManager _diagnosticsManager;
 
-	bool _loaded;
+	bool _isLoaded;
 	bool _isBusy;
-	ObservableCollection<TestAssemblyViewModel> _testAssemblies = new();
 
-	public HomeViewModel(ITestRunner runner, DiagnosticsViewModel diagnosticsViewModel)
+	public HomeViewModel(ITestRunner runner, RunnerOptions options, IDiagnosticsManager diagnosticsManager, DiagnosticsViewModel diagnosticsViewModel)
 	{
 		_runner = runner;
-		_diagnosticsViewModel = diagnosticsViewModel;
+		_runnerOptions = options;
+		_diagnosticsManager = diagnosticsManager;
+
+		Diagnostics = diagnosticsViewModel;
 
 		RunEverythingCommand = new Command(RunEverythingExecute, () => !_isBusy);
 		NavigateToTestAssemblyCommand = new Command<TestAssemblyViewModel?>(NavigateToTestAssemblyExecute);
 	}
 
-	public DiagnosticsViewModel Diagnostics => _diagnosticsViewModel;
+	public DiagnosticsViewModel Diagnostics { get; }
 
-	public ObservableCollection<TestAssemblyViewModel> TestAssemblies
-	{
-		get => _testAssemblies;
-		private set => Set(ref _testAssemblies, value);
-	}
+	public ObservableCollection<TestAssemblyViewModel> TestAssemblies { get; } = new();
 
 	public ICommand RunEverythingCommand { get; }
 
@@ -35,53 +34,72 @@ public class HomeViewModel : AbstractBaseViewModel
 
 	public event EventHandler<TestAssemblyViewModel>? TestAssemblySelected;
 
+	public event EventHandler? AssemblyScanCompleted;
+
 	public bool IsBusy
 	{
 		get => _isBusy;
 		private set => Set(ref _isBusy, value, ((Command)RunEverythingCommand).ChangeCanExecute);
 	}
 
+	public bool IsLoaded
+	{
+		get => _isLoaded;
+		private set => Set(ref _isLoaded, value, () => AssemblyScanCompleted?.Invoke(this, EventArgs.Empty));
+	}
+
 	public async Task StartAssemblyScanAsync()
 	{
-		if (_loaded)
+		if (IsLoaded)
 			return;
-
 		IsBusy = true;
 
-		_diagnosticsViewModel.PostDiagnosticMessage("Discovering test assemblies...");
+		_diagnosticsManager.PostDiagnosticMessage("Discovering test assemblies...");
 
 		try
 		{
 			var allTests = await _runner.DiscoverAsync();
 
-			TestAssemblies = new ObservableCollection<TestAssemblyViewModel>(allTests);
-			RaisePropertyChanged(nameof(TestAssemblies));
+			foreach (var vm in allTests)
+			{
+				TestAssemblies.Add(vm);
+			}
 
-			_diagnosticsViewModel.PostDiagnosticMessage($"Discovered {allTests.Count} test assemblies.");
+			_diagnosticsManager.PostDiagnosticMessage($"Discovered {allTests.Count} test assemblies.");
+		}
+		catch (Exception ex)
+		{
+			_diagnosticsManager.PostDiagnosticMessage($"Error during test discovery: '{ex.Message}'{Environment.NewLine}{ex}");
+		}
+
+		IsLoaded = true;
+		IsBusy = false;
+	}
+
+	async Task RunEverythingAsync()
+	{
+		_diagnosticsManager.PostDiagnosticMessage("Starting a new test run of everything...");
+
+		try
+		{
+			await _runner.RunAsync(TestAssemblies.Select(t => t.RunInfo).ToList(), "Run Everything");
 		}
 		finally
 		{
-
-			IsBusy = false;
-			_loaded = true;
+			_diagnosticsManager.PostDiagnosticMessage("Test run complete.");
 		}
 	}
 
 	async void RunEverythingExecute()
 	{
+		IsBusy = true;
+
 		try
 		{
-			IsBusy = true;
-
-			_diagnosticsViewModel.Clear();
-			_diagnosticsViewModel.PostDiagnosticMessage("Starting a new test run of everything...");
-
-			await _runner.RunAsync(TestAssemblies.Select(t => t.RunInfo).ToList(), "Run Everything");
+			await RunEverythingAsync();
 		}
 		finally
 		{
-			_diagnosticsViewModel.PostDiagnosticMessage("Test run complete.");
-
 			IsBusy = false;
 		}
 	}

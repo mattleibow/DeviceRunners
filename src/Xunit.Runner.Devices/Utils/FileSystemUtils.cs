@@ -47,9 +47,7 @@ internal class FileSystemUtils
 		root = Path.Combine(root, "Contents", "Resources");
 #endif
 		var file = Path.Combine(root, filename);
-#endif
-
-#if WINDOWS
+#elif WINDOWS
 		// Windows: has 2 modes, packaged uses the Package API
 		if (IsPackagedApp.Value)
 			return Package.Current.InstalledLocation.OpenStreamForReadAsync(filename).Result;
@@ -57,6 +55,8 @@ internal class FileSystemUtils
 		// unpackaged is next to the executable
 		var root = AppContext.BaseDirectory;
 		var file = Path.Combine(root, filename);
+#else
+		var file = filename;
 #endif
 
 		// if the file exists, then open it

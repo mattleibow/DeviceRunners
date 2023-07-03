@@ -96,7 +96,7 @@ public class TestCaseViewModel : AbstractBaseViewModel
 		{
 			Result = TestState.Passed;
 			Message = $"✔ Success! {TestResult.Duration.TotalMilliseconds} ms";
-			RunStatus = RunStatus.Ok;
+			RunStatus = RunStatus.Passed;
 		}
 		else if (TestResult.TestResultMessage is ITestFailed failedMessage)
 		{

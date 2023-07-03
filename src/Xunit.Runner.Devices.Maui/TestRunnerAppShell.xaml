@@ -27,11 +27,11 @@
     <ShellContent
         Title="Diagnostics"
         ContentTemplate="{DataTemplate pages:DiagnosticsPage}"
-        Route="testrunner/diagnostics" />
+        Route="diagnostics" />
 
     <ShellContent
         Title="Credits"
         ContentTemplate="{DataTemplate pages:CreditsPage}"
-        Route="testrunner/credits" />
+        Route="credits" />
 
 </Shell>

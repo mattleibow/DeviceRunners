@@ -195,7 +195,7 @@ namespace Xunit.Runner.Devices
 			itemChanged?.Invoke(sender, args);
 		}
 
-		void DataSource_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+		void DataSource_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			switch (e.Action)
 			{
@@ -230,7 +230,7 @@ namespace Xunit.Runner.Devices
 			}
 		}
 
-		void DataSource_ItemChanged(object sender, PropertyChangedEventArgs e)
+		void DataSource_ItemChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			var item = (T)sender;
 			var index = filteredList.IndexOf(item);

@@ -278,7 +278,7 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 			// No failures and all run
 
 			DetailText = $"{prefix}✔ {passed}";
-			RunStatus = RunStatus.Ok;
+			RunStatus = RunStatus.Passed;
 
 			Result = TestState.Passed;
 		}
@@ -297,7 +297,7 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 			{
 				if (passed > 0)
 				{
-					RunStatus = RunStatus.Ok;
+					RunStatus = RunStatus.Passed;
 					Result = TestState.Passed;
 				}
 				else if (skipped > 0)
