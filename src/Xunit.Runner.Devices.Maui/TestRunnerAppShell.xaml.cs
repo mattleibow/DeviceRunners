@@ -8,7 +8,7 @@ public partial class TestRunnerAppShell : Shell
 	{
 		InitializeComponent();
 
-		Routing.RegisterRoute("runner/assembly", typeof(TestAssemblyPage));
-		Routing.RegisterRoute("runner/assembly/result", typeof(TestResultPage));
+		Routing.RegisterRoute("testrunner/assembly", typeof(TestAssemblyPage));
+		Routing.RegisterRoute("testrunner/assembly/result", typeof(TestResultPage));
 	}
 }

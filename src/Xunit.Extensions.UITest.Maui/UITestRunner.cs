@@ -12,6 +12,16 @@ public class UITestRunner : XunitTestRunner
 	{
 	}
 
-	protected override Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator) =>
-		new UITestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource).RunAsync();
+	protected override Task<decimal> InvokeTestMethodAsync(ExceptionAggregator aggregator)
+	{
+		// var invoker = new UITestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource);
+		// invoker.RunAsync();
+
+		var task = UIThreadAccessor.DispatchAsync(() => base.InvokeTestMethodAsync(aggregator));
+
+		// block the xUnit thread to ensure its concurrency throttle is effective
+		var runSummary = task.GetAwaiter().GetResult();
+
+		return Task.FromResult(runSummary);
+	}
 }

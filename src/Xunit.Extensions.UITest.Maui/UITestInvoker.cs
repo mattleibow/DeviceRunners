@@ -14,8 +14,7 @@ public class UITestInvoker : XunitTestInvoker
 
 	protected override Task<decimal> InvokeTestMethodAsync(object testClassInstance)
 	{
-		var task = Application.Current.Dispatcher.DispatchAsync(() =>
-			base.InvokeTestMethodAsync(testClassInstance));
+		var task = UIThreadAccessor.DispatchAsync(() => base.InvokeTestMethodAsync(testClassInstance));
 
 		// block the xUnit thread to ensure its concurrency throttle is effective
 		var runSummary = task.GetAwaiter().GetResult();
