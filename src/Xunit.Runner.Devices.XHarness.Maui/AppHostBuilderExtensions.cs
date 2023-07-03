@@ -1,20 +1,23 @@
-﻿using Xunit.Runner.Devices.XHarness.Maui.Pages;
+﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
+using Xunit.Runner.Devices.XHarness.Maui.Pages;
 
 namespace Xunit.Runner.Devices.XHarness.Maui;
 
 public static class AppHostBuilderExtensions
 {
-	public static MauiAppBuilder ConfigureXHarness(this MauiAppBuilder appHostBuilder)
+	public static MauiAppBuilder ConfigureXHarness(this MauiAppBuilder appHostBuilder, RunnerOptions options)
 	{
-		// // register runner components
-		// appHostBuilder.Services.AddSingleton(options);
-		// appHostBuilder.Services.AddSingleton<ITestRunner, DeviceRunner>();
-		// appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
+		// register runner components
+		appHostBuilder.Services.AddSingleton(options);
+		appHostBuilder.Services.AddSingleton<IDevice, XHarnessTestDevice>();
+		appHostBuilder.Services.AddSingleton<ApplicationOptions>(ApplicationOptions.Current);
 
-		// only register the "root" view models and the others are created by the ITestRunner
+#if IOS || MACCATALYST
+		appHostBuilder.Services.AddSingleton<ApplicationEntryPoint, XHarnessRunner>();
+#endif
+
+		// only register the "root" view models
 		appHostBuilder.Services.AddSingleton<HomeViewModel>();
-		// appHostBuilder.Services.AddSingleton<DiagnosticsViewModel>();
-		// appHostBuilder.Services.AddSingleton<CreditsViewModel>();
 
 		// register app components
 		appHostBuilder.Services.AddSingleton<XHarnessApp>();

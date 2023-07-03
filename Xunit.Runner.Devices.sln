@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Extensions.UITest.Mau
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.XHarness.Maui", "src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj", "{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices", "src\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj", "{7225E513-B597-4D98-B823-740196887242}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7225E513-B597-4D98-B823-740196887242}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7225E513-B597-4D98-B823-740196887242}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7225E513-B597-4D98-B823-740196887242}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7225E513-B597-4D98-B823-740196887242}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

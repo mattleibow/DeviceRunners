@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace Xunit.Runner.Devices.VisualRunner
+namespace Xunit.Runner.Devices
 {
 	public class RunnerOptions
 	{
@@ -15,7 +15,5 @@ namespace Xunit.Runner.Devices.VisualRunner
 		///   [category-name]=[skip-when-value]
 		/// </summary>
 		public List<string> SkipCategories { get; set; } = new List<string>();
-
-		public string TestResultsFilename { get; set; } = "TestResults.xml";
 	}
 }

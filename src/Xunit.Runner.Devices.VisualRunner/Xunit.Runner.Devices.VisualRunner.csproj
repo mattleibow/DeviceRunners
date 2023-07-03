@@ -14,6 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Embeddedresource Include="Assets/**" />
   </ItemGroup>
 

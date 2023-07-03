@@ -2,6 +2,7 @@
 
 partial class HomePage : ContentPage
 {
+	bool first = true;
 	public HomePage()
 	{
 		InitializeComponent();
@@ -19,6 +20,22 @@ partial class HomePage : ContentPage
 		set
 		{
 			BindingContext = value;
+		}
+	}
+
+	protected override async void OnAppearing()
+	{
+		base.OnAppearing();
+
+		if (!first)
+			return;
+		
+		first = false;
+	
+		try {
+			await ViewModel.RunTestsAsync();
+		} catch (Exception ex) {
+			Console.WriteLine(ex);
 		}
 	}
 }
