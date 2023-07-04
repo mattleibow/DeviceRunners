@@ -1,7 +1,7 @@
 ﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="using:Xunit.Runner.Devices.VisualRunner.Maui"
-             x:Class="Xunit.Runner.Devices.VisualRunner.Maui.TestRunnerApp">
+             x:Class="Xunit.Runner.Devices.VisualRunner.Maui.VisualRunnerApp">
     <Application.Resources>
         <ResourceDictionary>
 

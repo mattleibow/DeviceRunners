@@ -1,13 +1,13 @@
-﻿using Xunit.Runner.Devices.VisualRunner.Maui.Pages;
+﻿using Xunit.Runner.Devices.Maui;
+using Xunit.Runner.Devices.VisualRunner.Maui.Pages;
 
 namespace Xunit.Runner.Devices.VisualRunner.Maui;
 
 public static class AppHostBuilderExtensions
 {
-	public static MauiAppBuilder ConfigureVisualTestRunner(this MauiAppBuilder appHostBuilder, RunnerOptions options)
+	public static MauiAppBuilder ConfigureVisualTestRunner(this MauiAppBuilder appHostBuilder, TestRunnerUsage usage = TestRunnerUsage.Automatic)
 	{
 		// register runner components
-		appHostBuilder.Services.AddSingleton(options);
 		appHostBuilder.Services.AddSingleton<ITestRunner, VisualTestRunner>();
 		appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
 
@@ -17,9 +17,9 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<CreditsViewModel>();
 
 		// register app components
-		appHostBuilder.Services.AddSingleton<TestRunnerApp>();
-		appHostBuilder.Services.AddSingleton<TestRunnerWindow>();
-		appHostBuilder.Services.AddSingleton<TestRunnerAppShell>();
+		appHostBuilder.Services.AddSingleton<VisualRunnerApp>();
+		appHostBuilder.Services.AddSingleton<VisualRunnerWindow>();
+		appHostBuilder.Services.AddSingleton<VisualRunnerAppShell>();
 
 		// register pages
 		appHostBuilder.Services.AddTransient<HomePage>();
@@ -27,6 +27,9 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddTransient<TestResultPage>();
 		appHostBuilder.Services.AddTransient<CreditsPage>();
 		appHostBuilder.Services.AddTransient<DiagnosticsPage>();
+
+		if (usage == TestRunnerUsage.Always || (usage == TestRunnerUsage.Automatic))
+			appHostBuilder.UseMauiApp<VisualRunnerApp>();
 
 		return appHostBuilder;
 	}

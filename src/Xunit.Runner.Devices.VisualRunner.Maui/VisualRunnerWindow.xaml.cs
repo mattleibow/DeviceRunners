@@ -1,8 +1,8 @@
 ﻿namespace Xunit.Runner.Devices.VisualRunner.Maui;
 
-partial class TestRunnerWindow : Window
+partial class VisualRunnerWindow : Window
 {
-	public TestRunnerWindow(TestRunnerAppShell appShell)
+	public VisualRunnerWindow(VisualRunnerAppShell appShell)
 		: base(appShell)
 	{
 		InitializeComponent();
