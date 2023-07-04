@@ -13,7 +13,7 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<ApplicationOptions>(ApplicationOptions.Current);
 
 #if IOS || MACCATALYST
-		appHostBuilder.Services.AddSingleton<ApplicationEntryPoint, XHarnessRunner>();
+		appHostBuilder.Services.AddSingleton<ITestRunner, XHarnessRunner>();
 #endif
 
 		// only register the "root" view models

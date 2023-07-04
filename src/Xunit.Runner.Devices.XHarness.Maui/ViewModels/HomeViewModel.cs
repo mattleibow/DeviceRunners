@@ -5,9 +5,9 @@ namespace Xunit.Runner.Devices.XHarness.Maui;
 
 public class HomeViewModel
 {
-	readonly XHarnessRunner _runner;
+	readonly ITestRunner _runner;
 
-	public HomeViewModel(XHarnessRunner runner)
+	public HomeViewModel(ITestRunner runner)
 	{
 		_runner = runner;
 	}

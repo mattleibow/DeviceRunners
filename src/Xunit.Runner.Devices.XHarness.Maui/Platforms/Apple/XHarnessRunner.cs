@@ -13,7 +13,7 @@ using UIKit;
 
 namespace Xunit.Runner.Devices.XHarness.Maui;
 
-public class XHarnessRunner : iOSApplicationEntryPoint
+public class XHarnessRunner : iOSApplicationEntryPoint, ITestRunner
 {
 	readonly RunnerOptions _options;
 	readonly ApplicationOptions _applicationOptions;

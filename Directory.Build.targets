@@ -9,11 +9,14 @@
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Include="Platforms\Apple\**" />
-    <Compile Remove="Platforms\Apple\**\*.cs" />
-    <Compile Include="Platforms\Apple\**\*.cs" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
-    <Compile Include="Platforms\Apple\**\*.cs" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
-  </ItemGroup>
+  <Target Name="AddApplePlatformsFolder" BeforeTargets="_MauiRemovePlatformCompileItems">
+    <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
+      <Compile
+          Condition=" '$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'maccatalyst' "
+          Include="$(PlatformsProjectFolder)Apple\**\*$(DefaultLanguageSourceExtension)">
+        <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
+      </Compile>
+    </ItemGroup>
+  </Target>
 
 </Project>
