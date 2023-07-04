@@ -29,13 +29,6 @@ partial class HomePage : ContentPage
 
 		first = false;
 
-		try
-		{
-			await ViewModel.RunTestsAsync();
-		}
-		catch (Exception ex)
-		{
-			Console.WriteLine(ex);
-		}
+		await ViewModel.RunTestsAsync();
 	}
 }
