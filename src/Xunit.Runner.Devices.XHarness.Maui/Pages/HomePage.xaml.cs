@@ -17,10 +17,7 @@ partial class HomePage : ContentPage
 	public HomeViewModel? ViewModel
 	{
 		get => BindingContext as HomeViewModel;
-		set
-		{
-			BindingContext = value;
-		}
+		set => BindingContext = value;
 	}
 
 	protected override async void OnAppearing()
@@ -29,12 +26,15 @@ partial class HomePage : ContentPage
 
 		if (!first)
 			return;
-		
+
 		first = false;
-	
-		try {
+
+		try
+		{
 			await ViewModel.RunTestsAsync();
-		} catch (Exception ex) {
+		}
+		catch (Exception ex)
+		{
 			Console.WriteLine(ex);
 		}
 	}

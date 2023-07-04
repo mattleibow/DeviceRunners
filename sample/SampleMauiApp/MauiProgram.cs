@@ -14,6 +14,8 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		Console.WriteLine("YOU ARE HERE!  CreateMauiApp");
+
 		var runnerOptions = new RunnerOptions
 		{
 			Assemblies =

@@ -1,4 +1,5 @@
 ﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
+
 using Xunit.Runner.Devices.XHarness.Maui.Pages;
 
 namespace Xunit.Runner.Devices.XHarness.Maui;
@@ -12,7 +13,7 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<IDevice, XHarnessTestDevice>();
 		appHostBuilder.Services.AddSingleton<ApplicationOptions>(ApplicationOptions.Current);
 
-#if IOS || MACCATALYST
+#if IOS || MACCATALYST || ANDROID
 		appHostBuilder.Services.AddSingleton<ITestRunner, XHarnessRunner>();
 #endif
 

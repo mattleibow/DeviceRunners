@@ -58,13 +58,11 @@ public class XHarnessRunner : iOSApplicationEntryPoint, ITestRunner
 	{
 		TestsCompleted += OnTestsCompleted;
 
-		if (_applicationOptions.AutoStart || _applicationOptions.TerminateAfterExecution)
-			await Task.Run(RunAsync);
+		await Task.Run(RunAsync);
 
 		TestsCompleted -= OnTestsCompleted;
 
-		if (_applicationOptions.TerminateAfterExecution)
-			TerminateWithSuccess();
+		TerminateWithSuccess();
 
 		static void OnTestsCompleted(object? sender, TestRunResult results)
 		{
@@ -77,5 +75,11 @@ public class XHarnessRunner : iOSApplicationEntryPoint, ITestRunner
 
 			Console.WriteLine(message);
 		}
+	}
+
+	async Task<object> ITestRunner.RunTestsAsync()
+	{
+		await RunTestsAsync();
+		return true;
 	}
 }
