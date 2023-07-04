@@ -5,6 +5,9 @@ namespace Xunit.Runner.Devices.VisualRunner.Maui;
 
 public static class AppHostBuilderExtensions
 {
+	// default to true as it is always supported
+	internal static bool IsUsingVisualRunner { get; set; } = true;
+
 	public static MauiAppBuilder ConfigureVisualTestRunner(this MauiAppBuilder appHostBuilder, TestRunnerUsage usage = TestRunnerUsage.Automatic)
 	{
 		// register runner components
@@ -28,7 +31,7 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddTransient<CreditsPage>();
 		appHostBuilder.Services.AddTransient<DiagnosticsPage>();
 
-		if (usage == TestRunnerUsage.Always || (usage == TestRunnerUsage.Automatic))
+		if (usage == TestRunnerUsage.Always || (usage == TestRunnerUsage.Automatic && IsUsingVisualRunner))
 			appHostBuilder.UseMauiApp<VisualRunnerApp>();
 
 		return appHostBuilder;

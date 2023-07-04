@@ -15,18 +15,8 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		Console.WriteLine("YOU ARE HERE: CreateMauiApp");
-		var vars = Environment.GetEnvironmentVariables();
-		foreach (var key in vars.Keys)
-			Console.WriteLine($"  '{key}' = '{vars[key]}'");
-
 		var builder = MauiApp.CreateBuilder();
 		builder
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			})
 			.ConfigureTestRunners(new RunnerOptions
 			{
 				Assemblies =
@@ -35,8 +25,8 @@ public static class MauiProgram
 					typeof(UnitTest1).Assembly,
 				},
 			})
-			.ConfigureXHarnessTestRunner(TestRunnerUsage.Never)
-			.ConfigureVisualTestRunner(TestRunnerUsage.Always);
+			.ConfigureXHarnessTestRunner()
+			.ConfigureVisualTestRunner();
 
 #if DEBUG
 		builder.Logging.AddDebug();
