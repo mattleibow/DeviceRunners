@@ -6,12 +6,12 @@ using Microsoft.DotNet.XHarness.TestRunners.Common;
 
 namespace Xunit.Runner.Devices.XHarness;
 
-public class XHarnessRunner : DefaultAndroidEntryPoint, ITestRunner
+public class XHarnessTestRunner : DefaultAndroidEntryPoint, ITestRunner
 {
 	readonly RunnerOptions _options;
 	readonly ApplicationOptions _applicationOptions;
 
-	public XHarnessRunner(RunnerOptions options, ApplicationOptions applicationOptions, IDevice device)
+	public XHarnessTestRunner(RunnerOptions options, ApplicationOptions applicationOptions, IDevice device)
 		: base(Android.App.Application.Context.CacheDir!.AbsolutePath, new())
 	{
 		_options = options;

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj" />
+    <ProjectReference Include="..\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj" />
   </ItemGroup>
 
   <ItemGroup>

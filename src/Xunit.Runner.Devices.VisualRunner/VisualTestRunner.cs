@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Xunit.Runner.Devices.VisualRunner;
 
-public class DeviceRunner : ITestListener, ITestRunner
+public class VisualTestRunner : ITestListener, ITestRunner
 {
 	readonly SynchronizationContext context = SynchronizationContext.Current;
 	readonly AsyncLock executionLock = new();
@@ -13,7 +13,7 @@ public class DeviceRunner : ITestListener, ITestRunner
 	readonly TestRunLogger _logger;
 	volatile bool cancelled;
 
-	public DeviceRunner(RunnerOptions options, IDiagnosticsManager diagnosticsManager, ILogger<DeviceRunner> logger)
+	public VisualTestRunner(RunnerOptions options, IDiagnosticsManager diagnosticsManager, ILogger<VisualTestRunner> logger)
 	{
 		_logger = new TestRunLogger(logger);
 		_diagnosticsManager = diagnosticsManager;

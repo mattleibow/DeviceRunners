@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.XHarness\Xunit.Runner.Devices.XHarness.csproj" />
+    <ProjectReference Include="..\Xunit.Runner.Devices.XHarness\Xunit.Runner.Devices.XHarness.csproj" />
   </ItemGroup>
 
 </Project>

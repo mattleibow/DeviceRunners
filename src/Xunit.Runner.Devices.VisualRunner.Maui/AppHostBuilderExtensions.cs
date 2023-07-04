@@ -4,11 +4,11 @@ namespace Xunit.Runner.Devices.VisualRunner.Maui;
 
 public static class AppHostBuilderExtensions
 {
-	public static MauiAppBuilder ConfigureRunner(this MauiAppBuilder appHostBuilder, RunnerOptions options)
+	public static MauiAppBuilder ConfigureVisualTestRunner(this MauiAppBuilder appHostBuilder, RunnerOptions options)
 	{
 		// register runner components
 		appHostBuilder.Services.AddSingleton(options);
-		appHostBuilder.Services.AddSingleton<ITestRunner, DeviceRunner>();
+		appHostBuilder.Services.AddSingleton<ITestRunner, VisualTestRunner>();
 		appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
 
 		// only register the "root" view models and the others are created by the ITestRunner

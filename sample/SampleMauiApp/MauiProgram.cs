@@ -14,7 +14,10 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		Console.WriteLine("YOU ARE HERE!  CreateMauiApp");
+		Console.WriteLine("YOU ARE HERE: CreateMauiApp");
+		var vars = Environment.GetEnvironmentVariables();
+		foreach (var key in vars.Keys)
+			Console.WriteLine($"  '{key}' = '{vars[key]}'");
 
 		var runnerOptions = new RunnerOptions
 		{
@@ -34,8 +37,8 @@ public static class MauiProgram
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
 			})
-			.ConfigureXHarness(runnerOptions)
-			.ConfigureRunner(runnerOptions);
+			.ConfigureXHarnessTestRunner(runnerOptions)
+			.ConfigureVisualTestRunner(runnerOptions);
 
 #if DEBUG
 		builder.Logging.AddDebug();

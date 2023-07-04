@@ -13,12 +13,12 @@ using UIKit;
 
 namespace Xunit.Runner.Devices.XHarness.Maui;
 
-public class XHarnessRunner : iOSApplicationEntryPoint, ITestRunner
+public class XHarnessTestRunner : iOSApplicationEntryPoint, ITestRunner
 {
 	readonly RunnerOptions _options;
 	readonly ApplicationOptions _applicationOptions;
 
-	public XHarnessRunner(RunnerOptions options, ApplicationOptions applicationOptions, IDevice device)
+	public XHarnessTestRunner(RunnerOptions options, ApplicationOptions applicationOptions, IDevice device)
 	{
 		_options = options;
 		_applicationOptions = applicationOptions;

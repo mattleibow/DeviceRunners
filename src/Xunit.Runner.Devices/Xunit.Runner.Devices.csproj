@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net7.0;net7.0-android;net7.0-ios;net7.0-maccatalyst;net7.0-tizen</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
-    <TargetFrameworks>net7.0;net7.0-android</TargetFrameworks>
+    <TargetFrameworks>net7.0-android;net7.0</TargetFrameworks>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
@@ -11,10 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.utility" Version="2.4.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Embeddedresource Include="Assets/**" />
   </ItemGroup>
 
 </Project>

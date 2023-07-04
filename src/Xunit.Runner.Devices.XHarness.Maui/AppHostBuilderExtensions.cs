@@ -6,7 +6,7 @@ namespace Xunit.Runner.Devices.XHarness.Maui;
 
 public static class AppHostBuilderExtensions
 {
-	public static MauiAppBuilder ConfigureXHarness(this MauiAppBuilder appHostBuilder, RunnerOptions options)
+	public static MauiAppBuilder ConfigureXHarnessTestRunner(this MauiAppBuilder appHostBuilder, RunnerOptions options)
 	{
 		// register runner components
 		appHostBuilder.Services.AddSingleton(options);
@@ -14,7 +14,7 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<ApplicationOptions>(ApplicationOptions.Current);
 
 #if IOS || MACCATALYST || ANDROID
-		appHostBuilder.Services.AddSingleton<ITestRunner, XHarnessRunner>();
+		appHostBuilder.Services.AddSingleton<ITestRunner, XHarnessTestRunner>();
 #endif
 
 		// only register the "root" view models
