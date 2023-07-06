@@ -19,6 +19,11 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
+    - name: Install Tizen
+      shell: pwsh
+      run: |
+        Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+        .\workload-install.ps1
     - name: Build
       run: dotnet build --configuration Release
     - name: Package NuGets
