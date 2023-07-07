@@ -11,7 +11,7 @@ jobs:
 
   android:
     name: Android
-    runs-on: macos-13
+    runs-on: macos-12
     env:
       TEST_TARGET_FRAMEWORK: net7.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
