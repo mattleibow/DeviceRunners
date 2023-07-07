@@ -29,7 +29,7 @@ jobs:
     - name: Package NuGets
       shell: pwsh
       run: |
-        $VERSION="$env:NUPKG_MAJOR-ci$env:GITHUB_RUN_ID"
+        $VERSION="$env:NUPKG_MAJOR-ci.$env:GITHUB_RUN_ID"
         if ($env:GITHUB_EVENT_NAME -eq "release") {
           $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
         }
