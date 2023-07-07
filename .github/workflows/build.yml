@@ -10,7 +10,7 @@ on:
 jobs:
 
   windows:
-    name: Build on Windows
+    name: Windows
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -27,7 +27,7 @@ jobs:
         path: ./artifacts/logs
 
   macos:
-    name: Build on macOS
+    name: macOS
     runs-on: macos-13
     steps:
     - name: Checkout
