@@ -24,7 +24,10 @@ jobs:
     - name: Setup Required Tools
       run: dotnet tool restore
     - name: Install Emulator Image
-      run: dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+      run: |
+        dotnet android sdk list --installed
+        dotnet android sdk install --package "emulator"
+        dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
     - name: Create the Emulator
       run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
     - name: Boot the Emulator
