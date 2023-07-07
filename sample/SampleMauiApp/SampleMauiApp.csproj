@@ -52,4 +52,11 @@
     <ProjectReference Include="..\..\src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj" />
   </ItemGroup>
 
+  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

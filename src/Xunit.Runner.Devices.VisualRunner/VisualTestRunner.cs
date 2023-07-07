@@ -116,15 +116,15 @@ public class VisualTestRunner : ITestListener, ITestRunner
 						configuration,
 						sink.TestCases.Select(tc => new TestCaseViewModel(assemblyFileName, tc)).ToList()));
 				}
-				catch (Exception e)
+				catch (Exception ex)
 				{
-					Debug.WriteLine(e);
+					_diagnosticsManager.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
 				}
 			}
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			Debug.WriteLine(e);
+			_diagnosticsManager.PostDiagnosticMessage($"Exception discovering tests: '{ex.Message}'{Environment.NewLine}{ex}");
 		}
 
 		return result;
