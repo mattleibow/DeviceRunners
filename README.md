@@ -17,6 +17,7 @@ There are a few packages in this repository, but the main ones are:
 
 TODO
 
+
 ## Testing with XHarness
 
 XHarness is primarily a command line tool that enables running xUnit like tests on Android, Apple iOS / tvOS / WatchOS / Mac Catalyst, WASI and desktop browsers (WASM). See https://github.com/dotnet/xharness
@@ -31,6 +32,7 @@ dotnet tool install Microsoft.DotNet.XHarness.CLI \
 ```
 
 > The snippets above are used to install the xharness tool globally, however you can also remove the `--global` arguemnt to get the tool to install locally in the current working directory. If this is the case, then you will also need to prefix the xharness commands with `dotnet`. For example, if the sample commands below say `xharness apple test` you will need to do `dotnet xharness apple test`.
+
 
 ### iOS
 
@@ -153,16 +155,14 @@ android avd start \
 xharness android adb -- emu kill
 ```
 
-
 > **NOTES**
 > * If you want to build a debug app and test that, you will also need to set `EmbedAssembliesIntoApk` to `True`:  
 >   ```
 >   dotnet publish ... -p:EmbedAssembliesIntoApk=true
 >   ```
 
+
 ### Mac Catalyst
-
-
 
 1. Build the app package for testing:
    ```
@@ -193,9 +193,11 @@ xharness apple test \
 # test result file will be artifacts/xunit-test-maccatalyst-########_######.xml
 ```
 
+
 ### Windows
 
 TODO
+
 
 ## UI Testing Support
 

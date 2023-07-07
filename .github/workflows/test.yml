@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  android:
+    name: Android
+    runs-on: macos-12
+    env:
+      TEST_TARGET_FRAMEWORK: net7.0-android
+      TEST_RUNTIME_IDENTIFIER: android-x64
+      TEST_CONFIGURATION: Release
+      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
+      TEST_EMULATOR_DEVICE: pixel_5
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      run: dotnet tool restore
+    - name: Install Emulator Image
+      run: |
+        dotnet android sdk list --installed
+        dotnet android sdk install --package "emulator"
+        dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+    - name: Create the Emulator
+      run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
+    - name: Boot the Emulator
+      run: dotnet android avd start --name TestRunnerEmulator
+    - name: WAIT WAIT WAIT
+      shell: pwsh
+      run: |
+        while ($true) {
+          echo "getting props..."
+          dotnet android device list
+          dotnet android device info --property sys.boot_completed
+          dotnet android device info --property dev.bootcomplete
+          dotnet android device info
+          sleep 15
+        }
+
+    - name: Shutdown the Emulator
+      run: dotnet xharness android adb -- emu kill
