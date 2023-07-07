@@ -96,6 +96,8 @@ jobs:
         dotnet-version: 7.0.x
     - name: Setup .NET MAUI
       run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+    - name: Setup Tizen.NET
+      run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
     - name: Publish App
       run: dotnet build sample/SampleMauiApp/SampleMauiApp.csproj -f net7.0-ios -r ${{ env.TEST_RUNTIME_IDENTIFIER }} -c ${{ env.TEST_CONFIGURATION }} /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
