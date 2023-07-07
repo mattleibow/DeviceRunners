@@ -4,11 +4,12 @@ on:
   pull_request:
   push:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
+
   build:
-    name: Build
+    name: Build on Windows
     env:
       NUPKG_MAJOR: 0.999
     runs-on: windows-latest
@@ -19,7 +20,7 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 7.0.x
-    - name: Install Tizen
+    - name: Setup Tizen.NET
       shell: pwsh
       run: |
         Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
@@ -40,6 +41,45 @@ jobs:
       uses: actions/upload-artifact@v1
       with:
         name: NuGet
+        path: ./artifacts
+
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-13
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Setup Tizen.NET
+      run: |
+        curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | sudo bash
+    - name: Build
+      run: dotnet build --configuration Release
+
+  test-ios:
+    name: Test iOS
+    runs-on: macos-13
+    env:
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_CONFIGURATION: Debug
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Publish App
+      run: dotnet build sample/SampleMauiApp/SampleMauiApp.csproj -f net7.0-ios -r ${{ env.TEST_RUNTIME_IDENTIFIER }} -c ${{ env.TEST_CONFIGURATION }}
+    - name: Run Tests
+      run: xharness apple test --target ios-simulator-64 --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/net7.0-ios/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app --output-directory artifacts
+    - name: Artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: Test Results - iOS
         path: ./artifacts
 
   publish:
