@@ -28,6 +28,15 @@ jobs:
     - name: Create the Emulator
       run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
     - name: Boot the Emulator
-      run: dotnet android avd start --name TestRunnerEmulator --wait
+      run: dotnet android avd start --name TestRunnerEmulator
+    - name: WAIT WAIT WAIT
+      shell: pwsh
+      run: |
+        while ($true) {
+          dotnet android device info --property sys.boot_completed
+          dotnet android device info --property dev.bootcomplete
+          dotnet android device info
+        }
+
     - name: Shutdown the Emulator
       run: dotnet xharness android adb -- emu kill
