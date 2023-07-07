@@ -34,10 +34,11 @@ jobs:
       run: |
         while ($true) {
           echo "getting props..."
+          dotnet android device list
           dotnet android device info --property sys.boot_completed
           dotnet android device info --property dev.bootcomplete
-          dotnet android device info --property ro.boot.qemu.avd_name
-          sleep 5
+          dotnet android device info
+          sleep 15
         }
 
     - name: Shutdown the Emulator
