@@ -65,13 +65,15 @@
             <Style x:Key="BusyOverlayStyle" TargetType="ContentView">
                 <Setter Property="Background" Value="#CCFFFFFF" />
                 <Setter Property="InputTransparent" Value="False" />
-                <Setter Property="Content">
-                    <Grid>
-                        <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
-                            <Label Text="Working..." />
-                            <ActivityIndicator IsRunning="{Binding Source={RelativeSource AncestorType={x:Type ContentView}}, Path=IsVisible}" />
-                        </StackLayout>
-                    </Grid>
+                <Setter Property="ControlTemplate">
+                    <DataTemplate>
+                        <Grid>
+                            <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+                                <Label Text="Working..." />
+                                <ActivityIndicator IsRunning="{Binding Source={RelativeSource AncestorType={x:Type ContentView}}, Path=IsVisible}" />
+                            </StackLayout>
+                        </Grid>
+                    </DataTemplate>
                 </Setter>
             </Style>
 
