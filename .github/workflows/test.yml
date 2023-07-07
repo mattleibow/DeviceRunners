@@ -33,9 +33,11 @@ jobs:
       shell: pwsh
       run: |
         while ($true) {
+          echo "getting props..."
           dotnet android device info --property sys.boot_completed
           dotnet android device info --property dev.bootcomplete
           dotnet android device info
+          sleep 1
         }
 
     - name: Shutdown the Emulator
