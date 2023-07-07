@@ -1,0 +1,31 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  ios:
+    name: iOS
+    runs-on: macos-13
+    env:
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_CONFIGURATION: Debug
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish App
+      run: dotnet build sample/SampleMauiApp/SampleMauiApp.csproj -f net7.0-ios -r ${{ env.TEST_RUNTIME_IDENTIFIER }} -c ${{ env.TEST_CONFIGURATION }} /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: dotnet xharness apple test --target ios-simulator-64 --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/net7.0-ios/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app --output-directory artifacts
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: Test Results - iOS
+        path: ./artifacts
