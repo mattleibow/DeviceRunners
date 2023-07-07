@@ -18,7 +18,7 @@ jobs:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
