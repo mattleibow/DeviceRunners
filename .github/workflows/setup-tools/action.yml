@@ -16,9 +16,11 @@ runs:
       dotnet-version: 7.0.x
   - name: Setup .NET MAUI
     if: runner.os != 'Windows'
+    shell: pwsh
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
   - name: Setup Tizen.NET
     if: runner.os != 'Windows'
+    shell: bash
     run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
   - name: Setup Tizen.NET
     if: runner.os == 'Windows'
@@ -27,4 +29,5 @@ runs:
       Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
       .\workload-install.ps1
   - name: Setup Local .NET Tools
+    shell: pwsh
     run: dotnet tool restore
