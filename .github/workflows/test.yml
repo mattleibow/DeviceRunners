@@ -36,8 +36,8 @@ jobs:
           echo "getting props..."
           dotnet android device info --property sys.boot_completed
           dotnet android device info --property dev.bootcomplete
-          dotnet android device info
-          sleep 1
+          dotnet android device info --property ro.boot.qemu.avd_name
+          sleep 5
         }
 
     - name: Shutdown the Emulator
