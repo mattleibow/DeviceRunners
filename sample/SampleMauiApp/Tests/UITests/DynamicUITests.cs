@@ -70,7 +70,7 @@ public class DynamicUITests : UITests<ContentPage>
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
-	public async Task SimpleTheory(string text, string expected)
+	public void SimpleTheory(string text, string expected)
 	{
 		// create the cross-platform control
 		var entry = new Entry
@@ -95,7 +95,7 @@ public class DynamicUITests : UITests<ContentPage>
 
 	[UITheory]
 	[ClassData(typeof(TestDataGenerator))]
-	public async Task ComplexTheory(ComplexData testData)
+	public void ComplexTheory(ComplexData testData)
 	{
 		// create the cross-platform control
 		var entry = new Entry

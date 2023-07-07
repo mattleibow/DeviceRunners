@@ -38,7 +38,7 @@ partial class TestAssemblyPage : ContentPage
 
 	async void OnTestResultSelected(object? sender, TestResultViewModel testResultViewModel)
 	{
-		await Shell.Current.GoToAsync($"//testrunner/assembly/result", new Dictionary<string, object>
+		await Shell.Current.GoToAsync($"result", new Dictionary<string, object>
 		{
 			[nameof(TestResultPage.ViewModel)] = testResultViewModel
 		});

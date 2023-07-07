@@ -9,7 +9,7 @@ internal class FileSystemUtils
 	{
 		try
 		{
-			if (Package.Current != null)
+			if (Windows.ApplicationModel.Package.Current != null)
 				return true;
 		}
 		catch
@@ -34,7 +34,7 @@ internal class FileSystemUtils
 		{
 			return Application.Context.Assets.Open(filename);
 		}
-		catch (Java.IO.FileNotFoundException ex)
+		catch (Java.IO.FileNotFoundException)
 		{
 		}
 #endif
@@ -50,7 +50,18 @@ internal class FileSystemUtils
 #elif WINDOWS
 		// Windows: has 2 modes, packaged uses the Package API
 		if (IsPackagedApp.Value)
-			return Package.Current.InstalledLocation.OpenStreamForReadAsync(filename).Result;
+		{
+			try
+			{
+				return Windows.ApplicationModel.Package.Current.InstalledLocation.OpenStreamForReadAsync(filename).Result;
+			}
+			catch (AggregateException ex) when (ex.InnerException is FileNotFoundException)
+			{
+			}
+			catch (FileNotFoundException)
+			{
+			}
+		}
 
 		// unpackaged is next to the executable
 		var root = AppContext.BaseDirectory;
@@ -74,7 +85,7 @@ internal class FileSystemUtils
 #if WINDOWS
 		string root;
 		if (IsPackagedApp.Value)
-			root = Package.Current.InstalledLocation.Path;
+			root = Windows.ApplicationModel.Package.Current.InstalledLocation.Path;
 		else
 			root = AppContext.BaseDirectory;
 		return Path.Combine(root, filename);
