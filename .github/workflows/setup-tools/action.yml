@@ -7,6 +7,7 @@ runs:
   steps:
   - name: Setup Xcode
     uses: maxim-lobanov/setup-xcode@v1
+    if: runner.os == 'macOS'
     with:
       xcode-version: latest-stable
   - name: Setup .NET
@@ -14,10 +15,13 @@ runs:
     with:
       dotnet-version: 7.0.x
   - name: Setup .NET MAUI
+    if: runner.os != 'Windows'
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
   - name: Setup Tizen.NET
+    if: runner.os != 'Windows'
     run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
   - name: Setup Tizen.NET
+    if: runner.os == 'Windows'
     shell: pwsh
     run: |
       Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'

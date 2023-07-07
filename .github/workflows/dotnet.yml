@@ -16,7 +16,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - uses: .github/workflows/setup-tools
+    - uses: ./.github/workflows/setup-tools
     - name: Build
       run: dotnet build --configuration Release
     - name: Upload Logs
