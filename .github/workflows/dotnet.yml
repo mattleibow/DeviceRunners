@@ -69,7 +69,7 @@ jobs:
     - name: Setup Tizen.NET
       run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
     - name: Build
-      run: dotnet build --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
+      run: dotnet build --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
@@ -77,30 +77,34 @@ jobs:
         name: macOS Logs
         path: ./artifacts/logs
 
-#   test-ios:
-#     name: Test on iOS
-#     runs-on: macos-13
-#     env:
-#       TEST_RUNTIME_IDENTIFIER: iossimulator-x64
-#       TEST_CONFIGURATION: Debug
-#     steps:
-#     - name: Checkout
-#       uses: actions/checkout@v2
-#     - name: Setup .NET
-#       uses: actions/setup-dotnet@v3
-#       with:
-#         dotnet-version: 7.0.x
-#     - name: Setup .NET MAUI
-#       run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
-#     - name: Publish App
-#       run: dotnet build sample/SampleMauiApp/SampleMauiApp.csproj -f net7.0-ios -r ${{ env.TEST_RUNTIME_IDENTIFIER }} -c ${{ env.TEST_CONFIGURATION }}
-#     - name: Run Tests
-#       run: xharness apple test --target ios-simulator-64 --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/net7.0-ios/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app --output-directory artifacts
-#     - name: Artifacts
-#       uses: actions/upload-artifact@v1
-#       with:
-#         name: Test Results - iOS
-#         path: ./artifacts
+  test-ios:
+    name: Test on iOS
+    runs-on: macos-13
+    env:
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_CONFIGURATION: Debug
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 7.0.x
+    - name: Setup .NET MAUI
+      run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+    - name: Publish App
+      run: dotnet build sample/SampleMauiApp/SampleMauiApp.csproj -f net7.0-ios -r ${{ env.TEST_RUNTIME_IDENTIFIER }} -c ${{ env.TEST_CONFIGURATION }} /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: xharness apple test --target ios-simulator-64 --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/net7.0-ios/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app --output-directory artifacts
+    - name: Artifacts
+      uses: actions/upload-artifact@v1
+      with:
+        name: Test Results - iOS
+        path: ./artifacts
 
   publish:
     name: Publish
