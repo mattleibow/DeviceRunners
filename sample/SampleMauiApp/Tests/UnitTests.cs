@@ -13,11 +13,11 @@ public class UnitTests
 	{
 	}
 
-	[Fact]
-	public void FailingTest()
-	{
-		throw new Exception("This is meant to fail.");
-	}
+	// [Fact]
+	// public void FailingTest()
+	// {
+	// 	throw new Exception("This is meant to fail.");
+	// }
 
 	[Theory]
 	[InlineData(1)]
@@ -35,10 +35,10 @@ public class UnitTests
 		Assert.True(true);
 	}
 
-	[Fact]
-	public async Task LongRunningFail()
-	{
-		await Task.Delay(2000);
-		throw new Exception("This is meant to fail.");
-	}
+	// [Fact]
+	// public async Task LongRunningFail()
+	// {
+	// 	await Task.Delay(2000);
+	// 	throw new Exception("This is meant to fail.");
+	// }
 }

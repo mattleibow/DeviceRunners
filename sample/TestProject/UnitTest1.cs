@@ -13,9 +13,9 @@ public class UnitTest1
 	{
 	}
 
-	[Fact]
-	public void FailingTest()
-	{
-		throw new Exception("This is meant to fail.");
-	}
+	// [Fact]
+	// public void FailingTest()
+	// {
+	// 	throw new Exception("This is meant to fail.");
+	// }
 }

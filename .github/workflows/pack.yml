@@ -1,31 +1,24 @@
-name: .NET Core
+name: Pack and Publish
 
 on:
   pull_request:
   push:
+    branches: [ main, 'releases/**' ]
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
-  build:
-    name: Build
+
+  pack:
+    name: Pack
     env:
       NUPKG_MAJOR: 0.999
     runs-on: windows-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.x
-    - name: Install Tizen
-      shell: pwsh
-      run: |
-        Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-        .\workload-install.ps1
-    - name: Build
-      run: dotnet build --configuration Release
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
     - name: Package NuGets
       shell: pwsh
       run: |
@@ -35,16 +28,23 @@ jobs:
         }
         echo "PACKAGE VERSION: $VERSION"
         
-        dotnet pack --output ./artifacts --configuration Release -p:PackageVersion=$VERSION
-    - name: Artifacts
+        dotnet pack --output ./artifacts/nugets --configuration Release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - name: Upload NuGet Artifacts
       uses: actions/upload-artifact@v1
       with:
         name: NuGet
-        path: ./artifacts
+        path: ./artifacts/nugets
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Pack Logs - Windows
+        path: ./artifacts/logs
+
 
   publish:
-    name: Publish
-    needs: build
+    name: Publish to nuget.org
+    needs: pack
     runs-on: windows-latest
     if: github.event_name == 'release'
     steps:
@@ -57,5 +57,4 @@ jobs:
         with:
           dotnet-version: '7.0.x'
       - name: Push NuGet
-        run: |
-          dotnet nuget push NuGet\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_ORG_API_KEY }}
+        run: dotnet nuget push NuGet\*.nupkg --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_ORG_API_KEY }}
