@@ -17,10 +17,10 @@ public class UnitTestsWithOutput
 		_output.WriteLine("This is test output.");
 	}
 
-	[Fact]
-	public void FailingOutputTest()
-	{
-		_output.WriteLine("This is test output.");
-		throw new Exception("This is meant to fail.");
-	}
+	// [Fact]
+	// public void FailingOutputTest()
+	// {
+	// 	_output.WriteLine("This is test output.");
+	// 	throw new Exception("This is meant to fail.");
+	// }
 }
