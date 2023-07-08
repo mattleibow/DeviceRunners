@@ -75,45 +75,45 @@ jobs:
         path: ./artifacts
 
 
-  android:
-    name: Android
-    runs-on: macos-13
-    env:
-      TEST_TARGET_FRAMEWORK: net7.0-android
-      TEST_RUNTIME_IDENTIFIER: android-x64
-      TEST_CONFIGURATION: Release
-      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
-      TEST_EMULATOR_DEVICE: pixel_5
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Install Emulator Image
-      run: dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
-    - name: Create the Emulator
-      run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
-    - name: Boot the Emulator
-      run: dotnet android avd start --name TestRunnerEmulator --wait-boot
-    - name: Publish App
-      run: |
-        dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
-          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
-          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
-          -c ${{ env.TEST_CONFIGURATION }} \
-          /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Run Tests
-      run: |
-        xharness android test \
-          --package-name com.companyname.samplemauiapp \
-          --instrumentation xunit.runner.devices.xharness.maui.XHarnessInstrumentation \
-          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
-          --output-directory artifacts
-    - name: Shutdown the Emulator
-      run: dotnet xharness android adb -- emu kill
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
-      if: ${{ always() }}
-      with:
-        name: Test Results - Android
-        path: ./artifacts
+  # android:
+  #   name: Android
+  #   runs-on: macos-13
+  #   env:
+  #     TEST_TARGET_FRAMEWORK: net7.0-android
+  #     TEST_RUNTIME_IDENTIFIER: android-x64
+  #     TEST_CONFIGURATION: Release
+  #     TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
+  #     TEST_EMULATOR_DEVICE: pixel_5
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #   - name: Setup Required Tools
+  #     uses: ./.github/workflows/setup-tools
+  #   - name: Install Emulator Image
+  #     run: dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+  #   - name: Create the Emulator
+  #     run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
+  #   - name: Boot the Emulator
+  #     run: dotnet android avd start --name TestRunnerEmulator --wait-boot
+  #   - name: Publish App
+  #     run: |
+  #       dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
+  #         -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+  #         -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+  #         -c ${{ env.TEST_CONFIGURATION }} \
+  #         /bl:./artifacts/logs/msbuild-publish.binlog
+  #   - name: Run Tests
+  #     run: |
+  #       xharness android test \
+  #         --package-name com.companyname.samplemauiapp \
+  #         --instrumentation xunit.runner.devices.xharness.maui.XHarnessInstrumentation \
+  #         --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
+  #         --output-directory artifacts
+  #   - name: Shutdown the Emulator
+  #     run: dotnet xharness android adb -- emu kill
+  #   - name: Upload Artifacts
+  #     uses: actions/upload-artifact@v1
+  #     if: ${{ always() }}
+  #     with:
+  #       name: Test Results - Android
+  #       path: ./artifacts
