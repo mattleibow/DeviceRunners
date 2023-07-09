@@ -2,14 +2,14 @@
 
 using TestProject;
 
-using Xunit.Runner.Devices;
-using Xunit.Runner.Devices.Maui;
-using Xunit.Runner.Devices.VisualRunner;
-using Xunit.Runner.Devices.VisualRunner.Maui;
-using Xunit.Runner.Devices.XHarness;
-using Xunit.Runner.Devices.XHarness.Maui;
+using CommunityToolkit.DeviceRunners.Xunit;
+using CommunityToolkit.DeviceRunners.Xunit.Maui;
+using CommunityToolkit.DeviceRunners.Xunit.VisualRunner;
+using CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui;
+using CommunityToolkit.DeviceRunners.Xunit.XHarness;
+using CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public static class MauiProgram
 {

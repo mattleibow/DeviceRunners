@@ -1,4 +1,4 @@
-﻿namespace SampleMauiApp;
+﻿namespace XunitSampleMauiApp;
 
 partial class TestPage : ContentPage
 {

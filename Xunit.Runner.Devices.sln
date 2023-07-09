@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleMauiApp", "sample\SampleMauiApp\SampleMauiApp.csproj", "{E5C26676-A9C3-490A-A506-C905A1F6DE6C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XunitSampleMauiApp", "sample\XunitSampleMauiApp\XunitSampleMauiApp.csproj", "{E5C26676-A9C3-490A-A506-C905A1F6DE6C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject", "sample\TestProject\TestProject.csproj", "{8F6B02F0-9CB3-4B82-BDFD-91CF9B34D138}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.VisualRunner", "src\Xunit.Runner.Devices.VisualRunner\Xunit.Runner.Devices.VisualRunner.csproj", "{8ED8336F-4E5E-9D60-C961-0B110A66FA93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit.VisualRunner", "src\CommunityToolkit.DeviceRunners.Xunit.VisualRunner\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.csproj", "{8ED8336F-4E5E-9D60-C961-0B110A66FA93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.VisualRunner.Maui", "src\Xunit.Runner.Devices.VisualRunner.Maui\Xunit.Runner.Devices.VisualRunner.Maui.csproj", "{8ED8336F-C961-4E5E-9D60-0B110A66FA93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui", "src\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui.csproj", "{8ED8336F-C961-4E5E-9D60-0B110A66FA93}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Extensions.UITest.Maui", "src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj", "{98D577B3-F915-4C12-8963-BA16876662E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.XHarness.Maui", "src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj", "{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui", "src\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui.csproj", "{B60CEA54-BABC-4A9D-ACBE-F79C4056AD36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices", "src\Xunit.Runner.Devices\Xunit.Runner.Devices.csproj", "{7225E513-B597-4D98-B823-740196887242}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit", "src\CommunityToolkit.DeviceRunners.Xunit\CommunityToolkit.DeviceRunners.Xunit.csproj", "{7225E513-B597-4D98-B823-740196887242}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.XHarness", "src\Xunit.Runner.Devices.XHarness\Xunit.Runner.Devices.XHarness.csproj", "{E0DA4A15-9329-4C42-A8EE-6154BFBFA72D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit.XHarness", "src\CommunityToolkit.DeviceRunners.Xunit.XHarness\CommunityToolkit.DeviceRunners.Xunit.XHarness.csproj", "{E0DA4A15-9329-4C42-A8EE-6154BFBFA72D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xunit.Runner.Devices.Maui", "src\Xunit.Runner.Devices.Maui\Xunit.Runner.Devices.Maui.csproj", "{0398AF57-CA42-4B5D-B73A-812E7CA7BBF1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommunityToolkit.DeviceRunners.Xunit.Maui", "src\CommunityToolkit.DeviceRunners.Xunit.Maui\CommunityToolkit.DeviceRunners.Xunit.Maui.csproj", "{0398AF57-CA42-4B5D-B73A-812E7CA7BBF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

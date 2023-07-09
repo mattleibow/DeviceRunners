@@ -1,6 +1,6 @@
 ﻿using Xunit.Abstractions;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public class UnitTestsWithOutput
 {

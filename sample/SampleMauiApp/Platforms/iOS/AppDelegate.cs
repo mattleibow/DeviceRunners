@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 [Register(nameof(AppDelegate))]
 partial class AppDelegate : MauiUIApplicationDelegate

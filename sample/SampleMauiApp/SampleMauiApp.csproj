@@ -4,16 +4,16 @@
     <TargetFrameworks>net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-tizen</TargetFrameworks>
     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <RootNamespace>SampleMauiApp</RootNamespace>
+    <RootNamespace>XunitSampleMauiApp</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
 
     <!-- Display name -->
-    <ApplicationTitle>SampleMauiApp</ApplicationTitle>
+    <ApplicationTitle>XunitSampleMauiApp</ApplicationTitle>
 
     <!-- App Identifier -->
-    <ApplicationId>com.companyname.samplemauiapp</ApplicationId>
+    <ApplicationId>com.companyname.xunitsamplemauiapp</ApplicationId>
     <ApplicationIdGuid>921202c9-8de1-4442-b501-06a51566f9ef</ApplicationIdGuid>
 
     <!-- Versions -->
@@ -47,8 +47,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TestProject\TestProject.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.VisualRunner.Maui\Xunit.Runner.Devices.VisualRunner.Maui.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui.csproj" />
     <ProjectReference Include="..\..\src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj" />
   </ItemGroup>
 

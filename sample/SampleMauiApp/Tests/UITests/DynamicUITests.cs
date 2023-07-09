@@ -3,7 +3,7 @@ using System.Collections;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public class DynamicUITests : UITests<ContentPage>
 {

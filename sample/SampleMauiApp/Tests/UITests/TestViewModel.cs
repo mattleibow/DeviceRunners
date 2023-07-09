@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public class TestViewModel : BindableObject
 {

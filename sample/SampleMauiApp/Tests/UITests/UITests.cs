@@ -1,4 +1,4 @@
-﻿namespace SampleMauiApp;
+﻿namespace XunitSampleMauiApp;
 
 [Collection("UITests")]
 public abstract class UITests<T> : IAsyncLifetime

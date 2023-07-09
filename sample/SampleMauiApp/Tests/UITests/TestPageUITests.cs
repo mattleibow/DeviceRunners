@@ -1,4 +1,4 @@
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public class TestPageUITests : UITests<TestPage>
 {

@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace SampleMauiApp;
+namespace XunitSampleMauiApp;
 
 public class Program
 {
