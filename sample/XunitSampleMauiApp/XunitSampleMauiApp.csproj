@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestProject\TestProject.csproj" />
+    <ProjectReference Include="..\XunitTestProject\XunitTestProject.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui\CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui\CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui.csproj" />
     <ProjectReference Include="..\..\src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj" />

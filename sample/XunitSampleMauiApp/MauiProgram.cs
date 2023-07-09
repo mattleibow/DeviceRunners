@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using TestProject;
+using XunitTestProject;
 
 using CommunityToolkit.DeviceRunners.Xunit;
 using CommunityToolkit.DeviceRunners.Xunit.Maui;

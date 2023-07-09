@@ -1,4 +1,4 @@
-namespace TestProject;
+namespace XunitTestProject;
 
 public class UnitTest1
 {
