@@ -8,6 +8,7 @@
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
+    <DefineConstants Condition="'$(CI)' != 'true'">INCLUDE_FAILING_TESTS</DefineConstants>
 
     <!-- Display name -->
     <ApplicationTitle>XunitSampleMauiApp</ApplicationTitle>

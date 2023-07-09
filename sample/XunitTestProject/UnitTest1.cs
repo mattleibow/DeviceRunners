@@ -13,9 +13,11 @@ public class UnitTest1
 	{
 	}
 
-	// [Fact]
-	// public void FailingTest()
-	// {
-	// 	throw new Exception("This is meant to fail.");
-	// }
+#if INCLUDE_FAILING_TESTS
+	[Fact]
+	public void FailingTest()
+	{
+		throw new Exception("This is meant to fail.");
+	}
+#endif
 }

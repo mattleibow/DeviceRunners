@@ -1,4 +1,4 @@
 {
     "cmake.configureOnOpen": false,
-    "dotnet.defaultSolution": "CommunityToolkit.DeviceRunners.Xunit.sln"
+    "dotnet.defaultSolution": "CommunityToolkit.DeviceRunners.sln"
 }

@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <IsXunitTestProject>true</IsXunitTestProject>
+    <DefineConstants Condition="'$(CI)' != 'true'">INCLUDE_FAILING_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
