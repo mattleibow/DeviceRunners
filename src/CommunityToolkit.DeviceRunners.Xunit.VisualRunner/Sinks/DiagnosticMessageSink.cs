@@ -1,4 +1,6 @@
-﻿namespace CommunityToolkit.DeviceRunners.Xunit.VisualRunner;
+﻿using Xunit;
+
+namespace CommunityToolkit.DeviceRunners.Xunit.VisualRunner;
 
 class DiagnosticMessageSink : DiagnosticEventSink
 {

@@ -3,6 +3,8 @@ using System.Reflection;
 
 using Microsoft.Extensions.Logging;
 
+using Xunit;
+
 namespace CommunityToolkit.DeviceRunners.Xunit.VisualRunner;
 
 public class VisualTestRunner : ITestListener, ITestRunner
