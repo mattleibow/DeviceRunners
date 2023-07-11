@@ -11,10 +11,6 @@
     <PackageReference Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="8.0.0-prerelease.23326.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.DeviceRunners.Xunit\CommunityToolkit.DeviceRunners.Xunit.csproj" />
-  </ItemGroup>
-
   <Target Name="_RemovePlatformCompileItems" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
     <ItemGroup>
       <Compile Remove="Platforms\Android\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'" />

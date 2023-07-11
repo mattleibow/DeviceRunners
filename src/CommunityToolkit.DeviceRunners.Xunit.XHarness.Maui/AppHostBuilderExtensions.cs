@@ -1,6 +1,6 @@
 ﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
 
-using CommunityToolkit.DeviceRunners.Xunit.Maui;
+using CommunityToolkit.DeviceRunners;
 using CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui.Pages;
 
 namespace CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui;

@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CommunityToolkit.DeviceRunners.Xunit.XHarness\CommunityToolkit.DeviceRunners.Xunit.XHarness.csproj" />
-    <ProjectReference Include="..\CommunityToolkit.DeviceRunners.Xunit.Maui\CommunityToolkit.DeviceRunners.Xunit.Maui.csproj" />
   </ItemGroup>
 
 </Project>

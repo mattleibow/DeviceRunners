@@ -23,7 +23,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        dotnet build sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+        dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -32,7 +32,7 @@ jobs:
       run: |
         dotnet xharness apple test \
           --target ios-simulator-64 \
-          --app sample/XunitSampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/XunitSampleMauiApp.app \
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
           --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
@@ -56,7 +56,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        dotnet build sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+        dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -65,7 +65,7 @@ jobs:
       run: |
         dotnet xharness apple test \
           --target maccatalyst \
-          --app sample/XunitSampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/XunitSampleMauiApp.app \
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
           --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
@@ -97,7 +97,7 @@ jobs:
   #     run: dotnet android avd start --name TestRunnerEmulator --wait-boot
   #   - name: Publish App
   #     run: |
-  #       dotnet publish sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+  #       dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
   #         -f ${{ env.TEST_TARGET_FRAMEWORK }} \
   #         -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
   #         -c ${{ env.TEST_CONFIGURATION }} \
@@ -105,9 +105,9 @@ jobs:
   #   - name: Run Tests
   #     run: |
   #       xharness android test \
-  #         --package-name com.companyname.xunitsamplemauiapp \
+  #         --package-name com.companyname.samplemauiapp \
   #         --instrumentation communitytoolkit.devicerunners.xunit.xharness.maui.XHarnessInstrumentation \
-  #         --app sample/XunitSampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.xunitsamplemauiapp-Signed.apk
+  #         --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
   #         --output-directory artifacts
   #   - name: Shutdown the Emulator
   #     run: dotnet xharness android adb -- emu kill

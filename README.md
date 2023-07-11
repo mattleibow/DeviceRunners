@@ -9,9 +9,9 @@ This is repository contains revised code from a few places:
 
 There are a few packages in this repository, but the main ones are:
 
- - Visual test explorer/runner with `CommunityToolkit.DeviceRunners.Xunit.VisualRunner.Maui`
+ - Visual test explorer/runner with `CommunityToolkit.DeviceRunners.VisualRunners.Maui`
  - Headless test runner using XHarness with `CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui`
- - UI Testing support with `Xunit.Extensions.UITest.Maui`
+ - UI Testing support with `CommunityToolkit.UITest.Xunit.Maui`
 
 ## Testing with the Visual Runner
 
@@ -49,17 +49,17 @@ dotnet tool install Microsoft.DotNet.XHarness.CLI \
    <path/to/output>/xunit-test-ios-simulator-64-<YYYYMMDD>_<HHMMSS>.xml
    ```
 
-To build and test the app at the path `sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
+To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
 
 ```
-dotnet build sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
   -f net7.0-ios \
   -r iossimulator-arm64 \
   -c Debug
 
 xharness apple test \
   --target ios-simulator-64 \
-  --app sample/XunitSampleMauiApp/bin/Debug/net7.0-ios/iossimulator-arm64/XunitSampleMauiApp.app \
+  --app sample/SampleMauiApp/bin/Debug/net7.0-ios/iossimulator-arm64/SampleMauiApp.app \
   --output-directory artifacts
 
 # test result file will be artifacts/xunit-test-ios-simulator-64-########_######.xml
@@ -92,17 +92,17 @@ xharness apple test \
    <path/to/output>/TestResults.xml
    ```
 
-To build and test the app at the path `sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
+To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
 
 ```
-dotnet publish sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
   -r android-arm64 \
   -f net7.0-android \
   -c Release
 
 xharness android test \
-  --app sample/XunitSampleMauiApp/bin/Release/net7.0-android/android-arm64/publish/com.companyname.xunitsamplemauiapp-Signed.apk \
-  --package-name com.companyname.xunitsamplemauiapp \
+  --app sample/SampleMauiApp/bin/Release/net7.0-android/android-arm64/publish/com.companyname.samplemauiapp-Signed.apk \
+  --package-name com.companyname.samplemauiapp \
   --instrumentation communitytoolkit.devicerunners.xunit.xharness.maui.XHarnessInstrumentation \
   --output-directory artifacts
 
@@ -177,17 +177,17 @@ xharness android adb -- emu kill
    <path/to/output>/xunit-test-maccatalyst-<YYYYMMDD>_<HHMMSS>.xml
    ```
 
-To build and test the app at the path `sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
+To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
 
 ```
-dotnet build sample/XunitSampleMauiApp/XunitSampleMauiApp.csproj \
+dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
   -f net7.0-maccatalyst \
   -r maccatalyst-arm64 \
   -c Debug
 
 xharness apple test \
   --target maccatalyst \
-  --app sample/XunitSampleMauiApp/bin/Debug/net7.0-maccatalyst/maccatalyst-arm64/XunitSampleMauiApp.app \
+  --app sample/SampleMauiApp/bin/Debug/net7.0-maccatalyst/maccatalyst-arm64/SampleMauiApp.app \
   --output-directory artifacts
 
 # test result file will be artifacts/xunit-test-maccatalyst-########_######.xml
