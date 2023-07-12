@@ -18,6 +18,17 @@ public class XunitTests : IDisposable
 		Assert.True(true);
 	}
 
+	[Fact]
+	public void SimpleTest_Failed()
+	{
+		throw new Exception(Constants.ErrorMessage);
+	}
+
+	[Fact(Skip = Constants.SkippedReason)]
+	public void SimpleTest_Skipped()
+	{
+	}
+
 	[Theory]
 	[InlineData(1)]
 	[InlineData(2)]

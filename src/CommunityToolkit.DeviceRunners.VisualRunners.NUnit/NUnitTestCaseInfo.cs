@@ -1,32 +1,32 @@
-using Xunit.Abstractions;
+using NUnit.Framework.Interfaces;
 
-namespace CommunityToolkit.DeviceRunners.VisualRunners.Xunit;
+namespace CommunityToolkit.DeviceRunners.VisualRunners.NUnit;
 
-class XunitTestCaseInfo : ITestCaseInfo
+class NUnitTestCaseInfo : ITestCaseInfo
 {
-	public XunitTestCaseInfo(XunitTestAssemblyInfo assembly, ITestCase testCase)
+	public NUnitTestCaseInfo(NUnitTestAssemblyInfo assembly, ITest testCase)
 	{
 		TestAssembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
 		TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
 	}
 
-	public XunitTestAssemblyInfo TestAssembly { get; }
-	
+	public NUnitTestAssemblyInfo TestAssembly { get; }
+
 	ITestAssemblyInfo ITestCaseInfo.TestAssembly => TestAssembly;
 
 	public string AssemblyFileName => TestAssembly.AssemblyFileName;
 
-	public string DisplayName => TestCase.DisplayName;
+	public string DisplayName => TestCase.FullName;
 
-	public ITestCase TestCase { get; }
+	public ITest TestCase { get; }
 
-	public XunitTestResultInfo? Result { get; private set; }
+	public NUnitTestResultInfo? Result { get; private set; }
 
 	ITestResultInfo? ITestCaseInfo.Result => Result;
 
 	public event Action<ITestResultInfo>? ResultReported;
 
-	public void ReportResult(XunitTestResultInfo result)
+	public void ReportResult(NUnitTestResultInfo result)
 	{
 		Result = result;
 

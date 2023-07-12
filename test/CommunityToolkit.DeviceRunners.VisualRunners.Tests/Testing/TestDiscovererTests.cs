@@ -1,20 +1,21 @@
 using CommunityToolkit.DeviceRunners;
 using CommunityToolkit.DeviceRunners.VisualRunners;
-using CommunityToolkit.DeviceRunners.VisualRunners.Xunit;
 
 using Xunit;
 
-namespace VisualRunnerTests.XunitTesting;
+namespace VisualRunnerTests.Testing;
 
-public class XunitTestDiscovererTests
+public abstract class TestDiscovererTests
 {
+	public abstract ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration);
+
 	[Fact]
 	public async Task DiscoverAsyncCanFindAllTests()
 	{
 		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
 		var options = new VisualTestRunnerConfiguration(assemblies);
 
-		ITestDiscoverer discoverer = new XunitTestDiscoverer(options);
+		ITestDiscoverer discoverer = CreateTestDiscoverer(options);
 
 		var testAssemblies = await discoverer.DiscoverAsync();
 		Assert.NotNull(testAssemblies);
@@ -26,6 +27,11 @@ public class XunitTestDiscovererTests
 		var testCases = assemblyInfo.TestCases;
 		Assert.NotNull(testCases);
 		Assert.NotEmpty(testCases);
-		Assert.Equal(4, testCases.Count);
+		Assert.Equal(Constants.TestCount, testCases.Count);
+
+		foreach (var test in testCases)
+		{
+			Assert.Null(test.Result);
+		}
 	}
 }

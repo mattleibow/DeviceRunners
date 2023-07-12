@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners\CommunityToolkit.DeviceRunners.VisualRunners.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners.Xunit\CommunityToolkit.DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners.NUnit\CommunityToolkit.DeviceRunners.VisualRunners.NUnit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

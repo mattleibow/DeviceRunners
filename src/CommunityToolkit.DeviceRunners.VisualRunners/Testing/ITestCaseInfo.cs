@@ -8,5 +8,5 @@ public interface ITestCaseInfo
 
 	ITestResultInfo? Result { get; }
 
-	event Action<ITestResultInfo> ResultReported;
+	event Action<ITestResultInfo>? ResultReported;
 }

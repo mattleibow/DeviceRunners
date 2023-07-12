@@ -17,16 +17,17 @@ partial class TestAssemblyPage : ContentPage
 	public TestAssemblyViewModel? ViewModel
 	{
 		get => BindingContext as TestAssemblyViewModel;
-		set
-		{
-			if (ViewModel is TestAssemblyViewModel vm)
-				vm.TestResultSelected -= OnTestResultSelected;
+		set => BindingContext = value;
+	}
 
-			BindingContext = value;
+	protected override void OnDisappearing()
+	{
+		if (ViewModel is TestAssemblyViewModel vm)
+			vm.TestResultSelected -= OnTestResultSelected;
 
-			if (value is not null)
-				value.TestResultSelected += OnTestResultSelected;
-		}
+		base.OnDisappearing();
+
+		testsList.SelectedItem = null;
 	}
 
 	protected override void OnAppearing()
@@ -34,6 +35,9 @@ partial class TestAssemblyPage : ContentPage
 		base.OnAppearing();
 
 		testsList.SelectedItem = null;
+
+		if (ViewModel is TestAssemblyViewModel vm)
+			vm.TestResultSelected += OnTestResultSelected;
 	}
 
 	async void OnTestResultSelected(object? sender, TestResultViewModel testResultViewModel)

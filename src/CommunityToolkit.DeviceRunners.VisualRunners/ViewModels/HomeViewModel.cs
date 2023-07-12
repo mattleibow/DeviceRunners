@@ -14,13 +14,14 @@ public class HomeViewModel : AbstractBaseViewModel
 	bool _isBusy;
 
 	public HomeViewModel(
-		ITestDiscoverer testDiscoverer,
-		ITestRunner testRunner,
+		IEnumerable<ITestDiscoverer> testDiscoverers,
+		IEnumerable<ITestRunner> testRunners,
 		IDiagnosticsManager? diagnosticsManager = null,
 		DiagnosticsViewModel? diagnosticsViewModel = null)
 	{
-		_discoverer = testDiscoverer;
-		_runner = testRunner;
+		_discoverer = new CompositeTestDiscoverer(testDiscoverers);
+		_runner = new CompositeTestRunner(testRunners);
+
 		_diagnosticsManager = diagnosticsManager;
 
 		Diagnostics = diagnosticsViewModel;

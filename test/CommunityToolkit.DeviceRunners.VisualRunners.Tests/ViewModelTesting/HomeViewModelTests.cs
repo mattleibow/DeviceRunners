@@ -26,7 +26,7 @@ public class HomeViewModelTests
 
 		var runner = Substitute.For<ITestRunner>();
 
-		var vm = new HomeViewModel(discoverer, runner);
+		var vm = new HomeViewModel(new[] { discoverer }, new[] { runner });
 		Assert.Empty(vm.TestAssemblies);
 
 		await vm.StartAssemblyScanAsync();

@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using CommunityToolkit.DeviceRunners.VisualRunners;
 using CommunityToolkit.DeviceRunners.VisualRunners.Maui;
+using CommunityToolkit.DeviceRunners.VisualRunners.Xunit;
+using CommunityToolkit.DeviceRunners.VisualRunners.NUnit;
 
 namespace SampleMauiApp;
 
@@ -10,26 +12,17 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
-			.UseVisualTestRunner(builder => builder
+			.UseVisualTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(XunitTestProject.UnitTests).Assembly)
-				.AddXunit());
+				.AddTestAssemblies(typeof(NUnitTestProject.UnitTests).Assembly)
+				.AddXunit()
+				.AddNUnit());
 
 			// .UseXHarnessTestRunner(options => options
 			// 	.AddTestAssembly()
 			// 	.AddTestAssemblies()
 			// 	.AddXunit());
-
-			// .ConfigureTestRunners(new RunnerOptions
-			// {
-			// 	Assemblies =
-			// 	{
-			// 		typeof(MauiProgram).Assembly,
-			// 		typeof(UnitTest1).Assembly,
-			// 	},
-			// })
-			// .ConfigureXHarnessTestRunner()
-			// .ConfigureVisualTestRunner();
 
 #if DEBUG
 		builder.Logging.AddDebug();

@@ -210,7 +210,7 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 		try
 		{
 			IsBusy = true;
-			await _runner.RunTestsAsync(new[] { TestAssemblyInfo });
+			await _runner.RunTestsAsync(TestAssemblyInfo);
 		}
 		finally
 		{
@@ -236,7 +236,7 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 		if (testCase == null)
 			return;
 
-		await _runner.RunTestsAsync(new[] { testCase.TestCaseInfo });
+		await _runner.RunTestsAsync(testCase.TestCaseInfo);
 
 		TestResultSelected?.Invoke(this, testCase.TestResult);
 	}

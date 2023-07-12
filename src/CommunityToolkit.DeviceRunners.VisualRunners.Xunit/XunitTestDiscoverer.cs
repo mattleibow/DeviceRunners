@@ -44,9 +44,15 @@ public class XunitTestDiscoverer : ITestDiscoverer
 					sink.Finished.WaitOne();
 
 					var testAssembly = new XunitTestAssemblyInfo(assemblyFileName, configuration);
-					var testCases = sink.TestCases.Select(tc => new XunitTestCaseInfo(testAssembly, tc));
-					testAssembly.TestCases.AddRange(testCases);
-					result.Add(testAssembly);
+					var testCases = sink.TestCases
+						.Select(tc => new XunitTestCaseInfo(testAssembly, tc))
+						.ToList();
+
+					if (testCases.Count > 0)
+					{
+						testAssembly.TestCases.AddRange(testCases);
+						result.Add(testAssembly);
+					}
 				}
 				catch (Exception ex)
 				{

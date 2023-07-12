@@ -21,6 +21,18 @@ public class NUnitTests
 		Assert.IsTrue(true);
 	}
 
+	[Test]
+	public void SimpleTest_Failed()
+	{
+		throw new Exception(Constants.ErrorMessage);
+	}
+
+	[Test]
+	[Ignore(Constants.SkippedReason)]
+	public void SimpleTest_Skipped()
+	{
+	}
+
 	[TestCase(1)]
 	[TestCase(2)]
 	[TestCase(3)]
