@@ -10,7 +10,7 @@ This is repository contains revised code from a few places:
 There are a few packages in this repository, but the main ones are:
 
  - Visual test explorer/runner with `CommunityToolkit.DeviceRunners.VisualRunners.Maui`
- - Headless test runner using XHarness with `CommunityToolkit.DeviceRunners.Xunit.XHarness.Maui`
+ - Headless test runner using XHarness with `CommunityToolkit.DeviceRunners.XHarness.Maui`
  - UI Testing support with `CommunityToolkit.UITest.Xunit.Maui`
 
 ## Testing with the Visual Runner
@@ -85,7 +85,7 @@ xharness apple test \
    ```
 2. Run the tests:  
    ```
-   xharness android test --app <path/to/app.apk> --package-name <package-name> --instrumentation communitytoolkit.devicerunners.xunit.xharness.maui.XHarnessInstrumentation --output-directory <path/to/output>
+   xharness android test --app <path/to/app.apk> --package-name <package-name> --instrumentation communitytoolkit.devicerunners.xharness.maui.XHarnessInstrumentation --output-directory <path/to/output>
    ```
 3. View test results in the output path:  
    ```
@@ -103,7 +103,7 @@ dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
 xharness android test \
   --app sample/SampleMauiApp/bin/Release/net7.0-android/android-arm64/publish/com.companyname.samplemauiapp-Signed.apk \
   --package-name com.companyname.samplemauiapp \
-  --instrumentation communitytoolkit.devicerunners.xunit.xharness.maui.XHarnessInstrumentation \
+  --instrumentation communitytoolkit.devicerunners.xharness.maui.XHarnessInstrumentation \
   --output-directory artifacts
 
 # test result file will be artifacts/TestResults.xml

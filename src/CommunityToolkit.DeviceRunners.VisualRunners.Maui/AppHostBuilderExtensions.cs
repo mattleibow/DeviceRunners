@@ -24,7 +24,6 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<CreditsViewModel>();
 
 		// register app components
-		appHostBuilder.Services.AddSingleton<VisualRunnerApp>();
 		appHostBuilder.Services.AddSingleton<VisualRunnerWindow>();
 		appHostBuilder.Services.AddSingleton<VisualRunnerAppShell>();
 
@@ -37,7 +36,11 @@ public static class AppHostBuilderExtensions
 
 		if (configBuilder.RunnerUsage == VisualTestRunnerUsage.Always ||
 			(configBuilder.RunnerUsage == VisualTestRunnerUsage.Automatic && IsUsingVisualRunner))
+		{
+			Console.WriteLine("Registering the visual runner app as the test runner app.");
+
 			appHostBuilder.UseMauiApp<VisualRunnerApp>();
+		}
 
 		return appHostBuilder;
 	}
