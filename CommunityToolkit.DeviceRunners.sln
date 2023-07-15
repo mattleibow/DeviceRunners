@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{5073EAFD-F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleMauiApp", "sample\SampleMauiApp\SampleMauiApp.csproj", "{254F1542-8CBD-4FF3-81FB-8C311D53DE70}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUnitTestProject", "sample\NUnitTestProject\NUnitTestProject.csproj", "{34760EB3-3B55-49A6-8632-ABC6FA5E6786}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleNUnitTestProject", "sample\SampleNUnitTestProject\SampleNUnitTestProject.csproj", "{34760EB3-3B55-49A6-8632-ABC6FA5E6786}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XunitTestProject", "sample\XunitTestProject\XunitTestProject.csproj", "{52AB8946-1EDE-4BF2-B397-4422862AB2E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleXunitTestProject", "sample\SampleXunitTestProject\SampleXunitTestProject.csproj", "{52AB8946-1EDE-4BF2-B397-4422862AB2E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommunityToolkit.DeviceRunners.VisualRunners", "src\CommunityToolkit.DeviceRunners.VisualRunners\CommunityToolkit.DeviceRunners.VisualRunners.csproj", "{9AFBB1E8-A790-4676-A19D-F71BD05A052E}"
 EndProject

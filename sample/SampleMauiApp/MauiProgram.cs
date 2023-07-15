@@ -12,12 +12,12 @@ public static class MauiProgram
 		builder
 			.UseXHarnessTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
-				.AddTestAssemblies(typeof(XunitTestProject.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddXunit())
 			.UseVisualTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
-				.AddTestAssemblies(typeof(XunitTestProject.UnitTests).Assembly)
-				.AddTestAssemblies(typeof(NUnitTestProject.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(SampleNUnitTestProject.UnitTests).Assembly)
 				.AddXunit()
 				.AddNUnit());
 
