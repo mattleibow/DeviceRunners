@@ -1,0 +1,17 @@
+using CommunityToolkit.DeviceRunners.XHarness.Xunit;
+
+namespace CommunityToolkit.DeviceRunners.XHarness;
+
+public static class XHarnessTestRunnerConfigurationBuilderExtensions
+{
+	public static TBuilder AddXunit<TBuilder>(this TBuilder builder)
+		where TBuilder : IXHarnessTestRunnerConfigurationBuilder
+	{
+#if ANDROID || IOS || MACCATALYST
+		builder.AddTestPlatform<XunitTestRunner>();
+#else
+		Console.WriteLine("The XHarness test runner for Xunit is not supported on this platform.");
+#endif
+		return builder;
+	}
+}

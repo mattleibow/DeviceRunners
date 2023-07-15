@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DefineConstants Condition="'$(CI)' != 'true'">INCLUDE_FAILING_TESTS</DefineConstants>
+    <IsPackable>false</IsPackable>
+    <IsXunitTestProject>true</IsXunitTestProject>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" PrivateAssets="all" />
+    <PackageReference Include="xunit" Version="2.5.0-pre.44" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0-pre.27" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
