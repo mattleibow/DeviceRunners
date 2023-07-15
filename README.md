@@ -5,17 +5,24 @@ A device runner for the xUnit.net unit testing framework.
 This is repository contains revised code from a few places:
  - a port of https://github.com/xunit/devices.xunit to use .NET MAUI
  - a port of https://github.com/xunit/uitest.xunit to use .NET MAUI
+ - a port of https://github.com/nunit/nunit.xamarin to use .NET MAUI
  - parts of the work done in https://github.com/dotnet/maui
 
 There are a few packages in this repository, but the main ones are:
 
- - Visual test explorer/runner with `CommunityToolkit.DeviceRunners.VisualRunners.Maui`
- - Headless test runner using XHarness with `CommunityToolkit.DeviceRunners.XHarness.Maui`
- - UI Testing support with `CommunityToolkit.UITest.Xunit.Maui`
+ - Visual test explorer/runner
+    - `CommunityToolkit.DeviceRunners.VisualRunners.Maui` - UI component
+    - `CommunityToolkit.DeviceRunners.VisualRunners.Xunit` - Xunit support
+    - `CommunityToolkit.DeviceRunners.VisualRunners.NUnit` - NUnit support
+ - Headless test runner (using XHarness)
+    - `CommunityToolkit.DeviceRunners.XHarness.Maui` - main infrastructure
+    - `CommunityToolkit.DeviceRunners.XHarness.Xunit` - Xunit support
+ - UI Testing support
+    - `CommunityToolkit.UITest.Xunit.Maui` - UI testing helpers for Xunit for .NET MAUI
 
 ## Testing with the Visual Runner
 
-TODO
+Testing using the visual runner is just a matter of running the test app like any other app. This can be done via the CLI or in the IDE.
 
 
 ## Testing with XHarness
