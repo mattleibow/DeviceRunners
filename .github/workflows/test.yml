@@ -89,7 +89,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        $fingerprint = ./scripts/New-Certificate.ps1
+        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/SampleMauiApp/SampleMauiApp.csproj
         dotnet build sample/SampleMauiApp/SampleMauiApp.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
