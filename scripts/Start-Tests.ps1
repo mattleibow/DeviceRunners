@@ -10,10 +10,6 @@ param (
 
 $ErrorActionPreference = 'Stop'
 
-if ($PSVersionTable.PSEdition -eq "Core") {
-  Import-Module AppX
-}
-
 Write-Host "============================================================"
 Write-Host "PREPARATION"
 Write-Host "============================================================"

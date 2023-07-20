@@ -104,6 +104,7 @@ jobs:
         ./scripts/Start-Tests.ps1 `
           -AppPackage $msix `
           -ArtifactsPath artifacts
+      shell: powershell
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
