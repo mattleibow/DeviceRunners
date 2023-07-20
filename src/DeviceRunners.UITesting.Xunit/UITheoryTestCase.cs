@@ -7,7 +7,7 @@ namespace DeviceRunners.UITesting.Xunit;
 
 public class UITheoryTestCase : XunitTheoryTestCase
 {
-	public UITheoryTestCase(IMessageSink diagnosticMessageSink, Sdk.TestMethodDisplay defaultMethodDisplay, Sdk.TestMethodDisplayOptions defaultMethodDisplayOptions, ITestMethod testMethod)
+	public UITheoryTestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay defaultMethodDisplay, TestMethodDisplayOptions defaultMethodDisplayOptions, ITestMethod testMethod)
 		: base(diagnosticMessageSink, defaultMethodDisplay, defaultMethodDisplayOptions, testMethod)
 	{
 	}

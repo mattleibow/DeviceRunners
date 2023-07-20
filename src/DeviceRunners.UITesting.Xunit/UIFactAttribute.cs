@@ -1,9 +1,9 @@
 using Xunit.Sdk;
 
-namespace DeviceRunners.UITesting.Xunit;
+namespace Xunit;
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-[XunitTestCaseDiscoverer("DeviceRunners.UITesting.Xunit.UIFactDiscoverer", "UITest.Xunit.Maui")]
+[XunitTestCaseDiscoverer("DeviceRunners.UITesting.Xunit.UIFactDiscoverer", "DeviceRunners.UITesting.Xunit")]
 public class UIFactAttribute : FactAttribute
 {
 }

@@ -7,8 +7,8 @@ namespace DeviceRunners.UITesting.Xunit;
 
 public class UITestCase : XunitTestCase
 {
-	public UITestCase(IMessageSink diagnosticMessageSink, Sdk.TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod, object?[]? testMethodArguments = null)
-		: base(diagnosticMessageSink, defaultMethodDisplay, Sdk.TestMethodDisplayOptions.None, testMethod, testMethodArguments)
+	public UITestCase(IMessageSink diagnosticMessageSink, TestMethodDisplay defaultMethodDisplay, ITestMethod testMethod, object?[]? testMethodArguments = null)
+		: base(diagnosticMessageSink, defaultMethodDisplay, TestMethodDisplayOptions.None, testMethod, testMethodArguments)
 	{
 	}
 

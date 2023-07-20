@@ -47,15 +47,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
     <ProjectReference Include="..\SampleXunitTestProject\SampleXunitTestProject.csproj" />
     <ProjectReference Include="..\SampleNUnitTestProject\SampleNUnitTestProject.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
-    <ProjectReference Include="..\..\src\DeviceRunners.XHarness\DeviceRunners.XHarness.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.XHarness.Xunit\DeviceRunners.XHarness.Xunit.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.XHarness.Maui\DeviceRunners.XHarness.Maui.csproj" />
-    <ProjectReference Include="..\..\src\UITest.Xunit.Maui\UITest.Xunit.Maui.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
   </ItemGroup>
 
   <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">

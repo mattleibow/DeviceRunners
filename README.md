@@ -12,7 +12,7 @@ There are a few packages in this repository, but the main ones are:
     - `DeviceRunners.XHarness.Maui` - main infrastructure
     - `DeviceRunners.XHarness.Xunit` - Xunit support
  - UI Testing support
-    - `UITest.Xunit.Maui` - UI testing helpers for Xunit for .NET MAUI
+    - `DeviceRunners.UITesting.Xunit` - UI testing helpers for Xunit for .NET MAUI
 
 This is repository contains revised code from a few places:
  - a port of https://github.com/xunit/devices.xunit to use .NET MAUI

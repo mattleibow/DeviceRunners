@@ -17,7 +17,7 @@ public class UITestRunner : XunitTestRunner
 		// var invoker = new UITestInvoker(Test, MessageBus, TestClass, ConstructorArguments, TestMethod, TestMethodArguments, BeforeAfterAttributes, aggregator, CancellationTokenSource);
 		// invoker.RunAsync();
 
-		var task = UIThreadAccessor.DispatchAsync(() => base.InvokeTestMethodAsync(aggregator));
+		var task = UIThreadCoordinator.DispatchAsync(() => base.InvokeTestMethodAsync(aggregator));
 
 		// block the xUnit thread to ensure its concurrency throttle is effective
 		var runSummary = task.GetAwaiter().GetResult();

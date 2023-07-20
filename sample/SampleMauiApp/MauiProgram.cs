@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+
+using DeviceRunners.UITesting;
 using DeviceRunners.VisualRunners;
 using DeviceRunners.XHarness;
 
@@ -10,6 +12,7 @@ public static class MauiProgram
 	{
 		var builder = MauiApp.CreateBuilder();
 		builder
+			.ConfigureUITesting()
 			.UseXHarnessTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)

@@ -67,7 +67,7 @@ public class DynamicUITests : UITests<ContentPage>
 		Assert.Equal(CurrentPage.Window, button.Window);
 	}
 
-#if WINDOWS && INCLUDE_FAILING_TESTS
+#if WINDOWS || INCLUDE_FAILING_TESTS
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
