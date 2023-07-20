@@ -88,6 +88,20 @@ try {
 }
 
 # Install the app
+Write-Host "  - Installing dependencies..."
+$arch = $env:PROCESSOR_ARCHITECTURE
+if ($arch -eq "AMD64") {
+  $arch = "x64"
+}
+$deps = Get-ChildItem "$AppPackage\..\Dependencies\$arch\*.msix"
+foreach ($dep in $deps) {
+  try {
+    Write-Host "    Installing dependency: '$dep'"
+    Add-AppxPackage -Path $dep
+  } catch {
+    Write-Host "    Dependency faild to install, continuing..."
+  }
+}
 Write-Host "  - Installing application..."
 Add-AppxPackage -Path $AppPackage
 $appInstalls = Get-AppxPackage -Name $appIdentity
