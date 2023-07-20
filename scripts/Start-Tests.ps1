@@ -143,10 +143,9 @@ Write-Host "------------------------------------------------------------"
 Write-Host "  - Checking test results for failures..."
 Write-Host "    Results file: '$output\TestResults.xml'"
 [xml]$resultsXml = Get-Content "$output\TestResults.xml"
-($resultsXml.assemblies.assembly | Where-Object failed -gt 0)
-$resultsXml.assemblies
-$result = 0
-if (($resultsXml.assemblies.assembly | Where-Object failed -gt 0).Count -gt 0) {
+$failed = $resultsXml.assemblies.assembly |
+  Where-Object { $_.failed -gt 0 -or $_.error -gt 0 }
+if ($failed) {
   Write-Host "    There were test failures."
   $result = 1
 } else {
