@@ -6,13 +6,11 @@ namespace CommunityToolkit.DeviceRunners.XHarness.Xunit;
 public class XunitTestRunner : DefaultAndroidEntryPoint, ITestRunner
 {
 	readonly IXHarnessTestRunnerConfiguration _configuration;
-	readonly ApplicationOptions _applicationOptions;
 
-	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, ApplicationOptions applicationOptions, IDevice device)
+	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device)
 		: base(Application.Context.CacheDir!.AbsolutePath, new())
 	{
 		_configuration = configuration;
-		_applicationOptions = applicationOptions;
 		Device = device;
 	}
 
@@ -27,7 +25,7 @@ public class XunitTestRunner : DefaultAndroidEntryPoint, ITestRunner
 				var path = Path.Combine(Application.Context.CacheDir!.AbsolutePath, assembly.GetName().Name + ".dll");
 				if (!File.Exists(path))
 					File.Create(path).Close();
-				
+
 				return new TestAssemblyInfo(assembly, path);
 			});
 
@@ -74,6 +72,8 @@ public class XunitTestRunner : DefaultAndroidEntryPoint, ITestRunner
 			runResult["test-execution-summary"] = message;
 
 			runResult["return-code"] = result.FailedTests == 0 ? "0" : "1";
+
+			Console.WriteLine(message);
 		}
 	}
 }

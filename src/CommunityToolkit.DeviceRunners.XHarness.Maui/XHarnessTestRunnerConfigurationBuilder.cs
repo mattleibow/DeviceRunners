@@ -5,8 +5,11 @@ namespace CommunityToolkit.DeviceRunners.XHarness;
 public class XHarnessTestRunnerConfigurationBuilder : IXHarnessTestRunnerConfigurationBuilder
 {
 	readonly MauiAppBuilder _appHostBuilder;
+
 	readonly List<Assembly> _testAssemblies = new();
 	readonly List<string> _skipCategories = new();
+
+	string? _outputDirectory;
 
 	public XHarnessTestRunnerConfigurationBuilder(MauiAppBuilder appHostBuilder)
 	{
@@ -24,9 +27,12 @@ public class XHarnessTestRunnerConfigurationBuilder : IXHarnessTestRunnerConfigu
 	void IXHarnessTestRunnerConfigurationBuilder.AddTestPlatform<TTestRunner>() =>
 		_appHostBuilder.Services.AddSingleton<ITestRunner, TTestRunner>();
 
+	void IXHarnessTestRunnerConfigurationBuilder.SetOutputDirectory(string directory) =>
+		_outputDirectory = directory;
+
 	IXHarnessTestRunnerConfiguration IXHarnessTestRunnerConfigurationBuilder.Build() =>
 		Build();
 
 	public XHarnessTestRunnerConfiguration Build() =>
-		new(_testAssemblies, _skipCategories);
+		new(_testAssemblies, _outputDirectory, _skipCategories);
 }

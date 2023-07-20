@@ -10,6 +10,7 @@ public static class AppHostBuilderExtensions
 	public static MauiAppBuilder UseXHarnessTestRunner(this MauiAppBuilder appHostBuilder, Action<XHarnessTestRunnerConfigurationBuilder> configurationBuilder)
 	{
 		var configBuilder = new XHarnessTestRunnerConfigurationBuilder(appHostBuilder);
+		configBuilder.UseEnvironmentVariables();
 		configurationBuilder?.Invoke(configBuilder);
 		var configuration = configBuilder.Build();
 

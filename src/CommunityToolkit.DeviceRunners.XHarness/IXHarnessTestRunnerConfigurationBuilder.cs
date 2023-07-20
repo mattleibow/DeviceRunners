@@ -11,6 +11,7 @@ public interface IXHarnessTestRunnerConfigurationBuilder
 	void AddTestPlatform<TTestRunner>()
 		where TTestRunner : class, ITestRunner;
 
+	void SetOutputDirectory(string directory);
+
 	IXHarnessTestRunnerConfiguration Build();
 }
-

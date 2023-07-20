@@ -10,15 +10,16 @@
     <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="8.0.0-prerelease.23326.1" />
   </ItemGroup>
 
-  <Target Name="_RemovePlatformCompileItems" BeforeTargets="GenerateMSBuildEditorConfigFileShouldRun">
-    <ItemGroup>
-      <Compile Remove="Platforms\Android\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'android'" />
-      <Compile Remove="Platforms\iOS\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'ios'" />
-      <Compile Remove="Platforms\MacCatalyst\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
-      <Compile Remove="Platforms\Apple\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'ios' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'maccatalyst'" />
-      <Compile Remove="Platforms\Windows\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'windows'" />
-      <Compile Remove="Platforms\Tizen\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) != 'tizen'" />
-    </ItemGroup>
-  </Target>
+  <ItemGroup>
+    <None Include="Platforms\**" />
+    <Compile Remove="Platforms\**" />
+    <Compile Include="Platforms\All\**" />
+    <Compile Include="Platforms\Android\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
+    <Compile Include="Platforms\iOS\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+    <Compile Include="Platforms\MacCatalyst\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+    <Compile Include="Platforms\Apple\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+    <Compile Include="Platforms\Windows\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'" />
+    <Compile Include="Platforms\Tizen\**" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'" />
+  </ItemGroup>
 
 </Project>

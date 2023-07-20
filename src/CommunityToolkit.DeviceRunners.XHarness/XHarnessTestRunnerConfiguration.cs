@@ -1,17 +1,22 @@
-﻿using System.Collections.ObjectModel;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace CommunityToolkit.DeviceRunners.XHarness;
 
 public class XHarnessTestRunnerConfiguration : IXHarnessTestRunnerConfiguration
 {
-	public XHarnessTestRunnerConfiguration(IEnumerable<Assembly> testAssemblies, IEnumerable<string>? skipCategories = null)
+	public XHarnessTestRunnerConfiguration(
+		IEnumerable<Assembly> testAssemblies,
+		string? outputDirectory = null,
+		IEnumerable<string>? skipCategories = null)
 	{
 		TestAssemblies = testAssemblies?.ToList() ?? throw new ArgumentNullException(nameof(testAssemblies));
+		OutputDirectory = outputDirectory;
 		SkipCategories = skipCategories?.ToList() ?? new List<string>();
 	}
 
 	public IReadOnlyList<Assembly> TestAssemblies { get; }
 
 	public IReadOnlyCollection<string> SkipCategories { get; }
+
+	public string? OutputDirectory { get; }
 }
