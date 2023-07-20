@@ -140,6 +140,15 @@ while (!(Test-Path "$output\TestResults.xml")) {
   }
 }
 Write-Host "------------------------------------------------------------"
+Write-Host "  - Checking test results for failures..."
+[xml]$resultsXml = Get-Content "$output\TestResults.xml"
+$result = 0
+if (($resultsXml.assemblies.assembly | Where-Object failed -gt 0).Count -gt 0) {
+  Write-Host "    There were test failures."
+  $result = 1
+} else {
+  Write-Host "    There were no test failures."
+}
 Write-Host "  - Tests complete."
 
 Write-Host ""
@@ -165,3 +174,5 @@ if ($autoinstalledCertificate) {
 }
 Write-Host "  - Cleanup complete."
 Write-Host ""
+
+exit $result
