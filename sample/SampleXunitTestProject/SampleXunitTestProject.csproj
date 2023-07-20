@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <DefineConstants Condition="'$(CI)' != 'true'">INCLUDE_FAILING_TESTS</DefineConstants>
     <IsPackable>false</IsPackable>
-    <IsSampleXunitTestProject>true</IsSampleXunitTestProject>
+    <IsXunitTestProject>true</IsXunitTestProject>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
