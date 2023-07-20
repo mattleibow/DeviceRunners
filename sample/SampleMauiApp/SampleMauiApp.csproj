@@ -47,8 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\XunitTestProject\XunitTestProject.csproj" />
-    <ProjectReference Include="..\NUnitTestProject\NUnitTestProject.csproj" />
+    <ProjectReference Include="..\SampleXunitTestProject\SampleXunitTestProject.csproj" />
+    <ProjectReference Include="..\SampleNUnitTestProject\SampleNUnitTestProject.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners.Xunit\CommunityToolkit.DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners.NUnit\CommunityToolkit.DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.DeviceRunners.VisualRunners.Maui\CommunityToolkit.DeviceRunners.VisualRunners.Maui.csproj" />

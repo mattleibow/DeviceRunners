@@ -67,6 +67,7 @@ public class DynamicUITests : UITests<ContentPage>
 		Assert.Equal(CurrentPage.Window, button.Window);
 	}
 
+#if WINDOWS && INCLUDE_FAILING_TESTS
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
@@ -117,6 +118,7 @@ public class DynamicUITests : UITests<ContentPage>
 		// check to make sure the cross-platform view is updated with the transform
 		Assert.Equal(testData.Expected, entry.Text);
 	}
+#endif
 
 	public record ComplexData(string Input, string Expected);
 

@@ -14,4 +14,9 @@ public interface IXHarnessTestRunnerConfiguration
 	///   [category-name]=[skip-when-value]
 	/// </summary>
 	IReadOnlyCollection<string> SkipCategories { get; }
+
+	/// <summary>
+	/// The directory where the test results file should be copied.
+	/// </summary>
+	string? OutputDirectory { get; }
 }

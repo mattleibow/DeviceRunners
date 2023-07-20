@@ -1,21 +1,20 @@
-namespace NUnitTestProject;
+namespace SampleXunitTestProject;
 
 public class UnitTests
 {
-	[Test]
+	[Fact]
 	public void SuccessfulTest()
 	{
 		Assert.True(true);
 	}
 
-	[Test]
-	[Ignore("This test is skipped.")]
+	[Fact(Skip = "This test is skipped.")]
 	public void SkippedTest()
 	{
 	}
 
 #if INCLUDE_FAILING_TESTS
-	[Test]
+	[Fact]
 	public void FailingTest()
 	{
 		throw new Exception("This is meant to fail.");

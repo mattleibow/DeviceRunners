@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Globalization;
-
-using Microsoft.DotNet.XHarness.TestRunners.Common;
+﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 
 namespace CommunityToolkit.DeviceRunners.XHarness.Xunit;
@@ -12,12 +6,10 @@ namespace CommunityToolkit.DeviceRunners.XHarness.Xunit;
 public class XunitTestRunner : iOSApplicationEntryPoint, ITestRunner
 {
 	readonly IXHarnessTestRunnerConfiguration _configuration;
-	readonly ApplicationOptions _applicationOptions;
 
-	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, ApplicationOptions applicationOptions, IDevice device)
+	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device)
 	{
 		_configuration = configuration;
-		_applicationOptions = applicationOptions;
 		Device = device;
 	}
 

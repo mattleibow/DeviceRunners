@@ -33,4 +33,13 @@ public static class XHarnessTestRunnerConfigurationBuilderExtensions
 		builder.SkipCategory(category, skipValue);
 		return builder;
 	}
+
+	public static TBuilder UseEnvironmentVariables<TBuilder>(this TBuilder builder)
+		where TBuilder : IXHarnessTestRunnerConfigurationBuilder
+	{
+		var path = AdditionalApplicationOptions.Current.OutputDirectory;
+		if (!string.IsNullOrEmpty(path))
+			builder.SetOutputDirectory(path);
+		return builder;
+	}
 }
