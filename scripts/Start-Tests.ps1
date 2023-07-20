@@ -17,8 +17,12 @@ Write-Host "============================================================"
 if (-not $AppCertificate) {
   Write-Host "  - Determining certificate for MSIX installer..."
   $AppCertificate = [IO.Path]::ChangeExtension($AppPackage, ".cer")
-  $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-  $cert.Import((Resolve-Path $AppCertificate))
+  try {
+    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+    $cert.Import((Resolve-Path $AppCertificate))
+  } catch {
+    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(Resolve-Path $AppCertificate)
+  }
   $certFingerprint = $cert.Thumbprint
 
   Write-Host "    File path: '$AppCertificate'"
