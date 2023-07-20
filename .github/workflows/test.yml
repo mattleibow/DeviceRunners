@@ -100,7 +100,7 @@ jobs:
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
       run: |
-        $msix = Get-ChildItem "sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/*_Test/*.msix"
+        $msix = Get-ChildItem "sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -AppPackage $msix `
           -ArtifactsPath artifacts
