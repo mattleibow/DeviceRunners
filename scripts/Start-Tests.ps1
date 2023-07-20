@@ -10,6 +10,10 @@ param (
 
 $ErrorActionPreference = 'Stop'
 
+if ($PSVersionTable.PSEdition -eq "Core") {
+  Import-Module AppX
+}
+
 Write-Host "============================================================"
 Write-Host "PREPARATION"
 Write-Host "============================================================"
@@ -17,11 +21,11 @@ Write-Host "============================================================"
 if (-not $AppCertificate) {
   Write-Host "  - Determining certificate for MSIX installer..."
   $AppCertificate = [IO.Path]::ChangeExtension($AppPackage, ".cer")
-  try {
+  if ($PSVersionTable.PSEdition -eq "Core") {
+    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(Resolve-Path $AppCertificate)
+  } else {
     $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
     $cert.Import((Resolve-Path $AppCertificate))
-  } catch {
-    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(Resolve-Path $AppCertificate)
   }
   $certFingerprint = $cert.Thumbprint
 
