@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vr="clr-namespace:DeviceRunners.VisualRunners;assembly=DeviceRunners.VisualRunners"
+             xmlns:local="using:DeviceRunners.VisualRunners.Maui"
+             x:Class="DeviceRunners.VisualRunners.Maui.Pages.TestAssemblyPage"
+             Title="{Binding DisplayName}">
+
+    <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,Auto,Auto"
+          Padding="20" RowSpacing="10" ColumnSpacing="10">
+
+        <!-- header and run buttons -->
+        <Label Text="Tests:" FontAttributes="Bold"
+               VerticalOptions="End" />
+        <Button Text="Run Filtered  ►"
+                Command="{Binding RunFilteredTestsCommand}"
+                Style="{StaticResource RunButtonStyle}"
+                Grid.Column="1" />
+        <Button Text="Run All  ►►"
+                Command="{Binding RunAllTestsCommand}"
+                Style="{StaticResource RunButtonStyle}"
+                Grid.Column="2" />
+
+        <!-- search and filter -->
+        <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto" RowDefinitions="Auto"
+              Grid.Row="1" Grid.ColumnSpan="3">
+            <Entry Placeholder="filter" Text="{Binding SearchQuery}" />
+            <Picker Title="Filter by results"
+                    SelectedItem="{Binding ResultFilter}"
+                    WidthRequest="130" Grid.Column="1">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type vr:TestState}">
+                        <vr:TestState>All</vr:TestState>
+                        <vr:TestState>Passed</vr:TestState>
+                        <vr:TestState>Failed</vr:TestState>
+                        <vr:TestState>Skipped</vr:TestState>
+                        <vr:TestState>NotRun</vr:TestState>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+        </Grid>
+
+        <!-- assembly list -->
+        <CollectionView x:Name="testsList"
+                        ItemsSource="{Binding TestCases}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding NavigateToResultCommand}"
+                        SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}}"
+                        Margin="-20,0" Grid.Row="2" Grid.ColumnSpan="3">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Padding="20,10" Spacing="5">
+                        <Label Text="{Binding DisplayName}" />
+                        <Label Text="{Binding Message}" TextColor="{Binding ResultStatus, Converter={StaticResource RunStatusToColorConverter}}" />
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- busy indicator -->
+        <ContentView IsVisible="{Binding IsBusy}" Style="{StaticResource BusyOverlayStyle}"
+                     Grid.RowSpan="3" Grid.ColumnSpan="3" Margin="-20" />
+
+    </Grid>
+
+</ContentPage>

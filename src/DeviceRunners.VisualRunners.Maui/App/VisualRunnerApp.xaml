@@ -1,0 +1,82 @@
+﻿<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="using:DeviceRunners.VisualRunners.Maui"
+             x:Class="DeviceRunners.VisualRunners.Maui.VisualRunnerApp">
+    <Application.Resources>
+        <ResourceDictionary>
+
+            <Color x:Key="White">White</Color>
+            <Color x:Key="Black">Black</Color>
+            <Color x:Key="Gray100">#E1E1E1</Color>
+            <Color x:Key="Gray200">#C8C8C8</Color>
+            <Color x:Key="Gray300">#ACACAC</Color>
+            <Color x:Key="Gray400">#919191</Color>
+            <Color x:Key="Gray500">#6E6E6E</Color>
+            <Color x:Key="Gray600">#404040</Color>
+            <Color x:Key="Gray900">#212121</Color>
+            <Color x:Key="Gray950">#141414</Color>
+
+            <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
+            <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+            <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
+            <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
+            <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
+            <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
+            <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
+            <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
+            <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
+            <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+            <Color x:Key="NoTestsColor">#ff7f00</Color>
+            <Color x:Key="NotRunTestsColor">DarkGray</Color>
+            <Color x:Key="SkippedTestsColor">#ff7700</Color>
+            <Color x:Key="FailedTestsColor">Red</Color>
+            <Color x:Key="SuccessfulTestsColor">Green</Color>
+
+            <SolidColorBrush x:Key="NoTestsBrush" Color="{StaticResource NoTestsColor}"/>
+            <SolidColorBrush x:Key="NotRunTestsBrush" Color="{StaticResource NotRunTestsColor}"/>
+            <SolidColorBrush x:Key="SkippedTestsBrush" Color="{StaticResource SkippedTestsColor}"/>
+            <SolidColorBrush x:Key="FailedTestsBrush" Color="{StaticResource FailedTestsColor}"/>
+            <SolidColorBrush x:Key="SuccessfulTestsBrush" Color="{StaticResource SuccessfulTestsColor}"/>
+
+            <Style x:Key="RunButtonStyle" TargetType="Button">
+                <Setter Property="TextColor" Value="{StaticResource White}" />
+                <Setter Property="Background" Value="{StaticResource SuccessfulTestsBrush}" />
+                <Setter Property="BorderWidth" Value="0"/>
+                <Setter Property="CornerRadius" Value="5"/>
+                <Setter Property="Padding" Value="14,10"/>
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal" />
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
+                                    <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <local:RunStatusToColorConverter x:Key="RunStatusToColorConverter" />
+
+            <Style x:Key="BusyOverlayStyle" TargetType="ContentView">
+                <Setter Property="Background" Value="#CCFFFFFF" />
+                <Setter Property="InputTransparent" Value="False" />
+                <Setter Property="ControlTemplate">
+                    <DataTemplate>
+                        <Grid>
+                            <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
+                                <Label Text="Working..." />
+                                <ActivityIndicator IsRunning="{Binding Source={RelativeSource AncestorType={x:Type ContentView}}, Path=IsVisible}" />
+                            </StackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using CommunityToolkit.DeviceRunners.VisualRunners;
-using CommunityToolkit.DeviceRunners.XHarness;
+using DeviceRunners.VisualRunners;
+using DeviceRunners.XHarness;
 
 namespace SampleMauiApp;
 

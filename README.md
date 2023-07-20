@@ -1,24 +1,24 @@
-# CommunityToolkit.DeviceRunners.Xunit
+# Test Device Runners
 
-A device runner for the xUnit.net unit testing framework.
+A device runner for a collection of testing frameworks.
+
+There are a few packages in this repository, but the main ones are:
+
+ - Visual test explorer/runner
+    - `DeviceRunners.VisualRunners.Maui` - UI component
+    - `DeviceRunners.VisualRunners.Xunit` - Xunit support
+    - `DeviceRunners.VisualRunners.NUnit` - NUnit support
+ - Headless test runner (using XHarness)
+    - `DeviceRunners.XHarness.Maui` - main infrastructure
+    - `DeviceRunners.XHarness.Xunit` - Xunit support
+ - UI Testing support
+    - `UITest.Xunit.Maui` - UI testing helpers for Xunit for .NET MAUI
 
 This is repository contains revised code from a few places:
  - a port of https://github.com/xunit/devices.xunit to use .NET MAUI
  - a port of https://github.com/xunit/uitest.xunit to use .NET MAUI
  - a port of https://github.com/nunit/nunit.xamarin to use .NET MAUI
  - parts of the work done in https://github.com/dotnet/maui
-
-There are a few packages in this repository, but the main ones are:
-
- - Visual test explorer/runner
-    - `CommunityToolkit.DeviceRunners.VisualRunners.Maui` - UI component
-    - `CommunityToolkit.DeviceRunners.VisualRunners.Xunit` - Xunit support
-    - `CommunityToolkit.DeviceRunners.VisualRunners.NUnit` - NUnit support
- - Headless test runner (using XHarness)
-    - `CommunityToolkit.DeviceRunners.XHarness.Maui` - main infrastructure
-    - `CommunityToolkit.DeviceRunners.XHarness.Xunit` - Xunit support
- - UI Testing support
-    - `CommunityToolkit.UITest.Xunit.Maui` - UI testing helpers for Xunit for .NET MAUI
 
 ## Testing with the Visual Runner
 
@@ -92,7 +92,7 @@ xharness apple test \
    ```
 2. Run the tests:  
    ```
-   xharness android test --app <path/to/app.apk> --package-name <package-name> --instrumentation communitytoolkit.devicerunners.xharness.maui.XHarnessInstrumentation --output-directory <path/to/output>
+   xharness android test --app <path/to/app.apk> --package-name <package-name> --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --output-directory <path/to/output>
    ```
 3. View test results in the output path:  
    ```
@@ -110,7 +110,7 @@ dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
 xharness android test \
   --app sample/SampleMauiApp/bin/Release/net7.0-android/android-arm64/publish/com.companyname.samplemauiapp-Signed.apk \
   --package-name com.companyname.samplemauiapp \
-  --instrumentation communitytoolkit.devicerunners.xharness.maui.XHarnessInstrumentation \
+  --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
   --output-directory artifacts
 
 # test result file will be artifacts/TestResults.xml
