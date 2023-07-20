@@ -3,6 +3,8 @@ using System.Collections;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
+using static System.Net.Mime.MediaTypeNames;
+
 namespace SampleMauiApp;
 
 public class DynamicUITests : UITests<ContentPage>
@@ -67,7 +69,6 @@ public class DynamicUITests : UITests<ContentPage>
 		Assert.Equal(CurrentPage.Window, button.Window);
 	}
 
-#if WINDOWS || INCLUDE_FAILING_TESTS
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
@@ -77,21 +78,16 @@ public class DynamicUITests : UITests<ContentPage>
 		var entry = new Entry
 		{
 			TextTransform = TextTransform.Uppercase,
-			Text = "initial text"
 		};
 
 		// create the handler and underlying platform view
 		var handler = (EntryHandler)entry.ToHandler(MauiContext);
 
-		Assert.Equal("INITIAL TEXT", entry.Text);
+		// update the text
+		entry.Text = text;
 
-		// emulate the user setting some text via the OS keyboard
-		// the UpdateText method is just a hack to set the platform value
-		var fakeEntry = new Entry { Text = text };
-		handler.PlatformView.UpdateText(fakeEntry);
-
-		// check to make sure the cross-platform view is updated with the transform
-		Assert.Equal(expected, entry.Text);
+		// check to make sure the platform view is updated with the transformed text
+		Assert.Equal(expected, handler.PlatformView.Text);
 	}
 
 	[UITheory]
@@ -102,23 +98,17 @@ public class DynamicUITests : UITests<ContentPage>
 		var entry = new Entry
 		{
 			TextTransform = TextTransform.Uppercase,
-			Text = "initial text"
 		};
 
 		// create the handler and underlying platform view
 		var handler = (EntryHandler)entry.ToHandler(MauiContext);
 
-		Assert.Equal("INITIAL TEXT", entry.Text);
+		// update the text
+		entry.Text = testData.Input;
 
-		// emulate the user setting some text via the OS keyboard
-		// the UpdateText method is just a hack to set the platform value
-		var fakeEntry = new Entry { Text = testData.Input };
-		handler.PlatformView.UpdateText(fakeEntry);
-
-		// check to make sure the cross-platform view is updated with the transform
-		Assert.Equal(testData.Expected, entry.Text);
+		// check to make sure the platform view is updated with the transformed text
+		Assert.Equal(testData.Expected, handler.PlatformView.Text);
 	}
-#endif
 
 	public record ComplexData(string Input, string Expected);
 
