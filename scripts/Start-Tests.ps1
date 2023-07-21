@@ -1,11 +1,11 @@
 [CmdletBinding()]
 param (
   [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-  [String]$AppPackage,
+  [String]$App,
   [Parameter()]
-  [String]$AppCertificate,
+  [String]$Certificate,
   [Parameter()]
-  [String]$ArtifactsPath = 'artifacts'
+  [String]$OutputDirectory = 'artifacts'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,27 +14,29 @@ Write-Host "============================================================"
 Write-Host "PREPARATION"
 Write-Host "============================================================"
 
-if (-not $AppCertificate) {
+if (-not $Certificate) {
   Write-Host "  - Determining certificate for MSIX installer..."
-  $AppCertificate = [IO.Path]::ChangeExtension($AppPackage, ".cer")
+  $Certificate = [IO.Path]::ChangeExtension($App, ".cer")
   if ($PSVersionTable.PSEdition -eq "Core") {
-    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(Resolve-Path $AppCertificate)
+    $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(Resolve-Path $Certificate)
   } else {
     $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-    $cert.Import((Resolve-Path $AppCertificate))
+    $cert.Import((Resolve-Path $Certificate))
   }
   $certFingerprint = $cert.Thumbprint
 
-  Write-Host "    File path: '$AppCertificate'"
+  $Certificate = Resolve-Path $Certificate
+  Write-Host "    File path: '$Certificate'"
   Write-Host "    Thumbprint: '$certFingerprint'"
   Write-Host "    Certificate identified."
 }
 
 Write-Host "  - Determining app identity..."
-Write-Host "    MSIX installer: '$AppPackage'"
+$App = Resolve-Path $App
+Write-Host "    MSIX installer: '$App'"
 try {
   Add-Type -Assembly "System.IO.Compression.FileSystem"
-  $msixZipFile = [IO.Compression.ZipFile]::OpenRead($AppPackage)
+  $msixZipFile = [IO.Compression.ZipFile]::OpenRead($App)
   $manifestEntry = $msixZipFile.Entries | Where-Object { $_.Name -eq "AppxManifest.xml"}
   $stream = $manifestEntry.Open()
   $reader = New-Object IO.StreamReader($stream)
@@ -80,9 +82,9 @@ try {
   $autoinstalledCertificate = $true
   Write-Host "    Certificate was not found, importing certificate..."
   if ($isAdminRole) {
-    Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $AppCertificate | Out-Null
+    Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate | Out-Null
   } else {
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $AppCertificate"
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate"
   }
   Write-Host "    Certificate imported."
 }
@@ -93,7 +95,7 @@ $arch = $env:PROCESSOR_ARCHITECTURE
 if ($arch -eq "AMD64") {
   $arch = "x64"
 }
-$deps = Get-ChildItem "$AppPackage\..\Dependencies\$arch\*.msix"
+$deps = Get-ChildItem "$App\..\Dependencies\$arch\*.msix"
 foreach ($dep in $deps) {
   try {
     Write-Host "    Installing dependency: '$dep'"
@@ -103,7 +105,7 @@ foreach ($dep in $deps) {
   }
 }
 Write-Host "  - Installing application..."
-Add-AppxPackage -Path $AppPackage
+Add-AppxPackage -Path $App
 $appInstalls = Get-AppxPackage -Name $appIdentity
 $packageFullName = $appInstalls.PackageFullName
 $packageFamilyName = $appInstalls.PackageFamilyName
@@ -119,19 +121,20 @@ Write-Host "============================================================"
 
 # Start the app
 Write-Host "  - Starting the application..."
-$output = Resolve-Path $ArtifactsPath
-Remove-Item $output -Recurse -Force
-Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args "--xharness --output-directory=`"$output`""
+New-Item -ItemType Directory $OutputDirectory -Force | Out-Null
+$OutputDirectory = Resolve-Path $OutputDirectory
+Remove-Item $OutputDirectory -Recurse -Force
+Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args "--xharness --output-directory=`"$OutputDirectory`""
 Write-Host "    Application started."
 
 # Wait for the tests to finish
 Write-Host "  - Waiting for test results..."
 Write-Host "------------------------------------------------------------"
 $lastLine = 0
-while (!(Test-Path "$output\TestResults.xml")) {
+while (!(Test-Path "$OutputDirectory\TestResults.xml")) {
   Start-Sleep 0.6
-  if (Test-Path $output\test-output-*.log) {
-    $log = Get-ChildItem $output\test-output-*.log
+  if (Test-Path $OutputDirectory\test-output-*.log) {
+    $log = Get-ChildItem $OutputDirectory\test-output-*.log
     $lines = [string[]](Get-Content $log | Select-Object -Skip $lastLine)
     foreach ($line in $lines) {
       Write-Host $line
@@ -141,8 +144,8 @@ while (!(Test-Path "$output\TestResults.xml")) {
 }
 Write-Host "------------------------------------------------------------"
 Write-Host "  - Checking test results for failures..."
-Write-Host "    Results file: '$output\TestResults.xml'"
-[xml]$resultsXml = Get-Content "$output\TestResults.xml"
+Write-Host "    Results file: '$OutputDirectory\TestResults.xml'"
+[xml]$resultsXml = Get-Content "$OutputDirectory\TestResults.xml"
 $failed = $resultsXml.assemblies.assembly |
   Where-Object { $_.failed -gt 0 -or $_.error -gt 0 }
 if ($failed) {
