@@ -233,6 +233,7 @@ dotnet publish sample\SampleMauiApp\SampleMauiApp.csproj `
   -p:AppxPackageSigningEnabled=true `
   -p:PackageCertificateThumbprint=$fingerprint `
   -p:PackageCertificateKeyFile=""
+./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
 
 ./scripts/Start-Tests.ps1 `
   -App sample\SampleMauiApp\bin\Release\net7.0-windows10.0.19041.0\win10-x64\AppPackages\SampleMauiApp_1.0.0.1_Test\SampleMauiApp_1.0.0.1_x64.msix `
