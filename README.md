@@ -49,6 +49,7 @@ More information can be found in the wiki: [UI Tests](https://github.com/mattlei
 This is repository contains revised code from a few places:
 
  - a port of https://github.com/xunit/devices.xunit to use .NET MAUI
- - a port of https://github.com/xunit/uitest.xunit to use .NET MAUI
+ - https://github.com/xunit/uitest.xunit  
+   This code was migrated to use .NET MAUI.
  - a port of https://github.com/nunit/nunit.xamarin to use .NET MAUI
  - parts of the work done in https://github.com/dotnet/maui
