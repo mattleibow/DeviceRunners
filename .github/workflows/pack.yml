@@ -43,8 +43,10 @@ jobs:
 
 
   publish:
-    name: Publish to nuget.org
+    name: Publish NuGet Packages
     needs: pack
+    env:
+      NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
     runs-on: windows-latest
     if: github.event_name == 'release'
     steps:
@@ -56,8 +58,8 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '7.0.x'
-          source-url: https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json
+          source-url: ${{ env.NUGET_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
       - name: Push NuGet
-        run: dotnet nuget push NuGet\*.nupkg --source https://api.nuget.org/v3/index.json --api-key AzureArtifacts
+        run: dotnet nuget push NuGet\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
