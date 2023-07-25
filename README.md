@@ -36,7 +36,7 @@ More information can be found in the wiki:
 * [Using XHarness](https://github.com/mattleibow/DeviceRunners/wiki/Using-XHarness)
 * [iOS - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-iOS-using-XHarness)   
 * [Android - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Android-using-XHarness)  
-* [Mac Catalyst - XhHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Mac-Catalyst-using-XHarness)  
+* [Mac Catalyst - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Mac-Catalyst-using-XHarness)  
 * [Windows - PowerShell](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Windows-using-PowerShell)  
 
 
@@ -48,8 +48,10 @@ More information can be found in the wiki: [UI Tests](https://github.com/mattlei
 
 This is repository contains revised code from a few places:
 
- - a port of https://github.com/xunit/devices.xunit to use .NET MAUI
+ - https://github.com/xunit/devices.xunit  
+   This code was migrated to use .NET MAUI and then split into components so that the UI can be separate from the test runner.
  - https://github.com/xunit/uitest.xunit  
    This code was migrated to use .NET MAUI.
- - a port of https://github.com/nunit/nunit.xamarin to use .NET MAUI
+ - https://github.com/nunit/nunit.xamarin  
+   This code was migrated to use .NET MAUI and then features were added to support running individual tests.
  - parts of the work done in https://github.com/dotnet/maui
