@@ -36,7 +36,7 @@ More information can be found in the wiki:
 * [Using XHarness](https://github.com/mattleibow/DeviceRunners/wiki/Using-XHarness)
 * [iOS - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-iOS-using-XHarness)   
 * [Android - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Android-using-XHarness)  
-* [Mac Catalyst - XhHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Mac-Catalyst-using-XHarness)  
+* [Mac Catalyst - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Mac-Catalyst-using-XHarness)  
 * [Windows - PowerShell](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Windows-using-PowerShell)  
 
 
