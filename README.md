@@ -51,5 +51,6 @@ This is repository contains revised code from a few places:
  - https://github.com/xunit/devices.xunit  
    This code was migrated to use .NET MAUI and then split into components so that the UI can be separate from the test runner.
  - a port of https://github.com/xunit/uitest.xunit to use .NET MAUI
- - a port of https://github.com/nunit/nunit.xamarin to use .NET MAUI
+ - https://github.com/nunit/nunit.xamarin  
+   This code was migrated to use .NET MAUI and then features were added to support running individual tests.
  - parts of the work done in https://github.com/dotnet/maui
