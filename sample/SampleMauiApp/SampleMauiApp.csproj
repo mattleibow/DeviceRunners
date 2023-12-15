@@ -43,8 +43,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-    <PackageReference Include="xunit" Version="2.6.3" />
-    <PackageReference Include="xunit.runner.utility" Version="2.6.3" />
+    <PackageReference Include="xunit" Version="2.5.0-pre.44" />
+    <PackageReference Include="xunit.runner.utility" Version="2.5.0-pre.44" />
   </ItemGroup>
 
   <ItemGroup>
