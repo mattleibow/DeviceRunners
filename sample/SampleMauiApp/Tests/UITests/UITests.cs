@@ -15,22 +15,30 @@ public abstract class UITests<T> : IAsyncLifetime
 		await Shell.Current.GoToAsync("uitests");
 
 		CurrentPage = (T)Shell.Current.CurrentPage;
+
+		await WaitForLoaded(CurrentPage);
+
 		MauiContext = CurrentPage.Handler!.MauiContext!;
-		if (CurrentPage.IsLoaded)
+	}
+
+	protected static async Task WaitForLoaded(VisualElement element, int timeout = 1000)
+	{
+		if (element.IsLoaded)
 			return;
 
 		var tcs = new TaskCompletionSource();
-		CurrentPage.Loaded += OnLoaded;
 
-		await Task.WhenAny(tcs.Task, Task.Delay(1000));
+		element.Loaded += OnLoaded;
 
-		CurrentPage.Loaded -= OnLoaded;
+		await Task.WhenAny(tcs.Task, Task.Delay(timeout));
 
-		Assert.True(CurrentPage.IsLoaded);
+		element.Loaded -= OnLoaded;
+
+		Assert.True(element.IsLoaded);
 
 		void OnLoaded(object? sender, EventArgs e)
 		{
-			CurrentPage.Loaded -= OnLoaded;
+			element.Loaded -= OnLoaded;
 			tcs.SetResult();
 		}
 	}
