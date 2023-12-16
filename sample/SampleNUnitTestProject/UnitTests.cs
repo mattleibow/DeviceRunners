@@ -5,7 +5,8 @@ public class UnitTests
 	[Test]
 	public void SuccessfulTest()
 	{
-		Assert.True(true);
+		var value = true;
+		Assert.That(value, Is.True);
 	}
 
 	[Test]
