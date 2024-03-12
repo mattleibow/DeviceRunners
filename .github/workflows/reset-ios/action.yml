@@ -5,6 +5,11 @@ description: Removes and reconfigurs the iOS environment
 runs:
   using: composite
   steps:
+    - name: Get PWD
+      shell: bash
+      run: |
+        pwd
+        sudo pwd
     - name: Cleanup old Xcode versions
       shell: bash
       run: sudo ./.github/workflows/reset-ios/clean-xcodes.sh
