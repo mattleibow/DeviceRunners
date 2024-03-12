@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.24161.1" />
+    <PackageReference Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="8.0.0-prerelease.23326.1" />
   </ItemGroup>
 
   <ItemGroup>
