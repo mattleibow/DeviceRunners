@@ -21,6 +21,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Reset iOS Environment
+      uses: ./.github/workflows/reset-ios
     - name: Publish App
       run: |
         dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
