@@ -18,6 +18,9 @@ public static class MauiProgram
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddXunit())
 			.UseVisualTestRunner(conf => conf
+#if ENABLE_AUTO_START
+				.EnableAutoStart(true)
+#endif
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(SampleNUnitTestProject.UnitTests).Assembly)

@@ -6,6 +6,8 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 {
 	readonly MauiAppBuilder _appHostBuilder;
 	readonly List<Assembly> _testAssemblies = new();
+	bool _autoStart;
+	bool _autoTerminate;
 
 	public VisualTestRunnerConfigurationBuilder(MauiAppBuilder appHostBuilder)
 	{
@@ -23,9 +25,15 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 		_appHostBuilder.Services.AddSingleton<ITestRunner, TTestRunner>();
 	}
 
+	void IVisualTestRunnerConfigurationBuilder.EnableAutoStart(bool autoTerminate)
+	{
+		_autoStart = true;
+		_autoTerminate = autoTerminate;
+	}
+
 	IVisualTestRunnerConfiguration IVisualTestRunnerConfigurationBuilder.Build() =>
 		Build();
 
 	public VisualTestRunnerConfiguration Build() =>
-		new(_testAssemblies);
+		new(_testAssemblies, _autoStart, _autoTerminate);
 }
