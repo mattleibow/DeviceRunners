@@ -5,20 +5,15 @@ description: Removes and reconfigurs the iOS environment
 runs:
   using: composite
   steps:
-    - name: Get PWD
-      shell: bash
-      run: |
-        pwd
-        sudo pwd
     - name: Cleanup old Xcode versions
       shell: bash
-      run: sudo ./.github/workflows/reset-ios/clean-xcodes.sh
+      run: sudo bash ./.github/workflows/reset-ios/clean-xcodes.sh
     - name: Cleanup iOS simulator runtimes
       shell: bash
-      run: sudo ./.github/workflows/reset-ios/clean-simulator-runtimes.sh
+      run: sudo bash ./.github/workflows/reset-ios/clean-simulator-runtimes.sh
     - name: Cleanup old logs
       shell: bash
-      run: sudo ./.github/workflows/reset-ios/clean-logs.sh
+      run: sudo bash ./.github/workflows/reset-ios/clean-logs.sh
     - name: Install the iOS 17.2 simulator
       shell: bash
       run: sudo dotnet xharness apple simulators install ios-simulator-64_17.2 --verbosity=Debug
