@@ -7,19 +7,14 @@ runs:
   steps:
     - name: Cleanup old Xcode versions
       shell: bash
-      run: clean-xcodes.sh
+      run: ./.github/workflows/reset-ios/clean-xcodes.sh
     - name: Cleanup iOS simulator runtimes
       shell: bash
-      run: clean-simulator-runtimes.sh
+      run: ./.github/workflows/reset-ios/clean-simulator-runtimes.sh
     - name: Cleanup old logs
       shell: bash
-      run: clean-logs.sh
-    - name: Cleanup old logs
-      shell: bash
-      run: clean-logs.sh
-    - name: Install the iOS 17.2 simulators
-      shell: bash
+      run: ./.github/workflows/reset-ios/clean-logs.sh
+    - name: Install the iOS 17.2 simulator
       run: dotnet xharness apple simulators install ios-simulator-64_17.2 --verbosity=Debug
-    - name: Cleanup old logs
-      shell: bash
+    - name: Reset the iOS simulator
       run: dotnet xharness apple simulators reset-simulator --output-directory=artifacts --target=ios-simulator-64_17.2 --verbosity=Debug
