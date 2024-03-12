@@ -19,4 +19,4 @@ runs:
       run: sudo dotnet xharness apple simulators install ios-simulator-64_17.2 --verbosity=Debug
     - name: Reset the iOS simulator
       shell: bash
-      run: sudo dotnet xharness apple simulators reset-simulator --target=ios-simulator-64_17.2 --verbosity=Debug
+      run: dotnet xharness apple simulators reset-simulator --output-directory=artifacts --target=ios-simulator-64_17.2 --verbosity=Debug
