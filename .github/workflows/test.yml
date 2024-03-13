@@ -1,4 +1,4 @@
-name: Build
+name: Test
 
 on:
   pull_request:
@@ -17,8 +17,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Build
-      run: dotnet build DeviceRunners.sln --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
+    - name: Test
+      run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration Release /bl:./artifacts/logs/msbuild-test.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
@@ -34,8 +34,8 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Build
-      run: dotnet build DeviceRunners.sln --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
+    - name: Test
+      run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration Release /bl:./artifacts/logs/msbuild-test.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
