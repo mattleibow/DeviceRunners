@@ -20,8 +20,14 @@ public static class MauiProgram
 			.UseVisualTestRunner(conf => conf
 #if NON_INTERACTIVE
 				.EnableAutoStart(true)
+				.AddTcpResultChannel(new TcpResultChannelOptions
+				{
+					HostNames = ["localhost", "10.0.2.2"],
+					Port = 16384,
+					Formatter = new TextResultChannelFormatter(),
+					Required = false
+				})
 #endif
-				.AddResultChannel(new TcpResultChannel(["localhost", "10.0.2.2"], 16384, new TextResultChannelFormatter(), false))
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)

@@ -9,8 +9,6 @@ public interface IVisualTestRunnerConfiguration
 	/// </summary>
 	IReadOnlyList<Assembly> TestAssemblies { get; }
 
-	IResultChannel? ResultChannel { get; }
-
 	bool AutoStart { get; }
 
 	bool AutoTerminate { get; }

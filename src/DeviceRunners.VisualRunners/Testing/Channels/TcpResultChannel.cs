@@ -1,11 +1,14 @@
 ﻿using System.Net.Sockets;
 
+using Microsoft.Extensions.Logging;
+
 namespace DeviceRunners.VisualRunners;
 
 public class TcpResultChannel : IResultChannel
 {
 	readonly object _locker = new object();
 
+	readonly ILogger<TcpResultChannel>? _logger;
 	readonly IResultChannelFormatter _formatter;
 	readonly bool _required;
 
@@ -13,26 +16,20 @@ public class TcpResultChannel : IResultChannel
 	Stream? _stream;
 	TextWriter? _writer;
 
-	public TcpResultChannel(string hostName, int port, IResultChannelFormatter formatter, bool required = true)
-		: this([hostName], port, formatter, required)
+	public TcpResultChannel(TcpResultChannelOptions options, ILogger<TcpResultChannel>? logger)
 	{
-		HostName = hostName;
-	}
+		if ((options.Port < 0) || (options.Port > ushort.MaxValue))
+			throw new ArgumentOutOfRangeException(nameof(options), $"Port must be in the range of [0..{ushort.MaxValue}].");
 
-	public TcpResultChannel(IEnumerable<string> hostNames, int port, IResultChannelFormatter formatter, bool required = true)
-	{
-		if ((port < 0) || (port > ushort.MaxValue))
-			throw new ArgumentOutOfRangeException(nameof(port));
+		if (options.HostName is null && (options.HostNames is null || options.HostNames?.Count == 0))
+			throw new ArgumentException("At least one host name must be provided.", nameof(options));
 
-		var names = hostNames?.ToList() ?? throw new ArgumentNullException(nameof(hostNames));
-		if (names.Count == 0)
-			throw new ArgumentException("At least one host name must be provided", nameof(hostNames));
+		_formatter = options.Formatter ?? throw new ArgumentNullException(nameof(options.Formatter));
+		_required = options.Required;
 
-		_formatter = formatter ?? throw new ArgumentNullException(nameof(formatter));
-		_required = required;
-
-		HostNames = names;
-		Port = port;
+		HostNames = options.HostNames?.ToList() ?? [options.HostName];
+		Port = options.Port;
+		_logger = logger;
 	}
 
 	public string? HostName { get; private set; }
@@ -51,14 +48,18 @@ public class TcpResultChannel : IResultChannel
 		}
 
 		// no host was selected, so try them all and then fallback to the first one
-		HostName ??= SelectBestHostName() ?? HostNames[0];
+		var hostName = HostName ?? SelectBestHostName() ?? HostNames[0];
+
+		_logger?.LogInformation("Connecting to {HostName}:{Port}...", hostName, Port);
 
 		try
 		{
-			await _client.ConnectAsync(HostName, Port);
+			await _client.ConnectAsync(hostName, Port);
 		}
-		catch (Exception) when (!_required)
+		catch (Exception ex) when (!_required)
 		{
+			_logger?.LogError(ex, "Failed to connect to {HostName}:{Port}.", hostName, Port);
+
 			return false;
 		}
 
@@ -93,6 +94,8 @@ public class TcpResultChannel : IResultChannel
 				var name = HostNames[i];
 				var idx = i;
 
+				_logger?.LogInformation("Pinging {HostName}:{Port}...", name, Port);
+
 				Task.Run(async () =>
 				{
 					try
@@ -105,12 +108,18 @@ public class TcpResultChannel : IResultChannel
 						}
 
 						if (Interlocked.CompareExchange(ref selected, idx, -1) == -1)
+						{
+							_logger?.LogInformation("Connected to {HostName}:{Port}.", name, Port);
 							evt.Set();
+						}
 					}
-					catch (Exception)
+					catch (Exception ex)
 					{
 						if (Interlocked.Increment(ref failures) == HostNames.Count)
+						{
+							_logger?.LogWarning(ex, "Unable to reach {HostName}:{Port}.", name, Port);
 							evt.Set();
+						}
 					}
 				});
 			}

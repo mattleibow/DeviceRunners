@@ -21,13 +21,14 @@ public class HomeViewModel : AbstractBaseViewModel
 		IVisualTestRunnerConfiguration options,
 		IEnumerable<ITestDiscoverer> testDiscoverers,
 		IEnumerable<ITestRunner> testRunners,
+		IResultChannelManager resultChannelManager,
 		IAppTerminator? appTerminator = null,
 		IDiagnosticsManager? diagnosticsManager = null,
 		DiagnosticsViewModel? diagnosticsViewModel = null)
 	{
 		_options = options;
 		_discoverer = new CompositeTestDiscoverer(testDiscoverers);
-		_runner = new CompositeTestRunner(options, testRunners);
+		_runner = new CompositeTestRunner(options, resultChannelManager, testRunners);
 
 		_appTerminator = appTerminator;
 		_diagnosticsManager = diagnosticsManager;

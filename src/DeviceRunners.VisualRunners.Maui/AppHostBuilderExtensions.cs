@@ -19,6 +19,7 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<IVisualTestRunnerConfiguration>(configuration);
 		appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
 		appHostBuilder.Services.AddSingleton<IAppTerminator, DefaultAppTerminator>();
+		appHostBuilder.Services.AddSingleton<IResultChannelManager, DefaultResultChannelManager>();
 
 		// only register the "root" view models and the others are created by the ITestRunner
 		appHostBuilder.Services.AddSingleton<HomeViewModel>();

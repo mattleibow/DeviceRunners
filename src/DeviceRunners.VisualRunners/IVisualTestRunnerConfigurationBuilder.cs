@@ -12,7 +12,8 @@ public interface IVisualTestRunnerConfigurationBuilder
 
 	void EnableAutoStart(bool autoTerminate = false);
 
-	void AddResultChannel(IResultChannel resultChannel);
+	void AddResultChannel<T>(Func<IServiceProvider, T> creator)
+		where T : class, IResultChannel;
 
 	IVisualTestRunnerConfiguration Build();
 }
