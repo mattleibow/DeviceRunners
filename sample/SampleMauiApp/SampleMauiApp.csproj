@@ -9,7 +9,7 @@
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
     <DefineConstants Condition="'$(CI)' != 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
-    <DefineConstants Condition="'$(AutoStartAutoTerminate)' == 'true'">$(DefineConstants);ENABLE_AUTO_START</DefineConstants>
+    <DefineConstants Condition="'$(NonInteractive)' == 'true'">$(DefineConstants);NON_INTERACTIVE</DefineConstants>
 
     <!-- Display name -->
     <ApplicationTitle>SampleMauiApp</ApplicationTitle>

@@ -18,9 +18,10 @@ public static class MauiProgram
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddXunit())
 			.UseVisualTestRunner(conf => conf
-#if ENABLE_AUTO_START
+#if NON_INTERACTIVE
 				.EnableAutoStart(true)
 #endif
+				.AddResultChannel(new TcpResultChannel(["localhost", "10.0.2.2"], 16384, new TextResultChannelFormatter(), false))
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
