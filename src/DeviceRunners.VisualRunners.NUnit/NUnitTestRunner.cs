@@ -9,10 +9,13 @@ namespace DeviceRunners.VisualRunners.NUnit;
 public class NUnitTestRunner : ITestRunner
 {
 	readonly AsyncLock _executionLock = new();
+
+	readonly IVisualTestRunnerConfiguration _options;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public NUnitTestRunner(IDiagnosticsManager? diagnosticsManager = null, ILogger<NUnitTestDiscoverer>? logger = null)
+	public NUnitTestRunner(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
 	{
+		_options = options;
 		_diagnosticsManager = diagnosticsManager;
 	}
 
@@ -32,20 +35,10 @@ public class NUnitTestRunner : ITestRunner
 	{
 		using (await _executionLock.LockAsync())
 		{
-			// message ??= runInfos.Count > 1 || runInfos.FirstOrDefault()?.TestCases.Count > 1
-			// 	? "Run Multiple Tests"
-			// 	: runInfos.FirstOrDefault()?.TestCases.FirstOrDefault()?.DisplayName;
+			await using var autoclosing = new AutoClosingResultChannel(_options.ResultChannel);
+			await autoclosing.EnsureOpenAsync();
 
-			// _logger.LogTestStart(message);
-
-			try
-			{
-				await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
-			}
-			finally
-			{
-				// _logger.LogTestComplete();
-			}
+			await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
 		}
 	}
 
@@ -127,10 +120,11 @@ public class NUnitTestRunner : ITestRunner
 		// var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 
 		var listener = new NUnitTestListener(
-			nunitTestCases);//,
-			// d => _diagnosticsManager?.PostDiagnosticMessage(d),
-			// assemblyInfo.AssemblyFileName,
-			// true);
+			nunitTestCases,
+			_options?.ResultChannel);//,
+							// d => _diagnosticsManager?.PostDiagnosticMessage(d),
+							// assemblyInfo.AssemblyFileName,
+							// true);
 
 		// IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancellationToken.IsCancellationRequested);
 
