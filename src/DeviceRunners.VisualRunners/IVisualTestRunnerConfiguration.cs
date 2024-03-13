@@ -8,4 +8,8 @@ public interface IVisualTestRunnerConfiguration
 	/// The list of assemblies that contain tests.
 	/// </summary>
 	IReadOnlyList<Assembly> TestAssemblies { get; }
+
+	bool AutoStart { get; }
+
+	bool AutoTerminate { get; }
 }

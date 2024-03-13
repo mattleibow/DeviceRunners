@@ -1,11 +1,8 @@
-using ObjCRuntime;
-using UIKit;
+namespace DeviceRunners.Core;
 
-namespace DeviceRunners.XHarness.Xunit;
-
-static class AppTerminator
+public class DefaultAppTerminator : IAppTerminator
 {
-	public static void Terminate()
+	public void Terminate()
 	{
 		var s = new ObjCRuntime.Selector("terminateWithSuccess");
 		var app = UIApplication.SharedApplication;

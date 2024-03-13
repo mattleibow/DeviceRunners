@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 
+using DeviceRunners.Core;
+
 using Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit;
 using Microsoft.DotNet.XHarness.TestRunners.Common;
 
@@ -8,11 +10,13 @@ namespace DeviceRunners.XHarness.Xunit;
 public class XunitTestRunner : DefaultAndroidEntryPoint, ITestRunner
 {
 	readonly IXHarnessTestRunnerConfiguration _configuration;
+	readonly IAppTerminator _appTerminator;
 
-	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device)
+	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device, IAppTerminator appTerminator)
 		: base(Path.Combine(Path.GetTempPath(), typeof(XunitTestRunner).FullName!, Guid.NewGuid().ToString()), new())
 	{
 		_configuration = configuration;
+		_appTerminator = appTerminator;
 		Device = device;
 	}
 
@@ -24,7 +28,7 @@ public class XunitTestRunner : DefaultAndroidEntryPoint, ITestRunner
 			.Select(assembly => new TestAssemblyInfo(assembly, assembly.Location));
 
 	protected override void TerminateWithSuccess() =>
-		AppTerminator.Terminate();
+		_appTerminator.Terminate();
 
 	protected override TestRunner GetTestRunner(LogWriter logWriter)
 	{

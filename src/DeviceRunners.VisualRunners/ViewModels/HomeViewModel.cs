@@ -1,12 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 
+using DeviceRunners.Core;
+
 namespace DeviceRunners.VisualRunners;
 
 public class HomeViewModel : AbstractBaseViewModel
 {
 	readonly ITestDiscoverer _discoverer;
 	readonly ITestRunner _runner;
+	readonly IVisualTestRunnerConfiguration? _options;
+	readonly IAppTerminator? _appTerminator;
 
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
@@ -16,12 +20,16 @@ public class HomeViewModel : AbstractBaseViewModel
 	public HomeViewModel(
 		IEnumerable<ITestDiscoverer> testDiscoverers,
 		IEnumerable<ITestRunner> testRunners,
+		IVisualTestRunnerConfiguration? options = null,
+		IAppTerminator? appTerminator = null,
 		IDiagnosticsManager? diagnosticsManager = null,
 		DiagnosticsViewModel? diagnosticsViewModel = null)
 	{
 		_discoverer = new CompositeTestDiscoverer(testDiscoverers);
 		_runner = new CompositeTestRunner(testRunners);
 
+		_options = options;
+		_appTerminator = appTerminator;
 		_diagnosticsManager = diagnosticsManager;
 
 		Diagnostics = diagnosticsViewModel;
@@ -82,10 +90,25 @@ public class HomeViewModel : AbstractBaseViewModel
 		IsBusy = false;
 
 		AssemblyScanCompleted?.Invoke(this, EventArgs.Empty);
+
+		if (_options is not null && _options.AutoStart)
+		{
+			_diagnosticsManager?.PostDiagnosticMessage("Auto-starting test run...");
+
+			await RunEverythingAsync();
+
+			if (_options.AutoTerminate)
+			{
+				_diagnosticsManager?.PostDiagnosticMessage("Auto-terminating test runner...");
+
+				_appTerminator?.Terminate();
+			}
+		}
 	}
 
 	async Task RunEverythingAsync()
 	{
+		IsBusy = true;
 		_diagnosticsManager?.PostDiagnosticMessage("Starting a new test run of everything...");
 
 		try
@@ -95,21 +118,13 @@ public class HomeViewModel : AbstractBaseViewModel
 		finally
 		{
 			_diagnosticsManager?.PostDiagnosticMessage("Test run complete.");
+			IsBusy = false;
 		}
 	}
 
 	async void RunEverythingExecute()
 	{
-		IsBusy = true;
-
-		try
-		{
-			await RunEverythingAsync();
-		}
-		finally
-		{
-			IsBusy = false;
-		}
+		await RunEverythingAsync();
 	}
 
 	void NavigateToTestAssemblyExecute(TestAssemblyViewModel? vm)
