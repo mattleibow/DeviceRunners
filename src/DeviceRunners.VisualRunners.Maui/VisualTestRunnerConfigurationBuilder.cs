@@ -6,6 +6,7 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 {
 	readonly MauiAppBuilder _appHostBuilder;
 	readonly List<Assembly> _testAssemblies = new();
+	readonly List<IResultChannel> _resultChannels = new();
 	bool _autoStart;
 	bool _autoTerminate;
 
@@ -31,9 +32,12 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 		_autoTerminate = autoTerminate;
 	}
 
+	void IVisualTestRunnerConfigurationBuilder.AddResultChannel(IResultChannel resultChannel) =>
+		_resultChannels.Add(resultChannel);
+
 	IVisualTestRunnerConfiguration IVisualTestRunnerConfigurationBuilder.Build() =>
 		Build();
 
 	public VisualTestRunnerConfiguration Build() =>
-		new(_testAssemblies, _autoStart, _autoTerminate);
+		new(_testAssemblies, new CompositeResultChannel(_resultChannels), _autoStart, _autoTerminate);
 }
