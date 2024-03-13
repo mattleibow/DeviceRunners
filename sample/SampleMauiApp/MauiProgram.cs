@@ -21,7 +21,6 @@ public static class MauiProgram
 #if ENABLE_AUTO_START
 				.EnableAutoStart(true)
 #endif
-				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(SampleNUnitTestProject.UnitTests).Assembly)

@@ -33,21 +33,4 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		builder.EnableAutoStart(autoTerminate);
 		return builder;
 	}
-
-	public static TBuilder AddConsoleResultChannel<TBuilder>(this TBuilder builder)
-		where TBuilder : IVisualTestRunnerConfigurationBuilder
-	{
-		builder.AddResultChannel(new ConsoleResultChannel());
-#if WINDOWS
-		builder.AddResultChannel(new DebugResultChannel());
-#endif
-		return builder;
-	}
-
-	public static TBuilder AddResultChannel<TBuilder>(this TBuilder builder, IResultChannel resultChannel)
-		where TBuilder : IVisualTestRunnerConfigurationBuilder
-	{
-		builder.AddResultChannel(resultChannel);
-		return builder;
-	}
 }

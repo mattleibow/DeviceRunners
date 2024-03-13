@@ -12,7 +12,6 @@ public interface IVisualTestRunnerConfigurationBuilder
 
 	void EnableAutoStart(bool autoTerminate = false);
 
-	void AddResultChannel(IResultChannel resultChannel);
-
 	IVisualTestRunnerConfiguration Build();
 }
+

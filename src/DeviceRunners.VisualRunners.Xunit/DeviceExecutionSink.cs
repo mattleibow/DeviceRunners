@@ -6,12 +6,10 @@ namespace DeviceRunners.VisualRunners.Xunit;
 class DeviceExecutionSink : TestMessageSink
 {
 	readonly IReadOnlyDictionary<ITestCase, XunitTestCaseInfo> _testCases;
-	readonly IResultChannel? _resultChannel;
 
-	public DeviceExecutionSink(IReadOnlyDictionary<ITestCase, XunitTestCaseInfo> testCases, IResultChannel? resultChannel)
+	public DeviceExecutionSink(IReadOnlyDictionary<ITestCase, XunitTestCaseInfo> testCases)
 	{
 		_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
-		_resultChannel = resultChannel;
 
 		Execution.TestFailedEvent += HandleTestFailed;
 		Execution.TestPassedEvent += HandleTestPassed;
@@ -41,7 +39,5 @@ class DeviceExecutionSink : TestMessageSink
 
 		var result = new XunitTestResultInfo(testCase, testResult, status);
 		testCase.ReportResult(result);
-
-		_resultChannel?.RecordResult(result);
 	}
 }

@@ -1,3 +1,7 @@
+using System.Reflection;
+
+using Microsoft.Extensions.Logging;
+
 using Xunit;
 
 namespace DeviceRunners.VisualRunners.Xunit;
@@ -5,13 +9,10 @@ namespace DeviceRunners.VisualRunners.Xunit;
 public class XunitTestRunner : ITestRunner
 {
 	readonly AsyncLock _executionLock = new();
-
-	readonly IVisualTestRunnerConfiguration _options;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public XunitTestRunner(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
+	public XunitTestRunner(IDiagnosticsManager? diagnosticsManager = null, ILogger<XunitTestDiscoverer>? logger = null)
 	{
-		_options = options;
 		_diagnosticsManager = diagnosticsManager;
 	}
 
@@ -31,10 +32,20 @@ public class XunitTestRunner : ITestRunner
 	{
 		using (await _executionLock.LockAsync())
 		{
-			await using var autoclosing = new AutoClosingResultChannel(_options.ResultChannel);
-			await autoclosing.EnsureOpenAsync();
+			// message ??= runInfos.Count > 1 || runInfos.FirstOrDefault()?.TestCases.Count > 1
+			// 	? "Run Multiple Tests"
+			// 	: runInfos.FirstOrDefault()?.TestCases.FirstOrDefault()?.DisplayName;
 
-			await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
+			// _logger.LogTestStart(message);
+
+			try
+			{
+				await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
+			}
+			finally
+			{
+				// _logger.LogTestComplete();
+			}
 		}
 	}
 
@@ -115,7 +126,7 @@ public class XunitTestRunner : ITestRunner
 
 		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 
-		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, _options.ResultChannel);
+		var deviceExecSink = new DeviceExecutionSink(xunitTestCases);
 
 		IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancellationToken.IsCancellationRequested);
 
