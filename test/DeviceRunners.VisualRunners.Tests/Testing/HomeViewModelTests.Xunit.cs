@@ -9,6 +9,6 @@ public class XunitHomeViewModelTests : HomeViewModelTests
 	public override ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration) =>
 		new XunitTestDiscoverer(configuration);
 
-	public override ITestRunner CreateTestRunner() =>
-		new XunitTestRunner();
+	public override ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration) =>
+		new XunitTestRunner(configuration);
 }

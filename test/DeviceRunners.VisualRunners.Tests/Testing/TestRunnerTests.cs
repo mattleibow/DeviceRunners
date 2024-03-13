@@ -9,16 +9,17 @@ public abstract class TestRunnerTests : IAsyncLifetime
 {
 	public abstract ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration);
 
-	public abstract ITestRunner CreateTestRunner();
+	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
 	protected IReadOnlyList<ITestAssemblyInfo> _testAssemblies = null!;
+	protected VisualTestRunnerConfiguration _options = null!;
 
 	public async Task InitializeAsync()
 	{
 		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
-		var options = new VisualTestRunnerConfiguration(assemblies);
+		_options = new VisualTestRunnerConfiguration(assemblies);
 
-		var discoverer = CreateTestDiscoverer(options);
+		var discoverer = CreateTestDiscoverer(_options);
 
 		_testAssemblies = await discoverer.DiscoverAsync();
 	}
@@ -30,7 +31,7 @@ public abstract class TestRunnerTests : IAsyncLifetime
 	{
 		var testAssembly = _testAssemblies[0];
 
-		var runner = CreateTestRunner();
+		var runner = CreateTestRunner(_options);
 		await runner.RunTestsAsync(testAssembly);
 
 		foreach (var test in testAssembly.TestCases)
@@ -47,7 +48,7 @@ public abstract class TestRunnerTests : IAsyncLifetime
 		var testAssembly = _testAssemblies[0];
 		var simpleTest = testAssembly.TestCases.Single(tc => tc.DisplayName.EndsWith(".SimpleTest"));
 
-		var runner = CreateTestRunner();
+		var runner = CreateTestRunner(_options);
 		await runner.RunTestsAsync(simpleTest);
 
 		foreach (var test in testAssembly.TestCases.Except(new[] { simpleTest }))
@@ -66,7 +67,7 @@ public abstract class TestRunnerTests : IAsyncLifetime
 		var testAssembly = _testAssemblies[0];
 		var simpleTests = testAssembly.TestCases.Where(tc => tc.DisplayName.Contains("_Output")).ToList();
 
-		var runner = CreateTestRunner();
+		var runner = CreateTestRunner(_options);
 		await runner.RunTestsAsync(simpleTests);
 
 		foreach (var test in testAssembly.TestCases.Except(simpleTests))

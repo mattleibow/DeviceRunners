@@ -4,6 +4,11 @@ public class DefaultResultChannelManager : IResultChannelManager
 {
 	readonly IReadOnlyList<IResultChannel> _resultChannels;
 
+	public DefaultResultChannelManager()
+	{
+		_resultChannels = [];
+	}
+
 	public DefaultResultChannelManager(IEnumerable<IResultChannel> resultChannels)
 	{
 		_resultChannels = resultChannels.ToList();
