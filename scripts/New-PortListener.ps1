@@ -17,7 +17,7 @@ $ErrorActionPreference = 'Stop'
 $Global:ProgressPreference = 'SilentlyContinue' # Hide GUI output
 
 function Wait-TcpConnection ($listener) {
-    Write-Host ("Waiting for an incoming connection...") -ForegroundColor Green
+    Write-Host ("Waiting for an incoming connection, press Escape to stop listening...") -ForegroundColor Green
     while (!$listener.Pending()) {
         if ($host.UI.RawUI.KeyAvailable) {
             $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyUp,IncludeKeyDown")
