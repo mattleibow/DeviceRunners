@@ -15,7 +15,6 @@ runs:
     with:
       dotnet-version: 7.0.x
   - name: Setup .NET MAUI
-    if: runner.os != 'Windows'
     shell: pwsh
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
   - name: Setup Tizen.NET
