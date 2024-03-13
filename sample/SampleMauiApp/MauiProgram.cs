@@ -2,7 +2,9 @@
 
 using DeviceRunners.UITesting;
 using DeviceRunners.VisualRunners;
+#if MODE_XHARNESS
 using DeviceRunners.XHarness;
+#endif
 
 namespace SampleMauiApp;
 
@@ -13,12 +15,14 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.ConfigureUITesting()
+#if MODE_XHARNESS
 			.UseXHarnessTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(SampleXunitTestProject.UnitTests).Assembly)
 				.AddXunit())
+#endif
 			.UseVisualTestRunner(conf => conf
-#if NON_INTERACTIVE
+#if MODE_NON_INTERACTIVE_VISUAL
 				.EnableAutoStart(true)
 				.AddTcpResultChannel(new TcpResultChannelOptions
 				{

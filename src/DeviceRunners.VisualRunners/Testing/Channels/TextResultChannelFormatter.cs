@@ -82,6 +82,9 @@ public class TextResultChannelFormatter : IResultChannelFormatter
 		var total = _passed + _failed; // ignored are *not* run
 
 		// log closing data
+		if (_failed > 0)
+			_writer.WriteLine("Tests failed.");
+
 		_writer.WriteLine("Tests run: {0} Passed: {1} Failed: {2} Skipped: {3}", total, _passed, _failed, _skipped);
 
 		// clean up

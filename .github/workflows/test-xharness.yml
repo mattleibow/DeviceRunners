@@ -1,4 +1,4 @@
-name: Test
+name: XHarness Test
 
 on:
   pull_request:
@@ -27,6 +27,7 @@ jobs:
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
@@ -60,6 +61,7 @@ jobs:
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
@@ -93,6 +95,7 @@ jobs:
         dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
+          -p:TestingMode=XHarness `
           -p:AppxPackageSigningEnabled=true `
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
@@ -103,7 +106,8 @@ jobs:
         $msix = Get-ChildItem "sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
-          -OutputDirectory artifacts
+          -OutputDirectory artifacts `
+          -TestingMode XHarness
       shell: powershell
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
@@ -139,6 +143,7 @@ jobs:
   #         -f ${{ env.TEST_TARGET_FRAMEWORK }} \
   #         -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
   #         -c ${{ env.TEST_CONFIGURATION }} \
+  #         -p:TestingMode=XHarness \
   #         /bl:./artifacts/logs/msbuild-publish.binlog
   #   - name: Run Tests
   #     run: |
