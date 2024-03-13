@@ -13,7 +13,7 @@ public class DiagnosticsViewModel : AbstractBaseViewModel
 	public DiagnosticsViewModel(IDiagnosticsManager diagnosticsManager)
 	{
 		_diagnosticsManager = diagnosticsManager;
-		_diagnosticsManager.DiagnosticMessageReceived += OnDiagnosticMessageReceived;
+		_diagnosticsManager.DiagnosticMessageRecieved += OnDiagnosticMessageRecieved;
 
 		Messages.CollectionChanged += OnDiagnosticMessagesCollectionChanged;
 
@@ -35,10 +35,9 @@ public class DiagnosticsViewModel : AbstractBaseViewModel
 		Messages.Clear();
 	}
 
-	void OnDiagnosticMessageReceived(object? sender, string message)
+	void OnDiagnosticMessageRecieved(object? sender, string message)
 	{
 		Messages.Add(message);
-		Console.WriteLine(message);
 	}
 
 	void OnDiagnosticMessagesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)

@@ -2,10 +2,10 @@
 
 public class DiagnosticsManager : IDiagnosticsManager
 {
-	public event EventHandler<string>? DiagnosticMessageReceived;
+	public event EventHandler<string>? DiagnosticMessageRecieved;
 
 	public void PostDiagnosticMessage(string message)
 	{
-		DiagnosticMessageReceived?.Invoke(this, message);
+		DiagnosticMessageRecieved?.Invoke(this, message);
 	}
 }

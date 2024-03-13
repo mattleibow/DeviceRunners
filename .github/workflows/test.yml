@@ -13,7 +13,7 @@ jobs:
     name: iOS
     runs-on: macos-13
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-ios
+      TEST_TARGET_FRAMEWORK: net7.0-ios
       TEST_RUNTIME_IDENTIFIER: iossimulator-x64
       TEST_CONFIGURATION: Debug
     steps:
@@ -46,7 +46,7 @@ jobs:
     name: Mac Catalyst
     runs-on: macos-13
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-maccatalyst
+      TEST_TARGET_FRAMEWORK: net7.0-maccatalyst
       TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
       TEST_CONFIGURATION: Debug
     steps:
@@ -79,7 +79,7 @@ jobs:
     name: Windows
     runs-on: windows-latest
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-windows10.0.19041.0
+      TEST_TARGET_FRAMEWORK: net7.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
       TEST_CONFIGURATION: Release
     steps:
@@ -117,7 +117,7 @@ jobs:
   #   name: Android
   #   runs-on: macos-13
   #   env:
-  #     TEST_TARGET_FRAMEWORK: net8.0-android
+  #     TEST_TARGET_FRAMEWORK: net7.0-android
   #     TEST_RUNTIME_IDENTIFIER: android-x64
   #     TEST_CONFIGURATION: Release
   #     TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64

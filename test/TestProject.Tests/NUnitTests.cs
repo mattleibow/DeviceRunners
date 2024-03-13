@@ -18,8 +18,7 @@ public class NUnitTests
 	[Test]
 	public void SimpleTest()
 	{
-		var val = true;
-		Assert.That(val, Is.True);
+		Assert.IsTrue(true);
 	}
 
 	[Test]
@@ -39,7 +38,6 @@ public class NUnitTests
 	[TestCase(3)]
 	public void DataTest(int number)
 	{
-		var val = true;
-		Assert.That(val, Is.True);
+		Assert.IsTrue(true);
 	}
 }
