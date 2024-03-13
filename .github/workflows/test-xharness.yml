@@ -33,6 +33,8 @@ jobs:
       run: |
         dotnet xharness apple test \
           --target ios-simulator-64 \
+          --timeout="00:02:00" \
+          --launch-timeout=00:06:00 \
           --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
           --output-directory artifacts
     - name: Upload Artifacts
@@ -67,6 +69,8 @@ jobs:
       run: |
         dotnet xharness apple test \
           --target maccatalyst \
+          --timeout="00:02:00" \
+          --launch-timeout=00:06:00 \
           --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
           --output-directory artifacts
     - name: Upload Artifacts
