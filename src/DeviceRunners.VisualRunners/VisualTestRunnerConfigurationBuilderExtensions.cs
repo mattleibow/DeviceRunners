@@ -26,11 +26,4 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 			builder.AddTestAssembly(assembly);
 		return builder;
 	}
-
-	public static TBuilder EnableAutoStart<TBuilder>(this TBuilder builder, bool autoTerminate = false)
-		where TBuilder : IVisualTestRunnerConfigurationBuilder
-	{
-		builder.EnableAutoStart(autoTerminate);
-		return builder;
-	}
 }

@@ -1,6 +1,4 @@
-﻿using DeviceRunners.Core;
-
-using Microsoft.DotNet.XHarness.TestRunners.Common;
+﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
 
 using DeviceRunners.XHarness.Maui;
 using DeviceRunners.XHarness.Maui.Pages;
@@ -20,7 +18,6 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddSingleton<IXHarnessTestRunnerConfiguration>(configuration);
 		appHostBuilder.Services.AddSingleton<ApplicationOptions>(ApplicationOptions.Current);
 		appHostBuilder.Services.AddSingleton<IDevice, XHarnessTestDevice>();
-		appHostBuilder.Services.AddSingleton<IAppTerminator, DefaultAppTerminator>();
 
 		// only register the "root" view models
 		appHostBuilder.Services.AddSingleton<HomeViewModel>();

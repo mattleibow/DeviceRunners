@@ -1,5 +1,4 @@
-﻿using DeviceRunners.Core;
-using DeviceRunners.VisualRunners.Maui;
+﻿using DeviceRunners.VisualRunners.Maui;
 using DeviceRunners.VisualRunners.Maui.Pages;
 
 namespace DeviceRunners.VisualRunners;
@@ -18,7 +17,6 @@ public static class AppHostBuilderExtensions
 		// register runner components
 		appHostBuilder.Services.AddSingleton<IVisualTestRunnerConfiguration>(configuration);
 		appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();
-		appHostBuilder.Services.AddSingleton<IAppTerminator, DefaultAppTerminator>();
 
 		// only register the "root" view models and the others are created by the ITestRunner
 		appHostBuilder.Services.AddSingleton<HomeViewModel>();

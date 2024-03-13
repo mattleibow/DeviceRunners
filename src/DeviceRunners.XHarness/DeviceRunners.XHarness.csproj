@@ -11,10 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeviceRunners.Core\DeviceRunners.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="Platforms\**" />
     <Compile Remove="Platforms\**" />
     <Compile Include="Platforms\All\**" />

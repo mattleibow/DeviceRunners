@@ -11,11 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeviceRunners.Core\DeviceRunners.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Assets/**" />
+    <Embeddedresource Include="Assets/**" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,4 @@
-﻿using DeviceRunners.Core;
-
-using Microsoft.DotNet.XHarness.TestRunners.Common;
+﻿using Microsoft.DotNet.XHarness.TestRunners.Common;
 using Microsoft.DotNet.XHarness.TestRunners.Xunit;
 
 namespace DeviceRunners.XHarness.Xunit;
@@ -8,12 +6,10 @@ namespace DeviceRunners.XHarness.Xunit;
 public class XunitTestRunner : iOSApplicationEntryPoint, ITestRunner
 {
 	readonly IXHarnessTestRunnerConfiguration _configuration;
-	readonly IAppTerminator _appTerminator;
 
-	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device, IAppTerminator appTerminator)
+	public XunitTestRunner(IXHarnessTestRunnerConfiguration configuration, IDevice device)
 	{
 		_configuration = configuration;
-		_appTerminator = appTerminator;
 		Device = device;
 	}
 
@@ -29,7 +25,7 @@ public class XunitTestRunner : iOSApplicationEntryPoint, ITestRunner
 			.Select(assembly => new TestAssemblyInfo(assembly, assembly.Location));
 
 	protected override void TerminateWithSuccess() =>
-		_appTerminator.Terminate();
+		AppTerminator.Terminate();
 
 	protected override TestRunner GetTestRunner(LogWriter logWriter)
 	{
