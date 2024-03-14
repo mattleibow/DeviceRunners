@@ -39,8 +39,9 @@ jobs:
             --launch-timeout=00:06:00 \
             --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
             --output-directory artifacts \
-          && break || sleep 15
+          && code=0 && break || code=$? && sleep 15
         done
+        exit $code
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
