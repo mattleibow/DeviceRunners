@@ -31,7 +31,6 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
-        system_profiler SPDisplaysDataType
         for i in $(seq 1 3)
         do
           dotnet xharness apple test \
