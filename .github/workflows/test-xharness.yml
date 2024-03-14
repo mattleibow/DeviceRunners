@@ -32,11 +32,8 @@ jobs:
     - name: Run Tests
       run: |
         system_profiler SPDisplaysDataType
-        for i in $(seq 1 2)
+        for i in $(seq 1 3)
         do
-          mkdir -p ./artifacts/recordings
-          screencapture -v -V120 ./artifacts/recordings/attempt_${i}_$(date +%s).mov &
-          recording_pid=$!
           dotnet xharness apple test \
             --target ios-simulator-64 \
             --timeout="00:03:00" \
@@ -44,7 +41,6 @@ jobs:
             --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
             --output-directory artifacts \
           && code=0 && break || code=$? && sleep 15
-          wait $recording_pid
         done
         exit $code
     - name: Upload Artifacts
