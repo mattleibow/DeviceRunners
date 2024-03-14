@@ -33,10 +33,11 @@ jobs:
       run: |
         for i in $(seq 1 2)
         do
+          mkdir -p ./artifacts/recordings
           screencapture -v -V120 ./artifacts/recordings/attempt$i.mov &
           dotnet xharness apple test \
             --target ios-simulator-64 \
-            --timeout="00:02:00" \
+            --timeout="00:03:00" \
             --launch-timeout=00:06:00 \
             --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
             --output-directory artifacts \
