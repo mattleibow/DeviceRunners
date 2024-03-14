@@ -33,6 +33,7 @@ jobs:
       run: |
         for i in $(seq 1 2)
         do
+          screencapture -v -V120 ./artifacts/recordings/attempt$i.mov &
           dotnet xharness apple test \
             --target ios-simulator-64 \
             --timeout="00:02:00" \
