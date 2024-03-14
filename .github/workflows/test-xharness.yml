@@ -31,6 +31,7 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
+        system_profiler SPDisplaysDataType
         for i in $(seq 1 2)
         do
           mkdir -p ./artifacts/recordings
