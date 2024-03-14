@@ -8,12 +8,13 @@ namespace DeviceRunners.VisualRunners.NUnit;
 class NUnitTestListener : ITestListener
 {
 	readonly IReadOnlyDictionary<ITest, NUnitTestCaseInfo> _testCases;
-	readonly IResultChannel? _resultChannel;
+	readonly IResultChannelManager? _resultChannelManager;
 
-	public NUnitTestListener(IReadOnlyDictionary<ITest, NUnitTestCaseInfo> testCases, IResultChannel? resultChannel)//, Action<string> logger, string assemblyDisplayName, bool showDiagnostics)
+	public NUnitTestListener(IReadOnlyDictionary<ITest, NUnitTestCaseInfo> testCases, IResultChannelManager? resultChannelManager)
+		//, Action<string> logger, string assemblyDisplayName, bool showDiagnostics)
 	{
 		_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
-		_resultChannel = resultChannel;
+		_resultChannelManager = resultChannelManager;
 
 		// if (showDiagnostics && logger != null)
 		// {
@@ -40,7 +41,7 @@ class NUnitTestListener : ITestListener
 		var info = new NUnitTestResultInfo(testCase, result);
 		testCase.ReportResult(info);
 
-		_resultChannel?.RecordResult(info);
+		_resultChannelManager?.RecordResult(info);
 	}
 
 	public void TestOutput(TestOutput output)

@@ -5,7 +5,10 @@ param (
   [Parameter()]
   [String]$Certificate,
   [Parameter()]
-  [String]$OutputDirectory = 'artifacts'
+  [String]$OutputDirectory = 'artifacts',
+  [Parameter()]
+  [ValidateSet("XHarness", "NonInteractiveVisual", "None")]
+  [String]$TestingMode
 )
 
 $ErrorActionPreference = 'Stop'
@@ -124,37 +127,48 @@ Write-Host "  - Starting the application..."
 New-Item -ItemType Directory $OutputDirectory -Force | Out-Null
 $OutputDirectory = Resolve-Path $OutputDirectory
 Remove-Item $OutputDirectory -Recurse -Force
-Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args "--xharness --output-directory=`"$OutputDirectory`""
+$launchArgs = ""
+if ($TestingMode -eq "XHarness") {
+  $launchArgs = "--xharness --output-directory=`"$OutputDirectory`""
+}
+Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
 Write-Host "    Application started."
 
-# Wait for the tests to finish
-Write-Host "  - Waiting for test results..."
-Write-Host "------------------------------------------------------------"
-$lastLine = 0
-while (!(Test-Path "$OutputDirectory\TestResults.xml")) {
-  Start-Sleep 0.6
-  if (Test-Path $OutputDirectory\test-output-*.log) {
-    $log = Get-ChildItem $OutputDirectory\test-output-*.log
-    $lines = [string[]](Get-Content $log | Select-Object -Skip $lastLine)
-    foreach ($line in $lines) {
-      Write-Host $line
+if ($TestingMode -eq "NonInteractiveVisual") {
+} elseif ($TestingMode -eq "XHarness") {
+  # Wait for the tests to finish
+  Write-Host "  - Waiting for test results..."
+  Write-Host "------------------------------------------------------------"
+  $lastLine = 0
+  while (!(Test-Path "$OutputDirectory\TestResults.xml")) {
+    Start-Sleep 0.6
+    if (Test-Path $OutputDirectory\test-output-*.log) {
+      $log = Get-ChildItem $OutputDirectory\test-output-*.log
+      $lines = [string[]](Get-Content $log | Select-Object -Skip $lastLine)
+      foreach ($line in $lines) {
+        Write-Host $line
+      }
+      $lastLine += $lines.Length
     }
-    $lastLine += $lines.Length
   }
-}
-Write-Host "------------------------------------------------------------"
-Write-Host "  - Checking test results for failures..."
-Write-Host "    Results file: '$OutputDirectory\TestResults.xml'"
-[xml]$resultsXml = Get-Content "$OutputDirectory\TestResults.xml"
-$failed = $resultsXml.assemblies.assembly |
-  Where-Object { $_.failed -gt 0 -or $_.error -gt 0 }
-if ($failed) {
-  Write-Host "    There were test failures."
-  $result = 1
+  Write-Host "------------------------------------------------------------"
+  Write-Host "  - Checking test results for failures..."
+  Write-Host "    Results file: '$OutputDirectory\TestResults.xml'"
+  [xml]$resultsXml = Get-Content "$OutputDirectory\TestResults.xml"
+  $failed = $resultsXml.assemblies.assembly |
+    Where-Object { $_.failed -gt 0 -or $_.error -gt 0 }
+  if ($failed) {
+    Write-Host "    There were test failures."
+    $result = 1
+  } else {
+    Write-Host "    There were no test failures."
+  }
+  Write-Host "  - Tests complete."
 } else {
-  Write-Host "    There were no test failures."
-}
-Write-Host "  - Tests complete."
+  Write-Host "  - Waiting for the app to finalize..."
+  Start-Sleep 5
+  Write-Host "    Application finalized."
+} 
 
 Write-Host ""
 

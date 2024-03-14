@@ -18,7 +18,7 @@ jobs:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
-      run: dotnet build --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
+      run: dotnet build DeviceRunners.sln --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
@@ -35,7 +35,7 @@ jobs:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
-      run: dotnet build --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
+      run: dotnet build DeviceRunners.sln --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}

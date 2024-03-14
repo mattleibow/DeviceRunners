@@ -1,5 +1,8 @@
 using System.Reflection;
 
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
 namespace DeviceRunners.VisualRunners;
 
 public static class VisualTestRunnerConfigurationBuilderExtensions
@@ -37,17 +40,17 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	public static TBuilder AddConsoleResultChannel<TBuilder>(this TBuilder builder)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
-		builder.AddResultChannel(new ConsoleResultChannel());
+		builder.AddResultChannel(_ => new ConsoleResultChannel());
 #if WINDOWS
-		builder.AddResultChannel(new DebugResultChannel());
+		builder.AddResultChannel(_ => new DebugResultChannel());
 #endif
 		return builder;
 	}
 
-	public static TBuilder AddResultChannel<TBuilder>(this TBuilder builder, IResultChannel resultChannel)
+	public static TBuilder AddTcpResultChannel<TBuilder>(this TBuilder builder, TcpResultChannelOptions options)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
-		builder.AddResultChannel(resultChannel);
+		builder.AddResultChannel(svc => new TcpResultChannel(options, svc.GetService<ILoggerFactory>()?.CreateLogger<TcpResultChannel>()));
 		return builder;
 	}
 }

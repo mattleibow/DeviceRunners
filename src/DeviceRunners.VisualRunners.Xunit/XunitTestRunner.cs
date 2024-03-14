@@ -7,11 +7,13 @@ public class XunitTestRunner : ITestRunner
 	readonly AsyncLock _executionLock = new();
 
 	readonly IVisualTestRunnerConfiguration _options;
+	readonly IResultChannelManager? _resultChannelManager;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public XunitTestRunner(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
+	public XunitTestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_options = options;
+		_resultChannelManager = resultChannelManager;
 		_diagnosticsManager = diagnosticsManager;
 	}
 
@@ -31,8 +33,7 @@ public class XunitTestRunner : ITestRunner
 	{
 		using (await _executionLock.LockAsync())
 		{
-			await using var autoclosing = new AutoClosingResultChannel(_options.ResultChannel);
-			await autoclosing.EnsureOpenAsync();
+			await using var closing = await ResultChannelManagerScope.OpenAsync(_resultChannelManager);
 
 			await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
 		}
@@ -115,7 +116,7 @@ public class XunitTestRunner : ITestRunner
 
 		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 
-		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, _options.ResultChannel);
+		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, _resultChannelManager);
 
 		IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancellationToken.IsCancellationRequested);
 

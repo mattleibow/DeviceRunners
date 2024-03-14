@@ -11,11 +11,13 @@ public class NUnitTestRunner : ITestRunner
 	readonly AsyncLock _executionLock = new();
 
 	readonly IVisualTestRunnerConfiguration _options;
+	readonly IResultChannelManager? _resultChannelManager;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public NUnitTestRunner(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
+	public NUnitTestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_options = options;
+		_resultChannelManager = resultChannelManager;
 		_diagnosticsManager = diagnosticsManager;
 	}
 
@@ -35,8 +37,7 @@ public class NUnitTestRunner : ITestRunner
 	{
 		using (await _executionLock.LockAsync())
 		{
-			await using var autoclosing = new AutoClosingResultChannel(_options.ResultChannel);
-			await autoclosing.EnsureOpenAsync();
+			await using var closing = await ResultChannelManagerScope.OpenAsync(_resultChannelManager);
 
 			await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
 		}
@@ -121,10 +122,10 @@ public class NUnitTestRunner : ITestRunner
 
 		var listener = new NUnitTestListener(
 			nunitTestCases,
-			_options?.ResultChannel);//,
-							// d => _diagnosticsManager?.PostDiagnosticMessage(d),
-							// assemblyInfo.AssemblyFileName,
-							// true);
+			_resultChannelManager);//,
+								   // d => _diagnosticsManager?.PostDiagnosticMessage(d),
+								   // assemblyInfo.AssemblyFileName,
+								   // true);
 
 		// IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancellationToken.IsCancellationRequested);
 

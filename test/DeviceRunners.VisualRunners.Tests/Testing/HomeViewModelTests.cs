@@ -1,3 +1,5 @@
+using System.Threading.Channels;
+
 using DeviceRunners;
 using DeviceRunners.Core;
 using DeviceRunners.VisualRunners;
@@ -12,7 +14,7 @@ public abstract class HomeViewModelTests
 {
 	public abstract ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration);
 
-	public abstract ITestRunner CreateTestRunner();
+	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
 	[Fact]
 	public async Task StartAssemblyScanAsyncCreatesAllTheViewExpectedModels()
@@ -20,9 +22,10 @@ public abstract class HomeViewModelTests
 		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
 		var options = new VisualTestRunnerConfiguration(assemblies);
 		var discoverer = CreateTestDiscoverer(options);
-		var runner = CreateTestRunner();
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
 
-		var vm = new HomeViewModel(new[] { discoverer }, new[] { runner });
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels);
 
 		await vm.StartAssemblyScanAsync();
 
@@ -41,11 +44,12 @@ public abstract class HomeViewModelTests
 		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
 		var options = new VisualTestRunnerConfiguration(assemblies, autoStart, autoTerminate);
 		var discoverer = CreateTestDiscoverer(options);
-		var runner = CreateTestRunner();
-		
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
 		var terminator = Substitute.For<IAppTerminator>();
 
-		var vm = new HomeViewModel(new[] { discoverer }, new[] { runner }, options, terminator);
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels, terminator);
 
 		await vm.StartAssemblyScanAsync();
 
