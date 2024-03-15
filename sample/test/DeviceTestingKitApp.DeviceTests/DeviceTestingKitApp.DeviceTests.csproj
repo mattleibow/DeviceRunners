@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0-ios;net8.0-android;net8.0-maccatalyst;net8.0-tizen</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>DeviceTestingKitApp.DeviceTests</RootNamespace>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+    <DefineConstants Condition="'$(CI)' != 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
+    <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
+    <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
+
+    <!-- Display name -->
+    <ApplicationTitle>DeviceTestingKitApp.DeviceTests</ApplicationTitle>
+
+    <!-- App Identifier -->
+    <ApplicationId>com.companyname.devicetestingkitapp.devicetests</ApplicationId>
+
+    <!-- Versions -->
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App Icon -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+    <!-- Splash Screen -->
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+    <!-- Images -->
+    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
+
+    <!-- Custom Fonts -->
+    <MauiFont Include="Resources\Fonts\*" />
+
+    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.utility" Version="2.6.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.XunitTests\DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.Library.NUnitTests\DeviceTestingKitApp.Library.NUnitTests.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
+    <ProjectReference Include="..\..\..\src\DeviceRunners.XHarness.Xunit\DeviceRunners.XHarness.Xunit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.XHarness.Maui\DeviceRunners.XHarness.Maui.csproj" />
+  </ItemGroup>
+
+  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
