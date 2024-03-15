@@ -23,4 +23,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceTestingKitApp.Library\DeviceTestingKitApp.Library.csproj" />
+  </ItemGroup>
+
 </Project>

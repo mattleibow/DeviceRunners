@@ -6,7 +6,7 @@ public class CounterValueConverter : IValueConverter
 {
 	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 	{
-		if (value is not int count)
+		if (value is not int count || targetType != typeof(string))
 			throw new NotSupportedException();
 
 		return count switch
