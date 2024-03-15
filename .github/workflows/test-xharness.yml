@@ -23,7 +23,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        dotnet build sample/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+        dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -37,7 +37,7 @@ jobs:
             --target ios-simulator-64 \
             --timeout="00:03:00" \
             --launch-timeout=00:06:00 \
-            --app sample/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
+            --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts \
           && code=0 && break || code=$? && sleep 15
         done
@@ -64,7 +64,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        dotnet build sample/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+        dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -76,7 +76,7 @@ jobs:
           --target maccatalyst \
           --timeout="00:02:00" \
           --launch-timeout=00:06:00 \
-          --app sample/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
+          --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
           --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
@@ -100,8 +100,8 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj
-        dotnet publish sample/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj
+        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
           -p:TestingMode=XHarness `
@@ -112,7 +112,7 @@ jobs:
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
       run: |
-        $msix = Get-ChildItem "sample/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
           -OutputDirectory artifacts `
@@ -148,7 +148,7 @@ jobs:
   #     run: dotnet android avd start --name TestRunnerEmulator --wait-boot
   #   - name: Publish App
   #     run: |
-  #       dotnet publish sample/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+  #       dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
   #         -f ${{ env.TEST_TARGET_FRAMEWORK }} \
   #         -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
   #         -c ${{ env.TEST_CONFIGURATION }} \
@@ -159,7 +159,7 @@ jobs:
   #       xharness android test \
   #         --package-name com.companyname.devicetestingkitapp.devicetests \
   #         --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-  #         --app sample/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk
+  #         --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk
   #         --output-directory artifacts
   #   - name: Shutdown the Emulator
   #     run: dotnet xharness android adb -- emu kill
