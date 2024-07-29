@@ -23,14 +23,15 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Install Emulator
-      run: dotnet android sdk install --package "emulator"
-    - name: Install Emulator Image
-      run: dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+    - name: Install Android SDK Packages
+      run: |
+        dotnet android sdk install --package "cmdline-tools;latest"
+        dotnet android sdk install --package "emulator"
+        dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+        dotnet android sdk list --installed
+        dotnet android sdk info
     - name: Create the Emulator
       run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
-    - name: Show all SDK info
-      run: dotnet android sdk info
     - name: Boot the Emulator
       run: dotnet android avd start --name TestRunnerEmulator
       # run: dotnet android avd start --name TestRunnerEmulator --wait-boot
