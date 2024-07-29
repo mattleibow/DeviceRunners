@@ -26,7 +26,7 @@ jobs:
     - name: Install Android SDK Packages
       run: |
         set
-        dotnet android sdk install --package "cmdline-tools;latest"
+        dotnet android sdk install --package "platform-tools"
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
         dotnet android sdk list --installed
