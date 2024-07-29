@@ -23,6 +23,10 @@ jobs:
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
     - name: Install Android SDK Packages
       run: |
         set
