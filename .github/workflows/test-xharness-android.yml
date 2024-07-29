@@ -53,6 +53,8 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 34
+        arch: x86_64
+        target: google_apis
         script: dotnet xharness android test --package-name com.companyname.samplemauiapp --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
