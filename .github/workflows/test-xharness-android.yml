@@ -29,6 +29,8 @@ jobs:
       run: dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
     - name: Create the Emulator
       run: dotnet android avd create --name TestRunnerEmulator --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
+    - name: Show all SDK info
+      run: dotnet android sdk info
     - name: Boot the Emulator
       run: dotnet android avd start --name TestRunnerEmulator
       # run: dotnet android avd start --name TestRunnerEmulator --wait-boot
