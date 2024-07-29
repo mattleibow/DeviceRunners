@@ -1,20 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net7.0-ios;net7.0-android;net7.0-maccatalyst;net7.0-tizen</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks>net8.0-ios;net8.0-android;net8.0-maccatalyst;net8.0-tizen</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>SampleMauiApp</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
+    <DefineConstants Condition="'$(CI)' != 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
+    <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
+    <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 
     <!-- Display name -->
     <ApplicationTitle>SampleMauiApp</ApplicationTitle>
 
     <!-- App Identifier -->
     <ApplicationId>com.companyname.samplemauiapp</ApplicationId>
-    <ApplicationIdGuid>921202c9-8de1-4442-b501-06a51566f9ef</ApplicationIdGuid>
 
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -40,16 +42,26 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
-    <PackageReference Include="xunit" Version="2.5.0-pre.44" />
-    <PackageReference Include="xunit.runner.utility" Version="2.5.0-pre.44" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.utility" Version="2.6.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\TestProject\TestProject.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.VisualRunner.Maui\Xunit.Runner.Devices.VisualRunner.Maui.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Runner.Devices.XHarness.Maui\Xunit.Runner.Devices.XHarness.Maui.csproj" />
-    <ProjectReference Include="..\..\src\Xunit.Extensions.UITest.Maui\Xunit.Extensions.UITest.Maui.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
+    <ProjectReference Include="..\SampleXunitTestProject\SampleXunitTestProject.csproj" />
+    <ProjectReference Include="..\SampleNUnitTestProject\SampleNUnitTestProject.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
+    <ProjectReference Include="..\..\src\DeviceRunners.XHarness.Xunit\DeviceRunners.XHarness.Xunit.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.XHarness.Maui\DeviceRunners.XHarness.Maui.csproj" />
   </ItemGroup>
 
   <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">

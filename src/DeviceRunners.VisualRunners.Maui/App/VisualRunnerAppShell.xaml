@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="DeviceRunners.VisualRunners.Maui.VisualRunnerAppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:DeviceRunners.VisualRunners.Maui"
+    xmlns:pages="clr-namespace:DeviceRunners.VisualRunners.Maui.Pages">
+
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid ColumnDefinitions="0.2*,0.8*">
+                <Image Source="{Binding FlyoutIcon}"
+                       Margin="5"
+                       HeightRequest="45" />
+                <Label Grid.Column="1"
+                       Text="{Binding Title}"
+                       VerticalTextAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <ShellContent
+        Title="Test Runner"
+        ContentTemplate="{DataTemplate pages:HomePage}"
+        Route="testrunner" />
+
+    <ShellContent
+        Title="Diagnostics"
+        ContentTemplate="{DataTemplate pages:DiagnosticsPage}"
+        Route="diagnostics" />
+
+    <ShellContent
+        Title="Credits"
+        ContentTemplate="{DataTemplate pages:CreditsPage}"
+        Route="credits" />
+
+</Shell>

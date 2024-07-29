@@ -1,0 +1,33 @@
+name: Setup Tools
+
+description: Installs and configures all the required tools
+
+runs:
+  using: composite
+  steps:
+  - name: Setup Xcode
+    uses: maxim-lobanov/setup-xcode@v1
+    if: runner.os == 'macOS'
+    with:
+      xcode-version: latest-stable
+  - name: Setup .NET
+    uses: actions/setup-dotnet@v3
+    with:
+      dotnet-version: 8.0.x
+  - name: Setup .NET MAUI
+    if: runner.os != 'Windows'
+    shell: pwsh
+    run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
+  - name: Setup Tizen.NET
+    if: runner.os != 'Windows'
+    shell: bash
+    run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
+  - name: Setup Tizen.NET
+    if: runner.os == 'Windows'
+    shell: pwsh
+    run: |
+      Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
+      .\workload-install.ps1
+  - name: Setup Local .NET Tools
+    shell: pwsh
+    run: dotnet tool restore

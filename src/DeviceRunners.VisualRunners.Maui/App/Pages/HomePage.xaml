@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="using:DeviceRunners.VisualRunners.Maui"
+             x:Class="DeviceRunners.VisualRunners.Maui.Pages.HomePage"
+             Title="Test Runner">
+
+    <Grid RowDefinitions="Auto,*,Auto,120" ColumnDefinitions="*,Auto"
+          Padding="20" RowSpacing="10" ColumnSpacing="10">
+
+        <!-- header and run all button -->
+        <Label Text="Test Assemblies:" FontAttributes="Bold"
+               VerticalOptions="End" />
+        <Button Text="Run All  ►►"
+                Command="{Binding RunEverythingCommand}"
+                Style="{StaticResource RunButtonStyle}"
+                Grid.Column="1" />
+
+        <!-- assembly list -->
+        <CollectionView x:Name="assemblyList"
+                        ItemsSource="{Binding TestAssemblies}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}"
+                        SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference assemblyList}}"
+                        Margin="-20,0" Grid.Row="1" Grid.ColumnSpan="2">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Padding="20,10" Spacing="5">
+                        <Label Text="{Binding DisplayName}" TextColor="{Binding TestResultStatus, Converter={StaticResource RunStatusToColorConverter}}" />
+                        <StackLayout Orientation="Horizontal" Spacing="5">
+
+                            <Label Text="✔" TextColor="{StaticResource SuccessfulTestsColor}" />
+                            <Label Text="{Binding Passed}" TextColor="{StaticResource SuccessfulTestsColor}" Margin="0,0,15,0" />
+
+                            <Label Text="⛔" TextColor="{StaticResource FailedTestsColor}" />
+                            <Label Text="{Binding Failed}" TextColor="{StaticResource FailedTestsColor}" Margin="0,0,15,0" />
+
+                            <Label Text="⚠" TextColor="{StaticResource SkippedTestsColor}" />
+                            <Label Text="{Binding Skipped}" TextColor="{StaticResource SkippedTestsColor}" Margin="0,0,15,0" />
+
+                            <Label Text="🔷" TextColor="{StaticResource NotRunTestsColor}" />
+                            <Label Text="{Binding NotRun}" TextColor="{StaticResource NotRunTestsColor}" />
+
+                        </StackLayout>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!-- diagnostic messages footer -->
+        <Label Text="Diagnostic Messages:" FontAttributes="Bold"
+               Grid.Row="2" Grid.ColumnSpan="2" />
+        <ScrollView Grid.Row="3" Grid.ColumnSpan="2">
+            <Label Text="{Binding Diagnostics.MessagesString}" />
+        </ScrollView>
+
+        <!-- busy indicator -->
+        <ContentView IsVisible="{Binding IsBusy}" Style="{StaticResource BusyOverlayStyle}"
+                     Grid.RowSpan="4" Grid.ColumnSpan="2" Margin="-20" />
+
+    </Grid>
+
+</ContentPage>

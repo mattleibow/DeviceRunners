@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build
+      run: dotnet build DeviceRunners.sln --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Logs - Windows
+        path: ./artifacts/logs
+
+  macos:
+    name: macOS
+    runs-on: macos-13
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build
+      run: dotnet build DeviceRunners.sln --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
+    - name: Upload Logs
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Logs - macOS
+        path: ./artifacts/logs
