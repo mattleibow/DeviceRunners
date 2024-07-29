@@ -12,6 +12,7 @@ runs:
       xcode-version: latest-stable
   - uses: actions/setup-java@v4
     with:
+      distribution: 'microsoft'
       java-version: '21'
   - name: Setup .NET
     uses: actions/setup-dotnet@v3
