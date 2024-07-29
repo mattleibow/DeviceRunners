@@ -40,7 +40,6 @@ More information can be found in the wiki:
 * [Windows - PowerShell](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Windows-using-PowerShell)  
 
 
-
 ## UI Testing Support
 
 More information can be found in the wiki: [UI Tests](https://github.com/mattleibow/DeviceRunners/wiki/UI-Tests)
