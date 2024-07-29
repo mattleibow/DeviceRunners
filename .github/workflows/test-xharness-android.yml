@@ -1,4 +1,4 @@
-name: XHarness Test
+name: XHarness Android Test
 
 on:
   pull_request:
