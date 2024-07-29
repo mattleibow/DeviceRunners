@@ -30,6 +30,7 @@ jobs:
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
           -p:TestingMode=XHarness \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Enable KVM
       run: |
