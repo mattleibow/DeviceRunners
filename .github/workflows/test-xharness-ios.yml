@@ -1,0 +1,50 @@
+name: XHarness iOS Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  ios:
+    name: iOS
+    runs-on: macos-13-arm64
+    env:
+      TEST_TARGET_FRAMEWORK: net8.0-ios
+      TEST_RUNTIME_IDENTIFIER: iossimulator-arm64
+      TEST_CONFIGURATION: Debug
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish App
+      run: |
+        dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        for i in $(seq 1 3)
+        do
+          dotnet xharness apple test \
+            --target ios-simulator-64 \
+            --timeout="00:03:00" \
+            --launch-timeout=00:06:00 \
+            --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
+            --output-directory artifacts \
+          && code=0 && break || code=$? && sleep 15
+        done
+        exit $code
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Test Results - iOS
+        path: ./artifacts

@@ -1,0 +1,45 @@
+name: XHarness Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  maccatalyst:
+    name: Mac Catalyst
+    runs-on: macos-13-arm64
+    env:
+      TEST_TARGET_FRAMEWORK: net8.0-maccatalyst
+      TEST_RUNTIME_IDENTIFIER: maccatalyst-arm64
+      TEST_CONFIGURATION: Debug
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish App
+      run: |
+        dotnet build sample/SampleMauiApp/SampleMauiApp.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        dotnet xharness apple test \
+          --target maccatalyst \
+          --timeout="00:02:00" \
+          --launch-timeout=00:06:00 \
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/SampleMauiApp.app \
+          --output-directory artifacts
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Test Results - Mac Catalyst
+        path: ./artifacts

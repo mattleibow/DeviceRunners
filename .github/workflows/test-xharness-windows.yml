@@ -1,0 +1,49 @@
+name: XHarness Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+jobs:
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    env:
+      TEST_TARGET_FRAMEWORK: net8.0-windows10.0.19041.0
+      TEST_RUNTIME_IDENTIFIER: win10-x64
+      TEST_CONFIGURATION: Release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish App
+      run: |
+        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/SampleMauiApp/SampleMauiApp.csproj
+        dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj `
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} `
+          -c ${{ env.TEST_CONFIGURATION }} `
+          -p:TestingMode=XHarness `
+          -p:AppxPackageSigningEnabled=true `
+          -p:PackageCertificateThumbprint=$fingerprint `
+          -p:PackageCertificateKeyFile="" `
+          /bl:./artifacts/logs/msbuild-publish.binlog
+        ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
+    - name: Run Tests
+      run: |
+        $msix = Get-ChildItem "sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
+        ./scripts/Start-Tests.ps1 `
+          -App $msix `
+          -OutputDirectory artifacts `
+          -TestingMode XHarness
+      shell: powershell
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Test Results - Windows
+        path: ./artifacts
