@@ -11,10 +11,10 @@ jobs:
 
   ios:
     name: iOS
-    runs-on: macos-13-arm64
+    runs-on: macos-13
     env:
       TEST_TARGET_FRAMEWORK: net8.0-ios
-      TEST_RUNTIME_IDENTIFIER: iossimulator-arm64
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
       TEST_CONFIGURATION: Debug
     steps:
     - name: Checkout

@@ -11,10 +11,10 @@ jobs:
 
   maccatalyst:
     name: Mac Catalyst
-    runs-on: macos-13-arm64
+    runs-on: macos-13
     env:
       TEST_TARGET_FRAMEWORK: net8.0-maccatalyst
-      TEST_RUNTIME_IDENTIFIER: maccatalyst-arm64
+      TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
       TEST_CONFIGURATION: Debug
     steps:
     - name: Checkout

@@ -11,12 +11,12 @@ jobs:
 
   android:
     name: Android
-    runs-on: macos-13-arm64
+    runs-on: macos-13
     env:
       TEST_TARGET_FRAMEWORK: net8.0-android
-      TEST_RUNTIME_IDENTIFIER: android-arm64
+      TEST_RUNTIME_IDENTIFIER: android-x64
       TEST_CONFIGURATION: Release
-      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;arm64-v8a
+      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
       TEST_EMULATOR_DEVICE: pixel_5
     steps:
     - name: Checkout
