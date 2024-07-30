@@ -110,6 +110,10 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
 
+    - name: start life
+      run: |
+        set
+
     - name: run tests
       uses: ./.github/workflows/emuthing
       with:
