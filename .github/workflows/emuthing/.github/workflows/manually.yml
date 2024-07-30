@@ -1,0 +1,81 @@
+name: Manually triggered workflow
+on:
+  workflow_dispatch:
+    inputs:
+      os:
+        description: 'OS'
+        required: true
+        default: 'ubuntu-latest'
+      api-level:
+        description: 'API level of the platform and system image'
+        required: true
+        default: '30'
+      target:
+        description: 'target of the system image - default, google_apis, google_apis_playstore, aosp_atd, google_atd, android-wear, android-wear-cn, android-tv or google-tv'
+        required: true
+        default: 'default'
+      arch:
+        description: 'CPU architecture of the system image - x86, x86_64 or arm64-v8a'
+        default: 'x86'
+      emulator-options:
+        description: 'command-line options used when launching the emulator'
+        default: '-no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim'
+      emulator-build:
+        description: 'build number of a specific version of the emulator binary to use'
+      channel:
+        description: 'Channel to download the SDK components from - `stable`, `beta`, `dev`, `canary`'
+        default: 'stable'
+      script:
+        description: 'custom script to run - e.g. `./gradlew connectedCheck`'
+        required: true
+        default: './gradlew connectedDebugAndroidTest'
+
+jobs:
+  test:
+    runs-on: ${{ github.event.inputs.os }}
+    env:
+      JAVA_TOOL_OPTIONS: -Xmx4g
+    timeout-minutes: 15
+    
+    steps:
+    - name: checkout
+      uses: actions/checkout@v4
+
+    - name: validate gradle wrapper
+      uses: gradle/wrapper-validation-action@v2
+
+    - name: build, test and lint
+      run: |
+        npm install
+        npm run build
+        npm run lint
+        npm test
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: 21
+
+    - uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-home-cache-cleanup: true
+
+    - name: enable KVM for linux runners
+      if: runner.os == 'Linux'
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+
+    - name: run action
+      uses: ./
+      with:
+        api-level: ${{ github.event.inputs.api-level }}
+        target: ${{ github.event.inputs.target }}
+        arch: ${{ github.event.inputs.arch }}
+        profile: Galaxy Nexus
+        emulator-options: ${{ github.event.inputs.emulator-options }}
+        emulator-build: ${{ github.event.inputs.emulator-build }}
+        channel: ${{ github.event.inputs.channel }}
+        working-directory: ./test-fixture/
+        script: ${{ github.event.inputs.script }}
