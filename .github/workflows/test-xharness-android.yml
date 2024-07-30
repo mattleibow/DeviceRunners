@@ -114,6 +114,7 @@ jobs:
       run: |
         set
         echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
+        cat /home/runner/.android/avd/test.avd/config.ini
 
     - name: run tests
       uses: ./.github/workflows/emuthing
