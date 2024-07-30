@@ -74,9 +74,9 @@ async function run() {
 
     // await exec.exec(`sh -c \\"${process.env.ANDROID_HOME}/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &"`);
 
-    await waitForDevice(5554, 600);
+    // await waitForDevice(5554, 600);
   } finally {
-    await exec.exec(`${process.env.ANDROID_HOME}/platform-tools/adb -s emulator-5554 emu kill`);
+    // await exec.exec(`${process.env.ANDROID_HOME}/platform-tools/adb -s emulator-5554 emu kill`);
   }
 }
 
