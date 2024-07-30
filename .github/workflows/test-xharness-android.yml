@@ -97,8 +97,15 @@ jobs:
         dotnet android sdk install --package "build-tools;34.0.0"
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
-        echo no | avdmanager create avd --force -n test --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
-        printf 'hw.cpu.ncore=${cores}\n' >> $ANDROID_AVD_HOME/test.avd/config.ini
+        dotnet android avd create --name test --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
+        printf 'hw.cpu.ncore=2\n' >> $ANDROID_AVD_HOME/test.avd/config.ini
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Start Emulator
+      run: |
         /usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
     - name: Publish App
       run: |
@@ -109,20 +116,17 @@ jobs:
           -p:TestingMode=XHarness \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Enable KVM
-      run: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
     - name: Run Tests
       run: |
-        xharness android test \
+        dotnet xharness android test \
           --timeout="00:05:00" \
           --launch-timeout=00:10:00 \
           --package-name com.companyname.samplemauiapp \
           --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
           --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
           --output-directory artifacts
+    - name: Shutdown the Emulator
+      run: dotnet xharness android adb -- emu kill
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
