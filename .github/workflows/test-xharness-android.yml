@@ -71,38 +71,38 @@ jobs:
   #       name: Test Results - Android (macOS)
   #       path: ./artifacts
 
-  android_magic:
-    name: Android (Magic)
-    runs-on: ubuntu-22.04
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - uses: actions/setup-java@v4
-      with:
-        distribution: 'microsoft'
-        java-version: '21'
-    - name: Install Android SDK Packages
-      run: |
-        set
-        dotnet android sdk install --package "platform-tools"
-        dotnet android sdk install --package "cmdline-tools;latest"
-        dotnet android sdk install --package "platforms;android-34"
-        dotnet android sdk list --installed
-        dotnet android sdk info
-    - name: Enable KVM
-      run: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
-    - name: run tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 34
-        arch: x86_64
-        target: google_apis
-        script: ls -l ~/.android/ && cat ~/.android/avd/test.avd/config.ini
+  # android_magic:
+  #   name: Android (Magic)
+  #   runs-on: ubuntu-22.04
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v2
+  #   - name: Setup Required Tools
+  #     uses: ./.github/workflows/setup-tools
+  #   - uses: actions/setup-java@v4
+  #     with:
+  #       distribution: 'microsoft'
+  #       java-version: '21'
+  #   - name: Install Android SDK Packages
+  #     run: |
+  #       set
+  #       dotnet android sdk install --package "platform-tools"
+  #       dotnet android sdk install --package "cmdline-tools;latest"
+  #       dotnet android sdk install --package "platforms;android-34"
+  #       dotnet android sdk list --installed
+  #       dotnet android sdk info
+  #   - name: Enable KVM
+  #     run: |
+  #       echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+  #       sudo udevadm control --reload-rules
+  #       sudo udevadm trigger --name-match=kvm
+  #   - name: run tests
+  #     uses: reactivecircus/android-emulator-runner@v2
+  #     with:
+  #       api-level: 34
+  #       arch: x86_64
+  #       target: google_apis
+  #       script: ls -l ~/.android/ && cat ~/.android/avd/test.avd/config.ini
 
   android_linux:
     name: Android (Linux)
@@ -111,6 +111,7 @@ jobs:
       TEST_TARGET_FRAMEWORK: net8.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
       TEST_CONFIGURATION: Release
+      TEST_EMULATOR_ABI: google_apis/x86_64
       TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
       TEST_EMULATOR_DEVICE: pixel_5
     steps:
@@ -130,12 +131,14 @@ jobs:
         dotnet android sdk install --package "build-tools;34.0.0"
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
-        dotnet android avd create --name test --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
+        echo no | avdmanager create avd --force -n test --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+        cat ~/.android/avd/test.avd/config.ini
         ls -la ~/.android/
         ls -la ~/.android/avd/
         ls -la ~/.android/avd/test.avd/
         printf 'hw.cpu.ncore=2\n' >> ~/.android/avd/test.avd/config.ini
         cat ~/.android/avd/test.avd/config.ini
+        # dotnet android avd create --name test --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
     - name: Enable KVM
       run: |
         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -144,6 +147,7 @@ jobs:
     - name: Start Emulator
       run: |
         /usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
+        cat ~/.android/avd/test.avd/config.ini
     - name: Publish App
       run: |
         dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
