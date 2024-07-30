@@ -114,13 +114,15 @@ jobs:
         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
-    - name: run tests
-      uses: reactivecircus/android-emulator-runner@v2
-      with:
-        api-level: 34
-        arch: x86_64
-        target: google_apis
-        script: dotnet xharness android test --package-name com.companyname.samplemauiapp --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk --output-directory artifacts
+    - name: Run Tests
+      run: |
+        xharness android test \
+          --timeout="00:05:00" \
+          --launch-timeout=00:10:00 \
+          --package-name com.companyname.samplemauiapp \
+          --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
+          --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
