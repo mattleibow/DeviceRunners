@@ -9,7 +9,7 @@ async function waitForDevice(port: number, emulatorBootTimeout: number): Promise
   while (!booted) {
     try {
       let result = '';
-      await exec.exec(`adb -s emulator-${port} shell getprop sys.boot_completed`, [], {
+      await exec.exec(`${process.env.ANDROID_HOME}/platform-tools/adb -s emulator-${port} shell getprop sys.boot_completed`, [], {
         listeners: {
           stdout: (data: Buffer) => {
             result += data.toString();
@@ -76,7 +76,7 @@ async function run() {
 
     await waitForDevice(5554, 600);
   } finally {
-    await exec.exec(`adb -s emulator-5554 emu kill`);
+    await exec.exec(`${process.env.ANDROID_HOME}/platform-tools/adb -s emulator-5554 emu kill`);
   }
 }
 
