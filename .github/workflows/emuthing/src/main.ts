@@ -72,7 +72,7 @@ async function run() {
 
     // console.log('Starting emulator.');
 
-    await exec.exec(`sh -c \\"${process.env.ANDROID_HOME}/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &"`);
+    // await exec.exec(`sh -c \\"${process.env.ANDROID_HOME}/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &"`);
 
     await waitForDevice(5554, 600);
   } finally {

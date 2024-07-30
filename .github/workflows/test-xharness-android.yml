@@ -116,6 +116,7 @@ jobs:
         echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
         cat /home/runner/.android/avd/test.avd/config.ini
         printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/config.ini
+        $ANDROID_HOME/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
 
     - name: run tests
       uses: ./.github/workflows/emuthing
