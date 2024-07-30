@@ -59,9 +59,9 @@ async function run() {
     // console.log(`Creating AVD.`);
     
     // await exec.exec(`sh -c \\"set"`);
-    await exec.exec(
-      `sh -c \\"echo no | ${process.env.ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64' "`
-    );
+    // await exec.exec(
+    //   `sh -c \\"echo no | ${process.env.ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64' "`
+    // );
 
     // await exec.exec(`sh -c \\"ls -l /home/runner/.android"`);
     // await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd"`);
