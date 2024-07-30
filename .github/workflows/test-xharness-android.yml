@@ -68,8 +68,41 @@ jobs:
   #     uses: actions/upload-artifact@v1
   #     if: ${{ always() }}
   #     with:
-  #       name: Test Results - Android
+  #       name: Test Results - Android (macOS)
   #       path: ./artifacts
+
+  android_magic:
+    name: Android (Magic)
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
+    - name: Install Android SDK Packages
+      run: |
+        set
+        dotnet android sdk install --package "platform-tools"
+        dotnet android sdk install --package "cmdline-tools;latest"
+        dotnet android sdk install --package "platforms;android-34"
+        dotnet android sdk list --installed
+        dotnet android sdk info
+    - name: Enable KVM
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: run tests
+      uses: reactivecircus/android-emulator-runner@v2
+      with:
+        api-level: 34
+        arch: x86_64
+        target: google_apis
+        script: ls -l ~/.android/ && cat ~/.android/avd/test.avd/config.ini
 
   android_linux:
     name: Android (Linux)
@@ -135,5 +168,5 @@ jobs:
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
       with:
-        name: Test Results - Android
+        name: Test Results - Android (Linux)
         path: ./artifacts
