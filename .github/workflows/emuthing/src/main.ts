@@ -54,7 +54,7 @@ async function run() {
     // core.addPath(`${cmdlineToolsPath}/latest:${cmdlineToolsPath}/latest/bin:${process.env.ANDROID_HOME}/platform-tools`);
 
     // set standard AVD path
-    core.exportVariable('ANDROID_AVD_HOME', `${process.env.HOME}/.android/avd`);
+    // core.exportVariable('ANDROID_AVD_HOME', `${process.env.HOME}/.android/avd`);
 
     // console.log(`Creating AVD.`);
     
