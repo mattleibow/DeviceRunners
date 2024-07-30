@@ -131,7 +131,7 @@ jobs:
         dotnet android sdk install --package "build-tools;34.0.0"
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
-        echo no | avdmanager create avd --force -n test --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
         cat ~/.android/avd/test.avd/config.ini
         ls -la ~/.android/
         ls -la ~/.android/avd/
