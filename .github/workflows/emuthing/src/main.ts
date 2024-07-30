@@ -48,10 +48,10 @@ async function run() {
       await exec.exec(`sh -c \\"sudo chown $USER:$USER ${process.env.ANDROID_HOME} -R`);
     }
 
-    const cmdlineToolsPath = `${process.env.ANDROID_HOME}/cmdline-tools`;
+    // const cmdlineToolsPath = `${process.env.ANDROID_HOME}/cmdline-tools`;
 
-    // add paths for commandline-tools and platform-tools
-    core.addPath(`${cmdlineToolsPath}/latest:${cmdlineToolsPath}/latest/bin:${process.env.ANDROID_HOME}/platform-tools`);
+    // // add paths for commandline-tools and platform-tools
+    // core.addPath(`${cmdlineToolsPath}/latest:${cmdlineToolsPath}/latest/bin:${process.env.ANDROID_HOME}/platform-tools`);
 
     // set standard AVD path
     core.exportVariable('ANDROID_AVD_HOME', `${process.env.HOME}/.android/avd`);
@@ -74,7 +74,7 @@ async function run() {
 
     await exec.exec(`sh -c \\"${process.env.ANDROID_HOME}/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &"`);
 
-    waitForDevice(5554, 600);
+    await waitForDevice(5554, 600);
   } finally {
     await exec.exec(`adb -s emulator-5554 emu kill`);
   }
