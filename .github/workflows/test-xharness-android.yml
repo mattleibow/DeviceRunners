@@ -100,6 +100,7 @@ jobs:
         dotnet android sdk install --package "cmdline-tools;latest"
         dotnet android sdk install --package "platforms;android-34"
         dotnet android sdk install --package "system-images;android-34;google_apis;x86_64"
+        dotnet android sdk install --package "emulator"
         dotnet android sdk list --installed
         dotnet android sdk info
 
