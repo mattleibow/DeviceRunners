@@ -68,7 +68,7 @@ async function run() {
     // await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd/test.avd"`);
     // await exec.exec(`sh -c \\"cat /home/runner/.android/avd/test.avd/config.ini"`);
 
-    await exec.exec(`sh -c \\"printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/config.ini`);
+    // await exec.exec(`sh -c \\"printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/config.ini`);
 
     // console.log('Starting emulator.');
 
