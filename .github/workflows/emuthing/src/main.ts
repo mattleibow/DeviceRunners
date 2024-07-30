@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 
 async function waitForDevice(port: number, emulatorBootTimeout: number): Promise<void> {
@@ -39,6 +40,22 @@ function delay(ms: number) {
 
 async function run() {
   try {
+    console.log(`Install Android SDK`);
+    const isOnMac = process.platform === 'darwin';
+    const isArm = process.arch === 'arm64';
+
+    if (!isOnMac) {
+      await exec.exec(`sh -c \\"sudo chown $USER:$USER ${process.env.ANDROID_HOME} -R`);
+    }
+
+    const cmdlineToolsPath = `${process.env.ANDROID_HOME}/cmdline-tools`;
+
+    // add paths for commandline-tools and platform-tools
+    core.addPath(`${cmdlineToolsPath}/latest:${cmdlineToolsPath}/latest/bin:${process.env.ANDROID_HOME}/platform-tools`);
+
+    // set standard AVD path
+    core.exportVariable('ANDROID_AVD_HOME', `${process.env.HOME}/.android/avd`);
+
     console.log(`Creating AVD.`);
     
     await exec.exec(`sh -c \\"set"`);
