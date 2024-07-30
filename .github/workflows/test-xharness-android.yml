@@ -141,10 +141,10 @@ jobs:
       run: |
         echo $ANDROID_AVD_HOME
         sudo chown $USER:$USER /usr/local/lib/android/sdk -R
-        yes | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/sdkmanager --licenses
-        /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/sdkmanager --install 'build-tools;34.0.0' platform-tools 'platforms;android-34'
-        /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/sdkmanager --install emulator --channel=0
-        /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/sdkmanager --install 'system-images;android-34;google_apis;x86_64' --channel=0
+        yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'build-tools;34.0.0' platform-tools 'platforms;android-34'
+        /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install emulator --channel=0
+        /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-34;google_apis;x86_64' --channel=0
         # dotnet android sdk install --package "platform-tools"
         # dotnet android sdk install --package "cmdline-tools;latest"
         # dotnet android sdk install --package "platforms;android-34"
@@ -154,7 +154,7 @@ jobs:
     - name: Create Emulator
       run: |
         set
-        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test -p ${{ env.ANDROID_AVD_HOME }} --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/avdmanager create avd --force -n test -p ${{ env.ANDROID_AVD_HOME }} --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Echo things
       run: |
         cat $ANDROID_AVD_HOME/test.avd/config.ini
