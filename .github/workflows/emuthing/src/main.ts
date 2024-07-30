@@ -40,13 +40,13 @@ function delay(ms: number) {
 
 async function run() {
   try {
-    console.log(`Install Android SDK`);
-    const isOnMac = process.platform === 'darwin';
-    const isArm = process.arch === 'arm64';
+    // console.log(`Install Android SDK`);
+    // const isOnMac = process.platform === 'darwin';
+    // const isArm = process.arch === 'arm64';
 
-    if (!isOnMac) {
-      await exec.exec(`sh -c \\"sudo chown $USER:$USER ${process.env.ANDROID_HOME} -R`);
-    }
+    // if (!isOnMac) {
+    //   await exec.exec(`sh -c \\"sudo chown $USER:$USER ${process.env.ANDROID_HOME} -R`);
+    // }
 
     // const cmdlineToolsPath = `${process.env.ANDROID_HOME}/cmdline-tools`;
 
@@ -56,21 +56,21 @@ async function run() {
     // set standard AVD path
     core.exportVariable('ANDROID_AVD_HOME', `${process.env.HOME}/.android/avd`);
 
-    console.log(`Creating AVD.`);
+    // console.log(`Creating AVD.`);
     
-    await exec.exec(`sh -c \\"set"`);
+    // await exec.exec(`sh -c \\"set"`);
     await exec.exec(
       `sh -c \\"echo no | ${process.env.ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64' "`
     );
 
-    await exec.exec(`sh -c \\"ls -l /home/runner/.android"`);
-    await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd"`);
-    await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd/test.avd"`);
+    // await exec.exec(`sh -c \\"ls -l /home/runner/.android"`);
+    // await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd"`);
+    // await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd/test.avd"`);
     await exec.exec(`sh -c \\"cat /home/runner/.android/avd/test.avd/config.ini"`);
 
     await exec.exec(`sh -c \\"printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/config.ini`);
 
-    console.log('Starting emulator.');
+    // console.log('Starting emulator.');
 
     await exec.exec(`sh -c \\"${process.env.ANDROID_HOME}/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &"`);
 
