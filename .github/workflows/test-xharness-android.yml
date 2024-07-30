@@ -98,7 +98,8 @@ jobs:
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
         dotnet android avd create --name test --sdk "${{ env.TEST_EMULATOR_IMAGE }}" --device "${{ env.TEST_EMULATOR_DEVICE }}"
-        printf 'hw.cpu.ncore=2\n' >> ~/.android/test.avd/config.ini
+        printf 'hw.cpu.ncore=2\n' >> ~/.android/avd/test.avd/config.ini
+        cat ~/.android/avd/test.avd/config.ini
     - name: Enable KVM
       run: |
         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
