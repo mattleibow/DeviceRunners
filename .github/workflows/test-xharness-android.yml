@@ -132,15 +132,17 @@ jobs:
         dotnet android sdk install --package "build-tools;34.0.0"
         dotnet android sdk install --package "emulator"
         dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
+    - name: Set env
+      run: |
+        echo ANDROID_AVD_HOME=$ANDROID_AVD_HOME
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
     - name: Create Emulator
       run: |
-        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test -p $ANDROID_AVD_HOME --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Echo things
       run: |
-        cat ~/.android/avd/test.avd/config.ini
-        ls -la ~/.android/
-        ls -la ~/.android/avd/
-        ls -la ~/.android/avd/test.avd/
+        cat $ANDROID_AVD_HOME/test.avd/config.ini
+        ls -la $ANDROID_AVD_HOME/test.avd/
         printf 'hw.cpu.ncore=2\n' >> ~/.android/avd/test.avd/config.ini
         cat ~/.android/avd/test.avd/config.ini
     - name: Enable KVM
