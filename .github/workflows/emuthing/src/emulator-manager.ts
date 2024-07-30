@@ -33,12 +33,6 @@ export async function launchEmulator(
       const sdcardPathOrSizeOption = sdcardPathOrSize.trim() !== '' ? `--sdcard '${sdcardPathOrSize}'` : '';
       console.log(`Creating AVD.`);
       
-      await exec.exec(`sh -c \\"ls -l /home/runner/.android"`);
-      await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd"`);
-      await exec.exec(`sh -c \\"ls -l /home/runner/.android/avd/test.avd"`);
-      await exec.exec(`sh -c \\"cat /home/runner/.android/avd/test.avd/config.ini"`);
-      await exec.exec(`sh -c \\"ls -l ${process.env.ANDROID_AVD_HOME}"`);
-      
       await exec.exec(
         `sh -c \\"echo no | avdmanager create avd --force -n "${avdName}" --abi '${target}/${arch}' --package 'system-images;android-${apiLevel};${target};${arch}' ${profileOption} ${sdcardPathOrSizeOption}"`
       );
