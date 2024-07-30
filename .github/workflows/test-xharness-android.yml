@@ -113,7 +113,7 @@ jobs:
     - name: start life
       run: |
         set
-        echo no | ${{ env.ANDROID_HOME }}/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
+        echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
 
     - name: run tests
       uses: ./.github/workflows/emuthing
