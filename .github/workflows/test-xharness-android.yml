@@ -138,7 +138,7 @@ jobs:
         echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
     - name: Create Emulator
       run: |
-        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test -p $ANDROID_AVD_HOME --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo no | /usr/local/lib/android/sdk/cmdline-tools/latest-2/bin/avdmanager create avd --force -n test -p ${{ env.ANDROID_AVD_HOME }} --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Echo things
       run: |
         cat $ANDROID_AVD_HOME/test.avd/config.ini
