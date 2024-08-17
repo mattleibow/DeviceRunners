@@ -37,7 +37,7 @@ jobs:
         distribution: 'microsoft'
         java-version: '21'
     - name: Install Android SDK Packages
-      run: dotnet android sdk install --package 'platform-tools' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+      run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
