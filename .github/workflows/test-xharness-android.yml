@@ -71,141 +71,58 @@ jobs:
   #       name: Test Results - Android (macOS)
   #       path: ./artifacts
 
-  android_magic:
-    name: Android (Magic)
+  android_linux:
+    name: Android (Linux)
     runs-on: ubuntu-22.04
+    env:
+      TEST_TARGET_FRAMEWORK: net8.0-android
+      TEST_RUNTIME_IDENTIFIER: android-x64
+      TEST_CONFIGURATION: Release
+      TEST_EMULATOR_NAME: XHarnessEmulator
+      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Install Android SDK Packages
-      run: |
-        set
-    - name: build
-      run: |
-        cd .github/workflows/emuthing
-        npm install
-        npm run build
-  
     - uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'
         java-version: '21'
-
     - name: Install Android SDK Packages
-      run: |
-        set
-        dotnet android sdk install --package "platform-tools"
-        dotnet android sdk install --package "cmdline-tools;latest"
-        dotnet android sdk install --package "platforms;android-34"
-        dotnet android sdk install --package "system-images;android-34;google_apis;x86_64"
-        dotnet android sdk install --package "emulator"
-        dotnet android sdk list --installed
-        dotnet android sdk info
-
+      run: dotnet android sdk install --package '${{ env.TEST_EMULATOR_IMAGE }}'
+    - name: Create Emulator
+      run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
       run: |
         echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
-
-    - name: start life
+    - name: Start Emulator
+      run: dotnet android avd start --wait-boot --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu swiftshader_indirect --no-snapshot --no-audio --no-boot-anim
+    - name: Publish App
       run: |
-        set
-        echo no | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --force -n "test" --abi 'google_apis/x86_64' --package 'system-images;android-34;google_apis;x86_64'
-        cat /home/runner/.android/avd/test.avd/config.ini
-        printf 'hw.cpu.ncore=2\n' >> /home/runner/.android/avd/config.ini
-        $ANDROID_HOME/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
-        while [[ -z "$($ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed)" ]]; do sleep 1; done
-        $ANDROID_HOME/platform-tools/adb -s emulator-5554 shell getprop sys.boot_completed
-        $ANDROID_HOME/platform-tools/adb -s emulator-5554 emu kill
-
-    # - name: run tests
-    #   uses: ./.github/workflows/emuthing
-    #   with:
-    #     api-level: 34
-    #     arch: x86_64
-    #     target: google_apis
-    #     script: ls -l ~/.android/ && cat ~/.android/avd/test.avd/config.ini
-
-  # android_linux:
-  #   name: Android (Linux)
-  #   runs-on: ubuntu-22.04
-  #   env:
-  #     TEST_TARGET_FRAMEWORK: net8.0-android
-  #     TEST_RUNTIME_IDENTIFIER: android-x64
-  #     TEST_CONFIGURATION: Release
-  #     TEST_EMULATOR_ABI: google_apis/x86_64
-  #     TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
-  #     TEST_EMULATOR_DEVICE: pixel_5
-  #     ACTIONS_RUNNER_DEBUG: true
-  #     ANDROID_AVD_HOME: /home/runner/.android/avd
-  #   steps:
-  #   - name: Checkout
-  #     uses: actions/checkout@v2
-  #   - name: Setup Required Tools
-  #     uses: ./.github/workflows/setup-tools
-  #   - uses: actions/setup-java@v4
-  #     with:
-  #       distribution: 'microsoft'
-  #       java-version: '21'
-  #   - name: Install Android SDK Packages
-  #     run: |
-  #       echo $ANDROID_AVD_HOME
-  #       sudo chown $USER:$USER /usr/local/lib/android/sdk -R
-  #       yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-  #       /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'build-tools;34.0.0' platform-tools 'platforms;android-34'
-  #       /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install emulator --channel=0
-  #       /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --install 'system-images;android-34;google_apis;x86_64' --channel=0
-  #       # dotnet android sdk install --package "platform-tools"
-  #       # dotnet android sdk install --package "cmdline-tools;latest"
-  #       # dotnet android sdk install --package "platforms;android-34"
-  #       # dotnet android sdk install --package "build-tools;34.0.0"
-  #       # dotnet android sdk install --package "emulator"
-  #       # dotnet android sdk install --package "${{ env.TEST_EMULATOR_IMAGE }}"
-  #   - name: Create Emulator
-  #     run: |
-  #       set
-  #       echo no | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/avdmanager create avd --force -n test -p ${{ env.ANDROID_AVD_HOME }} --abi '${{ env.TEST_EMULATOR_ABI }}' --package '${{ env.TEST_EMULATOR_IMAGE }}'
-  #   - name: Echo things
-  #     run: |
-  #       cat $ANDROID_AVD_HOME/test.avd/config.ini
-  #       ls -la $ANDROID_AVD_HOME/test.avd/
-  #       printf 'hw.cpu.ncore=2\n' >> ~/.android/avd/test.avd/config.ini
-  #       cat ~/.android/avd/test.avd/config.ini
-  #   - name: Enable KVM
-  #     run: |
-  #       echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-  #       sudo udevadm control --reload-rules
-  #       sudo udevadm trigger --name-match=kvm
-  #   - name: Start Emulator
-  #     run: |
-  #       /usr/local/lib/android/sdk/emulator/emulator -port 5554 -avd test -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim &
-  #       cat ~/.android/avd/test.avd/config.ini
-  #   - name: Publish App
-  #     run: |
-  #       dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
-  #         -f ${{ env.TEST_TARGET_FRAMEWORK }} \
-  #         -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
-  #         -c ${{ env.TEST_CONFIGURATION }} \
-  #         -p:TestingMode=XHarness \
-  #         -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
-  #         /bl:./artifacts/logs/msbuild-publish.binlog
-  #   - name: Run Tests
-  #     run: |
-  #       dotnet xharness android test \
-  #         --timeout="00:05:00" \
-  #         --launch-timeout=00:10:00 \
-  #         --package-name com.companyname.samplemauiapp \
-  #         --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-  #         --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
-  #         --output-directory artifacts
-  #   - name: Shutdown the Emulator
-  #     run: dotnet xharness android adb -- emu kill
-  #   - name: Upload Artifacts
-  #     uses: actions/upload-artifact@v1
-  #     if: ${{ always() }}
-  #     with:
-  #       name: Test Results - Android (Linux)
-  #       path: ./artifacts
+        dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        dotnet xharness android test \
+          --timeout="00:05:00" \
+          --launch-timeout=00:10:00 \
+          --package-name com.companyname.samplemauiapp \
+          --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
+          --output-directory artifacts
+    - name: Shutdown the Emulator
+      run: dotnet xharness android adb -- emu kill
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v1
+      if: ${{ always() }}
+      with:
+        name: Test Results - Android (Linux)
+        path: ./artifacts
