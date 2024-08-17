@@ -64,7 +64,7 @@ jobs:
           --launch-timeout=00:10:00 \
           --package-name com.companyname.samplemauiapp \
           --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk
+          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk \
           --output-directory artifacts
     - name: Shutdown the Emulator
       run: dotnet xharness android adb -- emu kill
