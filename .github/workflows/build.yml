@@ -23,7 +23,8 @@ jobs:
           - Release
         # Tries to AOT the test infrastructure assemblies which is not supported
         exclude:
-          - name: macOS
+          - platform:
+              name: macOS
             configuration: Release
     name: ${{ matrix.platform.name }} (${{ matrix.configuration }})
     runs-on: ${{ matrix.platform.os }}
