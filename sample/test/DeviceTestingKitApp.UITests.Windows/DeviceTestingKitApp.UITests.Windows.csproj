@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\DeviceTestingKitApp.UITests\DeviceTestingKitApp.UITests.targets" />
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\DeviceRunners.Appium\DeviceRunners.Appium.csproj" />
-  </ItemGroup>
-
-</Project>
