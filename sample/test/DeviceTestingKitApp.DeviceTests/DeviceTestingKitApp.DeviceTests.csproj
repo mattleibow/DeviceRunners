@@ -8,7 +8,6 @@
     <RootNamespace>DeviceTestingKitApp.DeviceTests</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <IsPackable>false</IsPackable>
     <DefineConstants Condition="'$(CI)' != 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
