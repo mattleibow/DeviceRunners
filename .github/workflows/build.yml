@@ -21,7 +21,7 @@ jobs:
         configuration: 
           - Debug
           - Release
-    name: ${{ matrix.platform.name }}
+    name: ${{ matrix.platform.name }} (${{ matrix.configuration }})
     runs-on: ${{ matrix.platform.os }}
     steps:
     - name: Checkout
