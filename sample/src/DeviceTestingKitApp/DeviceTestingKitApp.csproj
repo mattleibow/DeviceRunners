@@ -67,16 +67,4 @@
 	  <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary\DeviceTestingKitApp.MauiLibrary.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="MainPage.xaml.cs">
-	    <DependentUpon>%(Filename)</DependentUpon>
-	  </Compile>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiXaml Update="MainPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	</ItemGroup>
-
 </Project>

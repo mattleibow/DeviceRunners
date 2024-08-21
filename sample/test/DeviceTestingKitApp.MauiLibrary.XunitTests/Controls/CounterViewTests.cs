@@ -5,14 +5,22 @@ namespace DeviceTestingKitApp.MauiLibrary.XunitTests.Controls;
 
 public class CounterViewTests : VisualElementTests
 {
+	public CounterViewTests()
+	{
+		View = new CounterView();
+		ViewModel = new CounterViewModel();
+		
+		View.BindingContext = ViewModel;
+	}
+
+	public CounterView View { get; }
+
+	public CounterViewModel ViewModel { get; }
+
 	[Fact]
 	public void InitialStateIsCorrect()
 	{
-		var counterView = new CounterView();
-		var vm = new CounterViewModel();
-		counterView.BindingContext = vm;
-
-		var btn = Assert.IsType<Button>(counterView.Content);
+		var btn = Assert.IsType<Button>(View.Content);
 
 		Assert.Equal("Click me!", btn.Text);
 	}
@@ -20,13 +28,9 @@ public class CounterViewTests : VisualElementTests
 	[Fact]
 	public void InvokingCommandUpdatesButtonText()
 	{
-		var counterView = new CounterView();
-		var vm = new CounterViewModel();
-		counterView.BindingContext = vm;
+		ViewModel.IncrementCommand.Execute(null);
 
-		vm.IncrementCommand.Execute(null);
-
-		var btn = Assert.IsType<Button>(counterView.Content);
+		var btn = Assert.IsType<Button>(View.Content);
 
 		Assert.Equal("Clicked 1 time", btn.Text);
 	}
@@ -34,11 +38,7 @@ public class CounterViewTests : VisualElementTests
 	[Fact]
 	public void FakeTappingButtonUpdatesButtonText()
 	{
-		var counterView = new CounterView();
-		var vm = new CounterViewModel();
-		counterView.BindingContext = vm;
-
-		var btn = Assert.IsType<Button>(counterView.Content);
+		var btn = Assert.IsType<Button>(View.Content);
 		
 		// trigger a fake click using internal APIs
 		btn.SendClicked();

@@ -4,14 +4,10 @@ namespace DeviceTestingKitApp;
 
 public partial class MainPage : ContentPage
 {
-	public MainPage(CounterViewModel counterViewModel)
+	public MainPage(MainViewModel mainViewModel)
 	{
-		Counter = counterViewModel;
+		BindingContext = mainViewModel;
 
 		InitializeComponent();
-
-		BindingContext = this;
 	}
-
-	public CounterViewModel Counter { get; }
 }

@@ -26,10 +26,11 @@ public static class MauiProgram
 		builder.Services.AddTransient<MainPage>();
 
 		// maui class library
-		builder.Services.AddTransient<ISemanticAnnouncer, MauiSemanticAnnouncer>();
 		builder.Services.AddTransient<ISemanticScreenReader>(_ => SemanticScreenReader.Default);
+		builder.Services.AddTransient<ISemanticAnnouncer, MauiSemanticAnnouncer>();
 
 		// plain class library
+		builder.Services.AddTransient<MainViewModel>();
 		builder.Services.AddTransient<CounterViewModel>();
 
 		return builder.Build();
