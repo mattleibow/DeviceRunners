@@ -9,36 +9,30 @@ on:
 
 jobs:
 
-  windows:
-    name: Windows
-    runs-on: windows-latest
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: 
+          - name: Windows
+            os: windows-latest
+          - name: macOS
+            os: macos-14
+        configuration: 
+          - Debug
+          - Release
+    name: ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
-      run: dotnet build DeviceRunners.sln --configuration Release /bl:./artifacts/logs/msbuild-build.binlog
+      run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build-${{ matrix.configuration }}.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
       with:
-        name: Logs - Windows
-        path: ./artifacts/logs
-
-  macos:
-    name: macOS
-    runs-on: macos-14
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Build
-      run: dotnet build DeviceRunners.sln --configuration Debug /bl:./artifacts/logs/msbuild-build.binlog
-    - name: Upload Logs
-      uses: actions/upload-artifact@v1
-      if: ${{ always() }}
-      with:
-        name: Logs - macOS
+        name: Logs - ${{ matrix.platform.name }}
         path: ./artifacts/logs

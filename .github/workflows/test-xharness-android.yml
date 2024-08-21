@@ -11,6 +11,7 @@ jobs:
 
   android:
     strategy:
+      fail-fast: false
       matrix:
         platform: 
           - name: Linux
@@ -19,7 +20,7 @@ jobs:
           - name: macOS
             os: macos-13
             gpu: guest
-    name: Android (${{ matrix.platform.name}})
+    name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net8.0-android
