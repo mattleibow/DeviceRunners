@@ -78,5 +78,5 @@ jobs:
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
       with:
-        name: Test Results - Android (Linux)
+        name: Test Results - ${{ matrix.platform.name }}
         path: ./artifacts

@@ -41,5 +41,5 @@ jobs:
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
       with:
-        name: Test Results - Mac Catalyst
+        name: Test Results
         path: ./artifacts

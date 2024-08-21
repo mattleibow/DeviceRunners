@@ -45,5 +45,5 @@ jobs:
       uses: actions/upload-artifact@v1
       if: ${{ always() }}
       with:
-        name: Test Results - Windows
+        name: Test Results
         path: ./artifacts
