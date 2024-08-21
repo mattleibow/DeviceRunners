@@ -29,10 +29,10 @@ jobs:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
-      run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build-${{ matrix.configuration }}.binlog
+      run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
     - name: Upload Logs
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Logs - ${{ matrix.platform.name }}
+        name: Logs - ${{ matrix.platform.name }} (${{ matrix.configuration }})
         path: ./artifacts/logs
