@@ -62,7 +62,8 @@ Write-Host "  - Testing to see if the app is installed..."
 $appInstalls = Get-AppxPackage -Name $appIdentity
 if ($appInstalls) {
   $packageFullName = $appInstalls.PackageFullName
-  Write-Host "    App was installed '$packageFullName', uninstalling..."
+  $packageFamilyName = $appInstalls.PackageFamilyName
+  Write-Host "    App was installed '$packageFullName' ($packageFamilyName), uninstalling..."
   Remove-AppxPackage -Package $packageFullName
   Write-Host "    Uninstall complete..."
 } else {
@@ -112,7 +113,7 @@ Add-AppxPackage -Path $App
 $appInstalls = Get-AppxPackage -Name $appIdentity
 $packageFullName = $appInstalls.PackageFullName
 $packageFamilyName = $appInstalls.PackageFamilyName
-Write-Host "    Application installed: '$packageFullName'"
+Write-Host "    Application installed: '$packageFullName' ($packageFamilyName)"
 
 Write-Host "  - Preparation complete."
 
