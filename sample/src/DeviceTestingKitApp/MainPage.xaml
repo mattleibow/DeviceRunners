@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:lib="clr-namespace:DeviceTestingKitApp.ViewModels;assembly=DeviceTestingKitApp.Library"
              xmlns:mauilib="clr-namespace:DeviceTestingKitApp.Controls;assembly=DeviceTestingKitApp.MauiLibrary"
              xmlns:local="clr-namespace:DeviceTestingKitApp"
              x:Class="DeviceTestingKitApp.MainPage"
-             x:DataType="local:MainPage">
+             x:DataType="lib:MainViewModel">
 
     <ScrollView>
         <VerticalStackLayout

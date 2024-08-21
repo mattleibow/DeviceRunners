@@ -18,7 +18,7 @@ jobs:
       TEST_CONFIGURATION: Release
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Publish App
@@ -42,8 +42,8 @@ jobs:
           -TestingMode XHarness
       shell: powershell
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results - Windows
+        name: Test Results
         path: ./artifacts

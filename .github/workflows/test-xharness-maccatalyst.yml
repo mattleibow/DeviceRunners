@@ -18,7 +18,7 @@ jobs:
       TEST_CONFIGURATION: Debug
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Publish App
@@ -38,8 +38,8 @@ jobs:
           --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
           --output-directory artifacts
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results - Mac Catalyst
+        name: Test Results
         path: ./artifacts

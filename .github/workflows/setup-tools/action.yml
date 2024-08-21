@@ -11,9 +11,15 @@ runs:
     with:
       xcode-version: latest-stable
   - name: Setup .NET
-    uses: actions/setup-dotnet@v3
+    uses: actions/setup-dotnet@v4
     with:
       dotnet-version: 8.0.304
+  - name: Show .NET Info
+    shell: pwsh
+    run: dotnet new globaljson --sdk-version 8.0.304
+  - name: Show .NET Info
+    shell: pwsh
+    run: dotnet --info
   - name: Setup .NET MAUI
     if: runner.os == 'Linux'
     shell: pwsh
