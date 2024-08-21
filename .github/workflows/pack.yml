@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Package NuGets
@@ -30,12 +30,12 @@ jobs:
         
         dotnet pack --output ./artifacts/nugets --configuration Release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
     - name: Upload NuGet Artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: NuGet
         path: ./artifacts/nugets
     - name: Upload Logs
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Pack Logs - Windows
@@ -55,7 +55,7 @@ jobs:
         with:
           name: NuGet
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
           source-url: ${{ env.NUGET_URL }}

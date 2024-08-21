@@ -11,6 +11,7 @@ jobs:
 
   android:
     strategy:
+      fail-fast: false
       matrix:
         platform: 
           - name: Linux
@@ -19,7 +20,7 @@ jobs:
           - name: macOS
             os: macos-13
             gpu: guest
-    name: Android (${{ matrix.platform.name}})
+    name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net8.0-android
@@ -29,7 +30,7 @@ jobs:
       TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - uses: actions/setup-java@v4
@@ -50,7 +51,7 @@ jobs:
       run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --gpu ${{ matrix.platform.gpu }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
     - name: Publish App
       run: |
-        dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
+        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -59,18 +60,23 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
-        dotnet xharness android test \
-          --timeout="00:05:00" \
-          --launch-timeout=00:10:00 \
-          --package-name com.companyname.samplemauiapp \
-          --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-          --app sample/SampleMauiApp/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.samplemauiapp-Signed.apk \
-          --output-directory artifacts
+        for i in $(seq 1 3)
+        do
+          dotnet xharness android test \
+            --timeout="00:05:00" \
+            --launch-timeout=00:10:00 \
+            --package-name com.companyname.devicetestingkitapp.devicetests \
+            --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
+            --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+            --output-directory artifacts \
+          && code=0 && break || code=$? && sleep 15
+        done
+        exit $code
     - name: Shutdown the Emulator
       run: dotnet xharness android adb -- emu kill
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results - Android (Linux)
+        name: Test Results - ${{ matrix.platform.name }}
         path: ./artifacts
