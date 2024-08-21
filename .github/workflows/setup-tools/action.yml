@@ -12,6 +12,14 @@ runs:
       xcode-version: latest-stable
   - name: Setup .NET
     uses: actions/setup-dotnet@v3
+    if: runner.os != 'macOS'
+    with:
+      dotnet-version: 8.0.304
+  - name: Setup .NET
+    uses: actions/setup-dotnet@v3
+    if: runner.os == 'macOS'
+    env:
+      DOTNET_INSTALL_DIR: '${{ runner.temp }}/.dotnet'
     with:
       dotnet-version: 8.0.304
   - name: Show .NET Info
