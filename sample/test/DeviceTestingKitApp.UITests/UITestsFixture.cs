@@ -11,10 +11,12 @@ public class UITestsFixture : IDisposable
 	public UITestsFixture(IMessageSink diagnosticMessageSink)
 	{
 		AppiumTest = AppiumTestBuilder.Create()
-				.UseServiceAddress("127.0.0.1", 4723)
-				.AddLogger(new MessageSinkLogger(diagnosticMessageSink))
-				.AddWindowsApp("windows_msix", "com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")
-				.Build();
+			.UseServiceAddress("127.0.0.1", 4723)
+			.AddLogger(new MessageSinkLogger(diagnosticMessageSink))
+			.AddWindowsApp("windows_msix", "com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")
+			.AddAndroidApp("android", "com.companyname.devicetestingkitapp", ".MainActivity")
+			//.AddAndroidApp("android", "D:\\GitHub\\DeviceRunners\\sample\\src\\DeviceTestingKitApp\\bin\\Release\\net8.0-android\\com.companyname.devicetestingkitapp-Signed.apk")
+			.Build();
 	}
 
 	public void Dispose()
@@ -35,7 +37,6 @@ public class UITestsFixture : IDisposable
 			_diagnosticMessageSink.OnMessage(new DiagnosticMessage(message));
 	}
 }
-
 
 [CollectionDefinition(CollectionName)]
 public class UITestsCollection : ICollectionFixture<UITestsFixture>

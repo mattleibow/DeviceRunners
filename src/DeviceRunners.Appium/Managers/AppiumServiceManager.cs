@@ -24,9 +24,13 @@ public class AppiumServiceManager : IDisposable
 	{
 		_logger?.Log("Starting Appium server...");
 
+		var args = new OpenQA.Selenium.Appium.Service.Options.OptionCollector()
+			.AddArguments(new KeyValuePair<string, string>("--log-no-colors", null!));
+
 		var builder = new AppiumServiceBuilder()
 			.WithIPAddress(_options.HostAddress)
-			.UsingPort(_options.HostPort);
+			.UsingPort(_options.HostPort)
+			.WithArguments(args);
 
 		if (!string.IsNullOrEmpty(_options.LogFile))
 			builder.WithLogFile(new FileInfo(_options.LogFile));

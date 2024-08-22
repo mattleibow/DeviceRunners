@@ -8,7 +8,9 @@ public class AppiumTestBuilder
 
 	public static AppiumTestBuilder Create() => new AppiumTestBuilder();
 
-	public AppiumTestBuilder UseServiceAddress(string hostAddress = AppiumServiceManagerOptions.DefaultHostAddress, int port = AppiumServiceManagerOptions.DefaultHostPort)
+	public AppiumTestBuilder UseServiceAddress(
+		string hostAddress = AppiumServiceManagerOptions.DefaultHostAddress,
+		int port = AppiumServiceManagerOptions.DefaultHostPort)
 	{
 		_serviceOptions.HostAddress = hostAddress;
 		_serviceOptions.HostPort = port;

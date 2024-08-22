@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\..\src\DeviceRunners.Appium\DeviceRunners.Appium.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" Exclude="$(MSBuildThisFileDirectory)bin\**;$(MSBuildThisFileDirectory)obj\**" />
   </ItemGroup>
 

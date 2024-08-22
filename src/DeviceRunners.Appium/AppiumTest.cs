@@ -10,7 +10,7 @@ public class AppiumTest : IDisposable
 
 	private readonly ConcurrentDictionary<string, AppiumTestApp> _apps = new();
 
-	bool disposed;
+	bool _disposed;
 
 	public AppiumTest(AppiumServiceManagerOptions serviceOptions, IReadOnlyDictionary<string, AppiumDriverManagerOptions> driverOptions, IAppiumDiagnosticLogger logger)
 	{
@@ -23,7 +23,7 @@ public class AppiumTest : IDisposable
 	{
 		get
 		{
-			ObjectDisposedException.ThrowIf(disposed, typeof(AppiumTest));
+			ObjectDisposedException.ThrowIf(_disposed, typeof(AppiumTest));
 
 			return _serviceManager;
 		}
@@ -31,7 +31,7 @@ public class AppiumTest : IDisposable
 
 	public AppiumTestApp GetApp(string appKey, bool restartDriver = true)
 	{
-		ObjectDisposedException.ThrowIf(disposed, typeof(AppiumTest));
+		ObjectDisposedException.ThrowIf(_disposed, typeof(AppiumTest));
 
 		return _apps.AddOrUpdate(
 			appKey,
@@ -46,10 +46,10 @@ public class AppiumTest : IDisposable
 
 	public void Dispose()
 	{
-		if (disposed)
+		if (_disposed)
 			return;
 
-		disposed = true;
+		_disposed = true;
 
 		foreach (var app in _apps.Values)
 		{
