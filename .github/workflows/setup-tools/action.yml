@@ -15,15 +15,6 @@ runs:
     if: runner.os == 'Windows'
     with:
       dotnet-version: 8.0.x
-  - name: Setup .NET
-    uses: actions/setup-dotnet@v4
-    if: runner.os != 'Windows'
-    with:
-      dotnet-version: 8.0.304
-  - name: Force .NET version
-    if: runner.os != 'Windows'
-    shell: pwsh
-    run: dotnet new globaljson --sdk-version 8.0.304
   - name: Show .NET Info
     shell: pwsh
     run: dotnet --info
