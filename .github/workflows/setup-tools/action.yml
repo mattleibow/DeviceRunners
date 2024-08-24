@@ -12,7 +12,6 @@ runs:
       xcode-version: latest-stable
   - name: Setup .NET
     uses: actions/setup-dotnet@v4
-    if: runner.os == 'Windows'
     with:
       dotnet-version: 8.0.x
   - name: Show .NET Info
