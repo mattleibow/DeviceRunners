@@ -1,4 +1,5 @@
-﻿using DeviceRunners.Appium;
+﻿using DeviceRunners.UIAutomation;
+using DeviceRunners.UIAutomation.Appium;
 
 using Xunit;
 using Xunit.Abstractions;
@@ -10,21 +11,28 @@ public class UITestsFixture : IDisposable
 {
 	public UITestsFixture(IMessageSink diagnosticMessageSink)
 	{
-		AppiumTest = AppiumTestBuilder.Create()
-			.UseServiceAddress("127.0.0.1", 4723)
-			.AddLogger(new MessageSinkLogger(diagnosticMessageSink))
-			.AddWindowsApp("windows_msix", "com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")
-			.AddAndroidApp("android", "com.companyname.devicetestingkitapp", ".MainActivity")
-			//.AddAndroidApp("android", "D:\\GitHub\\DeviceRunners\\sample\\src\\DeviceTestingKitApp\\bin\\Release\\net8.0-android\\com.companyname.devicetestingkitapp-Signed.apk")
-			.Build();
+		var builder = AutomationTestSuiteBuilder.Create()
+			.AddAppium(options => options
+				.UseServiceAddress("127.0.0.1", 4723)
+				.AddLogger(new MessageSinkLogger(diagnosticMessageSink))
+				.AddAndroidApp("android", options => options
+					.UsePackageName("com.companyname.devicetestingkitapp")
+					.UseActivityName(".MainActivity"))
+				.AddWindowsApp("windows", options => options
+					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")))
+			;
+			//.AddSelenium(options => options
+			//	.AddWebApp("https://dot.net/"));
+
+		TestSuite = builder.Build();
 	}
 
 	public void Dispose()
 	{
-		AppiumTest.Dispose();
+		TestSuite.Dispose();
 	}
 
-	public AppiumTest AppiumTest { get; private set; }
+	public AutomationTestSuite TestSuite { get; private set; }
 
 	class MessageSinkLogger : IAppiumDiagnosticLogger
 	{

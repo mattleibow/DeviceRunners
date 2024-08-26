@@ -1,4 +1,4 @@
-﻿using DeviceRunners.Appium;
+﻿using DeviceRunners.UIAutomation.Appium;
 
 using OpenQA.Selenium.Appium.Enums;
 
