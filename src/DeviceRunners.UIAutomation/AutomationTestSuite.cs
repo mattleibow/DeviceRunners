@@ -6,6 +6,7 @@ public class AutomationTestSuite : IDisposable
 {
 	private readonly IReadOnlyList<IAutomationFramework> _automationFrameworks;
 	private readonly IReadOnlyDictionary<string, AvailableApp> _availableApps;
+	private readonly IReadOnlyList<string> _availableAppKeys;
 	private readonly ConcurrentDictionary<string, InstantiatedApp> _instantiatedApps = new();
 	private bool _disposed;
 
@@ -17,6 +18,7 @@ public class AutomationTestSuite : IDisposable
 	{
 		_automationFrameworks = automationFrameworks;
 		_availableApps = CollectAvailableApps();
+		_availableAppKeys = _availableApps.Keys.ToList();
 	}
 
 	public IAutomatedApp GetApp(string appKey) =>
@@ -27,16 +29,25 @@ public class AutomationTestSuite : IDisposable
 
 	public void StopApp(string appKey)
 	{
-		if (_instantiatedApps.TryGetValue(appKey, out var instantiatedApp))
+		if (_instantiatedApps.TryRemove(appKey, out var instantiatedApp))
 			instantiatedApp.Framework.StopApp(instantiatedApp.App);
 	}
 
 	public IAutomatedApp RestartApp(string appKey) =>
 		GetApp(appKey, true, true);
 
+	public IReadOnlyCollection<IAutomationFramework> Frameworks => _automationFrameworks;
+
+	public IReadOnlyCollection<string> AvailableApps => _availableAppKeys;
+
+	public IReadOnlyCollection<string> InstantiatedApps => [.. _instantiatedApps.Keys];
+
 	private IAutomatedApp GetApp(string appKey, bool start, bool restart)
 	{
 		ObjectDisposedException.ThrowIf(_disposed, typeof(AutomationTestSuite));
+
+		if (!_availableAppKeys.Contains(appKey))
+			throw new KeyNotFoundException($"App with key '{appKey}' was not found.");
 
 		var instantiatedApp = _instantiatedApps.AddOrUpdate(
 			appKey,
@@ -44,7 +55,7 @@ public class AutomationTestSuite : IDisposable
 			{
 				if (!_availableApps.TryGetValue(appKey, out var appOptions))
 					throw new KeyNotFoundException($"App with key '{appKey}' was not found.");
-				
+
 				var framework = appOptions.Framework;
 				var app = framework.CreateApp(appOptions.Options);
 
@@ -60,7 +71,7 @@ public class AutomationTestSuite : IDisposable
 
 				if (restart)
 					framework.RestartApp(app);
-				
+
 				return instantiated;
 			});
 
@@ -74,10 +85,10 @@ public class AutomationTestSuite : IDisposable
 
 		_disposed = true;
 
-		// close all apps
+		// stop all apps
 		foreach (var app in _instantiatedApps.Values)
 		{
-			app.App.Dispose();
+			app.Framework.StopApp(app.App);
 		}
 		_instantiatedApps.Clear();
 

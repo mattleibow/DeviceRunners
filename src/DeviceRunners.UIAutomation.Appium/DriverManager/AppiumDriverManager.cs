@@ -38,7 +38,7 @@ public class AppiumDriverManager : IDisposable
 		_driver.Dispose();
 
 		var delta = TimeSpan.FromMilliseconds(Environment.TickCount - ticks).TotalSeconds;
-		_logger?.Log($"Driver restarted in {delta} seconds.");
+		_logger?.Log($"Driver shut down in {delta} seconds.");
 	}
 
 	public void RestartDriver()

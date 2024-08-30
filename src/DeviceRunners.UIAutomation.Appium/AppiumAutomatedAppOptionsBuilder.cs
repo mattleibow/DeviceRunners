@@ -4,7 +4,7 @@ namespace DeviceRunners.UIAutomation.Appium;
 
 public abstract class AppiumAutomatedAppOptionsBuilder : IAutomatedAppOptionsBuilder
 {
-	private readonly Stack<IAutomatedAppCommand> _commands = new();
+	private readonly List<IAutomatedAppCommand> _commands = [];
 
 	public AppiumAutomatedAppOptionsBuilder(string key)
 	{
@@ -16,8 +16,10 @@ public abstract class AppiumAutomatedAppOptionsBuilder : IAutomatedAppOptionsBui
 
 	public AppiumOptions AppiumOptions { get; } = new();
 
+	public IReadOnlyList<IAutomatedAppCommand> Commands => _commands;
+
 	void IAutomatedAppOptionsBuilder.AddCommand(IAutomatedAppCommand command) =>
-		_commands.Push(command);
+		_commands.Add(command);
 
 	public abstract AppiumAutomatedAppOptions Build();
 

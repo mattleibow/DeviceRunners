@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj" />
-    <ProjectReference Include="..\src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

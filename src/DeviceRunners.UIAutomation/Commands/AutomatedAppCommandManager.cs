@@ -1,12 +1,13 @@
 ﻿namespace DeviceRunners.UIAutomation;
 
-public class AutomatedAppCommandExecutor : IAutomatedAppCommandManager
+public class AutomatedAppCommandManager : IAutomatedAppCommandManager
 {
-	private readonly Stack<IAutomatedAppCommand> _commands = new();
+	private readonly IReadOnlyList<IAutomatedAppCommand> _commands;
 
-	public AutomatedAppCommandExecutor(IAutomatedApp app)
+	public AutomatedAppCommandManager(IAutomatedApp app, IReadOnlyList<IAutomatedAppCommand> commands)
 	{
 		App = app;
+		_commands = commands;
 	}
 
 	public IAutomatedApp App { get; }

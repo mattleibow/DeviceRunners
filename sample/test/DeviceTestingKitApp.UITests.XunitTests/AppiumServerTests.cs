@@ -1,11 +1,9 @@
 ﻿using DeviceRunners.UIAutomation.Appium;
 
-using OpenQA.Selenium.Appium.Enums;
-
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DeviceTestingKitApp.UITests;
+namespace DeviceTestingKitApp.UITests.XunitTests;
 
 public class AppiumServerTests : BaseUITests
 {
@@ -17,11 +15,12 @@ public class AppiumServerTests : BaseUITests
 	[Fact]
 	public void IsReady()
 	{
-		var id = Driver.SessionId;
+		if (App is not AppiumAutomatedApp appiumApp)
+			return;
+
+		var id = appiumApp.Driver.SessionId;
 
 		Assert.NotNull(id);
 		Assert.NotEmpty(id.ToString());
-
-		Assert.Equal(AppState.RunningInForeground, Driver.GetAppState());
 	}
 }

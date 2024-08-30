@@ -1,6 +1,6 @@
 ﻿namespace DeviceRunners.UIAutomation;
 
-public interface IAutomatedApp : IDisposable
+public interface IAutomatedApp : IContainsElements
 {
 	IAutomatedAppCommandManager Commands { get; }
 }

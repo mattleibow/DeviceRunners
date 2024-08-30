@@ -3,7 +3,7 @@
 public class AppiumGetPageSourceCommand : AutomatedAppCommand<AppiumAutomatedApp>
 {
 	public AppiumGetPageSourceCommand()
-		: base(AppiumCommandNames.GetPageSource)
+		: base(CommonCommandNames.GetPageSource)
 	{
 	}
 

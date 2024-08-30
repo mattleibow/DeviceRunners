@@ -3,7 +3,7 @@
 public class AppiumGetScreenshotCommand : AutomatedAppCommand<AppiumAutomatedApp>
 {
 	public AppiumGetScreenshotCommand()
-		: base(AppiumCommandNames.GetScreenshot)
+		: base(CommonCommandNames.GetScreenshot)
 	{
 	}
 

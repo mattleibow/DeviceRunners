@@ -1,9 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace DeviceTestingKitApp.UITests;
+namespace DeviceTestingKitApp.UITests.XunitTests;
 
 public static partial class _Config
 {
 	[ModuleInitializer]
-	public static void Run() => Current = "android";
+	public static void Run() => Current = "windows";
 }

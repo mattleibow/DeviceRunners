@@ -9,50 +9,53 @@ public class AppiumAutomatedApp : IAutomatedApp
 {
 	private readonly AppiumAutomatedAppOptions _options;
 	private readonly IAppiumDiagnosticLogger? _logger;
-	private readonly AppiumDriverManager _driverManager;
-
-	private bool _disposed;
 
 	public AppiumAutomatedApp(AppiumAutomationFramework appium, AppiumAutomatedAppOptions options, IAppiumDiagnosticLogger? logger = null)
 	{
 		Framework = appium;
 		_options = options;
 		_logger = logger;
-		_driverManager = new AppiumDriverManager(Framework.ServiceManager, _options);
-		Commands = new AutomatedAppCommandExecutor(this);
+		DriverManager = new AppiumDriverManager(Framework.ServiceManager, _options);
+		Commands = new AutomatedAppCommandManager(this, options.Commands);
 	}
 
 	public AppiumAutomationFramework Framework { get; }
 
-	public AppiumServiceManager ServiceManager
-	{
-		get
-		{
-			ObjectDisposedException.ThrowIf(_disposed, typeof(AppiumAutomatedApp));
-			return Framework.ServiceManager;
-		}
-	}
+	public AppiumServiceManager ServiceManager => Framework.ServiceManager;
 
-	public AppiumDriverManager DriverManager
-	{
-		get
-		{
-			ObjectDisposedException.ThrowIf(_disposed, typeof(AppiumAutomatedApp));
-			return _driverManager;
-		}
-	}
+	public AppiumDriverManager DriverManager { get; }
 
 	public AppiumDriver Driver => DriverManager.Driver;
 
 	public IAutomatedAppCommandManager Commands { get; }
 
-	public void Dispose()
+	public AppiumAutomatedAppElement FindElement(Action<IBy> by)
 	{
-		if (_disposed)
-			return;
+		ArgumentNullException.ThrowIfNull(by);
 
-		_disposed = true;
+		var appiumBy = _options.ByFactory.Create(this);
+		by(appiumBy);
 
-		_driverManager.Dispose();
+		var element = Driver.FindElement(appiumBy.ToBy());
+
+		return new AppiumAutomatedAppElement(this, element);
 	}
+
+	IAutomatedAppElement IContainsElements.FindElement(Action<IBy> by) =>
+		FindElement(by);
+
+	public IReadOnlyList<AppiumAutomatedAppElement> FindElements(Action<IBy> by)
+	{
+		ArgumentNullException.ThrowIfNull(by);
+
+		var appiumBy = _options.ByFactory.Create(this);
+		by(appiumBy);
+
+		var elements = Driver.FindElements(appiumBy.ToBy());
+
+		return elements.Select(e => new AppiumAutomatedAppElement(this, e)).ToList();
+	}
+
+	IReadOnlyList<IAutomatedAppElement> IContainsElements.FindElements(Action<IBy> by) =>
+		FindElements(by);
 }

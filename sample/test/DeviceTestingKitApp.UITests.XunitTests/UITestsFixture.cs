@@ -5,7 +5,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace DeviceTestingKitApp.UITests;
+namespace DeviceTestingKitApp.UITests.XunitTests;
 
 public class UITestsFixture : IDisposable
 {

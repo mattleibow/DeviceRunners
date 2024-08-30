@@ -4,6 +4,10 @@ public class AutomationTestSuiteBuilder
 {
 	private readonly List<IAutomationFramework> _automationFrameworks = [];
 
+	private AutomationTestSuiteBuilder()
+	{
+	}
+
 	public static AutomationTestSuiteBuilder Create() => new();
 
 	public AutomationTestSuiteBuilder AddAutomationFramework(IAutomationFramework framework)
@@ -21,7 +25,7 @@ public class AutomationTestSuiteBuilder
 		{
 			foreach (var app in framework.AvailableApps)
 			{
-				if (apps.Add(app.Key))
+				if (!apps.Add(app.Key))
 				{
 					throw new InvalidOperationException($"App with key '{app.Key}' is registered multiple times.");
 				}

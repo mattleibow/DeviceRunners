@@ -25,5 +25,5 @@ public class WindowsAppiumAutomatedAppOptionsBuilder : AppiumAutomatedAppOptions
 	}
 
 	public override AppiumAutomatedAppOptions Build() =>
-		new WindowsAppiumAutomatedAppOptions(Key, new WindowsAppiumDriverFactory(), AppiumOptions);
+		new WindowsAppiumAutomatedAppOptions(Key, AppiumOptions, Commands);
 }

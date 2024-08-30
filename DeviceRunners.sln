@@ -51,17 +51,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7FD9E644-B76
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EE37724C-5FEF-46BB-AD80-CD002CC7FF54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests", "sample\test\DeviceTestingKitApp.UITests\DeviceTestingKitApp.UITests.XunitTests.csproj", "{7F8A6736-38CC-42DE-A609-399FC3C7FFEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests", "sample\test\DeviceTestingKitApp.UITests.XunitTests\DeviceTestingKitApp.UITests.XunitTests.csproj", "{7F8A6736-38CC-42DE-A609-399FC3C7FFEA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Windows", "sample\test\DeviceTestingKitApp.UITests.Windows\DeviceTestingKitApp.UITests.XunitTests.Windows.csproj", "{C2A34B21-6334-4B31-9617-D1648C6B0A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Windows", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Windows\DeviceTestingKitApp.UITests.XunitTests.Windows.csproj", "{C2A34B21-6334-4B31-9617-D1648C6B0A50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Android", "sample\test\DeviceTestingKitApp.UITests.Android\DeviceTestingKitApp.UITests.XunitTests.Android.csproj", "{34618A8D-7BA5-4999-8049-3220DC63648C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Android", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Android\DeviceTestingKitApp.UITests.XunitTests.Android.csproj", "{34618A8D-7BA5-4999-8049-3220DC63648C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Appium", "src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj", "{B1A52689-AE30-4136-9502-AD2B6A6D154A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation", "src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj", "{4B514D48-D89C-457D-B2DE-F7822A7225B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTestingKitApp.UITests.NUnitTests", "DeviceTestingKitApp.UITests.NUnitTests\DeviceTestingKitApp.UITests.NUnitTests.csproj", "{03A0F40A-9234-4DCE-AC34-0A1138525DD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.NUnitTests", "sample\test\DeviceTestingKitApp.UITests.NUnitTests\DeviceTestingKitApp.UITests.NUnitTests.csproj", "{03A0F40A-9234-4DCE-AC34-0A1138525DD4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Selenium", "src\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj", "{CBF6C8E0-681A-426C-9A44-91125AB3208C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Tests", "test\DeviceRunners.UIAutomation.Tests\DeviceRunners.UIAutomation.Tests.csproj", "{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Appium.Tests", "test\DeviceRunners.UIAutomation.Appium.Tests\DeviceRunners.UIAutomation.Appium.Tests.csproj", "{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -173,6 +179,18 @@ Global
 		{03A0F40A-9234-4DCE-AC34-0A1138525DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03A0F40A-9234-4DCE-AC34-0A1138525DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03A0F40A-9234-4DCE-AC34-0A1138525DD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBF6C8E0-681A-426C-9A44-91125AB3208C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBF6C8E0-681A-426C-9A44-91125AB3208C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBF6C8E0-681A-426C-9A44-91125AB3208C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBF6C8E0-681A-426C-9A44-91125AB3208C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -205,6 +223,9 @@ Global
 		{B1A52689-AE30-4136-9502-AD2B6A6D154A} = {DBF1C119-C96C-4DD3-810B-52451603475C}
 		{4B514D48-D89C-457D-B2DE-F7822A7225B9} = {DBF1C119-C96C-4DD3-810B-52451603475C}
 		{03A0F40A-9234-4DCE-AC34-0A1138525DD4} = {EE37724C-5FEF-46BB-AD80-CD002CC7FF54}
+		{CBF6C8E0-681A-426C-9A44-91125AB3208C} = {DBF1C119-C96C-4DD3-810B-52451603475C}
+		{7A1A6BC4-CDAF-4A5F-8CAD-85E387F7B64F} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
+		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2DABD41C-B083-429E-AE1E-971CFF8DC199}

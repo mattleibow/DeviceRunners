@@ -3,7 +3,7 @@
 public class AndroidAppiumDismissKeyboardCommand : AutomatedAppCommand<AppiumAutomatedApp>
 {
 	public AndroidAppiumDismissKeyboardCommand()
-		: base(AppiumCommandNames.DismissKeyboard)
+		: base(AppiumCommonCommandNames.DismissKeyboard)
 	{
 	}
 

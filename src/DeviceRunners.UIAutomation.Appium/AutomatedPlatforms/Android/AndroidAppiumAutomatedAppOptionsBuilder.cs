@@ -31,5 +31,5 @@ public class AndroidAppiumAutomatedAppOptionsBuilder : AppiumAutomatedAppOptions
 	}
 
 	public override AppiumAutomatedAppOptions Build() =>
-		new AndroidAppiumAutomatedAppOptions(Key, new AndroidAppiumDriverFactory(), AppiumOptions);
+		new AndroidAppiumAutomatedAppOptions(Key, AppiumOptions, Commands);
 }

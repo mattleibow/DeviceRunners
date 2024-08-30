@@ -1,4 +1,4 @@
-﻿namespace DeviceTestingKitApp.UITests;
+﻿namespace DeviceTestingKitApp.UITests.XunitTests;
 
 /// <summary>
 /// xUnit does not support parameterized tests yet, so we have to use multiple

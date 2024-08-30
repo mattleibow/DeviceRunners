@@ -7,7 +7,7 @@
     <IsPackable>false</IsPackable>
     <IsXunitTestProject>true</IsXunitTestProject>
     <IsTestProject>true</IsTestProject>
-    <RootNamespace>DeviceTestingKitApp.UITests</RootNamespace>
+    <RootNamespace>DeviceTestingKitApp.UITests.XunitTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
