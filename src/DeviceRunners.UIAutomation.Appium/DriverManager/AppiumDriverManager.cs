@@ -8,7 +8,7 @@ public class AppiumDriverManager : IDisposable
 	private readonly AppiumServiceManager _appium;
 	private readonly IAppiumDiagnosticLogger? _logger;
 
-	private AppiumDriver _driver = null!;
+	private AppiumDriver? _driver;
 
 	public AppiumDriverManager(AppiumServiceManager appium, AppiumAutomatedAppOptions options, IAppiumDiagnosticLogger? logger = null)
 	{
@@ -17,7 +17,9 @@ public class AppiumDriverManager : IDisposable
 		_logger = logger;
 	}
 
-	public AppiumDriver Driver => _driver;
+	public AppiumDriver? Driver => _driver;
+
+	public bool IsRunning => Driver?.SessionId is not null;
 
 	public void StartDriver()
 	{
@@ -35,7 +37,7 @@ public class AppiumDriverManager : IDisposable
 		_logger?.Log("Driver shutting down...");
 		var ticks = Environment.TickCount;
 
-		_driver.Dispose();
+		_driver?.Dispose();
 
 		var delta = TimeSpan.FromMilliseconds(Environment.TickCount - ticks).TotalSeconds;
 		_logger?.Log($"Driver shut down in {delta} seconds.");

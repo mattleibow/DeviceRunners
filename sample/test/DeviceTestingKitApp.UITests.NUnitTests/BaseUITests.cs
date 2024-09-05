@@ -1,7 +1,6 @@
 ﻿using System.Xml.Linq;
 
 using DeviceRunners.UIAutomation;
-using DeviceRunners.UIAutomation.Appium;
 
 using NUnit.Framework.Internal;
 
@@ -9,6 +8,7 @@ namespace DeviceTestingKitApp.UITests.NUnitTests;
 
 [TestFixture("android")]
 [TestFixture("windows")]
+[TestFixture("web")]
 [Parallelizable(ParallelScope.All)]
 public abstract class BaseUITests
 {
@@ -31,15 +31,13 @@ public abstract class BaseUITests
 	{
 		_automationTestSuite = UITestsSetupFixture.TestSuite;
 		_app = _automationTestSuite.StartApp(_testKey);
-
-		//DeviceBy = new UITestsDeviceBy(Driver);
 	}
 
 	[TearDown]
 	public void TearDown()
 	{
 		if (App?.GetPageSource() is string source && !string.IsNullOrWhiteSpace(source))
-			Output.WriteLine($"Last page source:{Environment.NewLine}{XDocument.Parse(source)}");
+			Output.WriteLine($"Last page source:{Environment.NewLine}{source}");
 		else
 			Output.WriteLine("Page source is empty");
 
@@ -50,16 +48,4 @@ public abstract class BaseUITests
 
 		_automationTestSuite.StopApp(_testKey);
 	}
-
-	//protected UITestsDeviceBy DeviceBy { get; }
-
-	//protected class UITestsDeviceBy(AppiumDriver driver)
-	//{
-	//	public By AutomationId(string id) =>
-	//		driver switch
-	//		{
-	//			WindowsDriver => MobileBy.AccessibilityId(id),
-	//			_ => MobileBy.Id(id)
-	//		};
-	//}
 }

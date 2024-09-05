@@ -21,6 +21,10 @@ public class AppiumServiceManager : IDisposable
 
 	public AppiumLocalService Service => _appiumService;
 
+	public bool IsRunning => Service.IsRunning;
+
+	public Uri ServiceUrl => Service.ServiceUrl;
+
 	private AppiumLocalService BuildAppiumServer()
 	{
 		_logger?.Log("Starting Appium server...");
@@ -30,8 +34,12 @@ public class AppiumServiceManager : IDisposable
 
 		var builder = new AppiumServiceBuilder()
 			.WithIPAddress(_options.HostAddress)
-			.UsingPort(_options.HostPort)
 			.WithArguments(args);
+
+		if (_options.HostPort <= 0)
+			builder.UsingAnyFreePort();
+		else
+			builder.UsingPort(_options.HostPort);
 
 		if (!string.IsNullOrEmpty(_options.LogFile))
 			builder.WithLogFile(new FileInfo(_options.LogFile));

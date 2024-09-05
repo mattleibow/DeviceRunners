@@ -4,8 +4,8 @@ namespace DeviceRunners.UIAutomation.Appium;
 
 public class WindowsAppiumAutomatedAppOptions : AppiumAutomatedAppOptions
 {
-	public WindowsAppiumAutomatedAppOptions(string key, AppiumOptions appiumOptions, IReadOnlyList<IAutomatedAppCommand> commands)
-		: base(key, new WindowsAppiumDriverFactory(), new WindowsAppiumByFactory(), appiumOptions, commands)
+	public WindowsAppiumAutomatedAppOptions(string key, AppiumOptions driverOptions, IReadOnlyList<IAutomatedAppCommand> commands)
+		: base(key, driverOptions, new WindowsAppiumDriverFactory(), new WindowsAppiumByFactory(), commands)
 	{
 	}
 }

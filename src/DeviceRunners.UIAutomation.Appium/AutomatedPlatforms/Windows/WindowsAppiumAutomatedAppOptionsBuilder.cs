@@ -7,23 +7,23 @@ public class WindowsAppiumAutomatedAppOptionsBuilder : AppiumAutomatedAppOptions
 	public WindowsAppiumAutomatedAppOptionsBuilder(string key)
 		: base(key)
 	{
-		AppiumOptions.AutomationName = "windows";
-		AppiumOptions.PlatformName = "Windows";
-		AppiumOptions.DeviceName = "WindowsPC";
+		DriverOptions.AutomationName = "windows";
+		DriverOptions.PlatformName = "Windows";
+		DriverOptions.DeviceName = "WindowsPC";
 	}
 
 	public WindowsAppiumAutomatedAppOptionsBuilder UseAppId(string appId)
 	{
-		AppiumOptions.App = appId;
+		DriverOptions.App = appId;
 		return this;
 	}
 
 	public WindowsAppiumAutomatedAppOptionsBuilder UseExecutablePath(string executablePath)
 	{
-		AppiumOptions.App = executablePath;
+		DriverOptions.App = executablePath;
 		return this;
 	}
 
 	public override AppiumAutomatedAppOptions Build() =>
-		new WindowsAppiumAutomatedAppOptions(Key, AppiumOptions, Commands);
+		new WindowsAppiumAutomatedAppOptions(Key, DriverOptions, Commands);
 }

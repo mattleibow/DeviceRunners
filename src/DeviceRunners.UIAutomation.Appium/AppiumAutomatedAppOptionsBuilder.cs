@@ -14,7 +14,7 @@ public abstract class AppiumAutomatedAppOptionsBuilder : IAutomatedAppOptionsBui
 
 	public string Key { get; }
 
-	public AppiumOptions AppiumOptions { get; } = new();
+	public AppiumOptions DriverOptions { get; } = new();
 
 	public IReadOnlyList<IAutomatedAppCommand> Commands => _commands;
 

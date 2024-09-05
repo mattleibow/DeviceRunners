@@ -1,5 +1,6 @@
 ﻿using DeviceRunners.UIAutomation;
 using DeviceRunners.UIAutomation.Appium;
+using DeviceRunners.UIAutomation.Selenium;
 
 using NUnit.Framework.Internal;
 
@@ -12,7 +13,7 @@ public class UITestsSetupFixture
 	public void OneTimeSetUp()
 	{
 		var builder = AutomationTestSuiteBuilder.Create()
-			.AddAppium(options => options
+			.AddAppium(appium => appium
 				.UseServiceAddress("127.0.0.1", 4723)
 				.AddLogger(new TestContextLogger())
 				.AddAndroidApp("android", options => options
@@ -20,9 +21,9 @@ public class UITestsSetupFixture
 					.UseActivityName(".MainActivity"))
 				.AddWindowsApp("windows", options => options
 					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")))
-			;
-		//.AddSelenium(options => options
-		//	.AddWebApp("https://dot.net/"));
+			.AddSelenium(selenium => selenium
+				.AddMicrosoftEdge("web", options => options
+					.UseInitialUrl("https://localhost:7096/")));
 
 		TestSuite = builder.Build();
 	}

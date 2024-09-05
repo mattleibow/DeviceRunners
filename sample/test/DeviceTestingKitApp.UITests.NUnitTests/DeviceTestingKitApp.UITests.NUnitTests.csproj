@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
   </ItemGroup>
 

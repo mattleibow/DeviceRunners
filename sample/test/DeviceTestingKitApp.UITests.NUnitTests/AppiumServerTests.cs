@@ -1,3 +1,5 @@
+using DeviceRunners.UIAutomation.Appium;
+
 using NUnit.Framework.Internal;
 
 namespace DeviceTestingKitApp.UITests.NUnitTests;
@@ -12,13 +14,12 @@ public class AppiumServerTests : BaseUITests
 	[Test]
 	public void IsReady()
 	{
-		//var id = Driver.SessionId;
+		if (App is not AppiumAutomatedApp appiumApp)
+			return;
 
-		//Assert.NotNull(id);
-		//Assert.NotEmpty(id.ToString());
+		var id = appiumApp.Driver.SessionId;
 
-		//Assert.Equal(AppState.RunningInForeground, Driver.GetAppState());
-
-		Assert.Pass();
+		Assert.That(id, Is.Not.Null);
+		Assert.That(id.ToString(), Is.Not.Empty);
 	}
 }

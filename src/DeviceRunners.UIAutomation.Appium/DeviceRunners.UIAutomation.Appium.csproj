@@ -6,11 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.6" />
+    <PackageReference Include="Appium.WebDriver" Version="5.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
+    <!-- <ProjectReference Include="..\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj" /> -->
   </ItemGroup>
 
 </Project>

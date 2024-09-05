@@ -6,5 +6,5 @@ namespace DeviceRunners.UIAutomation.Appium;
 public class WindowsAppiumDriverFactory : IAppiumDriverFactory
 {
 	public AppiumDriver CreateDriver(AppiumServiceManager appium, AppiumAutomatedAppOptions options) =>
-		new WindowsDriver(appium.Service.ServiceUrl, options.AppiumOptions);
+		new WindowsDriver(appium.Service.ServiceUrl, options.DriverOptions);
 }
