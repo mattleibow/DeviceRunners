@@ -15,7 +15,10 @@ public class AppiumServerTests : BaseUITests
 	public void IsReady()
 	{
 		if (App is not AppiumAutomatedApp appiumApp)
+		{
+			Assert.Ignore("App was not an Appium app.");
 			return;
+		}
 
 		var id = appiumApp.Driver.SessionId;
 

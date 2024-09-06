@@ -9,7 +9,7 @@ namespace DeviceTestingKitApp.UITests.NUnitTests;
 [TestFixture("android")]
 [TestFixture("windows")]
 [TestFixture("web")]
-[Parallelizable(ParallelScope.All)]
+[Parallelizable(ParallelScope.Fixtures)]
 public abstract class BaseUITests
 {
 	private readonly string _testKey;
@@ -37,7 +37,7 @@ public abstract class BaseUITests
 	public void TearDown()
 	{
 		if (App?.GetPageSource() is string source && !string.IsNullOrWhiteSpace(source))
-			Output.WriteLine($"Last page source:{Environment.NewLine}{source}");
+			Output.WriteLine($"Last page source:{Environment.NewLine}{FormatXml(source)}");
 		else
 			Output.WriteLine("Page source is empty");
 
@@ -47,5 +47,17 @@ public abstract class BaseUITests
 			Output.WriteLine("No screenshot available");
 
 		_automationTestSuite.StopApp(_testKey);
+	}
+
+	private static string FormatXml(string maybeXml)
+	{
+		try
+		{
+			return XDocument.Parse(maybeXml).ToString(SaveOptions.None);
+		}
+		catch
+		{
+			return maybeXml;
+		}
 	}
 }

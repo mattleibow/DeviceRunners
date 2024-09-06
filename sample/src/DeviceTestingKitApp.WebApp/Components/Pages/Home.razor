@@ -5,13 +5,17 @@
 
 <h1>Home</h1>
 
-<img src="https://raw.githubusercontent.com/mattleibow/DeviceRunners/main/sample/src/DeviceTestingKitApp/Resources/Images/dotnet_bot.png" alt="dot net bot in a race car number eight" />
+<img src="https://raw.githubusercontent.com/mattleibow/DeviceRunners/main/sample/src/DeviceTestingKitApp/Resources/Images/dotnet_bot.png"
+     alt="dot net bot in a race car number eight"
+     style="width: 300px"/>
 
 <p>Hello, World</p>
 
 <p>Welcome to <br />.NET Blazor</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount" title="Counts the number of times you click">@message</button>
+<button id="CounterButton" 
+        class="btn btn-primary" @onclick="IncrementCount"
+        title="Counts the number of times you click">@message</button>
 
 @code {
     private int currentCount = 0;
