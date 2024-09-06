@@ -31,7 +31,7 @@ public abstract class BaseUITests : IDisposable
 	public void Dispose()
 	{
 		if (App?.GetPageSource() is string source && !string.IsNullOrWhiteSpace(source))
-			Output.WriteLine($"Last page source:{Environment.NewLine}{XDocument.Parse(source)}");
+			Output.WriteLine($"Last page source:{Environment.NewLine}{FormatXml(source)}");
 		else
 			Output.WriteLine("Page source is empty");
 
@@ -41,6 +41,18 @@ public abstract class BaseUITests : IDisposable
 			Output.WriteLine("No screenshot available");
 
 		_automationTestSuite.StopApp(_Config.Current);
+	}
+
+	private static string FormatXml(string maybeXml)
+	{
+		try
+		{
+			return XDocument.Parse(maybeXml).ToString(SaveOptions.None);
+		}
+		catch
+		{
+			return maybeXml;
+		}
 	}
 
 	[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "test")]

@@ -73,6 +73,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceTestingKitApp.WebApp", "sample\src\DeviceTestingKitApp.WebApp\DeviceTestingKitApp.WebApp.csproj", "{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Web", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Web\DeviceTestingKitApp.UITests.XunitTests.Web.csproj", "{5F75C9B7-3838-4045-B7BD-963B338B14FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -203,6 +205,10 @@ Global
 		{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F75C9B7-3838-4045-B7BD-963B338B14FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F75C9B7-3838-4045-B7BD-963B338B14FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F75C9B7-3838-4045-B7BD-963B338B14FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F75C9B7-3838-4045-B7BD-963B338B14FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -240,6 +246,7 @@ Global
 		{5C4E5D7E-B768-4C68-A94A-27EFEE9E20E1} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
 		{21884F7C-DA99-4359-9D3B-93399046FF9B} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
 		{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4} = {7FD9E644-B760-47D7-A4FC-61199AFE9D62}
+		{5F75C9B7-3838-4045-B7BD-963B338B14FD} = {EE37724C-5FEF-46BB-AD80-CD002CC7FF54}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2DABD41C-B083-429E-AE1E-971CFF8DC199}

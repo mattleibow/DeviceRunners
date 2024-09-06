@@ -12,11 +12,14 @@ public class AppiumServerTests : BaseUITests
 	{
 	}
 
-	[Fact]
+	[SkippableFact]
 	public void IsReady()
 	{
 		if (App is not AppiumAutomatedApp appiumApp)
+		{
+			Skip.If(true, "App was not an Appium app.");
 			return;
+		}
 
 		var id = appiumApp.Driver.SessionId;
 

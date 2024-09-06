@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.core" Version="2.6.6" ExcludeAssets="build;buildTransitive" />
+    <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj" />
   </ItemGroup>
 
 </Project>
