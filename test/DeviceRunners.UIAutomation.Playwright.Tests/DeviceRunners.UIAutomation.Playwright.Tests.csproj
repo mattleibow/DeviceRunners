@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>UIAutomationPlaywrightTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.5" PrivateAssets="all" />
+    <PackageReference Include="coverlet.collector" Version="6.0.1" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UIAutomation.Playwright\DeviceRunners.UIAutomation.Playwright.csproj" />
+  </ItemGroup>
+
+</Project>

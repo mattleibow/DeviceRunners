@@ -29,7 +29,7 @@ public class SeleniumDriverManager : IDisposable
 
 		_logger?.Log($"Driver started in {delta} seconds.");
 
-		if (_options.TryGetInitialUrl(out var initialUrl))
+		if (_options.DriverOptions.TryGetInitialUrl(out var initialUrl))
 		{
 			_logger?.Log($"Navigating to initial URL '{initialUrl}'...");
 
