@@ -1,5 +1,6 @@
 ﻿using DeviceRunners.UIAutomation;
 using DeviceRunners.UIAutomation.Appium;
+using DeviceRunners.UIAutomation.Playwright;
 using DeviceRunners.UIAutomation.Selenium;
 
 using NUnit.Framework.Internal;
@@ -23,6 +24,9 @@ public class UITestsSetupFixture
 					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")))
 			.AddSelenium(selenium => selenium
 				.AddMicrosoftEdge("web", options => options
+					.UseInitialUrl("https://localhost:7096/")))
+			.AddPlaywright(playwright => playwright
+				.AddMicrosoftEdge("web_playwright", options => options
 					.UseInitialUrl("https://localhost:7096/")));
 
 		TestSuite = builder.Build();

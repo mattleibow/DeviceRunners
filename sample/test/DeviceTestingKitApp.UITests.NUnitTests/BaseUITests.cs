@@ -9,6 +9,7 @@ namespace DeviceTestingKitApp.UITests.NUnitTests;
 [TestFixture("android")]
 [TestFixture("windows")]
 [TestFixture("web")]
+[TestFixture("web_playwright")]
 [Parallelizable(ParallelScope.Fixtures)]
 public abstract class BaseUITests
 {

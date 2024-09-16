@@ -18,7 +18,7 @@ public class PlaywrightServerTests
 		using var playwright = await Playwright.CreateAsync();
 
 		await using var browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Channel = "msedge" });
-		
+
 		var page = await browser.NewPageAsync();
 		
 		await page.GotoAsync("https://playwright.dev/dotnet");

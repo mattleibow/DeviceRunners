@@ -1,17 +1,18 @@
-﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Interactions;
+﻿using OpenQA.Selenium.Interactions;
 
 namespace DeviceRunners.UIAutomation.Selenium;
 
-public class SeleniumClickCoordinatesCommand : SeleniumElementCommand
+public class SeleniumClickCoordinatesCommand : AutomatedAppCommand<SeleniumAutomatedApp>
 {
 	public SeleniumClickCoordinatesCommand()
 		: base(CommonCommandNames.ClickCoordinates)
 	{
 	}
 
-	public override object? Execute(SeleniumAutomatedApp app, WebElement seleniumElement, IReadOnlyDictionary<string, object> parameters)
+	public override object? Execute(SeleniumAutomatedApp app, IReadOnlyDictionary<string, object>? parameters = null)
 	{
+		if (parameters is null)
+			throw new ArgumentException("No coordinates found in parameters", nameof(parameters));
 		if (!parameters.TryGetValue("x", out var x))
 			throw new ArgumentException("X coordinate not found in parameters", nameof(parameters));
 		if (!parameters.TryGetValue("y", out var y))

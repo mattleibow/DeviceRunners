@@ -6,15 +6,17 @@ using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevic
 
 namespace DeviceRunners.UIAutomation.Appium;
 
-public class AppiumClickCoordinatesCommand : AppiumElementCommand
+public class AppiumClickCoordinatesCommand : AutomatedAppCommand<AppiumAutomatedApp>
 {
 	public AppiumClickCoordinatesCommand()
 		: base(CommonCommandNames.ClickCoordinates)
 	{
 	}
 
-	public override object? Execute(AppiumAutomatedApp app, AppiumElement appiumElement, IReadOnlyDictionary<string, object> parameters)
+	public override object? Execute(AppiumAutomatedApp app, IReadOnlyDictionary<string, object>? parameters = null)
 	{
+		if (parameters is null)
+			throw new ArgumentException("No coordinates found in parameters", nameof(parameters));
 		if (!parameters.TryGetValue("x", out var x))
 			throw new ArgumentException("X coordinate not found in parameters", nameof(parameters));
 		if (!parameters.TryGetValue("y", out var y))
