@@ -4,7 +4,7 @@ using Xunit.Abstractions;
 
 namespace UIAutomationPlaywrightTests;
 
-public class XunitPlaywrightDiagnosticLogger : IPlaywrightDiagnosticLogger
+public class XunitPlaywrightDiagnosticLogger : IDiagnosticLogger
 {
 	private readonly ITestOutputHelper _output;
 

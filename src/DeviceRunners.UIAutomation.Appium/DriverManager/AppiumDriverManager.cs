@@ -6,11 +6,11 @@ public class AppiumDriverManager : IDisposable
 {
 	private readonly AppiumAutomatedAppOptions _options;
 	private readonly AppiumServiceManager _appium;
-	private readonly IAppiumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
 	private AppiumDriver? _driver;
 
-	public AppiumDriverManager(AppiumServiceManager appium, AppiumAutomatedAppOptions options, IAppiumDiagnosticLogger? logger = null)
+	public AppiumDriverManager(AppiumServiceManager appium, AppiumAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		_appium = appium;
 		_options = options;

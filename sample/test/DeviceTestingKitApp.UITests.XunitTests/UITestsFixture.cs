@@ -35,7 +35,7 @@ public class UITestsFixture : IDisposable
 
 	public AutomationTestSuite TestSuite { get; private set; }
 
-	class MessageSinkLogger : IAppiumDiagnosticLogger
+	class MessageSinkLogger : IDiagnosticLogger
 	{
 		private readonly IMessageSink _diagnosticMessageSink;
 

@@ -8,9 +8,9 @@ namespace DeviceRunners.UIAutomation.Selenium;
 public class SeleniumAutomatedApp : IAutomatedApp
 {
 	private readonly SeleniumAutomatedAppOptions _options;
-	private readonly ISeleniumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
-	public SeleniumAutomatedApp(SeleniumAutomationFramework selenium, SeleniumAutomatedAppOptions options, ISeleniumDiagnosticLogger? logger = null)
+	public SeleniumAutomatedApp(SeleniumAutomationFramework selenium, SeleniumAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		Framework = selenium;
 		_options = options;

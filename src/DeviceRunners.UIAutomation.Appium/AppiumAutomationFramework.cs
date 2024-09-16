@@ -7,11 +7,11 @@ public class AppiumAutomationFramework : IAutomationFramework
 {
 	private readonly AppiumServiceManagerOptions _options;
 	private readonly IReadOnlyList<AppiumAutomatedAppOptions> _apps;
-	private readonly IAppiumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 	private AppiumServiceManager? _serviceManager;
 	private bool _disposed;
 
-	public AppiumAutomationFramework(AppiumServiceManagerOptions options, IEnumerable<AppiumAutomatedAppOptions> apps, IAppiumDiagnosticLogger? logger = null)
+	public AppiumAutomationFramework(AppiumServiceManagerOptions options, IEnumerable<AppiumAutomatedAppOptions> apps, IDiagnosticLogger? logger = null)
 	{
 		_options = options;
 		_apps = apps.ToList();

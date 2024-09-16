@@ -5,11 +5,11 @@ namespace DeviceRunners.UIAutomation.Selenium;
 public class SeleniumDriverManager : IDisposable
 {
 	private readonly SeleniumAutomatedAppOptions _options;
-	private readonly ISeleniumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
 	private WebDriver? _driver;
 
-	public SeleniumDriverManager(SeleniumAutomatedAppOptions options, ISeleniumDiagnosticLogger? logger = null)
+	public SeleniumDriverManager(SeleniumAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		_options = options;
 		_logger = logger;

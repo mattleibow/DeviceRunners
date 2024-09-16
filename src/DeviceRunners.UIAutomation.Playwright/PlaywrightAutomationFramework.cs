@@ -7,11 +7,11 @@ public class PlaywrightAutomationFramework : IAutomationFramework
 {
 	private readonly PlaywrightServiceManagerOptions _options;
 	private readonly IReadOnlyList<PlaywrightAutomatedAppOptions> _apps;
-	private readonly IPlaywrightDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 	private PlaywrightServiceManager? _serviceManager;
 	private bool _disposed;
 
-	public PlaywrightAutomationFramework(PlaywrightServiceManagerOptions options, IEnumerable<PlaywrightAutomatedAppOptions> apps, IPlaywrightDiagnosticLogger? logger = null)
+	public PlaywrightAutomationFramework(PlaywrightServiceManagerOptions options, IEnumerable<PlaywrightAutomatedAppOptions> apps, IDiagnosticLogger? logger = null)
 	{
 		_options = options;
 		_apps = apps.ToList();

@@ -8,10 +8,10 @@ namespace DeviceRunners.UIAutomation.Playwright;
 public class PlaywrightServiceManager : IDisposable
 {
 	private readonly PlaywrightServiceManagerOptions _options;
-	private readonly IPlaywrightDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 	private readonly IPlaywright _playwrightService;
 
-	public PlaywrightServiceManager(PlaywrightServiceManagerOptions options, IPlaywrightDiagnosticLogger? logger = null)
+	public PlaywrightServiceManager(PlaywrightServiceManagerOptions options, IDiagnosticLogger? logger = null)
 	{
 		_options = options;
 		_logger = logger;

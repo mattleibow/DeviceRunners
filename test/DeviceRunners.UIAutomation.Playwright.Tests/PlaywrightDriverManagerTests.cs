@@ -12,7 +12,7 @@ public class PlaywrightDriverManagerTests
 		Logger = new XunitPlaywrightDiagnosticLogger(output);
 	}
 
-	public IPlaywrightDiagnosticLogger Logger { get; }
+	public IDiagnosticLogger Logger { get; }
 
 	protected PlaywrightAutomatedAppOptions CreateAppOptions()
 	{

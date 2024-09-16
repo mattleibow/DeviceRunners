@@ -11,24 +11,10 @@ public static class AutomationTestSuiteBuilderExtensions
 		var appium = new AppiumAutomationFramework(
 			optionsBuilder.Options,
 			optionsBuilder.Apps,
-			new CompositeLogger(optionsBuilder.Loggers));
+			new CompositeDiagnosticLogger(optionsBuilder.Loggers));
 
 		builder.AddAutomationFramework(appium);
 
 		return builder;
-	}
-
-	class CompositeLogger : IAppiumDiagnosticLogger
-	{
-		private readonly List<IAppiumDiagnosticLogger> _loggers;
-
-		public CompositeLogger(IEnumerable<IAppiumDiagnosticLogger> loggers) =>
-			_loggers = loggers.ToList();
-
-		public void Log(string message)
-		{
-			foreach (var logger in _loggers)
-				logger.Log(message);
-		}
 	}
 }

@@ -6,10 +6,10 @@
 public class SeleniumAutomationFramework : IAutomationFramework
 {
 	private readonly IReadOnlyList<SeleniumAutomatedAppOptions> _apps;
-	private readonly ISeleniumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 	private bool _disposed;
 
-	public SeleniumAutomationFramework(IEnumerable<SeleniumAutomatedAppOptions> apps, ISeleniumDiagnosticLogger? logger = null)
+	public SeleniumAutomationFramework(IEnumerable<SeleniumAutomatedAppOptions> apps, IDiagnosticLogger? logger = null)
 	{
 		_apps = apps.ToList();
 		_logger = logger;

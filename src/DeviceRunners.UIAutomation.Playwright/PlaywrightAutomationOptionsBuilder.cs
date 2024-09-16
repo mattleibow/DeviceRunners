@@ -5,10 +5,10 @@
 /// </summary>
 public class PlaywrightAutomationOptionsBuilder
 {
-	private readonly List<IPlaywrightDiagnosticLogger> _loggers = [];
+	private readonly List<IDiagnosticLogger> _loggers = [];
 	private readonly Dictionary<string, PlaywrightAutomatedAppOptions> _apps = [];
 
-	public PlaywrightAutomationOptionsBuilder AddLogger(IPlaywrightDiagnosticLogger logger)
+	public PlaywrightAutomationOptionsBuilder AddLogger(IDiagnosticLogger logger)
 	{
 		_loggers.Add(logger);
 
@@ -29,5 +29,5 @@ public class PlaywrightAutomationOptionsBuilder
 
 	internal IReadOnlyCollection<PlaywrightAutomatedAppOptions> Apps => _apps.Values;
 
-	internal IReadOnlyCollection<IPlaywrightDiagnosticLogger> Loggers => _loggers;
+	internal IReadOnlyCollection<IDiagnosticLogger> Loggers => _loggers;
 }

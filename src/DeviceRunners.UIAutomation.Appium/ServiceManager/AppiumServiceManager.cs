@@ -8,10 +8,10 @@ namespace DeviceRunners.UIAutomation.Appium;
 public class AppiumServiceManager : IDisposable
 {
 	private readonly AppiumServiceManagerOptions _options;
-	private readonly IAppiumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 	private readonly AppiumLocalService _appiumService;
 
-	public AppiumServiceManager(AppiumServiceManagerOptions options, IAppiumDiagnosticLogger? logger = null)
+	public AppiumServiceManager(AppiumServiceManagerOptions options, IDiagnosticLogger? logger = null)
 	{
 		_options = options;
 		_logger = logger;

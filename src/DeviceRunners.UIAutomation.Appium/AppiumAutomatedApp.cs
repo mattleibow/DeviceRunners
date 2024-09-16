@@ -8,9 +8,9 @@ namespace DeviceRunners.UIAutomation.Appium;
 public class AppiumAutomatedApp : IAutomatedApp
 {
 	private readonly AppiumAutomatedAppOptions _options;
-	private readonly IAppiumDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
-	public AppiumAutomatedApp(AppiumAutomationFramework appium, AppiumAutomatedAppOptions options, IAppiumDiagnosticLogger? logger = null)
+	public AppiumAutomatedApp(AppiumAutomationFramework appium, AppiumAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		Framework = appium;
 		_options = options;

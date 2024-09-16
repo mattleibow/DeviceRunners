@@ -5,10 +5,10 @@
 /// </summary>
 public class SeleniumAutomationOptionsBuilder
 {
-	private readonly List<ISeleniumDiagnosticLogger> _loggers = [];
+	private readonly List<IDiagnosticLogger> _loggers = [];
 	private readonly Dictionary<string, SeleniumAutomatedAppOptions> _apps = [];
 
-	public SeleniumAutomationOptionsBuilder AddLogger(ISeleniumDiagnosticLogger logger)
+	public SeleniumAutomationOptionsBuilder AddLogger(IDiagnosticLogger logger)
 	{
 		_loggers.Add(logger);
 
@@ -27,5 +27,5 @@ public class SeleniumAutomationOptionsBuilder
 
 	internal IReadOnlyCollection<SeleniumAutomatedAppOptions> Apps => _apps.Values;
 
-	internal IReadOnlyCollection<ISeleniumDiagnosticLogger> Loggers => _loggers;
+	internal IReadOnlyCollection<IDiagnosticLogger> Loggers => _loggers;
 }

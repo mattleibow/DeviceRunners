@@ -23,9 +23,11 @@ public class UITestsSetupFixture
 				.AddWindowsApp("windows", options => options
 					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")))
 			.AddSelenium(selenium => selenium
+				.AddLogger(new TestContextLogger())
 				.AddMicrosoftEdge("web", options => options
 					.UseInitialUrl("https://localhost:7096/")))
 			.AddPlaywright(playwright => playwright
+				.AddLogger(new TestContextLogger())
 				.AddMicrosoftEdge("web_playwright", options => options
 					.UseInitialUrl("https://localhost:7096/")));
 
@@ -40,7 +42,7 @@ public class UITestsSetupFixture
 
 	public static AutomationTestSuite TestSuite { get; private set; }
 
-	class TestContextLogger : IAppiumDiagnosticLogger
+	class TestContextLogger : IDiagnosticLogger
 	{
 		public void Log(string message) =>
 			TestContext.Out.WriteLine(message);

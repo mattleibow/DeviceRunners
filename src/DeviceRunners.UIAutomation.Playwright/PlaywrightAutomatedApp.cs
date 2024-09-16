@@ -8,9 +8,9 @@ namespace DeviceRunners.UIAutomation.Playwright;
 public class PlaywrightAutomatedApp : IAutomatedApp
 {
 	private readonly PlaywrightAutomatedAppOptions _options;
-	private readonly IPlaywrightDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
-	public PlaywrightAutomatedApp(PlaywrightAutomationFramework playwright, PlaywrightAutomatedAppOptions options, IPlaywrightDiagnosticLogger? logger = null)
+	public PlaywrightAutomatedApp(PlaywrightAutomationFramework playwright, PlaywrightAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		Framework = playwright;
 		_options = options;

@@ -6,12 +6,12 @@ public class PlaywrightDriverManager : IDisposable
 {
 	private readonly PlaywrightAutomatedAppOptions _options;
 	private readonly PlaywrightServiceManager _playwright;
-	private readonly IPlaywrightDiagnosticLogger? _logger;
+	private readonly IDiagnosticLogger? _logger;
 
 	private IBrowser? _browser;
 	private IPage? _page;
 
-	public PlaywrightDriverManager(PlaywrightServiceManager playwright, PlaywrightAutomatedAppOptions options, IPlaywrightDiagnosticLogger? logger = null)
+	public PlaywrightDriverManager(PlaywrightServiceManager playwright, PlaywrightAutomatedAppOptions options, IDiagnosticLogger? logger = null)
 	{
 		_playwright = playwright;
 		_options = options;

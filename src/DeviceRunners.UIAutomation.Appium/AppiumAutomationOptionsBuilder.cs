@@ -5,7 +5,7 @@
 /// </summary>
 public class AppiumAutomationOptionsBuilder
 {
-	private readonly List<IAppiumDiagnosticLogger> _loggers = [];
+	private readonly List<UIAutomation.IDiagnosticLogger> _loggers = [];
 	private readonly Dictionary<string, AppiumAutomatedAppOptions> _apps = [];
 
 	public AppiumAutomationOptionsBuilder UseServiceAddress(
@@ -18,7 +18,7 @@ public class AppiumAutomationOptionsBuilder
 		return this;
 	}
 
-	public AppiumAutomationOptionsBuilder AddLogger(IAppiumDiagnosticLogger logger)
+	public AppiumAutomationOptionsBuilder AddLogger(UIAutomation.IDiagnosticLogger logger)
 	{
 		_loggers.Add(logger);
 		
@@ -39,5 +39,5 @@ public class AppiumAutomationOptionsBuilder
 
 	internal IReadOnlyCollection<AppiumAutomatedAppOptions> Apps => _apps.Values;
 
-	internal IReadOnlyCollection<IAppiumDiagnosticLogger> Loggers => _loggers;
+	internal IReadOnlyCollection<UIAutomation.IDiagnosticLogger> Loggers => _loggers;
 }
