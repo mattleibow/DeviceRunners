@@ -60,6 +60,12 @@ public class AutomatedAppCommandTests
 		}
 
 		public IAutomatedAppCommandManager Commands { get; }
+
+		public IAutomatedAppElement FindElement(Action<IBy> by) =>
+			throw new NotImplementedException();
+
+		public IReadOnlyList<IAutomatedAppElement> FindElements(Action<IBy> by) =>
+			throw new NotImplementedException();
 	}
 
 	public class DerivedApp : TestApp
@@ -78,5 +84,11 @@ public class AutomatedAppCommandTests
 		}
 
 		public IAutomatedAppCommandManager Commands { get; }
+
+		public IAutomatedAppElement FindElement(Action<IBy> by) =>
+			throw new NotImplementedException();
+
+		public IReadOnlyList<IAutomatedAppElement> FindElements(Action<IBy> by) =>
+			throw new NotImplementedException();
 	}
 }

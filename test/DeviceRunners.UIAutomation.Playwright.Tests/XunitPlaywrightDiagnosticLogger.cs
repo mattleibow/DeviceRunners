@@ -1,4 +1,4 @@
-﻿using DeviceRunners.UIAutomation.Playwright;
+﻿using DeviceRunners.UIAutomation;
 
 using Xunit.Abstractions;
 

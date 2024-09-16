@@ -18,7 +18,7 @@ public class WindowsAppiumAutomatedAppOptionsBuilder : AppiumAutomatedAppOptions
 		return this;
 	}
 
-	public WindowsAppiumAutomatedAppOptionsBuilder UseExecutablePath(string executablePath)
+	public WindowsAppiumAutomatedAppOptionsBuilder UseAppExecutablePath(string executablePath)
 	{
 		DriverOptions.App = executablePath;
 		return this;
