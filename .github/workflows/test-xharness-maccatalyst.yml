@@ -41,7 +41,7 @@ jobs:
           --launch-timeout=00:06:00 \
           --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
           --output-directory artifacts \
-          --verbosity Debug
+          --verbosity
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
