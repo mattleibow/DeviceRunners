@@ -43,6 +43,7 @@ jobs:
             --launch-timeout=00:06:00 \
             --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts \
+            --verbosity debug \
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
