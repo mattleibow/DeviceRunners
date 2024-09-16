@@ -7,7 +7,6 @@ public static partial class PlaywrightAutomationOptionsBuilderExtensions
 		var optionsBuilder = new EdgePlaywrightAutomatedAppOptionsBuilder(key);
 
 		optionsBuilder.AddDefaultPlaywrightCommands();
-		//optionsBuilder.AddDefaultAndroidPlaywrightCommands();
 
 		optionsAction(optionsBuilder);
 
