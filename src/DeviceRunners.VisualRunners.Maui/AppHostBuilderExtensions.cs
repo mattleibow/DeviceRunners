@@ -1,4 +1,6 @@
-﻿using DeviceRunners.Core;
+﻿using CommunityToolkit.Maui;
+
+using DeviceRunners.Core;
 using DeviceRunners.VisualRunners.Maui;
 using DeviceRunners.VisualRunners.Maui.Pages;
 
@@ -36,6 +38,8 @@ public static class AppHostBuilderExtensions
 		appHostBuilder.Services.AddTransient<TestResultPage>();
 		appHostBuilder.Services.AddTransient<CreditsPage>();
 		appHostBuilder.Services.AddTransient<DiagnosticsPage>();
+
+		appHostBuilder.UseMauiCommunityToolkit();
 
 		if (configBuilder.RunnerUsage == VisualTestRunnerUsage.Always ||
 			(configBuilder.RunnerUsage == VisualTestRunnerUsage.Automatic && IsUsingVisualRunner))
