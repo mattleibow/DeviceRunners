@@ -1,0 +1,38 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_call:
+    inputs:
+      configuration:
+        description: 'Build configuration'
+        required: false
+        default: 'Debug'
+        type: string
+
+jobs:
+  setup:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: 
+          - name: Windows
+            os: windows-latest
+          - name: macOS
+            os: macos-14
+        configuration: 
+          - ${{ inputs.configuration }}
+    name: Setup - ${{ matrix.platform.name }} (${{ matrix.configuration }})
+    runs-on: ${{ matrix.platform.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build
+      run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
+    - name: Upload Logs
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Setup Logs - ${{ matrix.platform.name }} (${{ matrix.configuration }})
+        path: ./artifacts/logs
