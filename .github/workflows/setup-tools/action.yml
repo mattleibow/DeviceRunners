@@ -2,6 +2,12 @@ name: Setup Tools
 
 description: Installs and configures all the required tools
 
+inputs:
+  xcode-version:
+    description: 'The version of Xcode to install.'
+    required: false
+    default: '16.4'
+
 runs:
   using: composite
   steps:
@@ -9,7 +15,7 @@ runs:
     uses: maxim-lobanov/setup-xcode@v1
     if: runner.os == 'macOS'
     with:
-      xcode-version: 16.4
+      xcode-version: ${{ inputs.xcode-version }}
   - name: Setup .NET
     uses: actions/setup-dotnet@v4
     with:
