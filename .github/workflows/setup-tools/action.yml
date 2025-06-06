@@ -22,7 +22,7 @@ runs:
     shell: pwsh
     run: dotnet workload install maui-android --source https://api.nuget.org/v3/index.json
   - name: Setup .NET MAUI
-    if: runner.os == 'macOS'
+    if: runner.os != 'Linux'
     shell: pwsh
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
   - name: Setup Local .NET Tools
