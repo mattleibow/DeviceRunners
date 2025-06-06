@@ -17,21 +17,17 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             gpu: swiftshader_indirect
-            arch: x64
-            emu-arch: x86_64
           - name: macOS
-            os: macos-15
+            os: macos-13
             gpu: guest
-            arch: arm64
-            emu-arch: arm64-v8a
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net9.0-android
-      TEST_RUNTIME_IDENTIFIER: android-${{ matrix.platform.arch }}
+      TEST_RUNTIME_IDENTIFIER: android-x64
       TEST_CONFIGURATION: Release
       TEST_EMULATOR_NAME: XHarnessEmulator
-      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;${{ matrix.platform.emu-arch }}
+      TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
     - name: Checkout
       uses: actions/checkout@v4
