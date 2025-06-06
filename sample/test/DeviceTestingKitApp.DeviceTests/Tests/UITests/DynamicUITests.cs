@@ -30,7 +30,7 @@ public class DynamicUITests : UITests<ContentPage>
 					{
 						(button = new Button
 						{
-							Text = "Yay!",
+							Text = "Hello!",
 							Background = Brush.Red,
 							HorizontalOptions = LayoutOptions.Center,
 							VerticalOptions = LayoutOptions.Center,
