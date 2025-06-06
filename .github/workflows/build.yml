@@ -17,7 +17,7 @@ jobs:
           - name: Windows
             os: windows-latest
           - name: macOS
-            os: macos-14
+            os: macos-15
         configuration: 
           - Debug
           - Release
