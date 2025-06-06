@@ -13,7 +13,7 @@ jobs:
     name: Mac Catalyst
     runs-on: macos-14
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-maccatalyst
+      TEST_TARGET_FRAMEWORK: net9.0-maccatalyst
       TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
       TEST_CONFIGURATION: Debug
     steps:

@@ -13,7 +13,7 @@ jobs:
     name: iOS
     runs-on: macos-14
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-ios
+      TEST_TARGET_FRAMEWORK: net9.0-ios
       TEST_RUNTIME_IDENTIFIER: iossimulator-x64
       TEST_CONFIGURATION: Debug
     steps:
