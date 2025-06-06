@@ -13,10 +13,7 @@ runs:
   - name: Setup .NET
     uses: actions/setup-dotnet@v4
     with:
-      dotnet-version: 8.0.304
-  - name: Show .NET Info
-    shell: pwsh
-    run: dotnet new globaljson --sdk-version 8.0.304
+      dotnet-version: 9.0.x
   - name: Show .NET Info
     shell: pwsh
     run: dotnet --info
@@ -28,16 +25,6 @@ runs:
     if: runner.os == 'macOS'
     shell: pwsh
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json
-  - name: Setup Tizen.NET
-    if: runner.os != 'Windows'
-    shell: bash
-    run: curl -sSL https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.sh | bash
-  - name: Setup Tizen.NET
-    if: runner.os == 'Windows'
-    shell: pwsh
-    run: |
-      Invoke-WebRequest 'https://raw.githubusercontent.com/Samsung/Tizen.NET/main/workload/scripts/workload-install.ps1' -OutFile 'workload-install.ps1'
-      .\workload-install.ps1
   - name: Setup Local .NET Tools
     shell: pwsh
     run: dotnet tool restore
