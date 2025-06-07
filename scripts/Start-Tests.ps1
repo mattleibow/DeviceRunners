@@ -12,15 +12,7 @@ param (
 )
 
 $ErrorActionPreference = 'Stop'
-
-Write-Host "============================================================"
-Write-Host "DEBUG - SCRIPT PARAMETERS"
-Write-Host "============================================================"
-Write-Host "  App: '$App'"
-Write-Host "  Certificate: '$Certificate'"
-Write-Host "  OutputDirectory: '$OutputDirectory'"
-Write-Host "  TestingMode: '$TestingMode'"
-Write-Host ""
+$result = 0
 
 Write-Host "============================================================"
 Write-Host "PREPARATION"
@@ -94,21 +86,10 @@ try {
 } catch {
   $autoinstalledCertificate = $true
   Write-Host "    Certificate was not found, importing certificate..."
-  Write-Host "    DEBUG: Certificate path: '$Certificate'"
-  Write-Host "    DEBUG: Certificate fingerprint: '$certFingerprint'"
-  Write-Host "    DEBUG: Is admin role: $isAdminRole"
   if ($isAdminRole) {
     Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate | Out-Null
   } else {
-    if (-not $Certificate) {
-      throw "Certificate path is null or empty, cannot import certificate"
-    }
-    $importArgs = @("Import-Certificate", "-CertStoreLocation", "Cert:\LocalMachine\TrustedPeople", "-FilePath", "`"$Certificate`"")
-    Write-Host "    DEBUG: Import ArgumentList: $($importArgs -join ' ')"
-    if ($importArgs.Count -eq 0) {
-      throw "ArgumentList is empty for certificate import"
-    }
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList $importArgs
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate"
   }
   Write-Host "    Certificate imported."
 }
@@ -160,65 +141,70 @@ if ($launchArgs) {
 Write-Host "    Application started."
 
 if ($TestingMode -eq "NonInteractiveVisual") {
-  # Start TCP listener to capture test results
-  Write-Host "  - Starting TCP listener on port 16384..."
-  # Ensure output directory exists for TCP results
+  # Ensure artifacts directory exists for TCP results
   New-Item -ItemType Directory $OutputDirectory -Force | Out-Null
+  
+  # Start TCP listener for test results
+  Write-Host "  - Starting TCP listener on port 16384..."
   $tcpResultsFile = "$OutputDirectory\tcp-test-results.txt"
+  
+  # Start the TCP listener as a background job
   $listenerJob = Start-Job -ScriptBlock {
-    param($OutputFile)
-    & "$using:PSScriptRoot\New-PortListener.ps1" -Port 16384 -Output $OutputFile -NonInteractive
-  } -ArgumentList $tcpResultsFile
+    $scriptPath = Join-Path $args[1] "scripts\New-PortListener.ps1"
+    & $scriptPath -Port 16384 -NonInteractive -OutputFile $args[0]
+  } -ArgumentList $tcpResultsFile, $PSScriptRoot\..
   
   Write-Host "  - Waiting for test results via TCP..."
   Write-Host "------------------------------------------------------------"
   
-  # Wait for the TCP listener to receive results (with timeout)
-  $timeout = 300 # 5 minutes timeout
+  # Wait for results with timeout (5 minutes)
+  $timeout = 300
   $elapsed = 0
-  while ((Get-Job -Id $listenerJob.Id).State -eq "Running" -and $elapsed -lt $timeout) {
+  $progressInterval = 30
+  $lastProgress = 0
+  
+  while ($elapsed -lt $timeout) {
+    if ($listenerJob.State -eq "Completed") {
+      break
+    }
+    
     Start-Sleep 1
     $elapsed++
-    if ($elapsed % 30 -eq 0) {
-      Write-Host "  Still waiting for test results... ($elapsed/$timeout seconds)"
+    
+    # Show progress every 30 seconds
+    if ($elapsed - $lastProgress -ge $progressInterval) {
+      $remaining = $timeout - $elapsed
+      Write-Host "Waiting for TCP results... ($remaining seconds remaining)"
+      $lastProgress = $elapsed
     }
   }
   
-  # Stop the listener job if it's still running
-  if ((Get-Job -Id $listenerJob.Id).State -eq "Running") {
-    Write-Host "  Timeout reached, stopping TCP listener..."
-    Stop-Job -Id $listenerJob.Id
-  }
-  
-  # Get any output from the listener job
+  # Get the job output
   $jobOutput = Receive-Job -Id $listenerJob.Id
-  if ($jobOutput) {
-    Write-Host $jobOutput
-  }
-  Remove-Job -Id $listenerJob.Id
+  Write-Host $jobOutput
+  Remove-Job -Id $listenerJob.Id -Force
   
   Write-Host "------------------------------------------------------------"
   
-  # Check if we received test results
+  # Check if we got results
   if (Test-Path $tcpResultsFile) {
-    Write-Host "  - Analyzing TCP test results..."
     $tcpResults = Get-Content $tcpResultsFile -Raw
-    Write-Host "    Results received via TCP:"
-    Write-Host $tcpResults
+    Write-Host "  - Analyzing TCP test results..."
     
-    # Simple check for test failure indicators in the TCP results
-    # The TCP channel sends formatted test results, look for failure indicators
-    if ($tcpResults -match "Failed:\s*[1-9]" -or $tcpResults -match "failed:\s*[1-9]" -or $tcpResults -match "Error" -or $tcpResults -match "FAIL") {
-      Write-Host "    Test failures detected in TCP results."
+    # Look for test failure indicators in the TCP results
+    if ($tcpResults -match "FAILED|Failed|ERROR|Error" -and $tcpResults -notmatch "0 failed") {
+      Write-Host "    TCP results indicate test failures."
       $result = 1
     } else {
-      Write-Host "    No test failures detected in TCP results."
+      Write-Host "    TCP results indicate no test failures."
+      $result = 0
     }
   } else {
-    Write-Host "    No TCP results file found - test may have failed to start or connect."
+    Write-Host "    No TCP results received within timeout period."
     $result = 1
   }
-  Write-Host "  - TCP tests complete."
+  
+  Write-Host "  - Tests complete."
 } elseif ($TestingMode -eq "XHarness") {
   # Wait for the tests to finish
   Write-Host "  - Waiting for test results..."
@@ -268,20 +254,10 @@ Write-Host "    Application uninstalled."
 if ($autoinstalledCertificate) {
   # Clean up all generated certificates
   Write-Host "  - Removing installed certificates..."
-  Write-Host "    DEBUG: Certificate fingerprint for removal: '$certFingerprint'"
-  Write-Host "    DEBUG: Is admin role: $isAdminRole"
   if ($isAdminRole) {
     Remove-Item -Path "Cert:\LocalMachine\TrustedPeople\$certFingerprint" -DeleteKey
   } else {
-    if (-not $certFingerprint) {
-      throw "Certificate fingerprint is null or empty, cannot remove certificate"
-    }
-    $removeArgs = @("Remove-Item", "-Path", "`"Cert:\LocalMachine\TrustedPeople\$certFingerprint`"", "-DeleteKey")
-    Write-Host "    DEBUG: Remove ArgumentList: $($removeArgs -join ' ')"
-    if ($removeArgs.Count -eq 0) {
-      throw "ArgumentList is empty for certificate removal"
-    }
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList $removeArgs
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Remove-Item -Path 'Cert:\LocalMachine\TrustedPeople\$certFingerprint' -DeleteKey"
   }
   Write-Host "    Installed certificates removed."
 }
