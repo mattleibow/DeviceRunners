@@ -148,41 +148,12 @@ if ($TestingMode -eq "NonInteractiveVisual") {
   Write-Host "  - Starting TCP listener on port 16384..."
   $tcpResultsFile = "$OutputDirectory\tcp-test-results.txt"
   
-  # Start the TCP listener as a background job
-  $listenerJob = Start-Job -ScriptBlock {
-    $scriptPath = Join-Path $args[1] "scripts\New-PortListener.ps1"
-    & $scriptPath -Port 16384 -NonInteractive -OutputFile $args[0]
-  } -ArgumentList $tcpResultsFile, $PSScriptRoot\..
-  
   Write-Host "  - Waiting for test results via TCP..."
   Write-Host "------------------------------------------------------------"
   
-  # Wait for results with timeout (5 minutes)
-  $timeout = 300
-  $elapsed = 0
-  $progressInterval = 30
-  $lastProgress = 0
-  
-  while ($elapsed -lt $timeout) {
-    if ($listenerJob.State -eq "Completed") {
-      break
-    }
-    
-    Start-Sleep 1
-    $elapsed++
-    
-    # Show progress every 30 seconds
-    if ($elapsed - $lastProgress -ge $progressInterval) {
-      $remaining = $timeout - $elapsed
-      Write-Host "Waiting for TCP results... ($remaining seconds remaining)"
-      $lastProgress = $elapsed
-    }
-  }
-  
-  # Get the job output
-  $jobOutput = Receive-Job -Id $listenerJob.Id
-  Write-Host $jobOutput
-  Remove-Job -Id $listenerJob.Id -Force
+  # Call the TCP listener directly (it has its own timeout logic)
+  $scriptPath = Join-Path $PSScriptRoot "New-PortListener.ps1"
+  & $scriptPath -Port 16384 -NonInteractive -Output $tcpResultsFile
   
   Write-Host "------------------------------------------------------------"
   
