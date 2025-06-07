@@ -163,8 +163,19 @@ if ($TestingMode -eq "NonInteractiveVisual") {
     Write-Host "  - Analyzing TCP test results..."
     
     # Look for test failure indicators in the TCP results
-    if ($tcpResults -match "FAILED|Failed|ERROR|Error" -and $tcpResults -notmatch "0 failed") {
-      Write-Host "    TCP results indicate test failures."
+    # Parse the test summary format: "Tests run: X Passed: Y Failed: Z Skipped: W"
+    if ($tcpResults -match "Failed:\s*(\d+)") {
+      $failedCount = [int]$matches[1]
+      if ($failedCount -gt 0) {
+        Write-Host "    TCP results indicate $failedCount test failures."
+        $result = 1
+      } else {
+        Write-Host "    TCP results indicate no test failures."
+        $result = 0
+      }
+    } elseif ($tcpResults -match "FAILED|ERROR") {
+      # Fallback: look for actual failure keywords (not summary text)
+      Write-Host "    TCP results indicate test failures (error keywords found)."
       $result = 1
     } else {
       Write-Host "    TCP results indicate no test failures."
