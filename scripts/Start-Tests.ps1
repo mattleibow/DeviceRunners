@@ -136,6 +136,63 @@ Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
 Write-Host "    Application started."
 
 if ($TestingMode -eq "NonInteractiveVisual") {
+  # Start TCP listener to capture test results
+  Write-Host "  - Starting TCP listener on port 16384..."
+  $tcpResultsFile = "$OutputDirectory\tcp-test-results.txt"
+  $listenerJob = Start-Job -ScriptBlock {
+    param($OutputFile)
+    & "$using:PSScriptRoot\New-PortListener.ps1" -Port 16384 -Output $OutputFile -NonInteractive
+  } -ArgumentList $tcpResultsFile
+  
+  Write-Host "  - Waiting for test results via TCP..."
+  Write-Host "------------------------------------------------------------"
+  
+  # Wait for the TCP listener to receive results (with timeout)
+  $timeout = 300 # 5 minutes timeout
+  $elapsed = 0
+  while ((Get-Job -Id $listenerJob.Id).State -eq "Running" -and $elapsed -lt $timeout) {
+    Start-Sleep 1
+    $elapsed++
+    if ($elapsed % 30 -eq 0) {
+      Write-Host "  Still waiting for test results... ($elapsed/$timeout seconds)"
+    }
+  }
+  
+  # Stop the listener job if it's still running
+  if ((Get-Job -Id $listenerJob.Id).State -eq "Running") {
+    Write-Host "  Timeout reached, stopping TCP listener..."
+    Stop-Job -Id $listenerJob.Id
+  }
+  
+  # Get any output from the listener job
+  $jobOutput = Receive-Job -Id $listenerJob.Id
+  if ($jobOutput) {
+    Write-Host $jobOutput
+  }
+  Remove-Job -Id $listenerJob.Id
+  
+  Write-Host "------------------------------------------------------------"
+  
+  # Check if we received test results
+  if (Test-Path $tcpResultsFile) {
+    Write-Host "  - Analyzing TCP test results..."
+    $tcpResults = Get-Content $tcpResultsFile -Raw
+    Write-Host "    Results received via TCP:"
+    Write-Host $tcpResults
+    
+    # Simple check for test failure indicators in the TCP results
+    # The TCP channel sends formatted test results, look for failure indicators
+    if ($tcpResults -match "Failed:\s*[1-9]" -or $tcpResults -match "failed:\s*[1-9]" -or $tcpResults -match "Error" -or $tcpResults -match "FAIL") {
+      Write-Host "    Test failures detected in TCP results."
+      $result = 1
+    } else {
+      Write-Host "    No test failures detected in TCP results."
+    }
+  } else {
+    Write-Host "    No TCP results file found - test may have failed to start or connect."
+    $result = 1
+  }
+  Write-Host "  - TCP tests complete."
 } elseif ($TestingMode -eq "XHarness") {
   # Wait for the tests to finish
   Write-Host "  - Waiting for test results..."
