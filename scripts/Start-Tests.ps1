@@ -152,7 +152,11 @@ $launchArgs = ""
 if ($TestingMode -eq "XHarness") {
   $launchArgs = "--xharness --output-directory=`"$OutputDirectory`""
 }
-Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
+if ($launchArgs) {
+  Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
+} else {
+  Start-Process "shell:AppsFolder\$packageFamilyName!App"
+}
 Write-Host "    Application started."
 
 if ($TestingMode -eq "NonInteractiveVisual") {
