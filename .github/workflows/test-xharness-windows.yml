@@ -17,7 +17,7 @@ jobs:
     name: Windows
     runs-on: windows-latest
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-windows10.0.19041.0
+      TEST_TARGET_FRAMEWORK: net9.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
       TEST_CONFIGURATION: Release
     steps:
