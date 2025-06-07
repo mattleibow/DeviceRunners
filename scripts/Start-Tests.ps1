@@ -14,6 +14,15 @@ param (
 $ErrorActionPreference = 'Stop'
 
 Write-Host "============================================================"
+Write-Host "DEBUG - SCRIPT PARAMETERS"
+Write-Host "============================================================"
+Write-Host "  App: '$App'"
+Write-Host "  Certificate: '$Certificate'"
+Write-Host "  OutputDirectory: '$OutputDirectory'"
+Write-Host "  TestingMode: '$TestingMode'"
+Write-Host ""
+
+Write-Host "============================================================"
 Write-Host "PREPARATION"
 Write-Host "============================================================"
 
@@ -85,10 +94,21 @@ try {
 } catch {
   $autoinstalledCertificate = $true
   Write-Host "    Certificate was not found, importing certificate..."
+  Write-Host "    DEBUG: Certificate path: '$Certificate'"
+  Write-Host "    DEBUG: Certificate fingerprint: '$certFingerprint'"
+  Write-Host "    DEBUG: Is admin role: $isAdminRole"
   if ($isAdminRole) {
     Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate | Out-Null
   } else {
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList @("Import-Certificate", "-CertStoreLocation", "Cert:\LocalMachine\TrustedPeople", "-FilePath", "`"$Certificate`"")
+    if (-not $Certificate) {
+      throw "Certificate path is null or empty, cannot import certificate"
+    }
+    $importArgs = @("Import-Certificate", "-CertStoreLocation", "Cert:\LocalMachine\TrustedPeople", "-FilePath", "`"$Certificate`"")
+    Write-Host "    DEBUG: Import ArgumentList: $($importArgs -join ' ')"
+    if ($importArgs.Count -eq 0) {
+      throw "ArgumentList is empty for certificate import"
+    }
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList $importArgs
   }
   Write-Host "    Certificate imported."
 }
@@ -242,10 +262,20 @@ Write-Host "    Application uninstalled."
 if ($autoinstalledCertificate) {
   # Clean up all generated certificates
   Write-Host "  - Removing installed certificates..."
+  Write-Host "    DEBUG: Certificate fingerprint for removal: '$certFingerprint'"
+  Write-Host "    DEBUG: Is admin role: $isAdminRole"
   if ($isAdminRole) {
     Remove-Item -Path "Cert:\LocalMachine\TrustedPeople\$certFingerprint" -DeleteKey
   } else {
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList @("Remove-Item", "-Path", "`"Cert:\LocalMachine\TrustedPeople\$certFingerprint`"", "-DeleteKey")
+    if (-not $certFingerprint) {
+      throw "Certificate fingerprint is null or empty, cannot remove certificate"
+    }
+    $removeArgs = @("Remove-Item", "-Path", "`"Cert:\LocalMachine\TrustedPeople\$certFingerprint`"", "-DeleteKey")
+    Write-Host "    DEBUG: Remove ArgumentList: $($removeArgs -join ' ')"
+    if ($removeArgs.Count -eq 0) {
+      throw "ArgumentList is empty for certificate removal"
+    }
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList $removeArgs
   }
   Write-Host "    Installed certificates removed."
 }

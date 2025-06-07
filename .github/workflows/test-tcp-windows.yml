@@ -40,6 +40,15 @@ jobs:
     - name: Run Tests
       run: |
         $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
+        Write-Host "DEBUG: Found MSIX files:"
+        $msix | ForEach-Object { Write-Host "  $_" }
+        Write-Host "DEBUG: Using MSIX: $msix"
+        Write-Host "DEBUG: MSIX type: $($msix.GetType().Name)"
+        if ($msix -is [Array] -and $msix.Count -gt 1) {
+          Write-Host "DEBUG: Multiple MSIX files found, using first one"
+          $msix = $msix[0]
+        }
+        Write-Host "DEBUG: Final MSIX path: $msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
           -OutputDirectory artifacts `
