@@ -162,6 +162,8 @@ Write-Host "    Application started."
 if ($TestingMode -eq "NonInteractiveVisual") {
   # Start TCP listener to capture test results
   Write-Host "  - Starting TCP listener on port 16384..."
+  # Ensure output directory exists for TCP results
+  New-Item -ItemType Directory $OutputDirectory -Force | Out-Null
   $tcpResultsFile = "$OutputDirectory\tcp-test-results.txt"
   $listenerJob = Start-Job -ScriptBlock {
     param($OutputFile)
