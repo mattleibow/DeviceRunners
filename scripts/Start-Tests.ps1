@@ -88,7 +88,7 @@ try {
   if ($isAdminRole) {
     Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate | Out-Null
   } else {
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Import-Certificate -CertStoreLocation 'Cert:\LocalMachine\TrustedPeople' -FilePath $Certificate"
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList @("Import-Certificate", "-CertStoreLocation", "Cert:\LocalMachine\TrustedPeople", "-FilePath", "`"$Certificate`"")
   }
   Write-Host "    Certificate imported."
 }
@@ -245,7 +245,7 @@ if ($autoinstalledCertificate) {
   if ($isAdminRole) {
     Remove-Item -Path "Cert:\LocalMachine\TrustedPeople\$certFingerprint" -DeleteKey
   } else {
-    Start-Process powershell -Wait -Verb RunAs -ArgumentList "Remove-Item -Path 'Cert:\LocalMachine\TrustedPeople\$certFingerprint' -DeleteKey"
+    Start-Process powershell -Wait -Verb RunAs -ArgumentList @("Remove-Item", "-Path", "`"Cert:\LocalMachine\TrustedPeople\$certFingerprint`"", "-DeleteKey")
   }
   Write-Host "    Installed certificates removed."
 }
