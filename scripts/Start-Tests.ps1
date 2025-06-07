@@ -12,6 +12,7 @@ param (
 )
 
 $ErrorActionPreference = 'Stop'
+$result = 0
 
 Write-Host "============================================================"
 Write-Host "PREPARATION"
@@ -132,10 +133,57 @@ $launchArgs = ""
 if ($TestingMode -eq "XHarness") {
   $launchArgs = "--xharness --output-directory=`"$OutputDirectory`""
 }
-Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
+if ($launchArgs) {
+  Start-Process "shell:AppsFolder\$packageFamilyName!App" -Args $launchArgs
+} else {
+  Start-Process "shell:AppsFolder\$packageFamilyName!App"
+}
 Write-Host "    Application started."
 
 if ($TestingMode -eq "NonInteractiveVisual") {
+  # Ensure artifacts directory exists for TCP results
+  New-Item -ItemType Directory $OutputDirectory -Force | Out-Null
+  
+  # Start TCP listener for test results
+  Write-Host "  - Starting TCP listener on port 16384..."
+  $tcpResultsFile = "$OutputDirectory\tcp-test-results.txt"
+  
+  Write-Host "  - Waiting for test results via TCP..."
+  Write-Host "------------------------------------------------------------"
+  
+  # Call the TCP listener directly (it has its own timeout logic)
+  $scriptPath = Join-Path $PSScriptRoot "New-PortListener.ps1"
+  & $scriptPath -Port 16384 -NonInteractive -Output $tcpResultsFile
+  
+  Write-Host "------------------------------------------------------------"
+  
+  # Check if we got results
+  if (Test-Path $tcpResultsFile) {
+    $tcpResults = Get-Content $tcpResultsFile -Raw
+    Write-Host "  - Analyzing TCP test results..."
+    
+    # Look for test failure indicators in the TCP results
+    # Parse the test summary format: "Tests run: X Passed: Y Failed: Z Skipped: W"
+    if ($tcpResults -match "Failed:\s*(\d+)") {
+      $failedCount = [int]$matches[1]
+      if ($failedCount -gt 0) {
+        Write-Host "    TCP results indicate $failedCount test failures."
+        $result = 1
+      } else {
+        Write-Host "    TCP results indicate no test failures."
+        $result = 0
+      }
+    } else {
+      # If we can't parse the summary format, assume no failures
+      Write-Host "    TCP results indicate no test failures (no summary found)."
+      $result = 0
+    }
+  } else {
+    Write-Host "    No TCP results received within timeout period."
+    $result = 1
+  }
+  
+  Write-Host "  - Tests complete."
 } elseif ($TestingMode -eq "XHarness") {
   # Wait for the tests to finish
   Write-Host "  - Waiting for test results..."
