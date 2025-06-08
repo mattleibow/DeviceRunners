@@ -29,24 +29,14 @@ app.Configure(config =>
         windows.AddCommand<TestStarterCommand>("test")
             .WithDescription("Install and start a test application")
             .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix" })
-            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix", "--testing-mode", "XHarness" });
+            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix", "--testing-mode", "NonInteractiveVisual" });
     });
 
     // TCP commands
-    config.AddBranch("tcp", tcp =>
-    {
-        tcp.SetDescription("TCP networking commands");
-        
-        tcp.AddBranch("listener", listener =>
-        {
-            listener.SetDescription("TCP listener commands");
-            
-            listener.AddCommand<PortListenerCommand>("start")
-                .WithDescription("Start a TCP port listener")
-                .WithExample(new[] { "tcp", "listener", "start", "--port", "16384" })
-                .WithExample(new[] { "tcp", "listener", "start", "--port", "16384", "--output", "results.txt", "--non-interactive" });
-        });
-    });
+    config.AddCommand<PortListenerCommand>("listen")
+        .WithDescription("Start a TCP port listener")
+        .WithExample(new[] { "listen", "--port", "16384" })
+        .WithExample(new[] { "listen", "--port", "16384", "--output", "results.txt", "--non-interactive" });
 });
 
 return await app.RunAsync(args);

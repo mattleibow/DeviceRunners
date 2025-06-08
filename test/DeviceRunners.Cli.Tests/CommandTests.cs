@@ -59,13 +59,7 @@ public class CommandTests
         var app = new CommandAppTester();
         app.Configure(config =>
         {
-            config.AddBranch("tcp", tcp =>
-            {
-                tcp.AddBranch("listener", listener =>
-                {
-                    listener.AddCommand<PortListenerCommand>("start");
-                });
-            });
+            config.AddCommand<PortListenerCommand>("listen");
         });
 
         // This test mainly checks that the command can be constructed and validated

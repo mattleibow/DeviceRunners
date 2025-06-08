@@ -35,7 +35,7 @@ jobs:
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
-          -p:TestingMode=XHarness `
+          -p:TestingMode=NonInteractiveVisual `
           -p:AppxPackageSigningEnabled=true `
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
@@ -44,7 +44,7 @@ jobs:
     - name: Run Tests
       run: |
         $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
-        device-runners windows test --app $msix --output-directory artifacts --testing-mode XHarness
+        device-runners windows test --app $msix --output-directory artifacts --testing-mode NonInteractiveVisual
       shell: powershell
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
