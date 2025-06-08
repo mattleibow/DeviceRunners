@@ -12,7 +12,7 @@ param (
 )
 
 $ErrorActionPreference = 'Stop'
-$result = 0
+$exitCode = 0
 
 Write-Host "============================================================"
 Write-Host "PREPARATION"
@@ -168,19 +168,19 @@ if ($TestingMode -eq "NonInteractiveVisual") {
       $failedCount = [int]$matches[1]
       if ($failedCount -gt 0) {
         Write-Host "    TCP results indicate $failedCount test failures."
-        $result = 1
+        $exitCode = 1
       } else {
         Write-Host "    TCP results indicate no test failures."
-        $result = 0
+        $exitCode = 0
       }
     } else {
-      # If we can't parse the summary format, assume no failures
-      Write-Host "    TCP results indicate no test failures (no summary found)."
-      $result = 0
+      # If we can't parse the summary format, treat as failure
+      Write-Host "    TCP results indicate failure (no summary found)."
+      $exitCode = 1
     }
   } else {
     Write-Host "    No TCP results received within timeout period."
-    $result = 1
+    $exitCode = 1
   }
   
   Write-Host "  - Tests complete."
@@ -208,7 +208,7 @@ if ($TestingMode -eq "NonInteractiveVisual") {
     Where-Object { $_.failed -gt 0 -or $_.error -gt 0 }
   if ($failed) {
     Write-Host "    There were test failures."
-    $result = 1
+    $exitCode = 1
   } else {
     Write-Host "    There were no test failures."
   }
@@ -243,4 +243,4 @@ if ($autoinstalledCertificate) {
 Write-Host "  - Cleanup complete."
 Write-Host ""
 
-exit $result
+exit $exitCode
