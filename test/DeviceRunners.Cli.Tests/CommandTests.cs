@@ -13,11 +13,17 @@ public class CommandTests
         var app = new CommandAppTester();
         app.Configure(config =>
         {
-            config.AddCommand<CertificateCreateCommand>("cert-create");
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddBranch("cert", cert =>
+                {
+                    cert.AddCommand<CertificateCreateCommand>("install");
+                });
+            });
         });
 
         // Act
-        var result = app.Run("cert-create");
+        var result = app.Run("windows", "cert", "install");
 
         // Assert
         Assert.NotEqual(0, result.ExitCode);
@@ -30,11 +36,17 @@ public class CommandTests
         var app = new CommandAppTester();
         app.Configure(config =>
         {
-            config.AddCommand<CertificateRemoveCommand>("cert-remove");
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddBranch("cert", cert =>
+                {
+                    cert.AddCommand<CertificateRemoveCommand>("uninstall");
+                });
+            });
         });
 
         // Act
-        var result = app.Run("cert-remove", "--fingerprint", "ABCD1234");
+        var result = app.Run("windows", "cert", "uninstall", "--fingerprint", "ABCD1234");
 
         // Assert
         Assert.Equal(0, result.ExitCode);
@@ -47,7 +59,13 @@ public class CommandTests
         var app = new CommandAppTester();
         app.Configure(config =>
         {
-            config.AddCommand<PortListenerCommand>("port-listen");
+            config.AddBranch("tcp", tcp =>
+            {
+                tcp.AddBranch("listener", listener =>
+                {
+                    listener.AddCommand<PortListenerCommand>("start");
+                });
+            });
         });
 
         // This test mainly checks that the command can be constructed and validated
@@ -64,11 +82,14 @@ public class CommandTests
         var app = new CommandAppTester();
         app.Configure(config =>
         {
-            config.AddCommand<TestStarterCommand>("test-start");
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddCommand<TestStarterCommand>("test");
+            });
         });
 
         // Act
-        var result = app.Run("test-start");
+        var result = app.Run("windows", "test");
 
         // Assert
         Assert.NotEqual(0, result.ExitCode);

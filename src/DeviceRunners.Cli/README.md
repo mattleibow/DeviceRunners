@@ -19,21 +19,23 @@ dotnet run -- [command] [options]
 
 ## Commands
 
-### Certificate Management
+### Windows Commands
 
-#### Create Certificate (`cert-create`)
+#### Certificate Management
+
+##### Install Certificate (`windows cert install`)
 
 Generate and install a self-signed certificate for MSIX packages.
 
 ```bash
 # Create certificate with publisher identity
-device-runners cert-create --publisher "CN=MyCompany"
+device-runners windows cert install --publisher "CN=MyCompany"
 
 # Create certificate from manifest file
-device-runners cert-create --manifest "path/to/Package.appxmanifest"
+device-runners windows cert install --manifest "path/to/Package.appxmanifest"
 
-# Create certificate from project directory
-device-runners cert-create --project "path/to/project"
+# Create certificate from project directory  
+device-runners windows cert install --project "path/to/project"
 ```
 
 **Options:**
@@ -43,62 +45,32 @@ device-runners cert-create --project "path/to/project"
 
 **Platform Support:** Windows only
 
-#### Remove Certificate (`cert-remove`)
+##### Uninstall Certificate (`windows cert uninstall`)
 
 Remove a certificate by its fingerprint.
 
 ```bash
-device-runners cert-remove --fingerprint "ABCD1234567890..."
+device-runners windows cert uninstall --fingerprint "ABCD1234..."
 ```
 
 **Options:**
-- `--fingerprint` - Certificate fingerprint to remove (required)
+- `--fingerprint` - Certificate fingerprint to remove
 
 **Platform Support:** Windows only
 
-### Network Tools
+#### Test Execution (`windows test`)
 
-#### Port Listener (`port-listen`)
-
-Start a TCP port listener for receiving test results.
+Install and start a test application.
 
 ```bash
-# Listen on default port (16384)
-device-runners port-listen
+# Basic test execution
+device-runners windows test --app "path/to/app.msix"
 
-# Listen on custom port
-device-runners port-listen --port 8080
+# With XHarness testing mode (includes folder watcher for real-time log streaming)
+device-runners windows test --app "path/to/app.msix" --testing-mode XHarness
 
-# Save received data to file
-device-runners port-listen --port 16384 --output results.txt
-
-# Run in non-interactive mode (terminate after first connection)
-device-runners port-listen --port 16384 --non-interactive
-```
-
-**Options:**
-- `--port` - TCP port to listen on (default: 16384)
-- `--output` - Path to save received data
-- `--non-interactive` - Run in non-interactive mode
-
-### Test Execution
-
-#### Test Starter (`test-start`)
-
-Install and start a test application with various testing modes.
-
-```bash
-# Basic app installation and start
-device-runners test-start --app "path/to/app.msix"
-
-# With custom certificate
-device-runners test-start --app "path/to/app.msix" --certificate "path/to/cert.cer"
-
-# With XHarness testing mode
-device-runners test-start --app "path/to/app.msix" --testing-mode XHarness
-
-# With non-interactive visual testing
-device-runners test-start --app "path/to/app.msix" --testing-mode NonInteractiveVisual --output-directory "test-results"
+# With NonInteractiveVisual testing mode (TCP listener for results)
+device-runners windows test --app "path/to/app.msix" --testing-mode NonInteractiveVisual
 ```
 
 **Options:**
@@ -107,22 +79,57 @@ device-runners test-start --app "path/to/app.msix" --testing-mode NonInteractive
 - `--output-directory` - Output directory for test results (default: "artifacts")
 - `--testing-mode` - Testing mode: `XHarness`, `NonInteractiveVisual`, or `None`
 
+**Testing Modes:**
+- **XHarness**: Launches the app with XHarness test runner arguments and monitors test-output-*.log files in real-time
+- **NonInteractiveVisual**: Starts a TCP listener on port 16384 to receive test results
+- **None**: Basic app launch without special test handling
+
 **Platform Support:** Windows only
 
-## Testing Modes
+### TCP Commands
 
-- **XHarness**: Launches the app with XHarness test runner arguments
-- **NonInteractiveVisual**: Starts the app and listens for test results via TCP on port 16384
-- **None**: Simple app launch without special testing configuration
+#### Port Listener (`tcp listener start`)
 
+Start a TCP port listener for receiving test results.
+
+```bash
+# Basic TCP listener
+device-runners tcp listener start --port 16384
+
+# With output file and non-interactive mode
+device-runners tcp listener start --port 16384 --output results.txt --non-interactive
+```
+
+**Options:**
+- `--port` - TCP port to listen on (default: 16384)
+- `--output` - Output file path for received data
+- `--non-interactive` - Run in non-interactive mode with timeout
+
+**Platform Support:** Cross-platform
+
+## Usage Examples
+
+```bash
+# Install as global tool
+dotnet tool install --global DeviceRunners.Cli
+
+# Certificate operations (Windows only)
+device-runners windows cert install --publisher "CN=MyCompany"
+device-runners windows cert uninstall --fingerprint "ABCD1234..."
+
+# Network operations (cross-platform)  
+device-runners tcp listener start --port 16384 --output results.txt
+
+# Test execution (Windows only)
+device-runners windows test --app app.msix --testing-mode XHarness
 ## Original PowerShell Scripts
 
 This CLI tool replaces the following PowerShell scripts:
 
-- `New-Certificate.ps1` → `cert-create` command
-- `Remove-Certificate.ps1` → `cert-remove` command
-- `New-PortListener.ps1` → `port-listen` command
-- `Start-Tests.ps1` → `test-start` command
+- `New-Certificate.ps1` → `windows cert install` command
+- `Remove-Certificate.ps1` → `windows cert uninstall` command
+- `New-PortListener.ps1` → `tcp listener start` command
+- `Start-Tests.ps1` → `windows test` command
 
 ## Development
 

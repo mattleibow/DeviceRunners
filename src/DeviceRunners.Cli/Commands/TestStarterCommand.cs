@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Xml.Linq;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -100,6 +101,10 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
             {
                 await HandleNonInteractiveVisualMode(settings.OutputDirectory);
             }
+            else if (settings.TestingMode == Commands.TestingMode.XHarness)
+            {
+                await HandleXHarnessMode(settings.OutputDirectory);
+            }
 
             return 0;
         }
@@ -117,6 +122,92 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
             Commands.TestingMode.XHarness => "--xharness --output-directory=\"" + settings.OutputDirectory + "\"",
             _ => null
         };
+    }
+
+    private async Task HandleXHarnessMode(string outputDirectory)
+    {
+        AnsiConsole.MarkupLine("  - Waiting for test results...");
+        AnsiConsole.MarkupLine("[blue]------------------------------------------------------------[/]");
+
+        // Wait for the tests to finish by monitoring TestResults.xml
+        var testResultsPath = Path.Combine(outputDirectory, "TestResults.xml");
+        var lastLineCount = 0;
+
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(15)); // 15 minute timeout
+        
+        try
+        {
+            while (!File.Exists(testResultsPath) && !cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                await Task.Delay(600, cancellationTokenSource.Token); // Match PowerShell's 0.6 second delay
+                
+                // Look for log files and stream their content
+                var logFiles = Directory.GetFiles(outputDirectory, "test-output-*.log");
+                foreach (var logFile in logFiles)
+                {
+                    try
+                    {
+                        var lines = await File.ReadAllLinesAsync(logFile, cancellationTokenSource.Token);
+                        if (lines.Length > lastLineCount)
+                        {
+                            // Display new lines
+                            for (int i = lastLineCount; i < lines.Length; i++)
+                            {
+                                AnsiConsole.WriteLine(lines[i]);
+                            }
+                            lastLineCount = lines.Length;
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        // File might be locked, skip this iteration
+                        continue;
+                    }
+                }
+            }
+
+            AnsiConsole.MarkupLine("[blue]------------------------------------------------------------[/]");
+            
+            if (File.Exists(testResultsPath))
+            {
+                AnsiConsole.MarkupLine("  - Checking test results for failures...");
+                AnsiConsole.MarkupLine($"    Results file: '{testResultsPath}'");
+                
+                var resultsXml = await File.ReadAllTextAsync(testResultsPath);
+                var xmlDoc = System.Xml.Linq.XDocument.Parse(resultsXml);
+                
+                var hasFailures = xmlDoc.Descendants("assembly")
+                    .Any(assembly => 
+                    {
+                        var failed = assembly.Attribute("failed")?.Value;
+                        var error = assembly.Attribute("error")?.Value;
+                        return (int.TryParse(failed, out int failedCount) && failedCount > 0) ||
+                               (int.TryParse(error, out int errorCount) && errorCount > 0);
+                    });
+                
+                if (hasFailures)
+                {
+                    AnsiConsole.MarkupLine("    [red]There were test failures.[/]");
+                    Environment.ExitCode = 1;
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("    [green]There were no test failures.[/]");
+                }
+            }
+            else
+            {
+                AnsiConsole.MarkupLine("    [yellow]TestResults.xml not found within timeout period.[/]");
+                Environment.ExitCode = 1;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            AnsiConsole.MarkupLine("    [yellow]XHarness test monitoring timed out.[/]");
+            Environment.ExitCode = 1;
+        }
+        
+        AnsiConsole.MarkupLine("  - Tests complete.");
     }
 
     private async Task HandleNonInteractiveVisualMode(string outputDirectory)
