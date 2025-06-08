@@ -37,6 +37,13 @@ public class UnitTests
 		Assert.True(true);
 	}
 
+	[Fact]
+	public void TemporaryTestFailure()
+	{
+		// Temporary test failure to verify TCP result channel detects failures
+		Assert.True(false, "This is a temporary test failure for testing the TCP result channel");
+	}
+
 #if INCLUDE_FAILING_TESTS
 	[Fact]
 	public async Task LongRunningFail()
