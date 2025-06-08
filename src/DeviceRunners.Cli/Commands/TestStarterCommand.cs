@@ -1,13 +1,14 @@
 using System.ComponentModel;
+using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class TestStarterCommand : Command<TestStarterCommand.Settings>
+public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package")]
         [CommandOption("--app")]
@@ -34,9 +35,9 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
     {
         try
         {
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
-            AnsiConsole.MarkupLine("[blue]PREPARATION[/]");
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput("[blue]PREPARATION[/]", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
 
             var appService = new AppService();
             var certificateService = new CertificateService();
@@ -45,75 +46,96 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
             var certificatePath = settings.Certificate ?? appService.GetCertificateFromMsix(settings.App);
             var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
             
-            AnsiConsole.MarkupLine("  - Determining certificate for MSIX installer...");
-            AnsiConsole.MarkupLine($"    File path: '[green]{certificatePath}[/]'");
-            AnsiConsole.MarkupLine($"    Thumbprint: '[green]{certFingerprint}[/]'");
-            AnsiConsole.MarkupLine("    Certificate identified.");
+            WriteConsoleOutput("  - Determining certificate for MSIX installer...", settings);
+            WriteConsoleOutput($"    File path: '[green]{certificatePath}[/]'", settings);
+            WriteConsoleOutput($"    Thumbprint: '[green]{certFingerprint}[/]'", settings);
+            WriteConsoleOutput("    Certificate identified.", settings);
 
             // Determine app identity
-            AnsiConsole.MarkupLine("  - Determining app identity...");
+            WriteConsoleOutput("  - Determining app identity...", settings);
             var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
-            AnsiConsole.MarkupLine($"    MSIX installer: '[green]{settings.App}[/]'");
-            AnsiConsole.MarkupLine($"    App identity found: '[green]{appIdentity}[/]'");
+            WriteConsoleOutput($"    MSIX installer: '[green]{settings.App}[/]'", settings);
+            WriteConsoleOutput($"    App identity found: '[green]{appIdentity}[/]'", settings);
 
             // Check if app is already installed
-            AnsiConsole.MarkupLine("  - Testing to see if the app is installed...");
+            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
             if (appService.IsAppInstalled(appIdentity))
             {
-                AnsiConsole.MarkupLine($"    App was installed, uninstalling...");
+                WriteConsoleOutput($"    App was installed, uninstalling...", settings);
                 appService.UninstallApp(appIdentity);
-                AnsiConsole.MarkupLine("    Uninstall complete...");
+                WriteConsoleOutput("    Uninstall complete...", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("    App was not installed.");
+                WriteConsoleOutput("    App was not installed.", settings);
             }
 
             // Check certificate installation
-            AnsiConsole.MarkupLine("  - Testing available certificates...");
+            WriteConsoleOutput("  - Testing available certificates...", settings);
             if (!appService.IsCertificateInstalled(certFingerprint))
             {
-                AnsiConsole.MarkupLine("    Certificate was not found, importing certificate...");
+                WriteConsoleOutput("    Certificate was not found, importing certificate...", settings);
                 appService.InstallCertificate(certificatePath);
-                AnsiConsole.MarkupLine("    Certificate imported.");
+                WriteConsoleOutput("    Certificate imported.", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("    Certificate was found.");
+                WriteConsoleOutput("    Certificate was found.", settings);
             }
 
             // Install the app
-            AnsiConsole.MarkupLine("  - Installing the app...");
+            WriteConsoleOutput("  - Installing the app...", settings);
             appService.InstallApp(settings.App);
-            AnsiConsole.MarkupLine("    Application installed.");
+            WriteConsoleOutput("    Application installed.", settings);
 
             // Start the app
-            AnsiConsole.MarkupLine("  - Starting the application...");
+            WriteConsoleOutput("  - Starting the application...", settings);
             appService.StartApp(appIdentity, null);
-            AnsiConsole.MarkupLine("    Application started.");
+            WriteConsoleOutput("    Application started.", settings);
 
             // Handle TCP test results
-            await StartTestListener(settings.ResultsDirectory);
+            var (testFailures, testResults) = await StartTestListener(settings);
 
-            return 0;
+            var result = new TestStartResult
+            {
+                Success = testFailures == 0,
+                AppIdentity = appIdentity,
+                AppPath = settings.App,
+                CertificateThumbprint = certFingerprint,
+                ResultsDirectory = settings.ResultsDirectory,
+                TestFailures = testFailures,
+                TestResults = testResults
+            };
+            WriteResult(result, settings);
+
+            return testFailures > 0 ? 1 : 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            var result = new TestStartResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message,
+                AppPath = settings.App,
+                ResultsDirectory = settings.ResultsDirectory
+            };
+
+            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteResult(result, settings);
             return 1;
         }
     }
 
-    private async Task StartTestListener(string resultsDirectory)
+    private async Task<(int testFailures, string? testResults)> StartTestListener(Settings settings)
     {
         // Ensure artifacts directory exists for TCP results
-        Directory.CreateDirectory(resultsDirectory);
+        Directory.CreateDirectory(settings.ResultsDirectory);
 
-        AnsiConsole.MarkupLine("  - Starting TCP listener on port 16384...");
-        var tcpResultsFile = Path.Combine(resultsDirectory, "tcp-test-results.txt");
+        WriteConsoleOutput("  - Starting TCP listener on port 16384...", settings);
+        var tcpResultsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-results.txt");
 
-        AnsiConsole.MarkupLine("  - Waiting for test results via TCP...");
-        AnsiConsole.MarkupLine("[blue]------------------------------------------------------------[/]");
+        WriteConsoleOutput("  - Waiting for test results via TCP...", settings);
+        WriteConsoleOutput("[blue]------------------------------------------------------------[/]", settings);
 
         var networkService = new NetworkService();
         using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMinutes(10)); // 10 minute timeout
@@ -122,12 +144,12 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
         {
             var results = await networkService.StartTcpListener(16384, tcpResultsFile, true, cancellationTokenSource.Token);
             
-            AnsiConsole.MarkupLine("[blue]------------------------------------------------------------[/]");
+            WriteConsoleOutput("[blue]------------------------------------------------------------[/]", settings);
             
             if (File.Exists(tcpResultsFile))
             {
                 var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
-                AnsiConsole.MarkupLine("  - Analyzing TCP test results...");
+                WriteConsoleOutput("  - Analyzing TCP test results...", settings);
                 
                 // Look for test failure indicators in the TCP results
                 if (tcpResults.Contains("Failed:"))
@@ -139,34 +161,36 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
                         {
                             if (failedCount > 0)
                             {
-                                AnsiConsole.MarkupLine($"    TCP results indicate {failedCount} test failures.");
-                                Environment.ExitCode = 1;
+                                WriteConsoleOutput($"    TCP results indicate {failedCount} test failures.", settings);
+                                return (failedCount, tcpResults);
                             }
                             else
                             {
-                                AnsiConsole.MarkupLine("    TCP results indicate no test failures.");
+                                WriteConsoleOutput("    TCP results indicate no test failures.", settings);
+                                return (0, tcpResults);
                             }
-                            break;
                         }
                     }
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine("    [yellow]Could not parse test results format.[/]");
-                    Environment.ExitCode = 1;
+                    WriteConsoleOutput("    [yellow]Could not parse test results format.[/]", settings);
+                    return (1, tcpResults);
                 }
             }
             else
             {
-                AnsiConsole.MarkupLine("    [yellow]No TCP results received.[/]");
-                Environment.ExitCode = 1;
+                WriteConsoleOutput("    [yellow]No TCP results received.[/]", settings);
+                return (1, null);
             }
         }
         catch (OperationCanceledException)
         {
-            AnsiConsole.MarkupLine("    [yellow]TCP listener timed out waiting for results.[/]");
-            Environment.ExitCode = 1;
+            WriteConsoleOutput("    [yellow]TCP listener timed out waiting for results.[/]", settings);
+            return (1, null);
         }
+
+        return (1, null);
     }
 
     private string ExtractNumber(string text, string prefix)

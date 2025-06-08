@@ -17,6 +17,30 @@ dotnet tool install --global --add-source ./bin/Release DeviceRunners.Cli
 dotnet run -- [command] [options]
 ```
 
+## Global Options
+
+All commands support a global `--output` option for structured results that can be consumed by automation tools:
+
+**Output Formats:**
+- `--output json` - Returns results as JSON
+- `--output xml` - Returns results as XML  
+- `--output text` - Returns results as key=value pairs
+- (no --output) - Shows rich console output for human users (default)
+
+**Examples:**
+```bash
+# For human users - shows rich colored output with progress
+device-runners windows cert install --publisher "CN=Test"
+
+# For automation - clean JSON output  
+device-runners windows cert install --publisher "CN=Test" --output json
+
+# For automation - simple text format
+device-runners windows cert install --publisher "CN=Test" --output text
+```
+
+When `--output` is specified, verbose console logs are suppressed and only the structured result is returned, making it ideal for CI/CD pipelines and automation scripts.
+
 ## Commands
 
 ### Windows Commands
@@ -133,7 +157,7 @@ Install and start a test application with TCP listener for receiving test result
 device-runners windows test --app "path/to/app.msix"
 
 # With custom output directory
-device-runners windows test --app "path/to/app.msix" --output-directory "test-results"
+device-runners windows test --app "path/to/app.msix" --results-directory "test-results"
 
 # With specific certificate
 device-runners windows test --app "path/to/app.msix" --certificate "path/to/cert.pfx"
@@ -142,7 +166,7 @@ device-runners windows test --app "path/to/app.msix" --certificate "path/to/cert
 **Options:**
 - `--app` - Path to the MSIX application package (required)
 - `--certificate` - Path to the certificate file (optional, auto-detected if not provided)
-- `--output-directory` - Output directory for test results (default: "artifacts")
+- `--results-directory` - Results directory for test outputs (default: "artifacts")
 
 **Behavior:**
 The test command performs a complete test workflow:
@@ -164,13 +188,16 @@ Start a TCP port listener for receiving test results.
 # Basic TCP listener
 device-runners listen --port 16384
 
-# With output file and non-interactive mode
-device-runners listen --port 16384 --output results.txt --non-interactive
+# With results file and non-interactive mode
+device-runners listen --port 16384 --results-file results.txt --non-interactive
+
+# For automation - JSON output
+device-runners listen --port 16384 --non-interactive --output json
 ```
 
 **Options:**
 - `--port` - TCP port to listen on (default: 16384)
-- `--output` - Output file path for received data
+- `--results-file` - File path to save received data
 - `--non-interactive` - Run in non-interactive mode with timeout
 
 **Platform Support:** Cross-platform
@@ -191,7 +218,7 @@ device-runners windows launch --identity "MyApp" --args "test-mode"
 device-runners windows uninstall --identity "MyApp"
 
 # Network operations (cross-platform)  
-device-runners listen --port 16384 --output results.txt
+device-runners listen --port 16384 --results-file results.txt
 
 # Test execution (Windows only)
 device-runners windows test --app app.msix

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Xml.Serialization;
 using DeviceRunners.Cli.Models;
+using Spectre.Console;
 
 namespace DeviceRunners.Cli.Services;
 
@@ -33,7 +34,7 @@ public class OutputService
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         var json = JsonSerializer.Serialize(result, options);
-        Console.WriteLine(json);
+        AnsiConsole.WriteLine(json);
     }
 
     private void WriteXml<T>(T result) where T : CommandResult
@@ -41,16 +42,16 @@ public class OutputService
         var serializer = new XmlSerializer(typeof(T));
         using var writer = new StringWriter();
         serializer.Serialize(writer, result);
-        Console.WriteLine(writer.ToString());
+        AnsiConsole.WriteLine(writer.ToString());
     }
 
     private void WriteText<T>(T result) where T : CommandResult
     {
         // Simple key=value format
-        Console.WriteLine($"Success={result.Success}");
+        AnsiConsole.WriteLine($"Success={result.Success}");
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            Console.WriteLine($"ErrorMessage={result.ErrorMessage}");
+            AnsiConsole.WriteLine($"ErrorMessage={result.ErrorMessage}");
         }
 
         // Use reflection to write all properties
@@ -62,7 +63,7 @@ public class OutputService
             var value = property.GetValue(result);
             if (value != null)
             {
-                Console.WriteLine($"{property.Name}={value}");
+                AnsiConsole.WriteLine($"{property.Name}={value}");
             }
         }
     }

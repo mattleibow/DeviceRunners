@@ -1,13 +1,14 @@
 using System.ComponentModel;
+using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateRemoveCommand : Command<CertificateRemoveCommand.Settings>
+public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [Description("Certificate fingerprint to remove")]
         [CommandOption("--fingerprint")]
@@ -18,39 +19,64 @@ public class CertificateRemoveCommand : Command<CertificateRemoveCommand.Setting
     {
         try
         {
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
-            AnsiConsole.MarkupLine("[blue]REMOVE CERTIFICATE[/]");
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput("[blue]REMOVE CERTIFICATE[/]", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
 
             var certificateService = new CertificateService();
             
-            AnsiConsole.MarkupLine("  - Testing available certificates...");
+            WriteConsoleOutput("  - Testing available certificates...", settings);
             
-            if (certificateService.CertificateExists(settings.Fingerprint))
+            bool wasFound = certificateService.CertificateExists(settings.Fingerprint);
+            bool removed = false;
+
+            if (wasFound)
             {
-                AnsiConsole.MarkupLine("    Certificate was found.");
-                AnsiConsole.MarkupLine($"  - Removing certificate with fingerprint '[yellow]{settings.Fingerprint}[/]'...");
+                WriteConsoleOutput("    Certificate was found.", settings);
+                WriteConsoleOutput($"  - Removing certificate with fingerprint '[yellow]{settings.Fingerprint}[/]'...", settings);
                 
-                if (certificateService.RemoveCertificate(settings.Fingerprint))
+                removed = certificateService.RemoveCertificate(settings.Fingerprint);
+                if (removed)
                 {
-                    AnsiConsole.MarkupLine("    Certificate removed.");
+                    WriteConsoleOutput("    Certificate removed.", settings);
                 }
                 else
                 {
-                    AnsiConsole.MarkupLine("[yellow]    Failed to remove certificate.[/]");
+                    WriteConsoleOutput("[yellow]    Failed to remove certificate.[/]", settings);
                 }
             }
             else
             {
-                AnsiConsole.MarkupLine("    Certificate was not found.");
+                WriteConsoleOutput("    Certificate was not found.", settings);
             }
 
-            AnsiConsole.WriteLine();
+            if (!ShouldSuppressConsoleOutput(settings))
+            {
+                AnsiConsole.WriteLine();
+            }
+
+            var result = new CertificateRemoveResult
+            {
+                Success = !wasFound || removed, // Success if not found or successfully removed
+                Fingerprint = settings.Fingerprint,
+                WasFound = wasFound
+            };
+            WriteResult(result, settings);
+
             return 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            var result = new CertificateRemoveResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message,
+                Fingerprint = settings.Fingerprint,
+                WasFound = false
+            };
+
+            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteResult(result, settings);
             return 1;
         }
     }

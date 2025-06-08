@@ -1,13 +1,14 @@
 using System.ComponentModel;
+using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppUninstallCommand : Command<AppUninstallCommand.Settings>
+public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package (to determine app identity)")]
         [CommandOption("--app")]
@@ -31,34 +32,55 @@ public class AppUninstallCommand : Command<AppUninstallCommand.Settings>
             }
             else if (!string.IsNullOrEmpty(settings.App))
             {
-                AnsiConsole.MarkupLine("  - Determining app identity from MSIX...");
+                WriteConsoleOutput("  - Determining app identity from MSIX...", settings);
                 appIdentity = appService.GetAppIdentityFromMsix(settings.App);
-                AnsiConsole.MarkupLine($"    App identity found: '[green]{appIdentity}[/]'");
+                WriteConsoleOutput($"    App identity found: '[green]{appIdentity}[/]'", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("[red]Error: Either --app or --identity must be specified[/]");
+                var result = new AppUninstallResult
+                {
+                    Success = false,
+                    ErrorMessage = "Either --app or --identity must be specified"
+                };
+
+                WriteConsoleOutput("[red]Error: Either --app or --identity must be specified[/]", settings);
+                WriteResult(result, settings);
                 return 1;
             }
 
             // Check if app is installed
-            AnsiConsole.MarkupLine("  - Testing to see if the app is installed...");
+            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
             if (appService.IsAppInstalled(appIdentity))
             {
-                AnsiConsole.MarkupLine($"    App was installed, uninstalling...");
+                WriteConsoleOutput($"    App was installed, uninstalling...", settings);
                 appService.UninstallApp(appIdentity);
-                AnsiConsole.MarkupLine("    Uninstall complete.");
+                WriteConsoleOutput("    Uninstall complete.", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("    App was not installed.");
+                WriteConsoleOutput("    App was not installed.", settings);
             }
+
+            var successResult = new AppUninstallResult
+            {
+                Success = true,
+                AppIdentity = appIdentity
+            };
+            WriteResult(successResult, settings);
 
             return 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            var result = new AppUninstallResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message
+            };
+
+            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteResult(result, settings);
             return 1;
         }
     }

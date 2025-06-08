@@ -1,13 +1,14 @@
 using System.ComponentModel;
+using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppInstallCommand : Command<AppInstallCommand.Settings>
+public class AppInstallCommand : BaseCommand<AppInstallCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package")]
         [CommandOption("--app")]
@@ -28,53 +29,70 @@ public class AppInstallCommand : Command<AppInstallCommand.Settings>
             var certificatePath = settings.Certificate ?? appService.GetCertificateFromMsix(settings.App);
             var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
             
-            AnsiConsole.MarkupLine("  - Determining certificate for MSIX installer...");
-            AnsiConsole.MarkupLine($"    File path: '[green]{certificatePath}[/]'");
-            AnsiConsole.MarkupLine($"    Thumbprint: '[green]{certFingerprint}[/]'");
-            AnsiConsole.MarkupLine("    Certificate identified.");
+            WriteConsoleOutput("  - Determining certificate for MSIX installer...", settings);
+            WriteConsoleOutput($"    File path: '[green]{certificatePath}[/]'", settings);
+            WriteConsoleOutput($"    Thumbprint: '[green]{certFingerprint}[/]'", settings);
+            WriteConsoleOutput("    Certificate identified.", settings);
 
             // Determine app identity
-            AnsiConsole.MarkupLine("  - Determining app identity...");
+            WriteConsoleOutput("  - Determining app identity...", settings);
             var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
-            AnsiConsole.MarkupLine($"    MSIX installer: '[green]{settings.App}[/]'");
-            AnsiConsole.MarkupLine($"    App identity found: '[green]{appIdentity}[/]'");
+            WriteConsoleOutput($"    MSIX installer: '[green]{settings.App}[/]'", settings);
+            WriteConsoleOutput($"    App identity found: '[green]{appIdentity}[/]'", settings);
 
             // Check if app is already installed
-            AnsiConsole.MarkupLine("  - Testing to see if the app is installed...");
+            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
             if (appService.IsAppInstalled(appIdentity))
             {
-                AnsiConsole.MarkupLine($"    App was already installed, uninstalling first...");
+                WriteConsoleOutput($"    App was already installed, uninstalling first...", settings);
                 appService.UninstallApp(appIdentity);
-                AnsiConsole.MarkupLine("    Uninstall complete...");
+                WriteConsoleOutput("    Uninstall complete...", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("    App was not installed.");
+                WriteConsoleOutput("    App was not installed.", settings);
             }
 
             // Check certificate installation
-            AnsiConsole.MarkupLine("  - Testing available certificates...");
+            WriteConsoleOutput("  - Testing available certificates...", settings);
             if (!appService.IsCertificateInstalled(certFingerprint))
             {
-                AnsiConsole.MarkupLine("    Certificate was not found, importing certificate...");
+                WriteConsoleOutput("    Certificate was not found, importing certificate...", settings);
                 appService.InstallCertificate(certificatePath);
-                AnsiConsole.MarkupLine("    Certificate imported.");
+                WriteConsoleOutput("    Certificate imported.", settings);
             }
             else
             {
-                AnsiConsole.MarkupLine("    Certificate was found.");
+                WriteConsoleOutput("    Certificate was found.", settings);
             }
 
             // Install the app
-            AnsiConsole.MarkupLine("  - Installing the app...");
+            WriteConsoleOutput("  - Installing the app...", settings);
             appService.InstallApp(settings.App);
-            AnsiConsole.MarkupLine("    Application installed.");
+            WriteConsoleOutput("    Application installed.", settings);
+
+            var result = new AppInstallResult
+            {
+                Success = true,
+                AppIdentity = appIdentity,
+                AppPath = settings.App,
+                CertificateThumbprint = certFingerprint
+            };
+            WriteResult(result, settings);
 
             return 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            var result = new AppInstallResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message,
+                AppPath = settings.App
+            };
+
+            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteResult(result, settings);
             return 1;
         }
     }
