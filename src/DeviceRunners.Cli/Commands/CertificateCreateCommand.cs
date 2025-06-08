@@ -1,15 +1,16 @@
 using System.ComponentModel;
 using System.Security.Cryptography.X509Certificates;
 using System.Xml.Linq;
+using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
 using Spectre.Console;
 using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateCreateCommand : Command<CertificateCreateCommand.Settings>
+public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Settings>
 {
-    public class Settings : CommandSettings
+    public class Settings : BaseCommandSettings
     {
         [Description("Publisher identity for the certificate")]
         [CommandOption("--publisher")]
@@ -28,34 +29,60 @@ public class CertificateCreateCommand : Command<CertificateCreateCommand.Setting
     {
         try
         {
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
-            AnsiConsole.MarkupLine("[blue]PREPARATION[/]");
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput("[blue]PREPARATION[/]", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
 
             var publisher = DeterminePublisher(settings);
             
-            AnsiConsole.MarkupLine("  - Preparation complete.");
-            AnsiConsole.WriteLine();
+            WriteConsoleOutput("  - Preparation complete.", settings);
+            if (!ShouldSuppressConsoleOutput(settings))
+            {
+                AnsiConsole.WriteLine();
+            }
 
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
-            AnsiConsole.MarkupLine("[blue]GENERATE CERTIFICATE[/]");
-            AnsiConsole.MarkupLine("[blue]============================================================[/]");
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput("[blue]GENERATE CERTIFICATE[/]", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
 
             var certificateService = new CertificateService();
             var fingerprint = certificateService.CreateSelfSignedCertificate(publisher);
 
-            AnsiConsole.MarkupLine($"    Publisher: '[green]{publisher}[/]'");
-            AnsiConsole.MarkupLine($"    Thumbprint: '[green]{fingerprint}[/]'");
-            AnsiConsole.MarkupLine("    Certificate generated.");
-            AnsiConsole.MarkupLine("  - Generation complete.");
-            AnsiConsole.WriteLine();
+            WriteConsoleOutput($"    Publisher: '[green]{publisher}[/]'", settings);
+            WriteConsoleOutput($"    Thumbprint: '[green]{fingerprint}[/]'", settings);
+            WriteConsoleOutput("    Certificate generated.", settings);
+            WriteConsoleOutput("  - Generation complete.", settings);
+            if (!ShouldSuppressConsoleOutput(settings))
+            {
+                AnsiConsole.WriteLine();
+                AnsiConsole.MarkupLine($"[green]{fingerprint}[/]");
+            }
 
-            AnsiConsole.MarkupLine($"[green]{fingerprint}[/]");
+            // Write structured output if requested
+            var result = new CertificateCreateResult
+            {
+                Success = true,
+                Publisher = publisher,
+                Thumbprint = fingerprint
+            };
+            WriteResult(result, settings);
+
             return 0;
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            var result = new CertificateCreateResult
+            {
+                Success = false,
+                ErrorMessage = ex.Message
+            };
+
+            if (!ShouldSuppressConsoleOutput(settings))
+            {
+                AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
+            }
+            
+            WriteResult(result, settings);
             return 1;
         }
     }
@@ -64,15 +91,15 @@ public class CertificateCreateCommand : Command<CertificateCreateCommand.Setting
     {
         if (!string.IsNullOrEmpty(settings.Publisher))
         {
-            AnsiConsole.MarkupLine($"  - Publisher identity provided: '[green]{settings.Publisher}[/]'");
+            WriteConsoleOutput($"  - Publisher identity provided: '[green]{settings.Publisher}[/]'", settings);
             return settings.Publisher;
         }
 
-        AnsiConsole.MarkupLine("  - Determining publisher identity...");
+        WriteConsoleOutput("  - Determining publisher identity...", settings);
 
         var manifestPath = DetermineManifestPath(settings);
         
-        AnsiConsole.MarkupLine($"    Reading publisher identity from the manifest: '[green]{manifestPath}[/]'...");
+        WriteConsoleOutput($"    Reading publisher identity from the manifest: '[green]{manifestPath}[/]'...", settings);
         
         var manifestXml = XDocument.Load(manifestPath);
         var publisher = manifestXml.Root?.Element(XName.Get("Identity", "http://schemas.microsoft.com/appx/manifest/foundation/windows10"))?.Attribute("Publisher")?.Value;
@@ -82,7 +109,7 @@ public class CertificateCreateCommand : Command<CertificateCreateCommand.Setting
             throw new InvalidOperationException("Unable to read publisher identity from manifest.");
         }
 
-        AnsiConsole.MarkupLine($"    Publisher identity: '[green]{publisher}[/]'");
+        WriteConsoleOutput($"    Publisher identity: '[green]{publisher}[/]'", settings);
         return publisher;
     }
 
@@ -102,7 +129,7 @@ public class CertificateCreateCommand : Command<CertificateCreateCommand.Setting
             throw new InvalidOperationException("No parameters were provided. Provide either the --publisher or --manifest values.");
         }
 
-        AnsiConsole.MarkupLine($"    No manifest was provided, trying to use the project '[green]{settings.Project}[/]'...");
+        WriteConsoleOutput($"    No manifest was provided, trying to use the project '[green]{settings.Project}[/]'...", settings);
 
         var possiblePaths = new[]
         {
@@ -113,11 +140,11 @@ public class CertificateCreateCommand : Command<CertificateCreateCommand.Setting
         foreach (var possible in possiblePaths)
         {
             var resolvedPath = Path.GetFullPath(possible);
-            AnsiConsole.MarkupLine($"    Trying the manifest path '[yellow]{possible}[/]'...");
+            WriteConsoleOutput($"    Trying the manifest path '[yellow]{possible}[/]'...", settings);
             
             if (File.Exists(resolvedPath))
             {
-                AnsiConsole.MarkupLine($"    Manifest found: '[green]{resolvedPath}[/]'");
+                WriteConsoleOutput($"    Manifest found: '[green]{resolvedPath}[/]'", settings);
                 return resolvedPath;
             }
         }

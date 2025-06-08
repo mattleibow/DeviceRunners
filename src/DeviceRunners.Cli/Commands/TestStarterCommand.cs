@@ -17,10 +17,10 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
         [CommandOption("--certificate")]
         public string? Certificate { get; set; }
 
-        [Description("Output directory for test results")]
-        [CommandOption("--output-directory")]
+        [Description("Results directory for test outputs")]
+        [CommandOption("--results-directory")]
         [DefaultValue("artifacts")]
-        public string OutputDirectory { get; set; } = "artifacts";
+        public string ResultsDirectory { get; set; } = "artifacts";
 
 
     }
@@ -93,7 +93,7 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
             AnsiConsole.MarkupLine("    Application started.");
 
             // Handle TCP test results
-            await StartTestListener(settings.OutputDirectory);
+            await StartTestListener(settings.ResultsDirectory);
 
             return 0;
         }
@@ -104,13 +104,13 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
         }
     }
 
-    private async Task StartTestListener(string outputDirectory)
+    private async Task StartTestListener(string resultsDirectory)
     {
         // Ensure artifacts directory exists for TCP results
-        Directory.CreateDirectory(outputDirectory);
+        Directory.CreateDirectory(resultsDirectory);
 
         AnsiConsole.MarkupLine("  - Starting TCP listener on port 16384...");
-        var tcpResultsFile = Path.Combine(outputDirectory, "tcp-test-results.txt");
+        var tcpResultsFile = Path.Combine(resultsDirectory, "tcp-test-results.txt");
 
         AnsiConsole.MarkupLine("  - Waiting for test results via TCP...");
         AnsiConsole.MarkupLine("[blue]------------------------------------------------------------[/]");

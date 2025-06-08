@@ -51,7 +51,7 @@ app.Configure(config =>
     config.AddCommand<PortListenerCommand>("listen")
         .WithDescription("Start a TCP port listener")
         .WithExample(new[] { "listen", "--port", "16384" })
-        .WithExample(new[] { "listen", "--port", "16384", "--output", "results.txt", "--non-interactive" });
+        .WithExample(new[] { "listen", "--port", "16384", "--results-file", "results.txt", "--non-interactive" });
 });
 
 return await app.RunAsync(args);
