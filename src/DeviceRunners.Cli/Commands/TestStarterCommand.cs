@@ -22,9 +22,7 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
         [DefaultValue("artifacts")]
         public string OutputDirectory { get; set; } = "artifacts";
 
-        [Description("Testing mode")]
-        [CommandOption("--testing-mode")]
-        public TestingMode? TestingMode { get; set; }
+
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -95,11 +93,8 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
             appService.StartApp(appIdentity, launchArgs);
             AnsiConsole.MarkupLine("    Application started.");
 
-            // Handle special testing modes
-            if (settings.TestingMode == Commands.TestingMode.NonInteractiveVisual)
-            {
-                await HandleNonInteractiveVisualMode(settings.OutputDirectory);
-            }
+            // Handle TCP test results
+            await HandleNonInteractiveVisualMode(settings.OutputDirectory);
 
             return 0;
         }
@@ -112,10 +107,7 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
 
     private string? GetLaunchArguments(Settings settings)
     {
-        return settings.TestingMode switch
-        {
-            _ => null
-        };
+        return null;
     }
 
     private async Task HandleNonInteractiveVisualMode(string outputDirectory)
@@ -200,8 +192,3 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
     }
 }
 
-public enum TestingMode
-{
-    NonInteractiveVisual,
-    None
-}

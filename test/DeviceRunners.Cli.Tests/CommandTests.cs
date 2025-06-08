@@ -88,4 +88,64 @@ public class CommandTests
         // Assert
         Assert.NotEqual(0, result.ExitCode);
     }
+
+    [Fact]
+    public void AppInstallCommand_WithMissingApp_ShowsError()
+    {
+        // Arrange
+        var app = new CommandAppTester();
+        app.Configure(config =>
+        {
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddCommand<AppInstallCommand>("install");
+            });
+        });
+
+        // Act
+        var result = app.Run("windows", "install");
+
+        // Assert
+        Assert.NotEqual(0, result.ExitCode);
+    }
+
+    [Fact]
+    public void AppUninstallCommand_WithMissingParameters_ShowsError()
+    {
+        // Arrange
+        var app = new CommandAppTester();
+        app.Configure(config =>
+        {
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddCommand<AppUninstallCommand>("uninstall");
+            });
+        });
+
+        // Act
+        var result = app.Run("windows", "uninstall");
+
+        // Assert
+        Assert.NotEqual(0, result.ExitCode);
+    }
+
+    [Fact]
+    public void AppLaunchCommand_WithMissingParameters_ShowsError()
+    {
+        // Arrange
+        var app = new CommandAppTester();
+        app.Configure(config =>
+        {
+            config.AddBranch("windows", windows =>
+            {
+                windows.AddCommand<AppLaunchCommand>("launch");
+            });
+        });
+
+        // Act
+        var result = app.Run("windows", "launch");
+
+        // Assert
+        Assert.NotEqual(0, result.ExitCode);
+    }
 }
