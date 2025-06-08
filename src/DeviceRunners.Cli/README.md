@@ -21,6 +21,8 @@ dotnet run -- [command] [options]
 
 ### Windows Commands
 
+All Windows commands support both `--app` (MSIX package path) and `--identity` (application name) parameters for flexibility, unless otherwise specified.
+
 #### Certificate Management
 
 ##### Install Certificate (`windows cert install`)
@@ -58,46 +60,112 @@ device-runners windows cert uninstall --fingerprint "ABCD1234..."
 
 **Platform Support:** Windows only
 
+#### Application Management
+
+##### Install Application (`windows install`)
+
+Install an MSIX application package with automatic certificate handling.
+
+```bash
+# Install with automatic certificate detection
+device-runners windows install --app "path/to/app.msix"
+
+# Install with specific certificate
+device-runners windows install --app "path/to/app.msix" --certificate "path/to/cert.pfx"
+```
+
+**Options:**
+- `--app` - Path to the MSIX application package (required)
+- `--certificate` - Path to the certificate file (optional, auto-detected if not provided)
+
+**Platform Support:** Windows only
+
+##### Uninstall Application (`windows uninstall`)
+
+Uninstall an application by package path or application identity.
+
+```bash
+# Uninstall by MSIX package path
+device-runners windows uninstall --app "path/to/app.msix"
+
+# Uninstall by application identity/name
+device-runners windows uninstall --identity "MyApplication"
+```
+
+**Options:**
+- `--app` - Path to the MSIX application package
+- `--identity` - Application identity/name to uninstall
+
+**Note:** Either `--app` or `--identity` must be provided.
+
+**Platform Support:** Windows only
+
+##### Launch Application (`windows launch`)
+
+Launch an installed application with optional arguments.
+
+```bash
+# Launch by MSIX package path
+device-runners windows launch --app "path/to/app.msix"
+
+# Launch by application identity
+device-runners windows launch --identity "MyApplication"
+
+# Launch with custom arguments
+device-runners windows launch --identity "MyApplication" --args "test-arguments"
+```
+
+**Options:**
+- `--app` - Path to the MSIX application package
+- `--identity` - Application identity/name to launch
+- `--args` - Launch arguments to pass to the application
+
+**Note:** Either `--app` or `--identity` must be provided.
+
+**Platform Support:** Windows only
+
 #### Test Execution (`windows test`)
 
-Install and start a test application.
+Install and start a test application with TCP listener for receiving test results.
 
 ```bash
 # Basic test execution
 device-runners windows test --app "path/to/app.msix"
 
-# With XHarness testing mode (includes folder watcher for real-time log streaming)
-device-runners windows test --app "path/to/app.msix" --testing-mode XHarness
+# With custom output directory
+device-runners windows test --app "path/to/app.msix" --output-directory "test-results"
 
-# With NonInteractiveVisual testing mode (TCP listener for results)
-device-runners windows test --app "path/to/app.msix" --testing-mode NonInteractiveVisual
+# With specific certificate
+device-runners windows test --app "path/to/app.msix" --certificate "path/to/cert.pfx"
 ```
 
 **Options:**
 - `--app` - Path to the MSIX application package (required)
 - `--certificate` - Path to the certificate file (optional, auto-detected if not provided)
 - `--output-directory` - Output directory for test results (default: "artifacts")
-- `--testing-mode` - Testing mode: `XHarness`, `NonInteractiveVisual`, or `None`
 
-**Testing Modes:**
-- **XHarness**: Launches the app with XHarness test runner arguments and monitors test-output-*.log files in real-time
-- **NonInteractiveVisual**: Starts a TCP listener on port 16384 to receive test results
-- **None**: Basic app launch without special test handling
+**Behavior:**
+The test command performs a complete test workflow:
+1. Installs the certificate (if needed)
+2. Installs the MSIX application
+3. Starts a TCP listener on port 16384
+4. Launches the application in NonInteractiveVisual mode
+5. Receives and displays test results from the TCP connection
 
 **Platform Support:** Windows only
 
-### TCP Commands
+### Network Commands
 
-#### Port Listener (`tcp listener start`)
+#### TCP Port Listener (`listen`)
 
 Start a TCP port listener for receiving test results.
 
 ```bash
 # Basic TCP listener
-device-runners tcp listener start --port 16384
+device-runners listen --port 16384
 
 # With output file and non-interactive mode
-device-runners tcp listener start --port 16384 --output results.txt --non-interactive
+device-runners listen --port 16384 --output results.txt --non-interactive
 ```
 
 **Options:**
@@ -117,19 +185,29 @@ dotnet tool install --global DeviceRunners.Cli
 device-runners windows cert install --publisher "CN=MyCompany"
 device-runners windows cert uninstall --fingerprint "ABCD1234..."
 
+# Application management (Windows only)
+device-runners windows install --app app.msix
+device-runners windows launch --identity "MyApp" --args "test-mode"
+device-runners windows uninstall --identity "MyApp"
+
 # Network operations (cross-platform)  
-device-runners tcp listener start --port 16384 --output results.txt
+device-runners listen --port 16384 --output results.txt
 
 # Test execution (Windows only)
-device-runners windows test --app app.msix --testing-mode XHarness
+device-runners windows test --app app.msix
 ## Original PowerShell Scripts
 
 This CLI tool replaces the following PowerShell scripts:
 
 - `New-Certificate.ps1` → `windows cert install` command
 - `Remove-Certificate.ps1` → `windows cert uninstall` command
-- `New-PortListener.ps1` → `tcp listener start` command
+- `New-PortListener.ps1` → `listen` command
 - `Start-Tests.ps1` → `windows test` command
+
+The CLI tool also provides additional functionality not available in the original scripts:
+- `windows install` - Install MSIX applications separately
+- `windows uninstall` - Uninstall applications separately  
+- `windows launch` - Launch applications separately
 
 ## Development
 
