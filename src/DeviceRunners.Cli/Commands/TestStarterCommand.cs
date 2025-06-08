@@ -89,12 +89,11 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
 
             // Start the app
             AnsiConsole.MarkupLine("  - Starting the application...");
-            var launchArgs = GetLaunchArguments(settings);
-            appService.StartApp(appIdentity, launchArgs);
+            appService.StartApp(appIdentity, null);
             AnsiConsole.MarkupLine("    Application started.");
 
             // Handle TCP test results
-            await HandleNonInteractiveVisualMode(settings.OutputDirectory);
+            await StartTestListener(settings.OutputDirectory);
 
             return 0;
         }
@@ -105,12 +104,7 @@ public class TestStarterCommand : Command<TestStarterCommand.Settings>
         }
     }
 
-    private string? GetLaunchArguments(Settings settings)
-    {
-        return null;
-    }
-
-    private async Task HandleNonInteractiveVisualMode(string outputDirectory)
+    private async Task StartTestListener(string outputDirectory)
     {
         // Ensure artifacts directory exists for TCP results
         Directory.CreateDirectory(outputDirectory);
