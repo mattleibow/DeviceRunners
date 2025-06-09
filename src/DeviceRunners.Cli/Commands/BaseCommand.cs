@@ -7,7 +7,14 @@ namespace DeviceRunners.Cli.Commands;
 
 public abstract class BaseCommand<TSettings> : Command<TSettings> where TSettings : BaseCommandSettings
 {
-    protected readonly OutputService outputService = new();
+    private readonly IAnsiConsole _console;
+    protected readonly OutputService outputService;
+
+    protected BaseCommand(IAnsiConsole console)
+    {
+        _console = console;
+        outputService = new OutputService(console);
+    }
 
     protected void WriteResult<TResult>(TResult result, TSettings settings) where TResult : CommandResult
     {
@@ -26,7 +33,31 @@ public abstract class BaseCommand<TSettings> : Command<TSettings> where TSetting
     {
         if (!ShouldSuppressConsoleOutput(settings))
         {
-            AnsiConsole.MarkupLine(message);
+            _console.MarkupLine(message);
+        }
+    }
+
+    protected void WriteConsoleLine(TSettings settings)
+    {
+        if (!ShouldSuppressConsoleOutput(settings))
+        {
+            _console.WriteLine();
+        }
+    }
+
+    protected void WriteConsoleMarkup(string message, TSettings settings)
+    {
+        if (!ShouldSuppressConsoleOutput(settings))
+        {
+            _console.MarkupLine(message);
+        }
+    }
+
+    protected void WriteConsoleText(string text, TSettings settings)
+    {
+        if (!ShouldSuppressConsoleOutput(settings))
+        {
+            _console.WriteLine(text);
         }
     }
 }

@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
 {
+    public TestStarterCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package")]

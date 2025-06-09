@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
 {
+    public PortListenerCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("TCP port to listen on")]
@@ -75,10 +79,7 @@ public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
             if (!string.IsNullOrEmpty(receivedData))
             {
                 WriteConsoleOutput("[green]Data received:[/]", settings);
-                if (!ShouldSuppressConsoleOutput(settings))
-                {
-                    AnsiConsole.WriteLine(receivedData);
-                }
+                WriteConsoleText(receivedData, settings);
             }
 
             WriteConsoleOutput($"[green]Stopped listening on TCP port {settings.Port}[/]", settings);

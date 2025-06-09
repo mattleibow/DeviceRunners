@@ -10,6 +10,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Settings>
 {
+    public CertificateCreateCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Publisher identity for the certificate")]
@@ -36,10 +40,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             var publisher = DeterminePublisher(settings);
             
             WriteConsoleOutput("  - Preparation complete.", settings);
-            if (!ShouldSuppressConsoleOutput(settings))
-            {
-                AnsiConsole.WriteLine();
-            }
+            WriteConsoleLine(settings);
 
             WriteConsoleOutput("[blue]============================================================[/]", settings);
             WriteConsoleOutput("[blue]GENERATE CERTIFICATE[/]", settings);
@@ -52,11 +53,8 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             WriteConsoleOutput($"    Thumbprint: '[green]{fingerprint}[/]'", settings);
             WriteConsoleOutput("    Certificate generated.", settings);
             WriteConsoleOutput("  - Generation complete.", settings);
-            if (!ShouldSuppressConsoleOutput(settings))
-            {
-                AnsiConsole.WriteLine();
-                AnsiConsole.MarkupLine($"[green]{fingerprint}[/]");
-            }
+            WriteConsoleLine(settings);
+            WriteConsoleMarkup($"[green]{fingerprint}[/]", settings);
 
             // Write structured output if requested
             var result = new CertificateCreateResult
@@ -77,10 +75,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
                 ErrorMessage = ex.Message
             };
 
-            if (!ShouldSuppressConsoleOutput(settings))
-            {
-                AnsiConsole.MarkupLine($"[red]Error: {ex.Message}[/]");
-            }
+            WriteConsoleMarkup($"[red]Error: {ex.Message}[/]", settings);
             
             WriteResult(result, settings);
             return 1;

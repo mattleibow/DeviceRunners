@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Settings>
 {
+    public CertificateRemoveCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Certificate fingerprint to remove")]
@@ -50,10 +54,7 @@ public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Set
                 WriteConsoleOutput("    Certificate was not found.", settings);
             }
 
-            if (!ShouldSuppressConsoleOutput(settings))
-            {
-                AnsiConsole.WriteLine();
-            }
+            WriteConsoleLine(settings);
 
             var result = new CertificateRemoveResult
             {

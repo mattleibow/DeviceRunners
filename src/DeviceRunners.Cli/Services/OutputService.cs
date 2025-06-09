@@ -7,6 +7,17 @@ namespace DeviceRunners.Cli.Services;
 
 public class OutputService
 {
+    private readonly IAnsiConsole _console;
+
+    public OutputService() : this(AnsiConsole.Console)
+    {
+    }
+
+    public OutputService(IAnsiConsole console)
+    {
+        _console = console;
+    }
+
     public void WriteOutput<T>(T result, OutputFormat format) where T : CommandResult
     {
         switch (format)
@@ -34,7 +45,7 @@ public class OutputService
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         var json = JsonSerializer.Serialize(result, options);
-        AnsiConsole.WriteLine(json);
+        _console.WriteLine(json);
     }
 
     private void WriteXml<T>(T result) where T : CommandResult
@@ -42,16 +53,16 @@ public class OutputService
         var serializer = new XmlSerializer(typeof(T));
         using var writer = new StringWriter();
         serializer.Serialize(writer, result);
-        AnsiConsole.WriteLine(writer.ToString());
+        _console.WriteLine(writer.ToString());
     }
 
     private void WriteText<T>(T result) where T : CommandResult
     {
         // Simple key=value format
-        AnsiConsole.WriteLine($"Success={result.Success}");
+        _console.WriteLine($"Success={result.Success}");
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            AnsiConsole.WriteLine($"ErrorMessage={result.ErrorMessage}");
+            _console.WriteLine($"ErrorMessage={result.ErrorMessage}");
         }
 
         // Use reflection to write all properties
@@ -63,7 +74,7 @@ public class OutputService
             var value = property.GetValue(result);
             if (value != null)
             {
-                AnsiConsole.WriteLine($"{property.Name}={value}");
+                _console.WriteLine($"{property.Name}={value}");
             }
         }
     }

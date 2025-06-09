@@ -108,10 +108,9 @@ public class CommandTests
             WasFound = true
         };
         var console = new TestConsole();
-        var outputService = new OutputService();
+        var outputService = new OutputService(console);
 
         // Act
-        AnsiConsole.Console = console;
         outputService.WriteOutput(testResult, OutputFormat.Json);
         var output = console.Output;
 
@@ -134,10 +133,9 @@ public class CommandTests
             WasFound = true
         };
         var console = new TestConsole();
-        var outputService = new OutputService();
+        var outputService = new OutputService(console);
 
         // Act
-        AnsiConsole.Console = console;
         outputService.WriteOutput(testResult, OutputFormat.Xml);
         var output = console.Output;
 
@@ -164,10 +162,9 @@ public class CommandTests
             WasFound = true
         };
         var console = new TestConsole();
-        var outputService = new OutputService();
+        var outputService = new OutputService(console);
 
         // Act
-        AnsiConsole.Console = console;
         outputService.WriteOutput(testResult, OutputFormat.Text);
         var output = console.Output;
 
