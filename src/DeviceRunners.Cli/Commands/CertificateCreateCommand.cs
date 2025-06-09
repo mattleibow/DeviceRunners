@@ -49,7 +49,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             var certificateService = new CertificateService();
             var fingerprint = certificateService.CreateSelfSignedCertificate(publisher);
 
-            WriteConsoleOutput($"    Publisher: '[green]{publisher}[/]'", settings);
+            WriteConsoleOutput($"    Publisher: '[green]{Markup.Escape(publisher)}[/]'", settings);
             WriteConsoleOutput($"    Thumbprint: '[green]{fingerprint}[/]'", settings);
             WriteConsoleOutput("    Certificate generated.", settings);
             WriteConsoleOutput("  - Generation complete.", settings);
@@ -74,7 +74,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
                 ErrorMessage = ex.Message
             };
 
-            WriteConsoleMarkup($"[red]Error: {ex.Message}[/]", settings);
+            WriteConsoleMarkup($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             
             WriteResult(result, settings);
             return 1;
@@ -85,7 +85,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
     {
         if (!string.IsNullOrEmpty(settings.Publisher))
         {
-            WriteConsoleOutput($"  - Publisher identity provided: '[green]{settings.Publisher}[/]'", settings);
+            WriteConsoleOutput($"  - Publisher identity provided: '[green]{Markup.Escape(settings.Publisher)}[/]'", settings);
             return settings.Publisher;
         }
 
@@ -93,7 +93,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
 
         var manifestPath = DetermineManifestPath(settings);
         
-        WriteConsoleOutput($"    Reading publisher identity from the manifest: '[green]{manifestPath}[/]'...", settings);
+        WriteConsoleOutput($"    Reading publisher identity from the manifest: '[green]{Markup.Escape(manifestPath)}[/]'...", settings);
         
         var manifestXml = XDocument.Load(manifestPath);
         var publisher = manifestXml.Root?.Element(XName.Get("Identity", "http://schemas.microsoft.com/appx/manifest/foundation/windows10"))?.Attribute("Publisher")?.Value;
@@ -103,7 +103,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             throw new InvalidOperationException("Unable to read publisher identity from manifest.");
         }
 
-        WriteConsoleOutput($"    Publisher identity: '[green]{publisher}[/]'", settings);
+        WriteConsoleOutput($"    Publisher identity: '[green]{Markup.Escape(publisher)}[/]'", settings);
         return publisher;
     }
 
@@ -123,7 +123,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             throw new InvalidOperationException("No parameters were provided. Provide either the --publisher or --manifest values.");
         }
 
-        WriteConsoleOutput($"    No manifest was provided, trying to use the project '[green]{settings.Project}[/]'...", settings);
+        WriteConsoleOutput($"    No manifest was provided, trying to use the project '[green]{Markup.Escape(settings.Project)}[/]'...", settings);
 
         var possiblePaths = new[]
         {
@@ -134,11 +134,11 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
         foreach (var possible in possiblePaths)
         {
             var resolvedPath = Path.GetFullPath(possible);
-            WriteConsoleOutput($"    Trying the manifest path '[yellow]{possible}[/]'...", settings);
+            WriteConsoleOutput($"    Trying the manifest path '[yellow]{Markup.Escape(possible)}[/]'...", settings);
             
             if (File.Exists(resolvedPath))
             {
-                WriteConsoleOutput($"    Manifest found: '[green]{resolvedPath}[/]'", settings);
+                WriteConsoleOutput($"    Manifest found: '[green]{Markup.Escape(resolvedPath)}[/]'", settings);
                 return resolvedPath;
             }
         }

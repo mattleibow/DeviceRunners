@@ -117,7 +117,7 @@ public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
                 Port = settings.Port
             };
 
-            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             WriteResult(result, settings);
             return 1;
         }

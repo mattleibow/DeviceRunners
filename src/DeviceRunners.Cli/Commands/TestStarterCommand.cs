@@ -51,15 +51,15 @@ public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
             var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
             
             WriteConsoleOutput("  - Determining certificate for MSIX installer...", settings);
-            WriteConsoleOutput($"    File path: '[green]{certificatePath}[/]'", settings);
+            WriteConsoleOutput($"    File path: '[green]{Markup.Escape(certificatePath)}[/]'", settings);
             WriteConsoleOutput($"    Thumbprint: '[green]{certFingerprint}[/]'", settings);
             WriteConsoleOutput("    Certificate identified.", settings);
 
             // Determine app identity
             WriteConsoleOutput("  - Determining app identity...", settings);
             var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
-            WriteConsoleOutput($"    MSIX installer: '[green]{settings.App}[/]'", settings);
-            WriteConsoleOutput($"    App identity found: '[green]{appIdentity}[/]'", settings);
+            WriteConsoleOutput($"    MSIX installer: '[green]{Markup.Escape(settings.App)}[/]'", settings);
+            WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
 
             // Check if app is already installed
             WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
@@ -124,7 +124,7 @@ public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
                 ResultsDirectory = settings.ResultsDirectory
             };
 
-            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             WriteResult(result, settings);
             return 1;
         }

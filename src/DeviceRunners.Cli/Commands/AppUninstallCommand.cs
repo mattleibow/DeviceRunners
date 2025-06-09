@@ -38,7 +38,7 @@ public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
             {
                 WriteConsoleOutput("  - Determining app identity from MSIX...", settings);
                 appIdentity = appService.GetAppIdentityFromMsix(settings.App);
-                WriteConsoleOutput($"    App identity found: '[green]{appIdentity}[/]'", settings);
+                WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
             }
             else
             {
@@ -83,7 +83,7 @@ public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
                 ErrorMessage = ex.Message
             };
 
-            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             WriteResult(result, settings);
             return 1;
         }

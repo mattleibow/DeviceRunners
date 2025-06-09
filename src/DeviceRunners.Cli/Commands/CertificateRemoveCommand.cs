@@ -76,7 +76,7 @@ public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Set
                 WasFound = false
             };
 
-            WriteConsoleOutput($"[red]Error: {ex.Message}[/]", settings);
+            WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             WriteResult(result, settings);
             return 1;
         }
