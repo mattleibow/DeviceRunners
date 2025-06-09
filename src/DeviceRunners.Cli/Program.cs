@@ -37,20 +37,23 @@ app.Configure(config =>
 
         windows.AddCommand<AppLaunchCommand>("launch")
             .WithDescription("Launch an installed application")
-            .WithExample(new[] { "windows", "launch", "--app", "path/to/app.msix" })
             .WithExample(new[] { "windows", "launch", "--identity", "MyApp" })
             .WithExample(new[] { "windows", "launch", "--identity", "MyApp", "--args", "test-arguments" });
 
         // Test command
         windows.AddCommand<TestCommand>("test")
             .WithDescription("Install and start a test application")
-            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix" });
+            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix" })
+            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix", "--port", "8080" })
+            .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix", "--connection-timeout", "60", "--data-timeout", "45" });
     });
 
     // TCP commands
     config.AddCommand<PortListenerCommand>("listen")
         .WithDescription("Start a TCP port listener")
         .WithExample(new[] { "listen", "--port", "16384" })
+        .WithExample(new[] { "listen", "--port", "16384", "--non-interactive" })
+        .WithExample(new[] { "listen", "--port", "16384", "--non-interactive", "--connection-timeout", "60", "--data-timeout", "45" })
         .WithExample(new[] { "listen", "--port", "16384", "--results-file", "results.txt", "--non-interactive" });
 });
 
