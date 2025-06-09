@@ -9,23 +9,46 @@ param (
     [string]$Output,
 
     [Parameter(Mandatory = $false, HelpMessage = "Run this script in a non-interactive mode")]
-    [switch]$NonInteractive
+    [switch]$NonInteractive,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Connection timeout in seconds (non-interactive mode only)")]
+    [ValidateRange(1, 3600)]
+    [int]$ConnectionTimeoutSeconds = 30,
+
+    [Parameter(Mandatory = $false, HelpMessage = "Data timeout in seconds (non-interactive mode only)")]
+    [ValidateRange(1, 3600)]
+    [int]$DataTimeoutSeconds = 30
 )
 
 $ErrorActionPreference = 'Stop'
 
 $Global:ProgressPreference = 'SilentlyContinue' # Hide GUI output
 
-function Wait-TcpConnection ($listener) {
-    Write-Host ("Waiting for an incoming connection, press Escape to stop listening...") -ForegroundColor Green
-    while (!$listener.Pending()) {
-        if ($host.UI.RawUI.KeyAvailable) {
-            $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyUp,IncludeKeyDown")
-            if ($key.VirtualKeyCode -eq 27) {
+function Wait-TcpConnection ($listener, $timeoutSeconds = $null, $nonInteractive = $false) {
+    if ($nonInteractive -and $timeoutSeconds) {
+        Write-Host ("Waiting for an incoming connection (timeout: {0}s)..." -f $timeoutSeconds) -ForegroundColor Green
+        $startTime = Get-Date
+        $timeoutTime = $startTime.AddSeconds($timeoutSeconds)
+        
+        while (!$listener.Pending()) {
+            $currentTime = Get-Date
+            if ($currentTime -gt $timeoutTime) {
+                Write-Host "Connection timeout reached." -ForegroundColor Yellow
                 return $false
             }
+            Start-Sleep -Milliseconds 100
         }
-        Start-Sleep -Milliseconds 1000
+    } else {
+        Write-Host ("Waiting for an incoming connection, press Escape to stop listening...") -ForegroundColor Green
+        while (!$listener.Pending()) {
+            if ($host.UI.RawUI.KeyAvailable) {
+                $key = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyUp,IncludeKeyDown")
+                if ($key.VirtualKeyCode -eq 27) {
+                    return $false
+                }
+            }
+            Start-Sleep -Milliseconds 1000
+        }
     }
     return $true
 }
@@ -49,7 +72,7 @@ if ($NonInteractive) {
 }
 
 while ($true) {
-    if (!(Wait-TcpConnection ($listener))) {
+    if (!(Wait-TcpConnection $listener $ConnectionTimeoutSeconds $NonInteractive)) {
         break
     }
 
@@ -60,12 +83,28 @@ while ($true) {
     $text = ''
     $stream = $client.GetStream()
     $bytes = New-Object System.Byte[] 1024
-    while (($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
-        $EncodedText = New-Object System.Text.ASCIIEncoding
-        $data = $EncodedText.GetString($bytes, 0, $i)
-        $text += $data
-        Write-Output $data
+    
+    if ($NonInteractive) {
+        # Set read timeout for data in non-interactive mode
+        $stream.ReadTimeout = $DataTimeoutSeconds * 1000  # Convert to milliseconds
     }
+    
+    try {
+        while (($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){
+            $EncodedText = New-Object System.Text.ASCIIEncoding
+            $data = $EncodedText.GetString($bytes, 0, $i)
+            $text += $data
+            Write-Output $data
+        }
+    }
+    catch [System.IO.IOException] {
+        if ($NonInteractive) {
+            Write-Host "Data timeout reached." -ForegroundColor Yellow
+        } else {
+            throw
+        }
+    }
+    
     $stream.close()
     $client.Close()
 
