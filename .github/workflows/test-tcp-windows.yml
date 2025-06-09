@@ -25,9 +25,14 @@ jobs:
       uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c Release
+        dotnet tool install --global --add-source src/DeviceRunners.Cli/bin/Release DeviceRunners.Cli
     - name: Publish App
       run: |
-        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj
+        $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output Json
+        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
@@ -36,14 +41,11 @@ jobs:
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
           /bl:./artifacts/logs/msbuild-publish.binlog
-        ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
+        device-runners windows cert uninstall --fingerprint $fingerprint
     - name: Run Tests
       run: |
         $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
-        ./scripts/Start-Tests.ps1 `
-          -App $msix `
-          -OutputDirectory artifacts `
-          -TestingMode NonInteractiveVisual
+        device-runners windows test --app $msix --results-directory artifacts
       shell: powershell
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
