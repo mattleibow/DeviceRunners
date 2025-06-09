@@ -170,12 +170,18 @@ device-runners windows test --app "path/to/app.msix" --results-directory "test-r
 
 # With specific certificate
 device-runners windows test --app "path/to/app.msix" --certificate "path/to/cert.pfx"
+
+# With custom port and timeouts
+device-runners windows test --app "path/to/app.msix" --port 8080 --connection-timeout 60 --data-timeout 45
 ```
 
 **Options:**
 - `--app` - Path to the MSIX application package (required)
 - `--certificate` - Path to the certificate file (optional, auto-detected if not provided)
 - `--results-directory` - Results directory for test outputs (default: "artifacts")
+- `--port` - TCP port to listen on (default: 16384)
+- `--connection-timeout` - Connection timeout in seconds (default: 30)
+- `--data-timeout` - Data timeout in seconds (default: 30)
 
 **Workflow:**
 1. **Preparation Phase:**
@@ -188,8 +194,8 @@ device-runners windows test --app "path/to/app.msix" --certificate "path/to/cert
 
 2. **Execution Phase:**
    - Launches the application
-   - Starts TCP listener on port 16384 for test results
-   - Waits for test completion (10-minute timeout)
+   - Starts TCP listener on specified port (default: 16384) for test results
+   - Waits for test completion with configurable timeouts (defaults: 30s connection, 30s data)
    - Analyzes test results
 
 3. **Cleanup Phase:**
@@ -211,6 +217,9 @@ device-runners listen --port 16384
 # With results file and non-interactive mode
 device-runners listen --port 16384 --results-file results.txt --non-interactive
 
+# With custom timeouts in non-interactive mode
+device-runners listen --port 16384 --non-interactive --connection-timeout 60 --data-timeout 45
+
 # For automation - JSON output
 device-runners listen --port 16384 --non-interactive --output json
 ```
@@ -219,6 +228,14 @@ device-runners listen --port 16384 --non-interactive --output json
 - `--port` - TCP port to listen on (default: 16384)
 - `--results-file` - File path to save received data
 - `--non-interactive` - Run in non-interactive mode with timeout
+- `--connection-timeout` - Connection timeout in seconds for non-interactive mode (default: 30)
+- `--data-timeout` - Data timeout in seconds for non-interactive mode (default: 30)
+
+**Timeout Behavior:**
+- **Interactive mode**: No timeouts, waits indefinitely
+- **Non-interactive mode**: Uses connection and data timeouts
+  - Connection timeout: Waits for first connection
+  - Data timeout: Waits for data to arrive, resets on each data received
 
 **Platform Support:** Cross-platform
 

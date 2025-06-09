@@ -22,6 +22,16 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
         [Description("Run in non-interactive mode")]
         [CommandOption("--non-interactive")]
         public bool NonInteractive { get; set; }
+
+        [Description("Connection timeout in seconds (non-interactive mode only)")]
+        [CommandOption("--connection-timeout")]
+        [DefaultValue(30)]
+        public int ConnectionTimeout { get; set; } = 30;
+
+        [Description("Data timeout in seconds (non-interactive mode only)")]
+        [CommandOption("--data-timeout")]
+        [DefaultValue(30)]
+        public int DataTimeout { get; set; } = 30;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -88,6 +98,8 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
                 settings.Port, 
                 settings.ResultsFile, 
                 settings.NonInteractive, 
+                settings.ConnectionTimeout,
+                settings.DataTimeout,
                 cancellationTokenSource.Token);
 
             if (!string.IsNullOrEmpty(receivedData))

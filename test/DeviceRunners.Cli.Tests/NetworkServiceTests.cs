@@ -47,12 +47,65 @@ public class NetworkServiceTests : IDisposable
         // Act & Assert - Should not throw and should handle cancellation gracefully
         try
         {
-            await _service.StartTcpListener(port, null, true, cancellationTokenSource.Token);
+            await _service.StartTcpListener(port, null, true, 30, 30, cancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
             // Expected when no connections come in within timeout
         }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_NonInteractiveWithConnectionTimeout_TimesOutWhenNoConnection()
+    {
+        // Arrange
+        var testPort = 16386; // Use a specific port for testing
+        var connectionTimeout = 1; // 1 second timeout
+        
+        // Act & Assert
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        
+        try
+        {
+            await _service.StartTcpListener(testPort, null, true, connectionTimeout, 30, cancellationTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected due to connection timeout
+        }
+        
+        stopwatch.Stop();
+        // Should timeout around 1 second (allow some variance for test reliability)
+        Assert.True(stopwatch.ElapsedMilliseconds >= 800 && stopwatch.ElapsedMilliseconds <= 2000, 
+            $"Expected timeout around 1 second, but took {stopwatch.ElapsedMilliseconds}ms");
+    }
+
+    [Fact]
+    public async Task StartTcpListener_InteractiveMode_NoTimeouts()
+    {
+        // Arrange
+        var testPort = 16387; // Use a specific port for testing
+        var connectionTimeout = 1; // 1 second timeout - should be ignored
+        
+        // Act & Assert
+        using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+        
+        try
+        {
+            // In interactive mode, timeouts should be ignored
+            await _service.StartTcpListener(testPort, null, false, connectionTimeout, 30, cancellationTokenSource.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected due to manual cancellation after 2 seconds, not connection timeout
+        }
+        
+        stopwatch.Stop();
+        // Should wait for full 2 seconds, not timeout at 1 second
+        Assert.True(stopwatch.ElapsedMilliseconds >= 1800, 
+            $"Expected to wait at least 1.8 seconds in interactive mode, but took only {stopwatch.ElapsedMilliseconds}ms");
     }
 
     [Fact]
@@ -176,7 +229,7 @@ public class NetworkServiceTests : IDisposable
         // Act & Assert - should handle timeout gracefully
         try
         {
-            await _service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            await _service.StartTcpListener(testPort, null, true, 30, 30, cancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -208,7 +261,7 @@ public class NetworkServiceTests : IDisposable
 
         // Start the listener in background
         var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
-        var backgroundListener = Task.Run(() => _service.StartTcpListener(port, _tempPath, true, cancellationTokenSource.Token));
+        var backgroundListener = Task.Run(() => _service.StartTcpListener(port, _tempPath, true, 30, 30, cancellationTokenSource.Token));
 
         // Give the listener a moment to start
         await Task.Delay(200);

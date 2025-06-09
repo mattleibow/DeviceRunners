@@ -23,6 +23,20 @@ public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Setting
         [DefaultValue("artifacts")]
         public string ResultsDirectory { get; set; } = "artifacts";
 
+        [Description("TCP port to listen on")]
+        [CommandOption("--port")]
+        [DefaultValue(16384)]
+        public int Port { get; set; } = 16384;
+
+        [Description("Connection timeout in seconds")]
+        [CommandOption("--connection-timeout")]
+        [DefaultValue(30)]
+        public int ConnectionTimeout { get; set; } = 30;
+
+        [Description("Data timeout in seconds")]
+        [CommandOption("--data-timeout")]
+        [DefaultValue(30)]
+        public int DataTimeout { get; set; } = 30;
 
     }
 
@@ -183,7 +197,7 @@ public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Setting
         // Ensure artifacts directory exists for TCP results
         Directory.CreateDirectory(settings.ResultsDirectory);
 
-        WriteConsoleOutput($"  - Starting TCP listener on port 16384...", settings);
+        WriteConsoleOutput($"  - Starting TCP listener on port {settings.Port}...", settings);
         var tcpResultsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-results.txt");
 
         WriteConsoleOutput($"  - Waiting for test results via TCP...", settings);
@@ -194,7 +208,7 @@ public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Setting
 
         try
         {
-            var results = await networkService.StartTcpListener(16384, tcpResultsFile, true, cancellationTokenSource.Token);
+            var results = await networkService.StartTcpListener(settings.Port, tcpResultsFile, true, settings.ConnectionTimeout, settings.DataTimeout, cancellationTokenSource.Token);
             
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
             
