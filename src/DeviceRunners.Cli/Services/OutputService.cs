@@ -9,10 +9,6 @@ public class OutputService
 {
     private readonly IAnsiConsole _console;
 
-    public OutputService() : this(AnsiConsole.Console)
-    {
-    }
-
     public OutputService(IAnsiConsole console)
     {
         _console = console;
