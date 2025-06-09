@@ -70,8 +70,10 @@ public class AppInstallCommand : BaseCommand<AppInstallCommand.Settings>
                 WriteConsoleOutput("    Certificate was found.", settings);
             }
 
-            // Install the app
-            WriteConsoleOutput("  - Installing the app...", settings);
+            // Install dependencies and the app
+            WriteConsoleOutput("  - Installing dependencies...", settings);
+            appService.InstallDependencies(settings.App, (msg) => WriteConsoleOutput(msg, settings));
+            WriteConsoleOutput("  - Installing application...", settings);
             appService.InstallApp(settings.App);
             WriteConsoleOutput("    Application installed.", settings);
 

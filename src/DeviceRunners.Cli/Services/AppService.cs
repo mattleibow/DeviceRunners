@@ -178,6 +178,7 @@ public class AppService
             throw new PlatformNotSupportedException("App installation is only supported on Windows.");
         }
 
+        // Install the main app (dependencies should be installed separately if needed)
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "powershell",
@@ -195,6 +196,63 @@ public class AppService
             {
                 var error = process.StandardError.ReadToEnd();
                 throw new InvalidOperationException($"Failed to install app: {error}");
+            }
+        }
+    }
+
+    public void InstallDependencies(string msixPath, Action<string>? logger = null)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException("Dependency installation is only supported on Windows.");
+        }
+
+        // Determine architecture
+        var arch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+        if (arch == "AMD64")
+        {
+            arch = "x64";
+        }
+
+        // Look for dependencies folder relative to the MSIX file
+        var msixDirectory = Path.GetDirectoryName(msixPath);
+        if (msixDirectory == null) return;
+
+        var dependenciesPath = Path.Combine(msixDirectory, "..", "Dependencies", arch ?? "x64");
+        if (!Directory.Exists(dependenciesPath)) return;
+
+        // Install each dependency
+        var dependencyFiles = Directory.GetFiles(dependenciesPath, "*.msix");
+        foreach (var dependencyFile in dependencyFiles)
+        {
+            try
+            {
+                logger?.Invoke($"    Installing dependency: '{dependencyFile}'");
+                
+                var process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "powershell",
+                    Arguments = $"-Command \"Add-AppxPackage -Path '{dependencyFile}'\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                });
+
+                if (process != null)
+                {
+                    process.WaitForExit();
+                    // Note: We don't throw on dependency install failure, just continue like PowerShell script
+                    if (process.ExitCode != 0)
+                    {
+                        logger?.Invoke("    Dependency failed to install, continuing...");
+                    }
+                }
+            }
+            catch
+            {
+                // Dependency failed to install, continuing like PowerShell script
+                logger?.Invoke("    Dependency failed to install, continuing...");
             }
         }
     }
