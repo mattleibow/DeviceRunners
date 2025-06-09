@@ -31,7 +31,8 @@ jobs:
         dotnet tool install --global --add-source src/DeviceRunners.Cli/bin/Release DeviceRunners.Cli
     - name: Publish App
       run: |
-        $fingerprint = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj
+        $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output json
+        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `
@@ -44,7 +45,7 @@ jobs:
     - name: Run Tests
       run: |
         $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
-        device-runners windows test --app $msix --output-directory artifacts --testing-mode NonInteractiveVisual
+        device-runners windows test --app $msix --results-directory artifacts
       shell: powershell
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4

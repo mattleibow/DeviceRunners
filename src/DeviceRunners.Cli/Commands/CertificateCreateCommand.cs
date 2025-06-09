@@ -54,7 +54,6 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             WriteConsoleOutput("    Certificate generated.", settings);
             WriteConsoleOutput("  - Generation complete.", settings);
             WriteConsoleLine(settings);
-            WriteConsoleMarkup($"[green]{fingerprint}[/]", settings);
 
             // Write structured output if requested
             var result = new CertificateCreateResult
