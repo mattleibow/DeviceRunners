@@ -207,7 +207,7 @@ public class AppService
         var msixDirectory = Path.GetDirectoryName(msixPath);
         if (msixDirectory == null) return;
 
-        var dependenciesPath = Path.Combine(msixDirectory, "..", "Dependencies", arch);
+        var dependenciesPath = Path.Combine(msixDirectory, "Dependencies", arch);
         if (!Directory.Exists(dependenciesPath)) return;
 
         // Install each dependency
