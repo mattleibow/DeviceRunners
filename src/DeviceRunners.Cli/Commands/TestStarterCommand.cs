@@ -75,9 +75,11 @@ public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
             }
 
             // Check certificate installation
+            var autoInstalledCertificate = false;
             WriteConsoleOutput("  - Testing available certificates...", settings);
             if (!appService.IsCertificateInstalled(certFingerprint))
             {
+                autoInstalledCertificate = true;
                 WriteConsoleOutput("    Certificate was not found, importing certificate...", settings);
                 appService.InstallCertificate(certificatePath);
                 WriteConsoleOutput("    Certificate imported.", settings);
@@ -86,6 +88,10 @@ public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
             {
                 WriteConsoleOutput("    Certificate was found.", settings);
             }
+
+            // Install dependencies first
+            WriteConsoleOutput("  - Installing dependencies...", settings);
+            appService.InstallDependencies(settings.App, message => WriteConsoleOutput(message, settings));
 
             // Install the app
             WriteConsoleOutput("  - Installing the app...", settings);
@@ -99,6 +105,40 @@ public class TestStarterCommand : BaseCommand<TestStarterCommand.Settings>
 
             // Handle TCP test results
             var (testFailures, testResults) = await StartTestListener(settings);
+
+            WriteConsoleOutput("", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput("[blue]CLEANUP[/]", settings);
+            WriteConsoleOutput("[blue]============================================================[/]", settings);
+
+            // Cleanup: Uninstall the app
+            WriteConsoleOutput("  - Uninstalling application...", settings);
+            try
+            {
+                appService.UninstallApp(appIdentity);
+                WriteConsoleOutput("    Application uninstalled.", settings);
+            }
+            catch (Exception ex)
+            {
+                WriteConsoleOutput($"    [yellow]Warning: Failed to uninstall application: {Markup.Escape(ex.Message)}[/]", settings);
+            }
+
+            // Cleanup: Remove certificate if we auto-installed it
+            if (autoInstalledCertificate)
+            {
+                WriteConsoleOutput("  - Removing installed certificates...", settings);
+                try
+                {
+                    appService.UninstallCertificate(certFingerprint);
+                    WriteConsoleOutput("    Installed certificates removed.", settings);
+                }
+                catch (Exception ex)
+                {
+                    WriteConsoleOutput($"    [yellow]Warning: Failed to remove certificate: {Markup.Escape(ex.Message)}[/]", settings);
+                }
+            }
+
+            WriteConsoleOutput("  - Cleanup complete.", settings);
 
             var result = new TestStartResult
             {

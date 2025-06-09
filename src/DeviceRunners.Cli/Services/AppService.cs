@@ -8,6 +8,12 @@ namespace DeviceRunners.Cli.Services;
 
 public class AppService
 {
+    private readonly PowerShellService _powerShellService;
+
+    public AppService()
+    {
+        _powerShellService = new PowerShellService();
+    }
     public string GetAppIdentityFromMsix(string msixPath)
     {
         using var archive = ZipFile.OpenRead(msixPath);
@@ -57,28 +63,14 @@ public class AppService
 
         try
         {
-            var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = $"-Command \"Get-AppxPackage -Name '{appIdentity}'\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            });
-
-            if (process != null)
-            {
-                var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-                return !string.IsNullOrWhiteSpace(output) && !output.Contains("No packages were found");
-            }
+            var output = _powerShellService.ExecuteCommand($"Get-AppxPackage -Name '{appIdentity}'");
+            return !string.IsNullOrWhiteSpace(output) && !output.Contains("No packages were found");
         }
         catch
         {
             // Ignore errors and assume not installed
+            return false;
         }
-
-        return false;
     }
 
     public void UninstallApp(string appIdentity)
@@ -88,25 +80,7 @@ public class AppService
             throw new PlatformNotSupportedException("App uninstallation is only supported on Windows.");
         }
 
-        var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = "powershell",
-            Arguments = $"-Command \"Get-AppxPackage -Name '{appIdentity}' | Remove-AppxPackage\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-            {
-                var error = process.StandardError.ReadToEnd();
-                throw new InvalidOperationException($"Failed to uninstall app: {error}");
-            }
-        }
+        _powerShellService.ExecuteCommand($"Get-AppxPackage -Name '{appIdentity}' | Remove-AppxPackage");
     }
 
     public void InstallCertificate(string certPath)
@@ -116,26 +90,58 @@ public class AppService
             throw new PlatformNotSupportedException("Certificate installation is only supported on Windows.");
         }
 
-        var process = Process.Start(new ProcessStartInfo
+        // Try native C# approach first
+        try
         {
-            FileName = "powershell",
-            Arguments = $"-Command \"Import-Certificate -CertStoreLocation 'Cert:\\LocalMachine\\TrustedPeople' -FilePath '{certPath}'\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            Verb = "runas" // Request elevation
-        });
-
-        if (process != null)
-        {
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-            {
-                var error = process.StandardError.ReadToEnd();
-                throw new InvalidOperationException($"Failed to install certificate: {error}");
-            }
+            InstallCertificateNative(certPath);
         }
+        catch
+        {
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Import-Certificate -CertStoreLocation 'Cert:\\LocalMachine\\TrustedPeople' -FilePath '{certPath}'", requiresElevation: true);
+        }
+    }
+
+    private void InstallCertificateNative(string certPath)
+    {
+        var cert = X509CertificateLoader.LoadCertificateFromFile(certPath);
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadWrite);
+        store.Add(cert);
+        store.Close();
+    }
+
+    public void UninstallCertificate(string thumbprint)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException("Certificate uninstallation is only supported on Windows.");
+        }
+
+        // Try native C# approach first
+        try
+        {
+            UninstallCertificateNative(thumbprint);
+        }
+        catch
+        {
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Remove-Item -Path 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}' -DeleteKey", requiresElevation: true);
+        }
+    }
+
+    private void UninstallCertificateNative(string thumbprint)
+    {
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadWrite);
+        
+        var certsToRemove = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+        foreach (var cert in certsToRemove)
+        {
+            store.Remove(cert);
+        }
+        
+        store.Close();
     }
 
     public bool IsCertificateInstalled(string thumbprint)
@@ -147,28 +153,27 @@ public class AppService
 
         try
         {
-            var process = Process.Start(new ProcessStartInfo
-            {
-                FileName = "powershell",
-                Arguments = $"-Command \"Test-Certificate 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}'\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            });
-
-            if (process != null)
-            {
-                var output = process.StandardOutput.ReadToEnd();
-                process.WaitForExit();
-                return process.ExitCode == 0;
-            }
+            // Use native C# approach for checking certificate
+            using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            var certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+            var found = certs.Count > 0;
+            store.Close();
+            return found;
         }
         catch
         {
-            // Ignore errors and assume not installed
+            // Fall back to PowerShell
+            try
+            {
+                var exitCode = _powerShellService.ExecuteCommandWithExitCode($"Test-Certificate 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}'", out _, out _);
+                return exitCode == 0;
+            }
+            catch
+            {
+                return false;
+            }
         }
-
-        return false;
     }
 
     public void InstallApp(string msixPath)
@@ -178,26 +183,7 @@ public class AppService
             throw new PlatformNotSupportedException("App installation is only supported on Windows.");
         }
 
-        // Install the main app (dependencies should be installed separately if needed)
-        var process = Process.Start(new ProcessStartInfo
-        {
-            FileName = "powershell",
-            Arguments = $"-Command \"Add-AppxPackage -Path '{msixPath}'\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            process.WaitForExit();
-            if (process.ExitCode != 0)
-            {
-                var error = process.StandardError.ReadToEnd();
-                throw new InvalidOperationException($"Failed to install app: {error}");
-            }
-        }
+        _powerShellService.ExecuteCommand($"Add-AppxPackage -Path '{msixPath}'");
     }
 
     public void InstallDependencies(string msixPath, Action<string>? logger = null)
@@ -207,18 +193,21 @@ public class AppService
             throw new PlatformNotSupportedException("Dependency installation is only supported on Windows.");
         }
 
-        // Determine architecture
-        var arch = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
-        if (arch == "AMD64")
+        // Determine architecture using native C# instead of environment variable
+        var arch = RuntimeInformation.ProcessArchitecture switch
         {
-            arch = "x64";
-        }
+            Architecture.X64 => "x64",
+            Architecture.X86 => "x86",
+            Architecture.Arm64 => "arm64",
+            Architecture.Arm => "arm",
+            _ => "x64" // Default fallback
+        };
 
         // Look for dependencies folder relative to the MSIX file
         var msixDirectory = Path.GetDirectoryName(msixPath);
         if (msixDirectory == null) return;
 
-        var dependenciesPath = Path.Combine(msixDirectory, "..", "Dependencies", arch ?? "x64");
+        var dependenciesPath = Path.Combine(msixDirectory, "..", "Dependencies", arch);
         if (!Directory.Exists(dependenciesPath)) return;
 
         // Install each dependency
@@ -229,25 +218,7 @@ public class AppService
             {
                 logger?.Invoke($"    Installing dependency: '{dependencyFile}'");
                 
-                var process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "powershell",
-                    Arguments = $"-Command \"Add-AppxPackage -Path '{dependencyFile}'\"",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                });
-
-                if (process != null)
-                {
-                    process.WaitForExit();
-                    // Note: We don't throw on dependency install failure, just continue like PowerShell script
-                    if (process.ExitCode != 0)
-                    {
-                        logger?.Invoke("    Dependency failed to install, continuing...");
-                    }
-                }
+                _powerShellService.ExecuteCommand($"Add-AppxPackage -Path '{dependencyFile}'");
             }
             catch
             {
@@ -283,26 +254,14 @@ public class AppService
 
     private string GetPackageFamilyName(string appIdentity)
     {
-        var process = Process.Start(new ProcessStartInfo
+        var output = _powerShellService.ExecuteCommand($"(Get-AppxPackage -Name '{appIdentity}').PackageFamilyName");
+        var familyName = output.Trim();
+        
+        if (string.IsNullOrEmpty(familyName))
         {
-            FileName = "powershell",
-            Arguments = $"-Command \"(Get-AppxPackage -Name '{appIdentity}').PackageFamilyName\"",
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            CreateNoWindow = true
-        });
-
-        if (process != null)
-        {
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit();
-            
-            if (process.ExitCode == 0 && !string.IsNullOrEmpty(output))
-            {
-                return output;
-            }
+            throw new InvalidOperationException($"Failed to get package family name for app: {appIdentity}");
         }
-
-        throw new InvalidOperationException($"Failed to get package family name for app: {appIdentity}");
+        
+        return familyName;
     }
 }
