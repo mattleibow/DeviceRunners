@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
 {
+    public AppUninstallCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package (to determine app identity)")]

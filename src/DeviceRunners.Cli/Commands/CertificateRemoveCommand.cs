@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Settings>
 {
+    public CertificateRemoveCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Certificate fingerprint to remove")]

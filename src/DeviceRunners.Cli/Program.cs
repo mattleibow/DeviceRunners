@@ -1,7 +1,13 @@
 using DeviceRunners.Cli.Commands;
+using Microsoft.Extensions.DependencyInjection;
+using Spectre.Console;
 using Spectre.Console.Cli;
 
-var app = new CommandApp();
+var services = new ServiceCollection();
+services.AddSingleton<IAnsiConsole>(AnsiConsole.Console);
+
+var registrar = new TypeRegistrar(services);
+var app = new CommandApp(registrar);
 
 app.Configure(config =>
 {
@@ -55,3 +61,50 @@ app.Configure(config =>
 });
 
 return await app.RunAsync(args);
+
+// Type registrar for dependency injection
+public sealed class TypeRegistrar : ITypeRegistrar
+{
+    private readonly IServiceCollection services;
+
+    public TypeRegistrar(IServiceCollection services)
+    {
+        this.services = services;
+    }
+
+    public ITypeResolver Build()
+    {
+        return new TypeResolver(services.BuildServiceProvider());
+    }
+
+    public void Register(Type service, Type implementation)
+    {
+        services.AddSingleton(service, implementation);
+    }
+
+    public void RegisterInstance(Type service, object implementation)
+    {
+        services.AddSingleton(service, implementation);
+    }
+
+    public void RegisterLazy(Type service, Func<object> factory)
+    {
+        services.AddSingleton(service, (_) => factory());
+    }
+}
+
+// Type resolver for dependency injection
+public sealed class TypeResolver : ITypeResolver
+{
+    private readonly IServiceProvider provider;
+
+    public TypeResolver(IServiceProvider provider)
+    {
+        this.provider = provider;
+    }
+
+    public object? Resolve(Type? type)
+    {
+        return type is null ? null : provider.GetService(type);
+    }
+}

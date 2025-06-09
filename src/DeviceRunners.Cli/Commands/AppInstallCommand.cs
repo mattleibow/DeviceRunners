@@ -8,6 +8,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class AppInstallCommand : BaseCommand<AppInstallCommand.Settings>
 {
+    public AppInstallCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package")]

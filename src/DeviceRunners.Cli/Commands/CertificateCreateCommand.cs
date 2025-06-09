@@ -10,6 +10,10 @@ namespace DeviceRunners.Cli.Commands;
 
 public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Settings>
 {
+    public CertificateCreateCommand(IAnsiConsole console) : base(console)
+    {
+    }
+
     public class Settings : BaseCommandSettings
     {
         [Description("Publisher identity for the certificate")]
