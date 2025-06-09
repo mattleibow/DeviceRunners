@@ -39,12 +39,12 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
             WriteConsoleOutput($"[blue]PREPARATION[/]", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
-            var appService = new AppService();
+            var packageService = new PackageService();
             var certificateService = new CertificateService();
 
             // Determine certificate
-            var certificatePath = settings.Certificate ?? appService.GetCertificateFromMsix(settings.App);
-            var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
+            var certificatePath = settings.Certificate ?? certificateService.GetCertificateFromMsix(settings.App);
+            var certFingerprint = certificateService.GetCertificateFingerprint(certificatePath);
             
             WriteConsoleOutput($"  - Determining certificate for MSIX installer...", settings);
             WriteConsoleOutput($"    File path: '[green]{Markup.Escape(certificatePath)}[/]'", settings);
@@ -53,16 +53,16 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
 
             // Determine app identity
             WriteConsoleOutput($"  - Determining app identity...", settings);
-            var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
+            var appIdentity = packageService.GetAppIdentityFromMsix(settings.App);
             WriteConsoleOutput($"    MSIX installer: '[green]{Markup.Escape(settings.App)}[/]'", settings);
             WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
 
             // Check if app is already installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (appService.IsAppInstalled(appIdentity))
+            if (packageService.IsAppInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was installed, uninstalling...", settings);
-                appService.UninstallApp(appIdentity);
+                packageService.UninstallApp(appIdentity);
                 WriteConsoleOutput($"    Uninstall complete...", settings);
             }
             else
@@ -73,11 +73,11 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
             // Check certificate installation
             var autoInstalledCertificate = false;
             WriteConsoleOutput($"  - Testing available certificates...", settings);
-            if (!appService.IsCertificateInstalled(certFingerprint))
+            if (!certificateService.IsCertificateInstalled(certFingerprint))
             {
                 autoInstalledCertificate = true;
                 WriteConsoleOutput($"    Certificate was not found, importing certificate...", settings);
-                appService.InstallCertificate(certificatePath);
+                certificateService.InstallCertificate(certificatePath);
                 WriteConsoleOutput($"    Certificate imported.", settings);
             }
             else
@@ -87,16 +87,28 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
 
             // Install dependencies first
             WriteConsoleOutput($"  - Installing dependencies...", settings);
-            appService.InstallDependencies(settings.App, message => WriteConsoleOutput(message, settings));
+            var dependencies = packageService.GetDependencies(settings.App);
+            foreach (var dependency in dependencies)
+            {
+                try
+                {
+                    WriteConsoleOutput($"    Installing dependency: '[green]{Markup.Escape(dependency)}[/]'", settings);
+                    packageService.InstallPackage(dependency);
+                }
+                catch
+                {
+                    WriteConsoleOutput($"    Dependency failed to install, continuing...", settings);
+                }
+            }
 
             // Install the app
             WriteConsoleOutput($"  - Installing the app...", settings);
-            appService.InstallApp(settings.App);
+            packageService.InstallPackage(settings.App);
             WriteConsoleOutput($"    Application installed.", settings);
 
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
-            appService.StartApp(appIdentity, null);
+            packageService.StartApp(appIdentity, null);
             WriteConsoleOutput($"    Application started.", settings);
 
             // Handle TCP test results
@@ -111,7 +123,7 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
             WriteConsoleOutput($"  - Uninstalling application...", settings);
             try
             {
-                appService.UninstallApp(appIdentity);
+                packageService.UninstallApp(appIdentity);
                 WriteConsoleOutput($"    Application uninstalled.", settings);
             }
             catch (Exception ex)
@@ -125,7 +137,7 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
                 WriteConsoleOutput($"  - Removing installed certificates...", settings);
                 try
                 {
-                    appService.UninstallCertificate(certFingerprint);
+                    certificateService.UninstallCertificate(certFingerprint);
                     WriteConsoleOutput($"    Installed certificates removed.", settings);
                 }
                 catch (Exception ex)

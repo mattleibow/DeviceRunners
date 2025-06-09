@@ -23,11 +23,12 @@ public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCom
     {
         try
         {
-            var appService = new AppService();
+            var packageService = new PackageService();
+            var certificateService = new CertificateService();
 
             // Determine certificate
-            var certificatePath = settings.Certificate ?? appService.GetCertificateFromMsix(settings.App);
-            var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
+            var certificatePath = settings.Certificate ?? certificateService.GetCertificateFromMsix(settings.App);
+            var certFingerprint = certificateService.GetCertificateFingerprint(certificatePath);
             
             WriteConsoleOutput($"  - Determining certificate for MSIX installer...", settings);
             WriteConsoleOutput($"    File path: '[green]{Markup.Escape(certificatePath)}[/]'", settings);
@@ -36,16 +37,16 @@ public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCom
 
             // Determine app identity
             WriteConsoleOutput($"  - Determining app identity...", settings);
-            var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
+            var appIdentity = packageService.GetAppIdentityFromMsix(settings.App);
             WriteConsoleOutput($"    MSIX installer: '[green]{Markup.Escape(settings.App)}[/]'", settings);
             WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
 
             // Check if app is already installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (appService.IsAppInstalled(appIdentity))
+            if (packageService.IsAppInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was already installed, uninstalling first...", settings);
-                appService.UninstallApp(appIdentity);
+                packageService.UninstallApp(appIdentity);
                 WriteConsoleOutput($"    Uninstall complete...", settings);
             }
             else
@@ -55,10 +56,10 @@ public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCom
 
             // Check certificate installation
             WriteConsoleOutput($"  - Testing available certificates...", settings);
-            if (!appService.IsCertificateInstalled(certFingerprint))
+            if (!certificateService.IsCertificateInstalled(certFingerprint))
             {
                 WriteConsoleOutput($"    Certificate was not found, importing certificate...", settings);
-                appService.InstallCertificate(certificatePath);
+                certificateService.InstallCertificate(certificatePath);
                 WriteConsoleOutput($"    Certificate imported.", settings);
             }
             else
@@ -68,9 +69,22 @@ public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCom
 
             // Install dependencies and the app
             WriteConsoleOutput($"  - Installing dependencies...", settings);
-            appService.InstallDependencies(settings.App, (msg) => WriteConsoleOutput(msg, settings));
+            var dependencies = packageService.GetDependencies(settings.App);
+            foreach (var dependency in dependencies)
+            {
+                try
+                {
+                    WriteConsoleOutput($"    Installing dependency: '[green]{Markup.Escape(dependency)}[/]'", settings);
+                    packageService.InstallPackage(dependency);
+                }
+                catch
+                {
+                    WriteConsoleOutput($"    Dependency failed to install, continuing...", settings);
+                }
+            }
+            
             WriteConsoleOutput($"  - Installing application...", settings);
-            appService.InstallApp(settings.App);
+            packageService.InstallPackage(settings.App);
             WriteConsoleOutput($"    Application installed.", settings);
 
             var result = new AppInstallResult

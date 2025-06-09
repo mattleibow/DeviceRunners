@@ -1,11 +1,15 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
+using System.IO.Compression;
+using System.Xml.Linq;
 
 namespace DeviceRunners.Cli.Services;
 
 public class CertificateService
 {
+    private readonly PowerShellService _powerShellService = new();
+
     public string CreateSelfSignedCertificate(string publisher)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -88,5 +92,114 @@ public class CertificateService
         store.Close();
 
         return certificates.Count > 0;
+    }
+
+    public string GetCertificateFromMsix(string msixPath)
+    {
+        var certPath = Path.ChangeExtension(msixPath, ".cer");
+        if (!File.Exists(certPath))
+        {
+            throw new FileNotFoundException($"Certificate file not found: {certPath}");
+        }
+        return certPath;
+    }
+
+    public string GetCertificateFingerprint(string certPath)
+    {
+        var cert = X509CertificateLoader.LoadCertificateFromFile(certPath);
+        return cert.Thumbprint;
+    }
+
+    public void InstallCertificate(string certPath)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException("Certificate installation is only supported on Windows.");
+        }
+
+        // Try native C# approach first
+        try
+        {
+            InstallCertificateNative(certPath);
+        }
+        catch
+        {
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Import-Certificate -CertStoreLocation 'Cert:\\LocalMachine\\TrustedPeople' -FilePath '{certPath}'", requiresElevation: true);
+        }
+    }
+
+    private void InstallCertificateNative(string certPath)
+    {
+        var cert = X509CertificateLoader.LoadCertificateFromFile(certPath);
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadWrite);
+        store.Add(cert);
+        store.Close();
+    }
+
+    public void UninstallCertificate(string thumbprint)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            throw new PlatformNotSupportedException("Certificate uninstallation is only supported on Windows.");
+        }
+
+        // Try native C# approach first
+        try
+        {
+            UninstallCertificateNative(thumbprint);
+        }
+        catch
+        {
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Remove-Item -Path 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}' -DeleteKey", requiresElevation: true);
+        }
+    }
+
+    private void UninstallCertificateNative(string thumbprint)
+    {
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+        store.Open(OpenFlags.ReadWrite);
+        
+        var certsToRemove = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+        foreach (var cert in certsToRemove)
+        {
+            store.Remove(cert);
+        }
+        
+        store.Close();
+    }
+
+    public bool IsCertificateInstalled(string thumbprint)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return false;
+        }
+
+        try
+        {
+            // Use native C# approach for checking certificate
+            using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            var certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+            var found = certs.Count > 0;
+            store.Close();
+            return found;
+        }
+        catch
+        {
+            // Fall back to PowerShell
+            try
+            {
+                var exitCode = _powerShellService.ExecuteCommandWithExitCode($"Test-Certificate 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}'", out _, out _);
+                return exitCode == 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
