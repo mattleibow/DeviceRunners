@@ -26,7 +26,7 @@ public class OutputServiceTests
         var output = console.Output;
 
         // Assert
-        Assert.True(IsValidJson(output));
+        Assert.True(TestHelpers.IsValidJson(output));
         var jsonDoc = JsonDocument.Parse(output);
         Assert.True(jsonDoc.RootElement.GetProperty("success").GetBoolean());
         Assert.Equal("ABC123", jsonDoc.RootElement.GetProperty("fingerprint").GetString());
@@ -87,18 +87,5 @@ public class OutputServiceTests
         // Verify text format doesn't contain JSON or XML markers
         Assert.DoesNotContain("{", output);
         Assert.DoesNotContain("<?xml", output);
-    }
-
-    private static bool IsValidJson(string jsonString)
-    {
-        try
-        {
-            JsonDocument.Parse(jsonString);
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
     }
 }

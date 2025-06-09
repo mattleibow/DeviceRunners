@@ -1,18 +1,17 @@
 using DeviceRunners.Cli.Commands;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
-using System.Text.Json;
 
 namespace DeviceRunners.Cli.Tests;
 
 public class CertificateRemoveCommandTests
 {
-    [Fact]
-    public void OutputFormat_InvalidValue_HandledGracefully()
+    private readonly CommandAppTester _app;
+
+    public CertificateRemoveCommandTests()
     {
-        // Test that invalid output formats are handled by the CLI framework
-        var app = new CommandAppTester();
-        app.Configure(config =>
+        _app = new CommandAppTester();
+        _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
@@ -22,9 +21,13 @@ public class CertificateRemoveCommandTests
                 });
             });
         });
+    }
 
+    [Fact]
+    public void OutputFormat_InvalidValue_HandledGracefully()
+    {
         // Act - Try to use an invalid output format
-        var result = app.Run("windows", "cert", "uninstall", "--fingerprint", "TEST123", "--output", "invalid");
+        var result = _app.Run("windows", "cert", "uninstall", "--fingerprint", "TEST123", "--output", "invalid");
 
         // Assert - Should fail with validation error
         Assert.NotEqual(0, result.ExitCode);
@@ -34,21 +37,8 @@ public class CertificateRemoveCommandTests
     [Fact]
     public void DefaultOutput_ContainsNoJson()
     {
-        // Arrange
-        var app = new CommandAppTester();
-        app.Configure(config =>
-        {
-            config.AddBranch("windows", windows =>
-            {
-                windows.AddBranch("cert", cert =>
-                {
-                    cert.AddCommand<CertificateRemoveCommand>("uninstall");
-                });
-            });
-        });
-
         // Act - Run without --output flag
-        var result = app.Run("windows", "cert", "uninstall");
+        var result = _app.Run("windows", "cert", "uninstall");
 
         // Assert - Should contain verbose error messages, not JSON
         Assert.Contains("REMOVE CERTIFICATE", result.Output); // Verbose section headers
@@ -59,38 +49,12 @@ public class CertificateRemoveCommandTests
     [Fact]
     public void JsonOutput_ContainsNoVerboseMessages()
     {
-        // Arrange
-        var app = new CommandAppTester();
-        app.Configure(config =>
-        {
-            config.AddBranch("windows", windows =>
-            {
-                windows.AddBranch("cert", cert =>
-                {
-                    cert.AddCommand<CertificateRemoveCommand>("uninstall");
-                });
-            });
-        });
-
         // Act - Run with --output json flag
-        var result = app.Run("windows", "cert", "uninstall", "--output", "json");
+        var result = _app.Run("windows", "cert", "uninstall", "--output", "json");
 
         // Assert - Should contain clean JSON error, no verbose messages
-        Assert.True(IsValidJson(result.Output));
+        Assert.True(TestHelpers.IsValidJson(result.Output));
         Assert.DoesNotContain("REMOVE CERTIFICATE", result.Output); // No verbose section headers
         Assert.Contains("\"success\"", result.Output); // Should have JSON structure
-    }
-
-    private static bool IsValidJson(string jsonString)
-    {
-        try
-        {
-            JsonDocument.Parse(jsonString);
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
     }
 }

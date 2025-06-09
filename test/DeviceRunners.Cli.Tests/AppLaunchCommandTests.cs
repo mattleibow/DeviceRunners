@@ -1,27 +1,30 @@
 using DeviceRunners.Cli.Commands;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
-using System.Text.Json;
 
 namespace DeviceRunners.Cli.Tests;
 
 public class AppLaunchCommandTests
 {
-    [Fact]
-    public void DefaultOutput_ContainsNoJson()
+    private readonly CommandAppTester _app;
+
+    public AppLaunchCommandTests()
     {
-        // Arrange
-        var app = new CommandAppTester();
-        app.Configure(config =>
+        _app = new CommandAppTester();
+        _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
                 windows.AddCommand<AppLaunchCommand>("launch");
             });
         });
+    }
 
+    [Fact]
+    public void DefaultOutput_ContainsNoJson()
+    {
         // Act - Run without --output flag
-        var result = app.Run("windows", "launch");
+        var result = _app.Run("windows", "launch");
 
         // Assert - Should contain verbose error messages, not JSON
         Assert.Contains("Either --app or --identity must be specified", result.Output); // Error message should be verbose
@@ -32,36 +35,13 @@ public class AppLaunchCommandTests
     [Fact]
     public void JsonOutput_ContainsNoVerboseMessages()
     {
-        // Arrange
-        var app = new CommandAppTester();
-        app.Configure(config =>
-        {
-            config.AddBranch("windows", windows =>
-            {
-                windows.AddCommand<AppLaunchCommand>("launch");
-            });
-        });
-
         // Act - Run with --output json flag
-        var result = app.Run("windows", "launch", "--output", "json");
+        var result = _app.Run("windows", "launch", "--output", "json");
 
         // Assert - Should contain clean JSON error, no verbose messages
-        Assert.True(IsValidJson(result.Output));
+        Assert.True(TestHelpers.IsValidJson(result.Output));
         // Error message text can appear in errorMessage field, but no verbose formatting
         Assert.DoesNotContain("Error:", result.Output); // No verbose "Error:" prefix
         Assert.Contains("\"success\"", result.Output); // Should have JSON structure
-    }
-
-    private static bool IsValidJson(string jsonString)
-    {
-        try
-        {
-            JsonDocument.Parse(jsonString);
-            return true;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
     }
 }
