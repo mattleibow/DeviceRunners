@@ -9,7 +9,7 @@ public class PackageService
 {
     private readonly PowerShellService _powerShellService = new();
 
-    public string GetAppIdentityFromMsix(string msixPath)
+    public string GetPackageIdentity(string msixPath)
     {
         using var archive = ZipFile.OpenRead(msixPath);
         var manifestEntry = archive.GetEntry("AppxManifest.xml");
@@ -33,7 +33,7 @@ public class PackageService
         return appName;
     }
 
-    public bool IsAppInstalled(string appIdentity)
+    public bool IsPackageInstalled(string appIdentity)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -42,17 +42,17 @@ public class PackageService
 
         try
         {
-            var output = _powerShellService.ExecuteCommand($"Get-AppxPackage -Name '{appIdentity}'");
-            return !string.IsNullOrWhiteSpace(output) && !output.Contains("No packages were found");
+            GetPackageFamilyName(appIdentity);
+            return true;
         }
         catch
         {
-            // Ignore errors and assume not installed
+            // If GetPackageFamilyName fails, the package is not installed
             return false;
         }
     }
 
-    public void UninstallApp(string appIdentity)
+    public void UninstallPackage(string appIdentity)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -105,7 +105,7 @@ public class PackageService
         return dependencies;
     }
 
-    public void StartApp(string appIdentity, string? launchArgs = null)
+    public void LaunchApp(string appIdentity, string? launchArgs = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -140,5 +140,15 @@ public class PackageService
         }
         
         return familyName;
+    }
+
+    public string GetCertificateFromMsix(string msixPath)
+    {
+        var certPath = Path.ChangeExtension(msixPath, ".cer");
+        if (!File.Exists(certPath))
+        {
+            throw new FileNotFoundException($"Certificate file not found: {certPath}");
+        }
+        return certPath;
     }
 }

@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterCommand.Settings>(console)
+public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {
@@ -43,7 +43,7 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
             var certificateService = new CertificateService();
 
             // Determine certificate
-            var certificatePath = settings.Certificate ?? certificateService.GetCertificateFromMsix(settings.App);
+            var certificatePath = settings.Certificate ?? packageService.GetCertificateFromMsix(settings.App);
             var certFingerprint = certificateService.GetCertificateFingerprint(certificatePath);
             
             WriteConsoleOutput($"  - Determining certificate for MSIX installer...", settings);
@@ -53,16 +53,16 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
 
             // Determine app identity
             WriteConsoleOutput($"  - Determining app identity...", settings);
-            var appIdentity = packageService.GetAppIdentityFromMsix(settings.App);
+            var appIdentity = packageService.GetPackageIdentity(settings.App);
             WriteConsoleOutput($"    MSIX installer: '[green]{Markup.Escape(settings.App)}[/]'", settings);
             WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
 
             // Check if app is already installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (packageService.IsAppInstalled(appIdentity))
+            if (packageService.IsPackageInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was installed, uninstalling...", settings);
-                packageService.UninstallApp(appIdentity);
+                packageService.UninstallPackage(appIdentity);
                 WriteConsoleOutput($"    Uninstall complete...", settings);
             }
             else
@@ -108,7 +108,7 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
 
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
-            packageService.StartApp(appIdentity, null);
+            packageService.LaunchApp(appIdentity, null);
             WriteConsoleOutput($"    Application started.", settings);
 
             // Handle TCP test results
@@ -123,7 +123,7 @@ public class TestStarterCommand(IAnsiConsole console) : BaseCommand<TestStarterC
             WriteConsoleOutput($"  - Uninstalling application...", settings);
             try
             {
-                packageService.UninstallApp(appIdentity);
+                packageService.UninstallPackage(appIdentity);
                 WriteConsoleOutput($"    Application uninstalled.", settings);
             }
             catch (Exception ex)

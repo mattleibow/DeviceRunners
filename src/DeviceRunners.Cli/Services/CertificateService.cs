@@ -1,8 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
-using System.IO.Compression;
-using System.Xml.Linq;
 
 namespace DeviceRunners.Cli.Services;
 
@@ -92,16 +90,6 @@ public class CertificateService
         store.Close();
 
         return certificates.Count > 0;
-    }
-
-    public string GetCertificateFromMsix(string msixPath)
-    {
-        var certPath = Path.ChangeExtension(msixPath, ".cer");
-        if (!File.Exists(certPath))
-        {
-            throw new FileNotFoundException($"Certificate file not found: {certPath}");
-        }
-        return certPath;
     }
 
     public string GetCertificateFingerprint(string certPath)

@@ -37,7 +37,7 @@ public class AppLaunchCommand(IAnsiConsole console) : BaseCommand<AppLaunchComma
             else if (!string.IsNullOrEmpty(settings.App))
             {
                 WriteConsoleOutput($"  - Determining app identity from MSIX...", settings);
-                appIdentity = packageService.GetAppIdentityFromMsix(settings.App);
+                appIdentity = packageService.GetPackageIdentity(settings.App);
                 WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
             }
             else
@@ -55,7 +55,7 @@ public class AppLaunchCommand(IAnsiConsole console) : BaseCommand<AppLaunchComma
 
             // Check if app is installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (!packageService.IsAppInstalled(appIdentity))
+            if (!packageService.IsPackageInstalled(appIdentity))
             {
                 var result = new AppLaunchResult
                 {
@@ -71,7 +71,7 @@ public class AppLaunchCommand(IAnsiConsole console) : BaseCommand<AppLaunchComma
 
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
-            packageService.StartApp(appIdentity, settings.Arguments);
+            packageService.LaunchApp(appIdentity, settings.Arguments);
             WriteConsoleOutput($"    Application started.", settings);
 
             var successResult = new AppLaunchResult

@@ -42,7 +42,7 @@ app.Configure(config =>
             .WithExample(new[] { "windows", "launch", "--identity", "MyApp", "--args", "test-arguments" });
 
         // Test command
-        windows.AddCommand<TestStarterCommand>("test")
+        windows.AddCommand<TestCommand>("test")
             .WithDescription("Install and start a test application")
             .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix" });
     });

@@ -4,18 +4,18 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class TestStarterCommandTests
+public class TestCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public TestStarterCommandTests()
+    public TestCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
-                windows.AddCommand<TestStarterCommand>("test");
+                windows.AddCommand<TestCommand>("test");
             });
         });
     }

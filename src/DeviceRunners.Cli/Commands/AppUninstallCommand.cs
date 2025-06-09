@@ -17,6 +17,10 @@ public class AppUninstallCommand(IAnsiConsole console) : BaseCommand<AppUninstal
         [Description("App identity name to uninstall")]
         [CommandOption("--identity")]
         public string? Identity { get; set; }
+
+        [Description("Certificate fingerprint to uninstall after package uninstall")]
+        [CommandOption("--certificate-fingerprint")]
+        public string? CertificateFingerprint { get; set; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -33,7 +37,7 @@ public class AppUninstallCommand(IAnsiConsole console) : BaseCommand<AppUninstal
             else if (!string.IsNullOrEmpty(settings.App))
             {
                 WriteConsoleOutput($"  - Determining app identity from MSIX...", settings);
-                appIdentity = packageService.GetAppIdentityFromMsix(settings.App);
+                appIdentity = packageService.GetPackageIdentity(settings.App);
                 WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
             }
             else
@@ -51,15 +55,31 @@ public class AppUninstallCommand(IAnsiConsole console) : BaseCommand<AppUninstal
 
             // Check if app is installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (packageService.IsAppInstalled(appIdentity))
+            if (packageService.IsPackageInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was installed, uninstalling...", settings);
-                packageService.UninstallApp(appIdentity);
+                packageService.UninstallPackage(appIdentity);
                 WriteConsoleOutput($"    Uninstall complete.", settings);
             }
             else
             {
                 WriteConsoleOutput($"    App was not installed.", settings);
+            }
+
+            // Uninstall certificate if specified
+            if (!string.IsNullOrEmpty(settings.CertificateFingerprint))
+            {
+                var certificateService = new CertificateService();
+                WriteConsoleOutput($"  - Removing certificate...", settings);
+                try
+                {
+                    certificateService.UninstallCertificate(settings.CertificateFingerprint);
+                    WriteConsoleOutput($"    Certificate removed.", settings);
+                }
+                catch (Exception ex)
+                {
+                    WriteConsoleOutput($"    [yellow]Warning: Failed to remove certificate: {Markup.Escape(ex.Message)}[/]", settings);
+                }
             }
 
             var successResult = new AppUninstallResult
