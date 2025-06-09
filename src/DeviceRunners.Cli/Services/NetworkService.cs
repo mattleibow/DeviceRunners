@@ -72,10 +72,16 @@ public class NetworkService
                     ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
                     : null;
                 
+                // Set initial data timeout before first read (if non-interactive)
+                if (dataTimeoutSource != null)
+                {
+                    dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                }
+                
                 var dataToken = dataTimeoutSource?.Token ?? cancellationToken;
                 
                 int bytesRead;
-                while ((bytesRead = await ReadWithTimeout(stream, buffer, dataTimeoutSource, dataTimeoutSeconds, dataToken)) > 0)
+                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
                 {
                     var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                     connectionData.Append(data);
@@ -111,15 +117,5 @@ public class NetworkService
         {
             listener.Stop();
         }
-    }
-    
-    private async Task<int> ReadWithTimeout(NetworkStream stream, byte[] buffer, CancellationTokenSource? timeoutSource, int timeoutSeconds, CancellationToken cancellationToken)
-    {
-        if (timeoutSource != null)
-        {
-            timeoutSource.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
-        }
-        
-        return await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);
     }
 }
