@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Settings>(console)
+public class WindowsTestCommand(IAnsiConsole console) : BaseCommand<WindowsTestCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {

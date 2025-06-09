@@ -8,7 +8,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateCreateCommand(IAnsiConsole console) : BaseCommand<CertificateCreateCommand.Settings>(console)
+public class WindowCertificateCreateCommand(IAnsiConsole console) : BaseCommand<WindowCertificateCreateCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {

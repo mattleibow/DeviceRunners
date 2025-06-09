@@ -15,33 +15,33 @@ app.Configure(config =>
         {
             cert.SetDescription("Certificate management commands");
             
-            cert.AddCommand<CertificateCreateCommand>("install")
+            cert.AddCommand<WindowCertificateCreateCommand>("install")
                 .WithDescription("Generate and install a self-signed certificate for MSIX packages")
                 .WithExample(new[] { "windows", "cert", "install", "--publisher", "CN=MyCompany" })
                 .WithExample(new[] { "windows", "cert", "install", "--manifest", "path/to/Package.appxmanifest" });
 
-            cert.AddCommand<CertificateRemoveCommand>("uninstall")
+            cert.AddCommand<WindowCertificateRemoveCommand>("uninstall")
                 .WithDescription("Remove a certificate by fingerprint")
                 .WithExample(new[] { "windows", "cert", "uninstall", "--fingerprint", "ABCD1234..." });
         });
 
         // App management commands
-        windows.AddCommand<AppInstallCommand>("install")
+        windows.AddCommand<WindowsAppInstallCommand>("install")
             .WithDescription("Install an MSIX application package")
             .WithExample(new[] { "windows", "install", "--app", "path/to/app.msix" });
 
-        windows.AddCommand<AppUninstallCommand>("uninstall")
+        windows.AddCommand<WindowsAppUninstallCommand>("uninstall")
             .WithDescription("Uninstall an application")
             .WithExample(new[] { "windows", "uninstall", "--app", "path/to/app.msix" })
             .WithExample(new[] { "windows", "uninstall", "--identity", "MyApp" });
 
-        windows.AddCommand<AppLaunchCommand>("launch")
+        windows.AddCommand<WindowsAppLaunchCommand>("launch")
             .WithDescription("Launch an installed application")
             .WithExample(new[] { "windows", "launch", "--identity", "MyApp" })
             .WithExample(new[] { "windows", "launch", "--identity", "MyApp", "--args", "test-arguments" });
 
         // Test command
-        windows.AddCommand<TestCommand>("test")
+        windows.AddCommand<WindowsTestCommand>("test")
             .WithDescription("Install and start a test application")
             .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix" })
             .WithExample(new[] { "windows", "test", "--app", "path/to/app.msix", "--port", "8080" })

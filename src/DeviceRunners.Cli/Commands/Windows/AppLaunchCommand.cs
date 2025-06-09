@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppLaunchCommand(IAnsiConsole console) : BaseCommand<AppLaunchCommand.Settings>(console)
+public class WindowsAppLaunchCommand(IAnsiConsole console) : BaseCommand<WindowsAppLaunchCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {
