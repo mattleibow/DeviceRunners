@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 
@@ -7,22 +6,26 @@ namespace DeviceRunners.Cli.Services;
 
 public class NetworkService
 {
+    public event EventHandler<ConnectionEventArgs>? ConnectionEstablished;
+
+    public event EventHandler<ConnectionEventArgs>? ConnectionClosed;
+
+    public event EventHandler<DataReceivedEventArgs>? DataReceived;
+
     public bool IsPortAvailable(int port)
     {
         try
         {
-            var tcpClient = new TcpClient();
+            using var tcpClient = new TcpClient();
             var result = tcpClient.BeginConnect(IPAddress.Loopback, port, null, null);
             var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromMilliseconds(100));
-            
+
             if (success)
             {
                 tcpClient.EndConnect(result);
-                tcpClient.Close();
                 return false; // Port is in use
             }
-            
-            tcpClient.Close();
+
             return true; // Port is available
         }
         catch
@@ -62,8 +65,16 @@ public class NetworkService
                 }
 
                 using var client = await listener.AcceptTcpClientAsync();
+                var remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+
+                // Emit connection established event
+                ConnectionEstablished?.Invoke(this, new ConnectionEventArgs
+                {
+                    RemoteEndPoint = remoteEndPoint
+                });
+
                 using var stream = client.GetStream();
-                
+
                 var buffer = new byte[1024];
                 var connectionData = new StringBuilder();
                 
@@ -85,6 +96,13 @@ public class NetworkService
                 {
                     var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                     connectionData.Append(data);
+
+                    // Emit data received event for each chunk
+                    DataReceived?.Invoke(this, new DataReceivedEventArgs
+                    {
+                        Data = data,
+                        RemoteEndPoint = remoteEndPoint
+                    });
                     
                     // Reset data timeout on each data received (if non-interactive)
                     if (dataTimeoutSource != null)
@@ -93,21 +111,31 @@ public class NetworkService
                     }
                 }
 
+                // Emit connection closed event
+                ConnectionClosed?.Invoke(this, new ConnectionEventArgs
+                {
+                    RemoteEndPoint = remoteEndPoint
+                });
+
+                // Add the received message to the output
                 var receivedMessage = connectionData.ToString();
                 receivedData.AppendLine(receivedMessage);
 
                 // Skip "ping" messages
-                if (receivedMessage.Trim() != "ping")
+                if (receivedMessage.Trim() == "ping")
                 {
-                    if (!string.IsNullOrEmpty(outputPath))
-                    {
-                        await File.WriteAllTextAsync(outputPath, receivedMessage, cancellationToken);
-                    }
+                    continue;
+                }
 
-                    if (nonInteractive)
-                    {
-                        break;
-                    }
+                // If an output path is specified, write the received message to the file
+                if (!string.IsNullOrEmpty(outputPath))
+                {
+                    await File.WriteAllTextAsync(outputPath, receivedMessage, cancellationToken);
+                }
+
+                if (nonInteractive)
+                {
+                    break;
                 }
             }
 
