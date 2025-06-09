@@ -7,66 +7,6 @@ namespace DeviceRunners.Cli.Tests;
 
 public class NetworkServiceTests
 {
-    private class NetworkEventLog
-    {
-        public List<string> Events { get; } = new();
-        public List<string> DataReceived { get; } = new();
-        
-        public void LogConnectionEstablished(object? sender, ConnectionEventArgs e)
-        {
-            Events.Add($"ConnectionEstablished:{e.RemoteEndPoint}");
-        }
-        
-        public void LogConnectionClosed(object? sender, ConnectionEventArgs e)
-        {
-            Events.Add($"ConnectionClosed:{e.RemoteEndPoint}");
-        }
-        
-        public void LogDataReceived(object? sender, DataReceivedEventArgs e)
-        {
-            Events.Add($"DataReceived:{e.RemoteEndPoint}:{e.Data}");
-            DataReceived.Add(e.Data);
-        }
-        
-        public bool HasConnectionEstablished => Events.Any(e => e.StartsWith("ConnectionEstablished:"));
-        public bool HasConnectionClosed => Events.Any(e => e.StartsWith("ConnectionClosed:"));
-        public bool HasDataReceived => Events.Any(e => e.StartsWith("DataReceived:"));
-    }
-    
-    private static NetworkService CreateServiceWithEventLog(out NetworkEventLog eventLog)
-    {
-        eventLog = new NetworkEventLog();
-        var service = new NetworkService();
-        
-        service.ConnectionEstablished += eventLog.LogConnectionEstablished;
-        service.ConnectionClosed += eventLog.LogConnectionClosed;
-        service.DataReceived += eventLog.LogDataReceived;
-        
-        return service;
-    }
-    
-    private static async Task SendMessagesToPort(int port, params string[] messages)
-    {
-        if (messages.Length == 0) return;
-        
-        using var client = new TcpClient();
-        await client.ConnectAsync("127.0.0.1", port);
-        using var stream = client.GetStream();
-        
-        foreach (var message in messages)
-        {
-            var buffer = Encoding.ASCII.GetBytes(message);
-            await stream.WriteAsync(buffer, 0, buffer.Length);
-            await stream.FlushAsync();
-        }
-    }
-    
-    private static async Task ConnectWithoutSending(int port)
-    {
-        using var client = new TcpClient();
-        await client.ConnectAsync("127.0.0.1", port);
-        // Just connect and disconnect immediately
-    }
     [Fact]
     public void IsPortAvailable_WithAvailablePort_ReturnsTrue()
     {
@@ -104,7 +44,8 @@ public class NetworkServiceTests
     public async Task StartTcpListener_RoundTripTest_ReceivesDataCorrectly()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16385; // Use a specific port for testing
         var testMessage = "Test message for round trip";
         var tempFile = Path.GetTempFileName();
@@ -122,7 +63,7 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Send data to the listener
-            await SendMessagesToPort(testPort, testMessage);
+            await NetworkServiceTestExtensions.ConnectAndSendAsync(testPort, testMessage);
 
             // Wait for listener to complete
             var result = await listenerTask;
@@ -161,7 +102,8 @@ public class NetworkServiceTests
     public async Task StartTcpListener_EventsTest_EmitsCorrectEvents()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16386; // Use a different port for this test
         var testMessage = "Test message for events";
         
@@ -178,7 +120,7 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Send data to the listener
-            await SendMessagesToPort(testPort, testMessage);
+            await NetworkServiceTestExtensions.ConnectAndSendAsync(testPort, testMessage);
 
             // Wait for listener to complete
             var result = await listenerTask;
@@ -199,7 +141,8 @@ public class NetworkServiceTests
     public async Task StartTcpListener_ConnectWithoutData_EmitsConnectionEvents()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16387;
         
         try
@@ -215,7 +158,7 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Connect but don't send data
-            await ConnectWithoutSending(testPort);
+            await NetworkServiceTestExtensions.ConnectDisconnectAsync(testPort);
 
             // Wait for listener to timeout or complete
             try
@@ -243,27 +186,18 @@ public class NetworkServiceTests
     public async Task StartTcpListener_SingleMessage_ReceivesCorrectly()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16388;
         var testMessage = "Single message";
         
         try
         {
-            // Start the listener in background
-            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            var listenerTask = Task.Run(async () =>
+            // Use the helper method to start listener and send message
+            var result = await service.StartBackgroundListener(testPort, async () =>
             {
-                return await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+                await NetworkServiceTestExtensions.ConnectAndSendAsync(testPort, testMessage);
             });
-
-            // Give the listener a moment to start
-            await Task.Delay(200);
-            
-            // Send single message
-            await SendMessagesToPort(testPort, testMessage);
-
-            // Wait for listener to complete
-            var result = await listenerTask;
 
             // Assert events and data
             Assert.True(eventLog.HasConnectionEstablished);
@@ -283,7 +217,8 @@ public class NetworkServiceTests
     public async Task StartTcpListener_MultipleMessages_ReceivesAllCorrectly()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16389;
         var messages = new[] { "Message 1", "Message 2", "Message 3" };
         
@@ -300,7 +235,7 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Send multiple messages
-            await SendMessagesToPort(testPort, messages);
+            await NetworkServiceTestExtensions.ConnectAndSendAsync(testPort, messages);
 
             // Wait for listener to complete
             var result = await listenerTask;
@@ -326,7 +261,8 @@ public class NetworkServiceTests
     public async Task StartTcpListener_NoConnection_TimesOutGracefully()
     {
         // Arrange
-        var service = CreateServiceWithEventLog(out var eventLog);
+        var service = new NetworkService();
+        var eventLog = service.CreateEventLog();
         var testPort = 16390;
         
         try
@@ -353,5 +289,97 @@ public class NetworkServiceTests
             // Skip test if port is in use - this is expected in CI environments
             return;
         }
+    }
+}
+
+public static class NetworkServiceTestExtensions
+{
+    public static NetworkEventLog CreateEventLog(this NetworkService service)
+    {
+        var eventLog = new NetworkEventLog();
+        
+        service.ConnectionEstablished += eventLog.LogConnectionEstablished;
+        service.ConnectionClosed += eventLog.LogConnectionClosed;
+        service.DataReceived += eventLog.LogDataReceived;
+        
+        return eventLog;
+    }
+
+    public static async Task<string> StartBackgroundListener(this NetworkService service, int port, Func<Task> action, string? outputPath = null, TimeSpan? timeout = null)
+    {
+        timeout ??= TimeSpan.FromSeconds(5);
+        
+        try
+        {
+            // Start the listener in background
+            var cancellationTokenSource = new CancellationTokenSource(timeout.Value);
+            var listenerTask = Task.Run(async () =>
+            {
+                return await service.StartTcpListener(port, outputPath, true, cancellationTokenSource.Token);
+            });
+
+            // Give the listener a moment to start
+            await Task.Delay(200);
+            
+            // Execute the action (send messages, connect, etc.)
+            await action();
+
+            // Wait for listener to complete
+            return await listenerTask;
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Re-throw - caller will handle this as expected in CI environments
+            throw;
+        }
+    }
+
+    public static async Task ConnectAndSendAsync(int port, params string[] messages)
+    {
+        if (messages.Length == 0) return;
+        
+        using var client = new TcpClient();
+        await client.ConnectAsync("127.0.0.1", port);
+        using var stream = client.GetStream();
+        
+        foreach (var message in messages)
+        {
+            var buffer = Encoding.ASCII.GetBytes(message);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+            await stream.FlushAsync();
+        }
+    }
+    
+    public static async Task ConnectDisconnectAsync(int port)
+    {
+        using var client = new TcpClient();
+        await client.ConnectAsync("127.0.0.1", port);
+        // Just connect and disconnect immediately
+    }
+
+    public class NetworkEventLog
+    {
+        public List<string> Events { get; } = new();
+        public List<string> DataReceived { get; } = new();
+        
+        public void LogConnectionEstablished(object? sender, ConnectionEventArgs e)
+        {
+            Events.Add($"ConnectionEstablished:{e.RemoteEndPoint}");
+        }
+        
+        public void LogConnectionClosed(object? sender, ConnectionEventArgs e)
+        {
+            Events.Add($"ConnectionClosed:{e.RemoteEndPoint}");
+        }
+        
+        public void LogDataReceived(object? sender, DataReceivedEventArgs e)
+        {
+            Events.Add($"DataReceived:{e.RemoteEndPoint}:{e.Data}");
+            DataReceived.Add(e.Data);
+        }
+        
+        public bool HasConnectionEstablished => Events.Any(e => e.StartsWith("ConnectionEstablished:"));
+        public bool HasConnectionClosed => Events.Any(e => e.StartsWith("ConnectionClosed:"));
+        public bool HasDataReceived => Events.Any(e => e.StartsWith("DataReceived:"));
     }
 }
