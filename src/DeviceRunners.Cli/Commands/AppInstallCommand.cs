@@ -6,13 +6,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppInstallCommand : BaseCommand<AppInstallCommand.Settings>
+public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCommand.Settings>(console)
 {
-    public AppInstallCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package")]
         [CommandOption("--app")]
@@ -33,49 +29,49 @@ public class AppInstallCommand : BaseCommand<AppInstallCommand.Settings>
             var certificatePath = settings.Certificate ?? appService.GetCertificateFromMsix(settings.App);
             var certFingerprint = appService.GetCertificateFingerprint(certificatePath);
             
-            WriteConsoleOutput("  - Determining certificate for MSIX installer...", settings);
+            WriteConsoleOutput($"  - Determining certificate for MSIX installer...", settings);
             WriteConsoleOutput($"    File path: '[green]{Markup.Escape(certificatePath)}[/]'", settings);
             WriteConsoleOutput($"    Thumbprint: '[green]{certFingerprint}[/]'", settings);
-            WriteConsoleOutput("    Certificate identified.", settings);
+            WriteConsoleOutput($"    Certificate identified.", settings);
 
             // Determine app identity
-            WriteConsoleOutput("  - Determining app identity...", settings);
+            WriteConsoleOutput($"  - Determining app identity...", settings);
             var appIdentity = appService.GetAppIdentityFromMsix(settings.App);
             WriteConsoleOutput($"    MSIX installer: '[green]{Markup.Escape(settings.App)}[/]'", settings);
             WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
 
             // Check if app is already installed
-            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
+            WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
             if (appService.IsAppInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was already installed, uninstalling first...", settings);
                 appService.UninstallApp(appIdentity);
-                WriteConsoleOutput("    Uninstall complete...", settings);
+                WriteConsoleOutput($"    Uninstall complete...", settings);
             }
             else
             {
-                WriteConsoleOutput("    App was not installed.", settings);
+                WriteConsoleOutput($"    App was not installed.", settings);
             }
 
             // Check certificate installation
-            WriteConsoleOutput("  - Testing available certificates...", settings);
+            WriteConsoleOutput($"  - Testing available certificates...", settings);
             if (!appService.IsCertificateInstalled(certFingerprint))
             {
-                WriteConsoleOutput("    Certificate was not found, importing certificate...", settings);
+                WriteConsoleOutput($"    Certificate was not found, importing certificate...", settings);
                 appService.InstallCertificate(certificatePath);
-                WriteConsoleOutput("    Certificate imported.", settings);
+                WriteConsoleOutput($"    Certificate imported.", settings);
             }
             else
             {
-                WriteConsoleOutput("    Certificate was found.", settings);
+                WriteConsoleOutput($"    Certificate was found.", settings);
             }
 
             // Install dependencies and the app
-            WriteConsoleOutput("  - Installing dependencies...", settings);
+            WriteConsoleOutput($"  - Installing dependencies...", settings);
             appService.InstallDependencies(settings.App, (msg) => WriteConsoleOutput(msg, settings));
-            WriteConsoleOutput("  - Installing application...", settings);
+            WriteConsoleOutput($"  - Installing application...", settings);
             appService.InstallApp(settings.App);
-            WriteConsoleOutput("    Application installed.", settings);
+            WriteConsoleOutput($"    Application installed.", settings);
 
             var result = new AppInstallResult
             {

@@ -5,16 +5,10 @@ using Spectre.Console;
 
 namespace DeviceRunners.Cli.Services;
 
-public class OutputService
+public class OutputService(IAnsiConsole console)
 {
-    private readonly IAnsiConsole _console;
-
-    public OutputService(IAnsiConsole console)
-    {
-        _console = console;
-    }
-
-    public void WriteOutput<T>(T result, OutputFormat format) where T : CommandResult
+	public void WriteOutput<T>(T result, OutputFormat format)
+        where T : CommandResult
     {
         switch (format)
         {
@@ -33,7 +27,8 @@ public class OutputService
         }
     }
 
-    private void WriteJson<T>(T result) where T : CommandResult
+    private void WriteJson<T>(T result)
+        where T : CommandResult
     {
         var options = new JsonSerializerOptions
         {
@@ -41,24 +36,26 @@ public class OutputService
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         var json = JsonSerializer.Serialize(result, options);
-        _console.WriteLine(json);
+        console.WriteLine(json);
     }
 
-    private void WriteXml<T>(T result) where T : CommandResult
+    private void WriteXml<T>(T result)
+        where T : CommandResult
     {
         var serializer = new XmlSerializer(typeof(T));
         using var writer = new StringWriter();
         serializer.Serialize(writer, result);
-        _console.WriteLine(writer.ToString());
+        console.WriteLine(writer.ToString());
     }
 
-    private void WriteText<T>(T result) where T : CommandResult
+    private void WriteText<T>(T result)
+        where T : CommandResult
     {
         // Simple key=value format
-        _console.WriteLine($"Success={result.Success}");
+        console.WriteLine($"Success={result.Success}");
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
-            _console.WriteLine($"ErrorMessage={result.ErrorMessage}");
+            console.WriteLine($"ErrorMessage={result.ErrorMessage}");
         }
 
         // Use reflection to write all properties
@@ -70,7 +67,7 @@ public class OutputService
             var value = property.GetValue(result);
             if (value != null)
             {
-                _console.WriteLine($"{property.Name}={value}");
+                console.WriteLine($"{property.Name}={value}");
             }
         }
     }

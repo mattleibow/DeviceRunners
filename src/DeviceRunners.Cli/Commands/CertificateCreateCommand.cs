@@ -8,13 +8,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Settings>
+public class CertificateCreateCommand(IAnsiConsole console) : BaseCommand<CertificateCreateCommand.Settings>(console)
 {
-    public CertificateCreateCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("Publisher identity for the certificate")]
         [CommandOption("--publisher")]
@@ -33,26 +29,26 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
     {
         try
         {
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
-            WriteConsoleOutput("[blue]PREPARATION[/]", settings);
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]PREPARATION[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
             var publisher = DeterminePublisher(settings);
             
-            WriteConsoleOutput("  - Preparation complete.", settings);
+            WriteConsoleOutput($"  - Preparation complete.", settings);
             WriteConsoleLine(settings);
 
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
-            WriteConsoleOutput("[blue]GENERATE CERTIFICATE[/]", settings);
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]GENERATE CERTIFICATE[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
             var certificateService = new CertificateService();
             var fingerprint = certificateService.CreateSelfSignedCertificate(publisher);
 
             WriteConsoleOutput($"    Publisher: '[green]{Markup.Escape(publisher)}[/]'", settings);
             WriteConsoleOutput($"    Thumbprint: '[green]{fingerprint}[/]'", settings);
-            WriteConsoleOutput("    Certificate generated.", settings);
-            WriteConsoleOutput("  - Generation complete.", settings);
+            WriteConsoleOutput($"    Certificate generated.", settings);
+            WriteConsoleOutput($"  - Generation complete.", settings);
             WriteConsoleLine(settings);
 
             // Write structured output if requested
@@ -89,7 +85,7 @@ public class CertificateCreateCommand : BaseCommand<CertificateCreateCommand.Set
             return settings.Publisher;
         }
 
-        WriteConsoleOutput("  - Determining publisher identity...", settings);
+        WriteConsoleOutput($"  - Determining publisher identity...", settings);
 
         var manifestPath = DetermineManifestPath(settings);
         

@@ -6,13 +6,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Settings>
+public class CertificateRemoveCommand(IAnsiConsole console) : BaseCommand<CertificateRemoveCommand.Settings>(console)
 {
-    public CertificateRemoveCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("Certificate fingerprint to remove")]
         [CommandOption("--fingerprint")]
@@ -23,35 +19,35 @@ public class CertificateRemoveCommand : BaseCommand<CertificateRemoveCommand.Set
     {
         try
         {
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
-            WriteConsoleOutput("[blue]REMOVE CERTIFICATE[/]", settings);
-            WriteConsoleOutput("[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
+            WriteConsoleOutput($"[blue]REMOVE CERTIFICATE[/]", settings);
+            WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
             var certificateService = new CertificateService();
             
-            WriteConsoleOutput("  - Testing available certificates...", settings);
+            WriteConsoleOutput($"  - Testing available certificates...", settings);
             
             bool wasFound = certificateService.CertificateExists(settings.Fingerprint);
             bool removed = false;
 
             if (wasFound)
             {
-                WriteConsoleOutput("    Certificate was found.", settings);
+                WriteConsoleOutput($"    Certificate was found.", settings);
                 WriteConsoleOutput($"  - Removing certificate with fingerprint '[yellow]{settings.Fingerprint}[/]'...", settings);
                 
                 removed = certificateService.RemoveCertificate(settings.Fingerprint);
                 if (removed)
                 {
-                    WriteConsoleOutput("    Certificate removed.", settings);
+                    WriteConsoleOutput($"    Certificate removed.", settings);
                 }
                 else
                 {
-                    WriteConsoleOutput("[yellow]    Failed to remove certificate.[/]", settings);
+                    WriteConsoleOutput($"[yellow]    Failed to remove certificate.[/]", settings);
                 }
             }
             else
             {
-                WriteConsoleOutput("    Certificate was not found.", settings);
+                WriteConsoleOutput($"    Certificate was not found.", settings);
             }
 
             WriteConsoleLine(settings);

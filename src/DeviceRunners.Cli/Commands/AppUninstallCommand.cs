@@ -6,13 +6,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
+public class AppUninstallCommand(IAnsiConsole console) : BaseCommand<AppUninstallCommand.Settings>(console)
 {
-    public AppUninstallCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package (to determine app identity)")]
         [CommandOption("--app")]
@@ -36,7 +32,7 @@ public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
             }
             else if (!string.IsNullOrEmpty(settings.App))
             {
-                WriteConsoleOutput("  - Determining app identity from MSIX...", settings);
+                WriteConsoleOutput($"  - Determining app identity from MSIX...", settings);
                 appIdentity = appService.GetAppIdentityFromMsix(settings.App);
                 WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
             }
@@ -48,22 +44,22 @@ public class AppUninstallCommand : BaseCommand<AppUninstallCommand.Settings>
                     ErrorMessage = "Either --app or --identity must be specified"
                 };
 
-                WriteConsoleOutput("[red]Error: Either --app or --identity must be specified[/]", settings);
+                WriteConsoleOutput($"[red]Error: Either --app or --identity must be specified[/]", settings);
                 WriteResult(result, settings);
                 return 1;
             }
 
             // Check if app is installed
-            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
+            WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
             if (appService.IsAppInstalled(appIdentity))
             {
                 WriteConsoleOutput($"    App was installed, uninstalling...", settings);
                 appService.UninstallApp(appIdentity);
-                WriteConsoleOutput("    Uninstall complete.", settings);
+                WriteConsoleOutput($"    Uninstall complete.", settings);
             }
             else
             {
-                WriteConsoleOutput("    App was not installed.", settings);
+                WriteConsoleOutput($"    App was not installed.", settings);
             }
 
             var successResult = new AppUninstallResult

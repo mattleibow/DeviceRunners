@@ -6,13 +6,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppLaunchCommand : BaseCommand<AppLaunchCommand.Settings>
+public class AppLaunchCommand(IAnsiConsole console) : BaseCommand<AppLaunchCommand.Settings>(console)
 {
-    public AppLaunchCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package (to determine app identity)")]
         [CommandOption("--app")]
@@ -40,7 +36,7 @@ public class AppLaunchCommand : BaseCommand<AppLaunchCommand.Settings>
             }
             else if (!string.IsNullOrEmpty(settings.App))
             {
-                WriteConsoleOutput("  - Determining app identity from MSIX...", settings);
+                WriteConsoleOutput($"  - Determining app identity from MSIX...", settings);
                 appIdentity = appService.GetAppIdentityFromMsix(settings.App);
                 WriteConsoleOutput($"    App identity found: '[green]{Markup.Escape(appIdentity)}[/]'", settings);
             }
@@ -52,13 +48,13 @@ public class AppLaunchCommand : BaseCommand<AppLaunchCommand.Settings>
                     ErrorMessage = "Either --app or --identity must be specified"
                 };
 
-                WriteConsoleOutput("[red]Error: Either --app or --identity must be specified[/]", settings);
+                WriteConsoleOutput($"[red]Error: Either --app or --identity must be specified[/]", settings);
                 WriteResult(result, settings);
                 return 1;
             }
 
             // Check if app is installed
-            WriteConsoleOutput("  - Testing to see if the app is installed...", settings);
+            WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
             if (!appService.IsAppInstalled(appIdentity))
             {
                 var result = new AppLaunchResult
@@ -74,9 +70,9 @@ public class AppLaunchCommand : BaseCommand<AppLaunchCommand.Settings>
             }
 
             // Start the app
-            WriteConsoleOutput("  - Starting the application...", settings);
+            WriteConsoleOutput($"  - Starting the application...", settings);
             appService.StartApp(appIdentity, settings.Arguments);
-            WriteConsoleOutput("    Application started.", settings);
+            WriteConsoleOutput($"    Application started.", settings);
 
             var successResult = new AppLaunchResult
             {

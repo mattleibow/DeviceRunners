@@ -6,13 +6,9 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
+public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListenerCommand.Settings>(console)
 {
-    public PortListenerCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
-    public class Settings : BaseCommandSettings
+	public class Settings : BaseCommandSettings
     {
         [Description("TCP port to listen on")]
         [CommandOption("--port")]
@@ -58,7 +54,7 @@ public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
             
             if (settings.NonInteractive)
             {
-                WriteConsoleOutput("[green]Listening in non-interactive mode, will terminate after first connection.[/]", settings);
+                WriteConsoleOutput($"[green]Listening in non-interactive mode, will terminate after first connection.[/]", settings);
             }
 
             using var cancellationTokenSource = new CancellationTokenSource();
@@ -78,7 +74,7 @@ public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
 
             if (!string.IsNullOrEmpty(receivedData))
             {
-                WriteConsoleOutput("[green]Data received:[/]", settings);
+                WriteConsoleOutput($"[green]Data received:[/]", settings);
                 WriteConsoleText(receivedData, settings);
             }
 
