@@ -16,15 +16,16 @@ public class CertificateService
         using var rsa = RSA.Create(2048);
         var request = new CertificateRequest(publisher, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-        // Add key usage extension for digital signature
+        // Add key usage extension for digital signature (matches PowerShell -KeyUsage DigitalSignature)
         request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature, true));
 
-        // Add enhanced key usage for code signing
+        // Add enhanced key usage for code signing (matches PowerShell TextExtension "2.5.29.37={text}1.3.6.1.5.5.7.3.3")
         var eku = new OidCollection();
         eku.Add(new Oid("1.3.6.1.5.5.7.3.3")); // Code signing
         request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(eku, true));
 
-        // Add basic constraints
+        // Add basic constraints extension (matches PowerShell TextExtension "2.5.29.19={text}")
+        // The PowerShell script uses empty text, which means no CA capability
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
 
         var certificate = request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(1));
