@@ -1,11 +1,72 @@
 using DeviceRunners.Cli.Services;
 using System.Net.Sockets;
 using System.Text;
+using System.Net;
 
 namespace DeviceRunners.Cli.Tests;
 
 public class NetworkServiceTests
 {
+    private class NetworkEventLog
+    {
+        public List<string> Events { get; } = new();
+        public List<string> DataReceived { get; } = new();
+        
+        public void LogConnectionEstablished(object? sender, ConnectionEventArgs e)
+        {
+            Events.Add($"ConnectionEstablished:{e.RemoteEndPoint}");
+        }
+        
+        public void LogConnectionClosed(object? sender, ConnectionEventArgs e)
+        {
+            Events.Add($"ConnectionClosed:{e.RemoteEndPoint}");
+        }
+        
+        public void LogDataReceived(object? sender, DataReceivedEventArgs e)
+        {
+            Events.Add($"DataReceived:{e.RemoteEndPoint}:{e.Data}");
+            DataReceived.Add(e.Data);
+        }
+        
+        public bool HasConnectionEstablished => Events.Any(e => e.StartsWith("ConnectionEstablished:"));
+        public bool HasConnectionClosed => Events.Any(e => e.StartsWith("ConnectionClosed:"));
+        public bool HasDataReceived => Events.Any(e => e.StartsWith("DataReceived:"));
+    }
+    
+    private static NetworkService CreateServiceWithEventLog(out NetworkEventLog eventLog)
+    {
+        eventLog = new NetworkEventLog();
+        var service = new NetworkService();
+        
+        service.ConnectionEstablished += eventLog.LogConnectionEstablished;
+        service.ConnectionClosed += eventLog.LogConnectionClosed;
+        service.DataReceived += eventLog.LogDataReceived;
+        
+        return service;
+    }
+    
+    private static async Task SendMessagesToPort(int port, params string[] messages)
+    {
+        if (messages.Length == 0) return;
+        
+        using var client = new TcpClient();
+        await client.ConnectAsync("127.0.0.1", port);
+        using var stream = client.GetStream();
+        
+        foreach (var message in messages)
+        {
+            var buffer = Encoding.ASCII.GetBytes(message);
+            await stream.WriteAsync(buffer, 0, buffer.Length);
+            await stream.FlushAsync();
+        }
+    }
+    
+    private static async Task ConnectWithoutSending(int port)
+    {
+        using var client = new TcpClient();
+        await client.ConnectAsync("127.0.0.1", port);
+        // Just connect and disconnect immediately
+    }
     [Fact]
     public void IsPortAvailable_WithAvailablePort_ReturnsTrue()
     {
@@ -43,7 +104,7 @@ public class NetworkServiceTests
     public async Task StartTcpListener_RoundTripTest_ReceivesDataCorrectly()
     {
         // Arrange
-        var service = new NetworkService();
+        var service = CreateServiceWithEventLog(out var eventLog);
         var testPort = 16385; // Use a specific port for testing
         var testMessage = "Test message for round trip";
         var tempFile = Path.GetTempFileName();
@@ -61,20 +122,18 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Send data to the listener
-            using (var client = new TcpClient())
-            {
-                await client.ConnectAsync("127.0.0.1", testPort);
-                using var stream = client.GetStream();
-                var buffer = Encoding.ASCII.GetBytes(testMessage);
-                await stream.WriteAsync(buffer, 0, buffer.Length);
-                await stream.FlushAsync();
-            }
+            await SendMessagesToPort(testPort, testMessage);
 
             // Wait for listener to complete
             var result = await listenerTask;
 
             // Assert
             Assert.Contains(testMessage, result);
+            
+            // Check events were fired
+            Assert.True(eventLog.HasConnectionEstablished);
+            Assert.True(eventLog.HasConnectionClosed);
+            Assert.Contains(testMessage, eventLog.DataReceived);
             
             // Check file was written
             if (File.Exists(tempFile))
@@ -102,31 +161,9 @@ public class NetworkServiceTests
     public async Task StartTcpListener_EventsTest_EmitsCorrectEvents()
     {
         // Arrange
-        var service = new NetworkService();
+        var service = CreateServiceWithEventLog(out var eventLog);
         var testPort = 16386; // Use a different port for this test
         var testMessage = "Test message for events";
-        
-        var connectionEstablishedFired = false;
-        var connectionClosedFired = false;
-        var dataReceivedFired = false;
-        string? receivedData = null;
-        
-        // Subscribe to events
-        service.ConnectionEstablished += (sender, e) =>
-        {
-            connectionEstablishedFired = true;
-        };
-        
-        service.ConnectionClosed += (sender, e) =>
-        {
-            connectionClosedFired = true;
-        };
-        
-        service.DataReceived += (sender, e) =>
-        {
-            dataReceivedFired = true;
-            receivedData = e.Data;
-        };
         
         try
         {
@@ -141,24 +178,175 @@ public class NetworkServiceTests
             await Task.Delay(200);
             
             // Send data to the listener
-            using (var client = new TcpClient())
-            {
-                await client.ConnectAsync("127.0.0.1", testPort);
-                using var stream = client.GetStream();
-                var buffer = Encoding.ASCII.GetBytes(testMessage);
-                await stream.WriteAsync(buffer, 0, buffer.Length);
-                await stream.FlushAsync();
-            }
+            await SendMessagesToPort(testPort, testMessage);
 
             // Wait for listener to complete
             var result = await listenerTask;
 
             // Assert events were fired
-            Assert.True(connectionEstablishedFired, "ConnectionEstablished event should have been fired");
-            Assert.True(connectionClosedFired, "ConnectionClosed event should have been fired");
-            Assert.True(dataReceivedFired, "DataReceived event should have been fired");
-            Assert.NotNull(receivedData);
-            Assert.Equal(testMessage, receivedData);
+            Assert.True(eventLog.HasConnectionEstablished);
+            Assert.True(eventLog.HasConnectionClosed);
+            Assert.Contains(testMessage, eventLog.DataReceived);
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Skip test if port is in use - this is expected in CI environments
+            return;
+        }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_ConnectWithoutData_EmitsConnectionEvents()
+    {
+        // Arrange
+        var service = CreateServiceWithEventLog(out var eventLog);
+        var testPort = 16387;
+        
+        try
+        {
+            // Start the listener in background
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var listenerTask = Task.Run(async () =>
+            {
+                return await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            });
+
+            // Give the listener a moment to start
+            await Task.Delay(200);
+            
+            // Connect but don't send data
+            await ConnectWithoutSending(testPort);
+
+            // Wait for listener to timeout or complete
+            try
+            {
+                await listenerTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when no data is sent
+            }
+
+            // Assert connection events were fired but no data events
+            Assert.True(eventLog.HasConnectionEstablished);
+            Assert.True(eventLog.HasConnectionClosed);
+            Assert.Empty(eventLog.DataReceived);
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Skip test if port is in use - this is expected in CI environments
+            return;
+        }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_SingleMessage_ReceivesCorrectly()
+    {
+        // Arrange
+        var service = CreateServiceWithEventLog(out var eventLog);
+        var testPort = 16388;
+        var testMessage = "Single message";
+        
+        try
+        {
+            // Start the listener in background
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var listenerTask = Task.Run(async () =>
+            {
+                return await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            });
+
+            // Give the listener a moment to start
+            await Task.Delay(200);
+            
+            // Send single message
+            await SendMessagesToPort(testPort, testMessage);
+
+            // Wait for listener to complete
+            var result = await listenerTask;
+
+            // Assert events and data
+            Assert.True(eventLog.HasConnectionEstablished);
+            Assert.True(eventLog.HasConnectionClosed);
+            Assert.Single(eventLog.DataReceived);
+            Assert.Equal(testMessage, eventLog.DataReceived[0]);
+            Assert.Contains(testMessage, result);
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Skip test if port is in use - this is expected in CI environments
+            return;
+        }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_MultipleMessages_ReceivesAllCorrectly()
+    {
+        // Arrange
+        var service = CreateServiceWithEventLog(out var eventLog);
+        var testPort = 16389;
+        var messages = new[] { "Message 1", "Message 2", "Message 3" };
+        
+        try
+        {
+            // Start the listener in background
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var listenerTask = Task.Run(async () =>
+            {
+                return await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            });
+
+            // Give the listener a moment to start
+            await Task.Delay(200);
+            
+            // Send multiple messages
+            await SendMessagesToPort(testPort, messages);
+
+            // Wait for listener to complete
+            var result = await listenerTask;
+
+            // Assert events and data
+            Assert.True(eventLog.HasConnectionEstablished);
+            Assert.True(eventLog.HasConnectionClosed);
+            
+            // TCP may combine messages into fewer chunks, so verify total data received
+            var allReceivedData = string.Join("", eventLog.DataReceived);
+            var expectedResult = string.Join("", messages);
+            Assert.Equal(expectedResult, allReceivedData);
+            Assert.Contains(expectedResult, result);
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Skip test if port is in use - this is expected in CI environments
+            return;
+        }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_NoConnection_TimesOutGracefully()
+    {
+        // Arrange
+        var service = CreateServiceWithEventLog(out var eventLog);
+        var testPort = 16390;
+        
+        try
+        {
+            // Start the listener with short timeout
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+            
+            // Act & Assert - should handle timeout gracefully
+            try
+            {
+                await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when no connections come in within timeout
+            }
+
+            // No events should have been fired
+            Assert.Empty(eventLog.Events);
+            Assert.Empty(eventLog.DataReceived);
         }
         catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
         {
