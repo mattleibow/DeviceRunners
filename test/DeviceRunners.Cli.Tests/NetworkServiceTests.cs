@@ -97,4 +97,73 @@ public class NetworkServiceTests
             }
         }
     }
+
+    [Fact]
+    public async Task StartTcpListener_EventsTest_EmitsCorrectEvents()
+    {
+        // Arrange
+        var service = new NetworkService();
+        var testPort = 16386; // Use a different port for this test
+        var testMessage = "Test message for events";
+        
+        var connectionEstablishedFired = false;
+        var connectionClosedFired = false;
+        var dataReceivedFired = false;
+        string? receivedData = null;
+        
+        // Subscribe to events
+        service.ConnectionEstablished += (sender, e) =>
+        {
+            connectionEstablishedFired = true;
+        };
+        
+        service.ConnectionClosed += (sender, e) =>
+        {
+            connectionClosedFired = true;
+        };
+        
+        service.DataReceived += (sender, e) =>
+        {
+            dataReceivedFired = true;
+            receivedData = e.Data;
+        };
+        
+        try
+        {
+            // Start the listener in background
+            var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var listenerTask = Task.Run(async () =>
+            {
+                return await service.StartTcpListener(testPort, null, true, cancellationTokenSource.Token);
+            });
+
+            // Give the listener a moment to start
+            await Task.Delay(200);
+            
+            // Send data to the listener
+            using (var client = new TcpClient())
+            {
+                await client.ConnectAsync("127.0.0.1", testPort);
+                using var stream = client.GetStream();
+                var buffer = Encoding.ASCII.GetBytes(testMessage);
+                await stream.WriteAsync(buffer, 0, buffer.Length);
+                await stream.FlushAsync();
+            }
+
+            // Wait for listener to complete
+            var result = await listenerTask;
+
+            // Assert events were fired
+            Assert.True(connectionEstablishedFired, "ConnectionEstablished event should have been fired");
+            Assert.True(connectionClosedFired, "ConnectionClosed event should have been fired");
+            Assert.True(dataReceivedFired, "DataReceived event should have been fired");
+            Assert.NotNull(receivedData);
+            Assert.Equal(testMessage, receivedData);
+        }
+        catch (SocketException ex) when (ex.Message.Contains("Address already in use"))
+        {
+            // Skip test if port is in use - this is expected in CI environments
+            return;
+        }
+    }
 }

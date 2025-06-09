@@ -7,6 +7,9 @@ namespace DeviceRunners.Cli.Services;
 
 public class NetworkService
 {
+    public event EventHandler<ConnectionEventArgs>? ConnectionEstablished;
+    public event EventHandler<ConnectionEventArgs>? ConnectionClosed;
+    public event EventHandler<DataReceivedEventArgs>? DataReceived;
     public bool IsPortAvailable(int port)
     {
         try
@@ -49,6 +52,11 @@ public class NetworkService
                 }
 
                 using var client = await listener.AcceptTcpClientAsync();
+                var remoteEndPoint = client.Client.RemoteEndPoint as IPEndPoint;
+                
+                // Emit connection established event
+                ConnectionEstablished?.Invoke(this, new ConnectionEventArgs { RemoteEndPoint = remoteEndPoint });
+                
                 using var stream = client.GetStream();
                 
                 var buffer = new byte[1024];
@@ -59,7 +67,17 @@ public class NetworkService
                 {
                     var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
                     connectionData.Append(data);
+                    
+                    // Emit data received event for each chunk
+                    DataReceived?.Invoke(this, new DataReceivedEventArgs 
+                    { 
+                        Data = data, 
+                        RemoteEndPoint = remoteEndPoint 
+                    });
                 }
+                
+                // Emit connection closed event
+                ConnectionClosed?.Invoke(this, new ConnectionEventArgs { RemoteEndPoint = remoteEndPoint });
 
                 var receivedMessage = connectionData.ToString();
                 receivedData.AppendLine(receivedMessage);
