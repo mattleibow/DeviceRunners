@@ -35,6 +35,24 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
         {
             var networkService = new NetworkService();
             
+            // Subscribe to network events for real-time logging
+            networkService.ConnectionEstablished += (sender, e) =>
+            {
+                var endpointInfo = e.RemoteEndPoint?.ToString() ?? "unknown";
+                WriteConsoleOutput($"[green]Incoming connection from {endpointInfo}, responding...[/]", settings);
+            };
+            
+            networkService.ConnectionClosed += (sender, e) =>
+            {
+                var endpointInfo = e.RemoteEndPoint?.ToString() ?? "unknown";
+                WriteConsoleOutput($"[green]Connection from {endpointInfo} closed[/]", settings);
+            };
+            
+            networkService.DataReceived += (sender, e) =>
+            {
+                WriteConsoleOutput($"[green]Data received:[/] {Markup.Escape(e.Data)}", settings);
+            };
+            
             if (!networkService.IsPortAvailable(settings.Port))
             {
                 var result = new PortListenerResult
