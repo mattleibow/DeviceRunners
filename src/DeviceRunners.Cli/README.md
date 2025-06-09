@@ -211,6 +211,9 @@ device-runners listen --port 16384
 # With results file and non-interactive mode
 device-runners listen --port 16384 --results-file results.txt --non-interactive
 
+# With custom timeouts in non-interactive mode
+device-runners listen --port 16384 --non-interactive --connection-timeout 60 --data-timeout 45
+
 # For automation - JSON output
 device-runners listen --port 16384 --non-interactive --output json
 ```
@@ -219,6 +222,14 @@ device-runners listen --port 16384 --non-interactive --output json
 - `--port` - TCP port to listen on (default: 16384)
 - `--results-file` - File path to save received data
 - `--non-interactive` - Run in non-interactive mode with timeout
+- `--connection-timeout` - Connection timeout in seconds for non-interactive mode (default: 30)
+- `--data-timeout` - Data timeout in seconds for non-interactive mode (default: 30)
+
+**Timeout Behavior:**
+- **Interactive mode**: No timeouts, waits indefinitely
+- **Non-interactive mode**: Uses connection and data timeouts
+  - Connection timeout: Waits for first connection
+  - Data timeout: Waits for data to arrive, resets on each data received
 
 **Platform Support:** Cross-platform
 
