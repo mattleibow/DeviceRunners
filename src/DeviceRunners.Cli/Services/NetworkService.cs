@@ -34,7 +34,7 @@ public class NetworkService
         }
     }
 
-    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, int connectionTimeoutSeconds = 30, int dataTimeoutSeconds = 30, CancellationToken cancellationToken = default)
+    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, int? connectionTimeoutSeconds = null, int? dataTimeoutSeconds = null, CancellationToken cancellationToken = default)
     {
         var listener = new TcpListener(IPAddress.Any, port);
         listener.Start();
@@ -48,9 +48,9 @@ public class NetworkService
                 ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
                 : null;
             
-            if (connectionTimeoutSource != null)
+            if (connectionTimeoutSource is not null && connectionTimeoutSeconds is int connTimeout)
             {
-                connectionTimeoutSource.CancelAfter(TimeSpan.FromSeconds(connectionTimeoutSeconds));
+                connectionTimeoutSource.CancelAfter(TimeSpan.FromSeconds(connTimeout));
             }
             
             var connectionToken = connectionTimeoutSource?.Token ?? cancellationToken;
@@ -84,9 +84,9 @@ public class NetworkService
                     : null;
                 
                 // Set initial data timeout before first read (if non-interactive)
-                if (dataTimeoutSource != null)
+                if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataTimeout)
                 {
-                    dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                    dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeout));
                 }
                 
                 var dataToken = dataTimeoutSource?.Token ?? cancellationToken;
@@ -105,9 +105,9 @@ public class NetworkService
                     });
                     
                     // Reset data timeout on each data received (if non-interactive)
-                    if (dataTimeoutSource != null)
+                    if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataAgainTimeout)
                     {
-                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataAgainTimeout));
                     }
                 }
 

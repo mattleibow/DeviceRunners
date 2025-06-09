@@ -25,13 +25,11 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
 
         [Description("Connection timeout in seconds (non-interactive mode only)")]
         [CommandOption("--connection-timeout")]
-        [DefaultValue(30)]
-        public int ConnectionTimeout { get; set; } = 30;
+        public int? ConnectionTimeout { get; set; }
 
         [Description("Data timeout in seconds (non-interactive mode only)")]
         [CommandOption("--data-timeout")]
-        [DefaultValue(30)]
-        public int DataTimeout { get; set; } = 30;
+        public int? DataTimeout { get; set; }
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -79,10 +77,19 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
 
             WriteConsoleOutput($"[green]TCP port {settings.Port} is available, continuing...[/]", settings);
             WriteConsoleOutput($"[green]Now listening on TCP port {settings.Port}, press Ctrl+C to stop listening.[/]", settings);
-            
+
             if (settings.NonInteractive)
             {
                 WriteConsoleOutput($"[green]Listening in non-interactive mode, will terminate after first connection.[/]", settings);
+
+                if (settings.ConnectionTimeout.HasValue)
+                {
+                    WriteConsoleOutput($"[green]Connection timeout set to {settings.ConnectionTimeout} seconds.[/]", settings);
+                }
+                if (settings.DataTimeout.HasValue)
+                {
+                    WriteConsoleOutput($"[green]Data timeout set to {settings.DataTimeout} seconds.[/]", settings);
+                }
             }
 
             using var cancellationTokenSource = new CancellationTokenSource();
