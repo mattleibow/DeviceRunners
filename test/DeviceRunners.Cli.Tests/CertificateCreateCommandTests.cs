@@ -8,7 +8,7 @@ namespace DeviceRunners.Cli.Tests;
 public class CertificateCreateCommandTests
 {
     [Fact]
-    public void CertificateCreateCommand_WithMissingParameters_ShowsError()
+    public void WithMissingParameters_ShowsError()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -31,7 +31,7 @@ public class CertificateCreateCommandTests
     }
 
     [Fact]
-    public void CertificateCreateCommand_DefaultOutput_ContainsNoJson()
+    public void DefaultOutput_ContainsNoJson()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -56,7 +56,7 @@ public class CertificateCreateCommandTests
     }
 
     [Fact]
-    public void CertificateCreateCommand_JsonOutput_ContainsNoVerboseMessages()
+    public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Arrange
         var app = new CommandAppTester();

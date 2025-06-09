@@ -9,7 +9,7 @@ namespace DeviceRunners.Cli.Tests;
 public class OutputServiceTests
 {
     [Fact]
-    public void OutputService_ProducesValidJsonOutput()
+    public void ProducesValidJsonOutput()
     {
         // Arrange
         var testResult = new CertificateRemoveResult
@@ -34,7 +34,7 @@ public class OutputServiceTests
     }
 
     [Fact]
-    public void OutputService_ProducesValidXmlOutput()
+    public void ProducesValidXmlOutput()
     {
         // Arrange
         var testResult = new CertificateRemoveResult
@@ -63,7 +63,7 @@ public class OutputServiceTests
     }
 
     [Fact]
-    public void OutputService_ProducesValidTextOutput()
+    public void ProducesValidTextOutput()
     {
         // Arrange
         var testResult = new CertificateRemoveResult

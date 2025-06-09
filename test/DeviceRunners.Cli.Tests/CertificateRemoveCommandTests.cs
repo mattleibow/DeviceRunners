@@ -32,7 +32,7 @@ public class CertificateRemoveCommandTests
     }
 
     [Fact]
-    public void CertificateRemoveCommand_DefaultOutput_ContainsNoJson()
+    public void DefaultOutput_ContainsNoJson()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -57,7 +57,7 @@ public class CertificateRemoveCommandTests
     }
 
     [Fact]
-    public void CertificateRemoveCommand_JsonOutput_ContainsNoVerboseMessages()
+    public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Arrange
         var app = new CommandAppTester();

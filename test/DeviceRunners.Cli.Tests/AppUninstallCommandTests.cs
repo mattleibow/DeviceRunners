@@ -8,7 +8,7 @@ namespace DeviceRunners.Cli.Tests;
 public class AppUninstallCommandTests
 {
     [Fact]
-    public void AppUninstallCommand_WithMissingParameters_ShowsError()
+    public void WithMissingParameters_ShowsError()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -28,7 +28,7 @@ public class AppUninstallCommandTests
     }
 
     [Fact]
-    public void AppUninstallCommand_DefaultOutput_ContainsNoJson()
+    public void DefaultOutput_ContainsNoJson()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -50,7 +50,7 @@ public class AppUninstallCommandTests
     }
 
     [Fact]
-    public void AppUninstallCommand_JsonOutput_ContainsNoVerboseMessages()
+    public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Arrange
         var app = new CommandAppTester();

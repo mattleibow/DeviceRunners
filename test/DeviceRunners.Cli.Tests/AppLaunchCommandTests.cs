@@ -8,7 +8,7 @@ namespace DeviceRunners.Cli.Tests;
 public class AppLaunchCommandTests
 {
     [Fact]
-    public void AppLaunchCommand_DefaultOutput_ContainsNoJson()
+    public void DefaultOutput_ContainsNoJson()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -30,7 +30,7 @@ public class AppLaunchCommandTests
     }
 
     [Fact]
-    public void AppLaunchCommand_JsonOutput_ContainsNoVerboseMessages()
+    public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Arrange
         var app = new CommandAppTester();

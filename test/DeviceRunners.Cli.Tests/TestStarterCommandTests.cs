@@ -8,7 +8,7 @@ namespace DeviceRunners.Cli.Tests;
 public class TestStarterCommandTests
 {
     [Fact]
-    public void TestStarterCommand_WithMissingApp_ShowsError()
+    public void WithMissingApp_ShowsError()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -28,7 +28,7 @@ public class TestStarterCommandTests
     }
 
     [Fact]
-    public void TestStarterCommand_DefaultOutput_ContainsNoJson()
+    public void DefaultOutput_ContainsNoJson()
     {
         // Arrange
         var app = new CommandAppTester();
@@ -50,7 +50,7 @@ public class TestStarterCommandTests
     }
 
     [Fact]
-    public void TestStarterCommand_JsonOutput_ContainsNoVerboseMessages()
+    public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Arrange
         var app = new CommandAppTester();
