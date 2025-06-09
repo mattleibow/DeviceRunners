@@ -8,12 +8,8 @@ namespace DeviceRunners.Cli.Services;
 
 public class AppService
 {
-    private readonly PowerShellService _powerShellService;
+    private readonly PowerShellService _powerShellService = new();
 
-    public AppService()
-    {
-        _powerShellService = new PowerShellService();
-    }
     public string GetAppIdentityFromMsix(string msixPath)
     {
         using var archive = ZipFile.OpenRead(msixPath);
