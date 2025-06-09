@@ -8,10 +8,6 @@ namespace DeviceRunners.Cli.Commands;
 
 public class AppLaunchCommand : BaseCommand<AppLaunchCommand.Settings>
 {
-    public AppLaunchCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
     public class Settings : BaseCommandSettings
     {
         [Description("Path to the MSIX application package (to determine app identity)")]

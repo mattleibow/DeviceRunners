@@ -8,10 +8,6 @@ namespace DeviceRunners.Cli.Commands;
 
 public class PortListenerCommand : BaseCommand<PortListenerCommand.Settings>
 {
-    public PortListenerCommand(IAnsiConsole console) : base(console)
-    {
-    }
-
     public class Settings : BaseCommandSettings
     {
         [Description("TCP port to listen on")]

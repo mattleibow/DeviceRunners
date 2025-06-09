@@ -8,12 +8,6 @@ namespace DeviceRunners.Cli.Commands;
 public abstract class BaseCommand<TSettings> : Command<TSettings> where TSettings : BaseCommandSettings
 {
     protected readonly OutputService outputService = new();
-    protected readonly IAnsiConsole console;
-
-    protected BaseCommand(IAnsiConsole console)
-    {
-        this.console = console;
-    }
 
     protected void WriteResult<TResult>(TResult result, TSettings settings) where TResult : CommandResult
     {
@@ -32,7 +26,7 @@ public abstract class BaseCommand<TSettings> : Command<TSettings> where TSetting
     {
         if (!ShouldSuppressConsoleOutput(settings))
         {
-            console.MarkupLine(message);
+            AnsiConsole.MarkupLine(message);
         }
     }
 }

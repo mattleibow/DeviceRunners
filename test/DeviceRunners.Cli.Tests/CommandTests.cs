@@ -1,7 +1,6 @@
 using DeviceRunners.Cli.Commands;
 using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
 using Spectre.Console.Testing;
@@ -11,22 +10,11 @@ namespace DeviceRunners.Cli.Tests;
 
 public class CommandTests
 {
-    private static CommandAppTester CreateTestApp(IAnsiConsole? testConsole = null)
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton<IAnsiConsole>(testConsole ?? new TestConsole());
-        
-        var registrar = new TypeRegistrar(services);
-        var app = new CommandAppTester(registrar);
-        
-        return app;
-    }
-
     [Fact]
     public void CertificateCreateCommand_WithMissingParameters_ShowsError()
     {
         // Arrange
-        var app = CreateTestApp();
+        var app = new CommandAppTester();
         app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
@@ -49,7 +37,7 @@ public class CommandTests
     public void TestStarterCommand_WithMissingApp_ShowsError()
     {
         // Arrange
-        var app = CreateTestApp();
+        var app = new CommandAppTester();
         app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
@@ -69,7 +57,7 @@ public class CommandTests
     public void AppUninstallCommand_WithMissingParameters_ShowsError()
     {
         // Arrange
-        var app = CreateTestApp();
+        var app = new CommandAppTester();
         app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
@@ -89,7 +77,7 @@ public class CommandTests
     public void OutputFormat_InvalidValue_HandledGracefully()
     {
         // Test that invalid output formats are handled by the CLI framework
-        var app = CreateTestApp();
+        var app = new CommandAppTester();
         app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
@@ -204,52 +192,5 @@ public class CommandTests
         {
             return false;
         }
-    }
-}
-
-// Type registrar for dependency injection in tests
-public sealed class TypeRegistrar : ITypeRegistrar
-{
-    private readonly IServiceCollection services;
-
-    public TypeRegistrar(IServiceCollection services)
-    {
-        this.services = services;
-    }
-
-    public ITypeResolver Build()
-    {
-        return new TypeResolver(services.BuildServiceProvider());
-    }
-
-    public void Register(Type service, Type implementation)
-    {
-        services.AddSingleton(service, implementation);
-    }
-
-    public void RegisterInstance(Type service, object implementation)
-    {
-        services.AddSingleton(service, implementation);
-    }
-
-    public void RegisterLazy(Type service, Func<object> factory)
-    {
-        services.AddSingleton(service, (_) => factory());
-    }
-}
-
-// Type resolver for dependency injection in tests
-public sealed class TypeResolver : ITypeResolver
-{
-    private readonly IServiceProvider provider;
-
-    public TypeResolver(IServiceProvider provider)
-    {
-        this.provider = provider;
-    }
-
-    public object? Resolve(Type? type)
-    {
-        return type is null ? null : provider.GetService(type);
     }
 }
