@@ -22,6 +22,16 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
         [Description("Run in non-interactive mode")]
         [CommandOption("--non-interactive")]
         public bool NonInteractive { get; set; }
+
+        [Description("Connection timeout in seconds (non-interactive mode only)")]
+        [CommandOption("--connection-timeout")]
+        [DefaultValue(30)]
+        public int ConnectionTimeoutSeconds { get; set; } = 30;
+
+        [Description("Data timeout in seconds (non-interactive mode only)")]
+        [CommandOption("--data-timeout")]
+        [DefaultValue(30)]
+        public int DataTimeoutSeconds { get; set; } = 30;
     }
 
     public override int Execute(CommandContext context, Settings settings)
@@ -69,7 +79,9 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
             var receivedData = await networkService.StartTcpListener(
                 settings.Port, 
                 settings.ResultsFile, 
-                settings.NonInteractive, 
+                settings.NonInteractive,
+                settings.ConnectionTimeoutSeconds,
+                settings.DataTimeoutSeconds,
                 cancellationTokenSource.Token);
 
             if (!string.IsNullOrEmpty(receivedData))

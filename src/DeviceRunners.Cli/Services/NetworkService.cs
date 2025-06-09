@@ -31,7 +31,7 @@ public class NetworkService
         }
     }
 
-    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, CancellationToken cancellationToken = default)
+    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, int connectionTimeoutSeconds = 30, int dataTimeoutSeconds = 30, CancellationToken cancellationToken = default)
     {
         var listener = new TcpListener(IPAddress.Any, port);
         listener.Start();
@@ -40,13 +40,28 @@ public class NetworkService
         {
             var receivedData = new StringBuilder();
             
+            // Create connection timeout source for non-interactive mode
+            using var connectionTimeoutSource = nonInteractive 
+                ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+                : null;
+            
+            if (connectionTimeoutSource != null)
+            {
+                connectionTimeoutSource.CancelAfter(TimeSpan.FromSeconds(connectionTimeoutSeconds));
+            }
+            
+            var connectionToken = connectionTimeoutSource?.Token ?? cancellationToken;
+            
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (!listener.Pending())
                 {
-                    await Task.Delay(100, cancellationToken);
+                    await Task.Delay(100, connectionToken);
                     continue;
                 }
+
+                // Connection established, cancel connection timeout
+                connectionTimeoutSource?.Dispose();
 
                 using var client = await listener.AcceptTcpClientAsync();
                 using var stream = client.GetStream();
@@ -54,11 +69,38 @@ public class NetworkService
                 var buffer = new byte[1024];
                 var connectionData = new StringBuilder();
                 
+                // Create data timeout source for non-interactive mode
+                using var dataTimeoutSource = nonInteractive 
+                    ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+                    : null;
+                
                 int bytesRead;
-                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
+                while (true)
                 {
-                    var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                    connectionData.Append(data);
+                    // Set/reset data timeout for each read operation in non-interactive mode
+                    if (dataTimeoutSource != null)
+                    {
+                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                    }
+                    
+                    var dataToken = dataTimeoutSource?.Token ?? cancellationToken;
+                    
+                    try
+                    {
+                        bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken);
+                        if (bytesRead == 0) break;
+                        
+                        var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                        connectionData.Append(data);
+                        
+                        // Data received, reset timeout for next read
+                        // The timeout will be reset at the beginning of the next loop iteration
+                    }
+                    catch (OperationCanceledException) when (dataTimeoutSource?.Token.IsCancellationRequested == true)
+                    {
+                        // Data timeout occurred in non-interactive mode
+                        break;
+                    }
                 }
 
                 var receivedMessage = connectionData.ToString();

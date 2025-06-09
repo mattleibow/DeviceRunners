@@ -194,7 +194,7 @@ public class TestCommand(IAnsiConsole console) : BaseCommand<TestCommand.Setting
 
         try
         {
-            var results = await networkService.StartTcpListener(16384, tcpResultsFile, true, cancellationTokenSource.Token);
+            var results = await networkService.StartTcpListener(16384, tcpResultsFile, true, 30, 30, cancellationTokenSource.Token);
             
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
             

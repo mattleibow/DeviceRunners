@@ -31,7 +31,7 @@ public class NetworkServiceTests
         // Act & Assert - Should not throw and should handle cancellation gracefully
         try
         {
-            await service.StartTcpListener(port, null, true, cancellationTokenSource.Token);
+            await service.StartTcpListener(port, null, true, 30, 30, cancellationTokenSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -54,7 +54,7 @@ public class NetworkServiceTests
             var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             var listenerTask = Task.Run(async () =>
             {
-                return await service.StartTcpListener(testPort, tempFile, true, cancellationTokenSource.Token);
+                return await service.StartTcpListener(testPort, tempFile, true, 30, 30, cancellationTokenSource.Token);
             });
 
             // Give the listener a moment to start
@@ -96,5 +96,39 @@ public class NetworkServiceTests
                 File.Delete(tempFile);
             }
         }
+    }
+
+    [Fact]
+    public async Task StartTcpListener_ConnectionTimeout_ThrowsOperationCancelledException()
+    {
+        // Arrange
+        var service = new NetworkService();
+        var testPort = 16386; // Use a specific port for testing
+        var connectionTimeoutSeconds = 1; // Short timeout
+        
+        // Act & Assert
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await service.StartTcpListener(testPort, null, true, connectionTimeoutSeconds, 30, cancellationTokenSource.Token);
+        });
+    }
+
+    [Fact]
+    public async Task StartTcpListener_InteractiveMode_IgnoresTimeouts()
+    {
+        // Arrange
+        var service = new NetworkService();
+        var testPort = 16387; // Use a specific port for testing
+        var connectionTimeoutSeconds = 1; // Short timeout
+        
+        // Act - Start listener in interactive mode (nonInteractive = false)
+        var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(500));
+        
+        // Should be cancelled by the cancellation token, not by the connection timeout
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await service.StartTcpListener(testPort, null, false, connectionTimeoutSeconds, 30, cancellationTokenSource.Token);
+        });
     }
 }
