@@ -44,7 +44,7 @@ public class AppService
 
     public string GetCertificateFingerprint(string certPath)
     {
-        var cert = new X509Certificate2(certPath);
+        var cert = X509CertificateLoader.LoadCertificateFromFile(certPath);
         return cert.Thumbprint;
     }
 

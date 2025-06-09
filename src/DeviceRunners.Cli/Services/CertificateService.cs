@@ -28,7 +28,17 @@ public class CertificateService
         // The PowerShell script uses empty text, which means no CA capability
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
 
+        // Add subject key identifier extension (often required for code signing certificates)
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
         var certificate = request.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddYears(1));
+
+        // For code signing, we need to ensure the certificate has the right private key properties
+        // Export and re-import with the proper key storage flags
+        var pfxData = certificate.Export(X509ContentType.Pfx);
+        certificate.Dispose();
+        
+        certificate = X509CertificateLoader.LoadPkcs12(pfxData, null, X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
 
         // Install the certificate to CurrentUser\My store
         using var store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
