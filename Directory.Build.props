@@ -8,10 +8,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     
     <!-- Artifacts Directory Configuration -->
-    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
-    <BaseOutputPath>$(ArtifactsPath)\bin\$(MSBuildProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(ArtifactsPath)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <PackageOutputPath>$(ArtifactsPath)\packages\</PackageOutputPath>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
   </PropertyGroup>
 
 </Project>
