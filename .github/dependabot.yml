@@ -4,3 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+      time: "09:00"
+      timezone: "UTC"
+    commit-message:
+      prefix: "nuget"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "nuget"
+    open-pull-requests-limit: 10
