@@ -14,6 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" Version="0.49.1" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
+    <PackageReference Include="AndroidSdk" Version="0.25.0" />
   </ItemGroup>
 
 </Project>

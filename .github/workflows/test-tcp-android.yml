@@ -70,7 +70,7 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Install App
       run: |
-        dotnet android adb install sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk
+        $ANDROID_SDK_ROOT/platform-tools/adb install sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk
     - name: Start TCP Listener and Run Tests
       run: |
         # Create artifacts directory
@@ -86,7 +86,7 @@ jobs:
         
         # Launch the app
         echo "Launching test app..."
-        dotnet android adb shell am start -n com.companyname.devicetestingkitapp.devicetests/crc64e1fb321c08285b90.MainActivity
+        $ANDROID_SDK_ROOT/platform-tools/adb shell am start -n com.companyname.devicetestingkitapp.devicetests/.MainActivity
         
         # Wait for tests to complete (10 minute timeout)
         timeout_seconds=600
@@ -136,7 +136,7 @@ jobs:
         fi
     - name: Shutdown the Emulator
       if: always()
-      run: dotnet android adb -- emu kill
+      run: $ANDROID_SDK_ROOT/platform-tools/adb -- emu kill
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
