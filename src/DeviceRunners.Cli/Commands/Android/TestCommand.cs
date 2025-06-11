@@ -34,6 +34,11 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
             var androidService = new AndroidService();
             var networkService = new NetworkService();
             
+            // Clear logcat before starting
+            WriteConsoleOutput($"  - Clearing logcat...", settings);
+            androidService.ClearLogcat(settings.Device);
+            WriteConsoleOutput($"    Logcat cleared.", settings);
+            
             // Display device info if specified
             if (!string.IsNullOrEmpty(settings.Device))
             {
@@ -87,6 +92,12 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
             WriteConsoleOutput($"[blue]CLEANUP[/]", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
+            // Save logcat after test run
+            var logcatFile = GetLogcatFilePath(settings);
+            WriteConsoleOutput($"  - Saving logcat to: [green]{Markup.Escape(logcatFile)}[/]", settings);
+            androidService.SaveLogcat(logcatFile, settings.Device);
+            WriteConsoleOutput($"    Logcat saved.", settings);
+
             WriteConsoleOutput($"  - Cleanup complete.", settings);
 
             var testResult = new TestStartResult
@@ -96,7 +107,8 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
                 AppPath = settings.App,
                 ResultsDirectory = settings.ResultsDirectory,
                 TestFailures = testFailures,
-                TestResults = testResults
+                TestResults = testResults,
+                LogcatFile = logcatFile
             };
             WriteResult(testResult, settings);
 
@@ -104,17 +116,39 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
         }
         catch (Exception ex)
         {
+            var androidService = new AndroidService();
+            var logcatFile = GetLogcatFilePath(settings);
+            
+            try
+            {
+                WriteConsoleOutput($"  - Saving logcat due to error: [green]{Markup.Escape(logcatFile)}[/]", settings);
+                androidService.SaveLogcat(logcatFile, settings.Device);
+                WriteConsoleOutput($"    Logcat saved.", settings);
+            }
+            catch (Exception logcatEx)
+            {
+                WriteConsoleOutput($"[yellow]Warning: Failed to save logcat: {Markup.Escape(logcatEx.Message)}[/]", settings);
+            }
+
             var result = new TestStartResult
             {
                 Success = false,
                 ErrorMessage = ex.Message,
                 AppPath = settings.App,
-                ResultsDirectory = settings.ResultsDirectory
+                ResultsDirectory = settings.ResultsDirectory,
+                LogcatFile = logcatFile
             };
 
             WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
             WriteResult(result, settings);
             return 1;
         }
+    }
+
+    private string GetLogcatFilePath(Settings settings)
+    {
+        var resultsDir = settings.ResultsDirectory ?? Directory.GetCurrentDirectory();
+        Directory.CreateDirectory(resultsDir);
+        return Path.Combine(resultsDir, "logcat.txt");
     }
 }

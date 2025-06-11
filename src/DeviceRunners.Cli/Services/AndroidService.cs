@@ -43,4 +43,15 @@ public class AndroidService
         var activity = activityName ?? $".MainActivity";
         var result = _adb.Shell($"am start -W -n {packageName}/{activity}", adbSerial);
     }
+
+    public void ClearLogcat(string? adbSerial = null)
+    {
+        _adb.Logcat(new Adb.AdbLogcatOptions { Clear = true }, adbSerial);
+    }
+
+    public void SaveLogcat(string outputPath, string? adbSerial = null)
+    {
+        var logcatOutput = _adb.Logcat(new Adb.AdbLogcatOptions(), adbSerial);
+        File.WriteAllLines(outputPath, logcatOutput);
+    }
 }
