@@ -39,7 +39,7 @@ jobs:
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
       run: |
-        $msix = Get-ChildItem "sample/artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem "sample/artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
           -OutputDirectory artifacts `
