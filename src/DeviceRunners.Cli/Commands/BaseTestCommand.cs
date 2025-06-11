@@ -57,14 +57,21 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         WriteConsoleOutput($"  - Waiting for test results via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
+        var lastConnectTime = DateTimeOffset.UtcNow;
+
         var networkService = new NetworkService();
 
         networkService.ConnectionEstablished += (sender, e) =>
         {
-            WriteConsoleOutput($"    [yellow]TCP connection established with {e.RemoteEndPoint}[/]", settings);
+            var delta = e.Timestamp - lastConnectTime;
+            lastConnectTime = DateTimeOffset.UtcNow;
+
+            WriteConsoleOutput($"    [yellow]TCP connection established with {e.RemoteEndPoint} after {delta}[/]", settings);
         };
         networkService.ConnectionClosed += (sender, e) =>
         {
+            lastConnectTime = DateTimeOffset.UtcNow;
+
             WriteConsoleOutput($"    [yellow]TCP connection closed with {e.RemoteEndPoint}[/]", settings);
         };
         networkService.DataReceived += (sender, e) =>
