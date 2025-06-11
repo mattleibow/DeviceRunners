@@ -34,7 +34,7 @@ public class NetworkService
         }
     }
 
-    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, int connectionTimeoutSeconds = 30, int dataTimeoutSeconds = 30, CancellationToken cancellationToken = default)
+    public async Task<string> StartTcpListener(int port, string? outputPath, bool nonInteractive, int? connectionTimeoutSeconds = null, int? dataTimeoutSeconds = null, CancellationToken cancellationToken = default)
     {
         var listener = new TcpListener(IPAddress.Any, port);
         listener.Start();
@@ -42,19 +42,19 @@ public class NetworkService
         try
         {
             var receivedData = new StringBuilder();
-            
+
             // Create connection timeout only for non-interactive mode
-            using var connectionTimeoutSource = nonInteractive 
+            using var connectionTimeoutSource = nonInteractive
                 ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
                 : null;
-            
-            if (connectionTimeoutSource != null)
+
+            if (connectionTimeoutSource is not null && connectionTimeoutSeconds is int connTimeout)
             {
-                connectionTimeoutSource.CancelAfter(TimeSpan.FromSeconds(connectionTimeoutSeconds));
+                connectionTimeoutSource.CancelAfter(TimeSpan.FromSeconds(connTimeout));
             }
-            
+
             var connectionToken = connectionTimeoutSource?.Token ?? cancellationToken;
-            
+
             // Wait for first connection with timeout (if non-interactive)
             while (!connectionToken.IsCancellationRequested)
             {
@@ -77,20 +77,20 @@ public class NetworkService
 
                 var buffer = new byte[1024];
                 var connectionData = new StringBuilder();
-                
+
                 // Create data timeout for this connection only in non-interactive mode
-                using var dataTimeoutSource = nonInteractive 
+                using var dataTimeoutSource = nonInteractive
                     ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
                     : null;
-                
+
                 // Set initial data timeout before first read (if non-interactive)
-                if (dataTimeoutSource != null)
+                if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataTimeout)
                 {
-                    dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                    dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeout));
                 }
-                
+
                 var dataToken = dataTimeoutSource?.Token ?? cancellationToken;
-                
+
                 int bytesRead;
                 while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
                 {
@@ -103,11 +103,11 @@ public class NetworkService
                         Data = data,
                         RemoteEndPoint = remoteEndPoint
                     });
-                    
+
                     // Reset data timeout on each data received (if non-interactive)
-                    if (dataTimeoutSource != null)
+                    if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataAgainTimeout)
                     {
-                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataTimeoutSeconds));
+                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataAgainTimeout));
                     }
                 }
 
@@ -130,6 +130,11 @@ public class NetworkService
                 // If an output path is specified, write the received message to the file
                 if (!string.IsNullOrEmpty(outputPath))
                 {
+                    var dir = Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(dir))
+                    {
+                        Directory.CreateDirectory(dir!);
+                    }
                     await File.WriteAllTextAsync(outputPath, receivedMessage, cancellationToken);
                 }
 

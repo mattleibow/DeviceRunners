@@ -4,11 +4,11 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class CertificateRemoveCommandTests
+public class WindowCertificateRemoveCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public CertificateRemoveCommandTests()
+    public WindowCertificateRemoveCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
@@ -17,7 +17,7 @@ public class CertificateRemoveCommandTests
             {
                 windows.AddBranch("cert", cert =>
                 {
-                    cert.AddCommand<CertificateRemoveCommand>("uninstall");
+                    cert.AddCommand<WindowCertificateRemoveCommand>("uninstall");
                 });
             });
         });

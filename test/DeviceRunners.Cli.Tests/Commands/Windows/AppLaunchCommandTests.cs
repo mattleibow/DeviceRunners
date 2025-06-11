@@ -4,18 +4,18 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class AppLaunchCommandTests
+public class WindowsAppLaunchCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public AppLaunchCommandTests()
+    public WindowsAppLaunchCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
-                windows.AddCommand<AppLaunchCommand>("launch");
+                windows.AddCommand<WindowsAppLaunchCommand>("launch");
             });
         });
     }

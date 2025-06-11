@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppUninstallCommand(IAnsiConsole console) : BaseCommand<AppUninstallCommand.Settings>(console)
+public class WindowsAppUninstallCommand(IAnsiConsole console) : BaseCommand<WindowsAppUninstallCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {

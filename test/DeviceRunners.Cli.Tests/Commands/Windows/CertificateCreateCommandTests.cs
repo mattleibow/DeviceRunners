@@ -4,11 +4,11 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class CertificateCreateCommandTests
+public class WindowCertificateCreateCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public CertificateCreateCommandTests()
+    public WindowCertificateCreateCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
@@ -17,7 +17,7 @@ public class CertificateCreateCommandTests
             {
                 windows.AddBranch("cert", cert =>
                 {
-                    cert.AddCommand<CertificateCreateCommand>("install");
+                    cert.AddCommand<WindowCertificateCreateCommand>("install");
                 });
             });
         });

@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class AppInstallCommand(IAnsiConsole console) : BaseCommand<AppInstallCommand.Settings>(console)
+public class WindowsAppInstallCommand(IAnsiConsole console) : BaseCommand<WindowsAppInstallCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {

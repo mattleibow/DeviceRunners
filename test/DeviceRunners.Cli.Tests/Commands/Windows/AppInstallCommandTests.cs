@@ -4,37 +4,27 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class TestCommandTests
+public class WindowsAppInstallCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public TestCommandTests()
+    public WindowsAppInstallCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
-                windows.AddCommand<TestCommand>("test");
+                windows.AddCommand<WindowsAppInstallCommand>("install");
             });
         });
-    }
-
-    [Fact]
-    public void WithMissingApp_ShowsError()
-    {
-        // Act
-        var result = _app.Run("windows", "test");
-
-        // Assert
-        Assert.NotEqual(0, result.ExitCode);
     }
 
     [Fact]
     public void DefaultOutput_ContainsNoJson()
     {
         // Act - Run without --output flag
-        var result = _app.Run("windows", "test");
+        var result = _app.Run("windows", "install");
 
         // Assert - Should contain verbose error messages, not JSON
         Assert.Contains("Certificate file not found", result.Output); // Error message should be verbose
@@ -46,13 +36,12 @@ public class TestCommandTests
     public void JsonOutput_ContainsNoVerboseMessages()
     {
         // Act - Run with --output json flag
-        var result = _app.Run("windows", "test", "--output", "json");
+        var result = _app.Run("windows", "install", "--output", "json");
 
         // Assert - Should contain clean JSON error, no verbose messages
         Assert.True(TestHelpers.IsValidJson(result.Output));
-        // Error message text can appear in errorMessage field, but no verbose formatting or section headers
+        // Error message text can appear in errorMessage field, but no verbose formatting
         Assert.DoesNotContain("Error:", result.Output); // No verbose "Error:" prefix
-        Assert.DoesNotContain("PREPARATION", result.Output); // No verbose section headers
         Assert.Contains("\"success\"", result.Output); // Should have JSON structure
     }
 }
