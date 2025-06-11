@@ -79,60 +79,60 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         };
 
         try
+        {
+            var results = await networkService.StartTcpListener(
+                settings.Port,
+                tcpResultsFile,
+                true,
+                settings.ConnectionTimeout,
+                settings.DataTimeout);
+
+            WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
+
+            if (File.Exists(tcpResultsFile))
             {
-                var results = await networkService.StartTcpListener(
-                    settings.Port,
-                    tcpResultsFile,
-                    true,
-                    settings.ConnectionTimeout,
-                    settings.DataTimeout);
+                var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
+                WriteConsoleOutput($"  - Analyzing test results...", settings);
+                WriteConsoleMarkup($"    Saved test results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
 
-                WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
-
-                if (File.Exists(tcpResultsFile))
+                // Look for test failure indicators in the TCP results
+                if (tcpResults.Contains("Failed:"))
                 {
-                    var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
-                    WriteConsoleOutput($"  - Analyzing test results...", settings);
-                    WriteConsoleMarkup($"    Saved test results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
-
-                    // Look for test failure indicators in the TCP results
-                    if (tcpResults.Contains("Failed:"))
+                    var lines = tcpResults.Split('\n');
+                    foreach (var line in lines)
                     {
-                        var lines = tcpResults.Split('\n');
-                        foreach (var line in lines)
+                        if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
                         {
-                            if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
+                            if (failedCount > 0)
                             {
-                                if (failedCount > 0)
-                                {
-                                    WriteConsoleOutput($"    TCP results indicate {failedCount} test failures.", settings);
-                                    return (failedCount, tcpResults);
-                                }
-                                else
-                                {
-                                    WriteConsoleOutput($"    TCP results indicate no test failures.", settings);
-                                    return (0, tcpResults);
-                                }
+                                WriteConsoleOutput($"    TCP results indicate {failedCount} test failures.", settings);
+                                return (failedCount, tcpResults);
+                            }
+                            else
+                            {
+                                WriteConsoleOutput($"    TCP results indicate no test failures.", settings);
+                                return (0, tcpResults);
                             }
                         }
-                    }
-                    else
-                    {
-                        WriteConsoleOutput($"    [yellow]Could not parse test results format.[/]", settings);
-                        return (1, tcpResults);
                     }
                 }
                 else
                 {
-                    WriteConsoleOutput($"    [yellow]No TCP results received.[/]", settings);
-                    return (1, null);
+                    WriteConsoleOutput($"    [yellow]Could not parse test results format.[/]", settings);
+                    return (1, tcpResults);
                 }
             }
-            catch (OperationCanceledException)
+            else
             {
-                WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
+                WriteConsoleOutput($"    [yellow]No TCP results received.[/]", settings);
                 return (1, null);
             }
+        }
+        catch (OperationCanceledException)
+        {
+            WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
+            return (1, null);
+        }
 
         return (1, null);
     }
