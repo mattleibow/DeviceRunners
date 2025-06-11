@@ -46,6 +46,11 @@ jobs:
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}

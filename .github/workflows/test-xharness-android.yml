@@ -80,6 +80,11 @@ jobs:
         exit $code
     - name: Shutdown the Emulator
       run: dotnet xharness android adb -- emu kill
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
