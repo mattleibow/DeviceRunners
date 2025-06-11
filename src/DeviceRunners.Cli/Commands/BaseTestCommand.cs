@@ -52,6 +52,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         WriteConsoleOutput($"  - Starting TCP listener on port {settings.Port}...", settings);
         var tcpResultsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-results.txt");
+        WriteConsoleOutput($"    Saving results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
 
         WriteConsoleOutput($"  - Waiting for test results via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
@@ -91,7 +92,8 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
                 if (File.Exists(tcpResultsFile))
                 {
                     var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
-                    WriteConsoleOutput($"  - Analyzing TCP test results...", settings);
+                    WriteConsoleOutput($"  - Analyzing test results...", settings);
+                    WriteConsoleMarkup($"    Saved test results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
 
                     // Look for test failure indicators in the TCP results
                     if (tcpResults.Contains("Failed:"))
