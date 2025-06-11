@@ -41,7 +41,7 @@ jobs:
             --target ios-simulator-64 \
             --timeout="00:03:00" \
             --launch-timeout=00:06:00 \
-            --app sample/artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/DeviceTestingKitApp.DeviceTests.app \
+            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts \
           && code=0 && break || code=$? && sleep 15
         done

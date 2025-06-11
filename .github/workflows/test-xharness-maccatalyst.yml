@@ -39,7 +39,7 @@ jobs:
           --target maccatalyst \
           --timeout="00:02:00" \
           --launch-timeout=00:06:00 \
-          --app sample/artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/DeviceTestingKitApp.DeviceTests.app \
+          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/DeviceTestingKitApp.DeviceTests.app \
           --output-directory artifacts
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4

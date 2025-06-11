@@ -73,7 +73,7 @@ jobs:
             --launch-timeout=00:10:00 \
             --package-name com.companyname.devicetestingkitapp.devicetests \
             --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-            --app sample/artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+            --app artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
             --output-directory artifacts \
           && code=0 && break || code=$? && sleep 15
         done
