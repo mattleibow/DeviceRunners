@@ -29,8 +29,8 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         [Description("Connection timeout in seconds")]
         [CommandOption("--connection-timeout")]
-        [DefaultValue(30)]
-        public int ConnectionTimeout { get; set; } = 30;
+        [DefaultValue(120)]
+        public int ConnectionTimeout { get; set; } = 120;
 
         [Description("Data timeout in seconds")]
         [CommandOption("--data-timeout")]
