@@ -12,6 +12,15 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		Console.WriteLine("Creating the test runner application:");
+		Console.WriteLine(" - Visual test runner");
+#if MODE_NON_INTERACTIVE_VISUAL
+		Console.WriteLine(" - Non-interactive visual test runner");
+#endif
+#if MODE_XHARNESS
+		Console.WriteLine(" - XHarness test runner");
+#endif
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.ConfigureUITesting()

@@ -4,18 +4,18 @@ using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
-public class AppUninstallCommandTests
+public class WindowsAppUninstallCommandTests
 {
     private readonly CommandAppTester _app;
 
-    public AppUninstallCommandTests()
+    public WindowsAppUninstallCommandTests()
     {
         _app = new CommandAppTester();
         _app.Configure(config =>
         {
             config.AddBranch("windows", windows =>
             {
-                windows.AddCommand<AppUninstallCommand>("uninstall");
+                windows.AddCommand<WindowsAppUninstallCommand>("uninstall");
             });
         });
     }

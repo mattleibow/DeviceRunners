@@ -6,7 +6,7 @@ using Spectre.Console.Cli;
 
 namespace DeviceRunners.Cli.Commands;
 
-public class CertificateRemoveCommand(IAnsiConsole console) : BaseCommand<CertificateRemoveCommand.Settings>(console)
+public class WindowCertificateRemoveCommand(IAnsiConsole console) : BaseCommand<WindowCertificateRemoveCommand.Settings>(console)
 {
 	public class Settings : BaseCommandSettings
     {
