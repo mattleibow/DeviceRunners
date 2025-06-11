@@ -68,72 +68,10 @@ jobs:
           -p:TestingMode=NonInteractiveVisual \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Install App
+    - name: Run Tests
       run: |
-        $ANDROID_SDK_ROOT/platform-tools/adb install sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk
-    - name: Start TCP Listener and Run Tests
-      run: |
-        # Create artifacts directory
-        mkdir -p artifacts
-        
-        # Start TCP listener in background
-        echo "Starting TCP listener on port 16384..."
-        device-runners listen --port 16384 --results-file artifacts/tcp-test-results.txt --non-interactive &
-        LISTENER_PID=$!
-        
-        # Wait a moment for listener to start
-        sleep 3
-        
-        # Launch the app
-        echo "Launching test app..."
-        $ANDROID_SDK_ROOT/platform-tools/adb shell am start -n com.companyname.devicetestingkitapp.devicetests/.MainActivity
-        
-        # Wait for tests to complete (10 minute timeout)
-        timeout_seconds=600
-        elapsed=0
-        
-        echo "Waiting for test results via TCP..."
-        while [ $elapsed -lt $timeout_seconds ]; do
-          if [ -f "artifacts/tcp-test-results.txt" ] && [ -s "artifacts/tcp-test-results.txt" ]; then
-            echo "TCP results received!"
-            break
-          fi
-          sleep 5
-          elapsed=$((elapsed + 5))
-          if [ $((elapsed % 60)) -eq 0 ]; then
-            echo "Still waiting... ($elapsed/$timeout_seconds seconds)"
-          fi
-        done
-        
-        # Stop the TCP listener
-        echo "Stopping TCP listener..."
-        kill $LISTENER_PID 2>/dev/null || true
-        wait $LISTENER_PID 2>/dev/null || true
-        
-        # Check if we got results
-        if [ -f "artifacts/tcp-test-results.txt" ] && [ -s "artifacts/tcp-test-results.txt" ]; then
-          echo "Analyzing TCP test results..."
-          echo "--- TCP Results ---"
-          cat artifacts/tcp-test-results.txt
-          echo "--- End TCP Results ---"
-          
-          # Parse test results to determine exit code
-          # Look for patterns like "Tests run: X Passed: Y Failed: Z"
-          if grep -q "Failed: 0" artifacts/tcp-test-results.txt; then
-            echo "All tests passed!"
-            exit 0
-          elif grep -qE "Failed: [1-9][0-9]*" artifacts/tcp-test-results.txt; then
-            echo "Some tests failed!"
-            exit 1
-          else
-            echo "Could not determine test results from TCP output"
-            echo "Assuming failure due to unknown result format"
-            exit 1
-          fi
-        else
-          echo "No TCP results received within timeout period"
-          exit 1
-        fi
+        apk="sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk"
+        device-runners android test --app "$apk" --results-directory artifacts
     - name: Shutdown the Emulator
       if: always()
       run: $ANDROID_SDK_ROOT/platform-tools/adb emu kill
