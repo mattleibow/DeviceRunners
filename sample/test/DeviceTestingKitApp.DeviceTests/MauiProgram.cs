@@ -50,6 +50,8 @@ public static class MauiProgram
 
 #if DEBUG
 		builder.Logging.AddDebug();
+#else
+		builder.Logging.AddConsole();
 #endif
 
 		return builder.Build();
