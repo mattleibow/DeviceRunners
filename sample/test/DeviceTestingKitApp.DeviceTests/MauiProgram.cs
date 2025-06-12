@@ -38,7 +38,10 @@ public static class MauiProgram
 					HostNames = ["localhost", "10.0.2.2"],
 					Port = 16384,
 					Formatter = new TextResultChannelFormatter(),
-					Required = false
+					Required = false,
+					Retries = 3,
+					RetryTimeout = TimeSpan.FromSeconds(5),
+					Timeout = TimeSpan.FromSeconds(30)
 				})
 #endif
 				.AddConsoleResultChannel()
@@ -50,6 +53,8 @@ public static class MauiProgram
 
 #if DEBUG
 		builder.Logging.AddDebug();
+#else
+		builder.Logging.AddConsole();
 #endif
 
 		return builder.Build();

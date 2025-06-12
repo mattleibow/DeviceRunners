@@ -11,6 +11,9 @@ public class TcpResultChannel : IResultChannel
 	readonly ILogger<TcpResultChannel>? _logger;
 	readonly IResultChannelFormatter _formatter;
 	readonly bool _required;
+	readonly int _retries;
+	readonly TimeSpan _retryTimeout;
+	readonly TimeSpan _timeout;
 
 	TcpClient? _client;
 	Stream? _stream;
@@ -26,13 +29,14 @@ public class TcpResultChannel : IResultChannel
 
 		_formatter = options.Formatter ?? throw new ArgumentNullException(nameof(options.Formatter));
 		_required = options.Required;
+		_retries = options.Retries;
+		_retryTimeout = options.RetryTimeout;
+		_timeout = options.Timeout;
 
 		HostNames = options.HostNames?.ToList() ?? [options.HostName];
 		Port = options.Port;
 		_logger = logger;
 	}
-
-	public string? HostName { get; private set; }
 
 	public IReadOnlyList<string> HostNames { get; }
 
@@ -48,7 +52,7 @@ public class TcpResultChannel : IResultChannel
 		}
 
 		// no host was selected, so try them all and then fallback to the first one
-		var hostName = HostName ?? SelectBestHostName() ?? HostNames[0];
+		var hostName = await SelectBestHostName() ?? HostNames[0];
 
 		_logger?.LogInformation("Connecting to {HostName}:{Port}...", hostName, Port);
 
@@ -76,62 +80,126 @@ public class TcpResultChannel : IResultChannel
 		return true;
 	}
 
-	string? SelectBestHostName()
+	async Task<string?> SelectBestHostName()
 	{
-		// If there's only one host, there's no need to select
-		if (HostNames.Count == 1)
+		if (HostNames is null || HostNames.Count == 0)
 			return null;
+			
+		if (HostNames.Count == 1)
+			return HostNames[0];
 
-		// If there's more than one host, we need to select the best/first good one
-		var tcs = new CancellationTokenSource();
-		var selected = -1;
-		var failures = 0;
-
-		using (var evt = new ManualResetEventSlim(false))
+		using var cts = new CancellationTokenSource();
+		
+		// Fire off all connection attempts concurrently
+		var connectionTasks = new Dictionary<Task<bool>, string>();
+		foreach (var hostName in HostNames)
 		{
-			for (var i = 0; i < HostNames.Count; i++)
-			{
-				var name = HostNames[i];
-				var idx = i;
-
-				_logger?.LogInformation("Pinging {HostName}:{Port}...", name, Port);
-
-				Task.Run(async () =>
-				{
-					try
-					{
-						var client = new TcpClient();
-						await client.ConnectAsync(name, Port, tcs.Token);
-						using (var writer = new StreamWriter(client.GetStream()))
-						{
-							writer.WriteLine("ping");
-						}
-
-						if (Interlocked.CompareExchange(ref selected, idx, -1) == -1)
-						{
-							_logger?.LogInformation("Connected to {HostName}:{Port}.", name, Port);
-							evt.Set();
-						}
-					}
-					catch (Exception ex)
-					{
-						if (Interlocked.Increment(ref failures) == HostNames.Count)
-						{
-							_logger?.LogWarning(ex, "Unable to reach {HostName}:{Port}.", name, Port);
-							evt.Set();
-						}
-					}
-				});
-			}
-
-			// Wait for 1 success or all failures
-			evt.Wait();
-
-			// Cancel all the other pending ones
-			tcs.Cancel();
+			var task = TryConnectToHost(hostName, cts.Token);
+			connectionTasks.Add(task, hostName);
 		}
+		
+		try
+		{
+			// Process tasks as they complete, waiting for success or until all fail
+			while (connectionTasks.Count > 0)
+			{
+				// Find the first task that completes
+				var completedTask = await Task.WhenAny(connectionTasks.Keys);
+				
+				// Get the hostname associated with this task and remove it from the dictionary
+				var hostName = connectionTasks[completedTask];
+				connectionTasks.Remove(completedTask);
+				
+				// Check if the connection was successful
+				var connected = await completedTask;
+				if (connected)
+				{
+					// Connection was successful, cancel all other attempts
+					cts.Cancel();
+					_logger?.LogInformation("Successfully connected to host {HostName}.", hostName);
+					return hostName;
+				}
+				
+				// This task failed, continue checking others
+			}
+			
+			// All tasks completed without success
+			_logger?.LogError("Unable to reach any host after trying all hosts.");
+			return null;
+		}
+		finally
+		{
+			// Ensure we cancel any pending tasks when exiting the method
+			if (!cts.IsCancellationRequested)
+			{
+				cts.Cancel();
+			}
+		}
+	}
+	
+	async Task<bool> TryConnectToHost(string hostName, CancellationToken cancellationToken)
+	{
+		_logger?.LogInformation("Attempting to connect to {HostName}:{Port} with timeout {Timeout}...", hostName, Port, _timeout);
 
-		return selected == -1 ? null : HostNames[selected];
+		for (var attempt = 0; attempt <= _retries; attempt++)
+		{
+			if (cancellationToken.IsCancellationRequested)
+				return false;
+
+			try
+			{
+				if (attempt > 0)
+				{
+					_logger?.LogInformation(
+						"Retry attempt {Attempt} of {MaxRetries} for {HostName}:{Port} after waiting {RetryTimeout}...",
+						attempt, _retries, hostName, Port, _retryTimeout);
+
+					await Task.Delay(_retryTimeout, cancellationToken);
+				}
+
+				using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+				timeoutCts.CancelAfter(_timeout);
+
+				using var client = new TcpClient();
+				await client.ConnectAsync(hostName, Port, timeoutCts.Token);
+
+				using var writer = new StreamWriter(client.GetStream());
+				await writer.WriteLineAsync("ping");
+				await writer.FlushAsync();
+
+				_logger?.LogInformation(
+					"Connected to {HostName}:{Port} on attempt {Attempt}.",
+					hostName, Port, attempt + 1);
+
+				return true;
+			}
+			catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+			{
+				// This was a timeout, not a cancellation from outside
+				_logger?.LogInformation(
+					"Connection attempt to {HostName}:{Port} timed out after {Timeout}.",
+					hostName, Port, _timeout);
+			}
+			catch (OperationCanceledException)
+			{
+				// This was a direct cancellation request, not a timeout
+				return false;
+			}
+			catch (Exception ex) when (attempt == _retries)
+			{
+				_logger?.LogWarning(ex,
+					"Failed to connect to {HostName}:{Port} after {MaxRetries} attempt(s).",
+					hostName, Port, _retries + 1);
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogWarning(ex,
+					"Failed to connect to {HostName}:{Port} on attempt {Attempt}.",
+					hostName, Port, attempt + 1);
+			}
+		}
+		
+		return false;
 	}
 
 	public void RecordResult(ITestResultInfo testResult)
