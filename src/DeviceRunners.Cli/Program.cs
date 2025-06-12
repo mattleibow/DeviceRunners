@@ -40,18 +40,13 @@ app.Configure(config =>
             .WithExample(["windows", "launch", "--identity", "MyApp"])
             .WithExample(["windows", "launch", "--identity", "MyApp", "--args", "test-arguments"]);
 
-        // Test commands
+        // Test command
         windows.AddCommand<WindowsTestCommand>("test")
-            .WithDescription("Install and start a test application (packaged MSIX)")
+            .WithDescription("Install and start a test application (supports both .msix and .exe files)")
             .WithExample(["windows", "test", "--app", "path/to/app.msix"])
+            .WithExample(["windows", "test", "--app", "path/to/app.exe"])
             .WithExample(["windows", "test", "--app", "path/to/app.msix", "--port", "8080"])
-            .WithExample(["windows", "test", "--app", "path/to/app.msix", "--connection-timeout", "60", "--data-timeout", "45"]);
-
-        windows.AddCommand<WindowsUnpackagedTestCommand>("test-unpackaged")
-            .WithDescription("Start an unpackaged test application (.exe)")
-            .WithExample(["windows", "test-unpackaged", "--app", "path/to/app.exe"])
-            .WithExample(["windows", "test-unpackaged", "--app", "path/to/app.exe", "--port", "8080"])
-            .WithExample(["windows", "test-unpackaged", "--app", "path/to/app.exe", "--connection-timeout", "60", "--data-timeout", "45"]);
+            .WithExample(["windows", "test", "--app", "path/to/app.exe", "--connection-timeout", "60", "--data-timeout", "45"]);
     });
 
     // Android-specific commands
