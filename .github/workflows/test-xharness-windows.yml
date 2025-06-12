@@ -38,6 +38,7 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
+      shell: powershell
       run: |
         $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
