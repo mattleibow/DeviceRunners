@@ -41,11 +41,11 @@ jobs:
           --launch-timeout=00:06:00 \
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/DeviceTestingKitApp.DeviceTests.app \
           --output-directory artifacts
-    - name: Clean up build artifacts before upload
-      run: |
-        rm -rf ./artifacts/bin
-        rm -rf ./artifacts/obj
-      if: ${{ always() }}
+    # - name: Clean up build artifacts before upload
+    #   run: |
+    #     rm -rf ./artifacts/bin
+    #     rm -rf ./artifacts/obj
+    #   if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}

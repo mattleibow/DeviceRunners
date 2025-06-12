@@ -39,16 +39,16 @@ jobs:
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
       run: |
-        $msix = Get-ChildItem "artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
           -OutputDirectory artifacts `
           -TestingMode XHarness
-    - name: Clean up build artifacts before upload
-      run: |
-        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
-      if: ${{ always() }}
+    # - name: Clean up build artifacts before upload
+    #   run: |
+    #     Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+    #     Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+    #   if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
