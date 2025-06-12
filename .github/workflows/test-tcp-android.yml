@@ -46,7 +46,7 @@ jobs:
     - name: Build and Install CLI Tool
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c Release
-        dotnet tool install --global --add-source src/DeviceRunners.Cli/bin/Release DeviceRunners.Cli
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator

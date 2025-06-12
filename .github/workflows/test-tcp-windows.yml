@@ -44,7 +44,7 @@ jobs:
         device-runners windows cert uninstall --fingerprint $fingerprint
     - name: Run Tests
       run: |
-        $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         device-runners windows test --app $msix --results-directory artifacts/test-results
     - name: Clean up build artifacts before upload
       run: |
