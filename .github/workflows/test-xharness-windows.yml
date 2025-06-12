@@ -44,12 +44,10 @@ jobs:
           -App $msix `
           -OutputDirectory artifacts `
           -TestingMode XHarness
-      shell: powershell
     - name: Clean up build artifacts before upload
       run: |
         Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
         Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
-      shell: powershell
       if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4

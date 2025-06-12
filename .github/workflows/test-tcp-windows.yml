@@ -46,7 +46,11 @@ jobs:
       run: |
         $msix = Get-ChildItem "artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         device-runners windows test --app $msix --results-directory artifacts
-      shell: powershell
+    - name: Clean up build artifacts before upload
+      run: |
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
