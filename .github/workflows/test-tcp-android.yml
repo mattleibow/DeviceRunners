@@ -71,7 +71,7 @@ jobs:
     - name: Run Tests
       run: |
         device-runners android test \
-          --app artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
           --results-directory artifacts/test-results
     - name: Shutdown the Emulator
       if: always()

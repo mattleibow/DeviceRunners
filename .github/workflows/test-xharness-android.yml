@@ -73,18 +73,18 @@ jobs:
             --launch-timeout=00:10:00 \
             --package-name com.companyname.devicetestingkitapp.devicetests \
             --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
-            --app artifacts/publish/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
             --output-directory artifacts/test-results \
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
     - name: Shutdown the Emulator
       run: dotnet xharness android adb -- emu kill
-    # - name: Clean up build artifacts before upload
-    #   run: |
-    #     rm -rf ./artifacts/bin
-    #     rm -rf ./artifacts/obj
-    #   if: ${{ always() }}
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
