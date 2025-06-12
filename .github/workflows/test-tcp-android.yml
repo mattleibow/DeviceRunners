@@ -29,7 +29,7 @@ jobs:
     env:
       TEST_TARGET_FRAMEWORK: net9.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
-      TEST_CONFIGURATION: Release
+      TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: TCPTestEmulator
       TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
@@ -45,8 +45,8 @@ jobs:
         java-version: '21'
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c Release
-        dotnet tool install --global --add-source src/DeviceRunners.Cli/bin/Release DeviceRunners.Cli
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
+        dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
@@ -70,14 +70,19 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       run: |
-        apk="sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk"
-        device-runners android test --app "$apk" --results-directory artifacts
+        device-runners android test \
+          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+          --results-directory artifacts/test-results
     - name: Shutdown the Emulator
       if: always()
       run: $ANDROID_SDK_ROOT/platform-tools/adb emu kill
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results - ${{ matrix.platform.name }}
+        name: Test Results (TCP) - Android (${{ matrix.platform.name }})
         path: ./artifacts
