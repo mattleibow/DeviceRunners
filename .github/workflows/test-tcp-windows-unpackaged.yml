@@ -33,7 +33,6 @@ jobs:
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
-          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} `
           -c ${{ env.TEST_CONFIGURATION }} `
           -p:TestingMode=NonInteractiveVisual `
           -p:WindowsPackageType=None `
