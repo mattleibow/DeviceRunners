@@ -7,12 +7,8 @@
     <!-- Central Package Management -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     
-    <!-- Artifacts Directory Configuration - Use root artifacts directory for all projects -->
-    <RepoRoot>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), DeviceRunners.sln))</RepoRoot>
-    <BaseOutputPath>$(RepoRoot)/artifacts/bin/$(MSBuildProjectName)/</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(RepoRoot)/artifacts/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-    <PackageOutputPath>$(RepoRoot)/artifacts/package/$(Configuration.ToLowerInvariant())/</PackageOutputPath>
-    <PublishDir>$(RepoRoot)/artifacts/publish/$(MSBuildProjectName)/$(Configuration)_$(TargetFramework)/</PublishDir>
+    <!-- Artifacts Directory Configuration -->
+    <UseArtifactsOutput>true</UseArtifactsOutput>
   </PropertyGroup>
 
 </Project>
