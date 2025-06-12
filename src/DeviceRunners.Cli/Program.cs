@@ -84,6 +84,34 @@ app.Configure(config =>
             .WithExample(["android", "test", "--app", "path/to/app.apk", "--connection-timeout", "60", "--data-timeout", "45"]);
     });
 
+    // macOS-specific commands
+    config.AddBranch("macos", macos =>
+    {
+        macos.SetDescription("macOS-specific commands for app and test management");
+        
+        // App management commands
+        macos.AddCommand<MacOSAppInstallCommand>("install")
+            .WithDescription("Install a .app application bundle")
+            .WithExample(["macos", "install", "--app", "path/to/app.app"]);
+
+        macos.AddCommand<MacOSAppUninstallCommand>("uninstall")
+            .WithDescription("Uninstall an application")
+            .WithExample(["macos", "uninstall", "--app", "path/to/app.app"]);
+
+        macos.AddCommand<MacOSAppLaunchCommand>("launch")
+            .WithDescription("Launch an installed application")
+            .WithExample(["macos", "launch", "--app", "path/to/app.app"])
+            .WithExample(["macos", "launch", "--app", "path/to/app.app", "--args", "test-arguments"]);
+
+        // Test command
+        macos.AddCommand<MacOSTestCommand>("test")
+            .WithDescription("Install and start a macOS test application")
+            .WithExample(["macos", "test", "--app", "path/to/app.app"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--port", "8080"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--results-directory", "test-results"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--connection-timeout", "60", "--data-timeout", "45"]);
+    });
+
     // TCP commands
     config.AddCommand<PortListenerCommand>("listen")
         .WithDescription("Start a TCP port listener")
