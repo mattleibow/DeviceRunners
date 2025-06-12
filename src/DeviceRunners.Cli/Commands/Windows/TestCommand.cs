@@ -90,13 +90,16 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
             packageService.InstallPackage(settings.App);
             WriteConsoleOutput($"    Application installed.", settings);
 
+            // Start TCP listener in background before launching the app
+            var listenerTask = await StartTestListenerBackground(settings);
+
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
             packageService.LaunchApp(appIdentity, null);
             WriteConsoleOutput($"    Application started.", settings);
 
-            // Handle TCP test results
-            var (testFailures, testResults) = await StartTestListener(settings);
+            // Wait for TCP test results
+            var (testFailures, testResults) = await listenerTask;
 
             WriteConsoleOutput($"", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);

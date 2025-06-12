@@ -79,13 +79,16 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
                 return 1;
             }
 
+            // Start TCP listener in background before launching the app
+            var listenerTask = await StartTestListenerBackground(settings);
+
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
             androidService.LaunchApp(packageName, settings.Activity, settings.Device);
             WriteConsoleOutput($"    Application started.", settings);
 
-            // Handle TCP test results
-            var (testFailures, testResults) = await StartTestListener(settings);
+            // Wait for TCP test results
+            var (testFailures, testResults) = await listenerTask;
 
             WriteConsoleOutput($"", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);

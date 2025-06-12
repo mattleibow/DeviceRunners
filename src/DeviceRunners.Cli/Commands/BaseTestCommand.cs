@@ -144,6 +144,115 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         return (1, null);
     }
 
+    protected async Task<Task<(int testFailures, string? testResults)>> StartTestListenerBackground(TSettings settings)
+    {
+        // Ensure artifacts directory exists for TCP results
+        Directory.CreateDirectory(settings.ResultsDirectory);
+
+        WriteConsoleOutput($"  - Starting TCP listener on port {settings.Port}...", settings);
+        var tcpResultsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-results.txt");
+        WriteConsoleOutput($"    Saving results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
+
+        var lastConnectTime = DateTimeOffset.UtcNow;
+
+        var networkService = new NetworkService();
+
+        networkService.ConnectionEstablished += (sender, e) =>
+        {
+            var delta = e.Timestamp - lastConnectTime;
+            lastConnectTime = DateTimeOffset.UtcNow;
+
+            WriteConsoleOutput($"    [yellow]TCP connection established with {e.RemoteEndPoint} after {delta}[/]", settings);
+        };
+        networkService.ConnectionClosed += (sender, e) =>
+        {
+            lastConnectTime = DateTimeOffset.UtcNow;
+
+            WriteConsoleOutput($"    [yellow]TCP connection closed with {e.RemoteEndPoint}[/]", settings);
+        };
+        networkService.DataReceived += (sender, e) =>
+        {
+            foreach (var line in e.Data.Split('\n'))
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                {
+                    WriteConsoleOutput($"    [green]Received data: {Markup.Escape(line)}[/]", settings);
+                }
+            }
+        };
+
+        // Start the TCP listener in the background
+        var listenerTask = Task.Run(async () =>
+        {
+            try
+            {
+                WriteConsoleOutput($"  - Waiting for test results via TCP...", settings);
+                WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
+
+                var results = await networkService.StartTcpListener(
+                    settings.Port,
+                    tcpResultsFile,
+                    true,
+                    settings.ConnectionTimeout,
+                    settings.DataTimeout);
+
+                WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
+
+                if (File.Exists(tcpResultsFile))
+                {
+                    var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
+                    WriteConsoleOutput($"  - Analyzing test results...", settings);
+                    WriteConsoleMarkup($"    Saved test results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
+
+                    // Look for test failure indicators in the TCP results
+                    if (tcpResults.Contains("Failed:"))
+                    {
+                        var lines = tcpResults.Split('\n');
+                        foreach (var line in lines)
+                        {
+                            if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
+                            {
+                                if (failedCount > 0)
+                                {
+                                    WriteConsoleOutput($"    TCP results indicate {failedCount} test failures.", settings);
+                                    return (failedCount, (string?)tcpResults);
+                                }
+                                else
+                                {
+                                    WriteConsoleOutput($"    TCP results indicate no test failures.", settings);
+                                    return (0, (string?)tcpResults);
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        WriteConsoleOutput($"    [yellow]Could not parse test results format.[/]", settings);
+                        return (1, (string?)tcpResults);
+                    }
+                }
+                else
+                {
+                    WriteConsoleOutput($"    [yellow]No TCP results received.[/]", settings);
+                    return (1, (string?)null);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
+                return (1, (string?)null);
+            }
+
+            return (1, (string?)null);
+        });
+
+        // Give the listener a moment to start before returning
+        await Task.Delay(500);
+        WriteConsoleOutput($"    TCP listener started and ready for connections.", settings);
+
+        return listenerTask;
+    }
+
     protected string ExtractNumber(string text, string prefix)
     {
         var index = text.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
