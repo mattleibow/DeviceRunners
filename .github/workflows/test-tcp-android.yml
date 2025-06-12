@@ -29,7 +29,7 @@ jobs:
     env:
       TEST_TARGET_FRAMEWORK: net9.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
-      TEST_CONFIGURATION: Release
+      TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: TCPTestEmulator
       TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
@@ -45,8 +45,8 @@ jobs:
         java-version: '21'
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c Release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
+        dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator

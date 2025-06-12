@@ -32,7 +32,7 @@ jobs:
         }
         echo "PACKAGE VERSION: $VERSION"
         
-        dotnet pack --output ./artifacts/nugets --configuration Release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
     - name: Upload NuGet Artifacts
       uses: actions/upload-artifact@v4
       with:

@@ -19,7 +19,7 @@ jobs:
     env:
       TEST_TARGET_FRAMEWORK: net9.0-maccatalyst
       TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
-      TEST_CONFIGURATION: Debug
+      TEST_CONFIGURATION: debug
     steps:
     - name: Checkout
       uses: actions/checkout@v4

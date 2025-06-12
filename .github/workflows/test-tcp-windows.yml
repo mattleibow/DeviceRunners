@@ -19,7 +19,7 @@ jobs:
     env:
       TEST_TARGET_FRAMEWORK: net9.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
-      TEST_CONFIGURATION: Release
+      TEST_CONFIGURATION: release
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -27,8 +27,8 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c Release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
+        dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
     - name: Publish App
       run: |
         $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output Json

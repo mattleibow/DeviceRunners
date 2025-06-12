@@ -29,7 +29,7 @@ jobs:
     env:
       TEST_TARGET_FRAMEWORK: net9.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
-      TEST_CONFIGURATION: Release
+      TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: XHarnessEmulator
       TEST_EMULATOR_IMAGE: system-images;android-34;google_apis;x86_64
     steps:
