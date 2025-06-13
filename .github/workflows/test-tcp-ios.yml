@@ -34,7 +34,7 @@ jobs:
     - name: Create and Boot iOS Simulator
       run: |
         # Create a new simulator if it doesn't exist
-        SIMULATOR_UDID=$(xcrun simctl create "TCP-Test-iPhone" "iPhone 15" "iOS-17-4" 2>/dev/null || xcrun simctl list devices --json | jq -r '.devices[] | select(type == "array") | .[] | select(.name == "TCP-Test-iPhone") | .udid' | head -1)
+        SIMULATOR_UDID=$(xcrun simctl create "TCP-Test-iPhone" "iPhone 15" 2>/dev/null || xcrun simctl list devices --json | jq -r '.devices[] | select(type == "array") | .[] | select(.name == "TCP-Test-iPhone") | .udid' | head -1)
         if [ -z "$SIMULATOR_UDID" ]; then
           echo "Failed to create or find simulator"
           exit 1
