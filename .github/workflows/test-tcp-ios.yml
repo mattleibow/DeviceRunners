@@ -1,0 +1,80 @@
+name: TCP iOS Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  ios:
+    name: iOS
+    runs-on: macos-15
+    env:
+      TEST_TARGET_FRAMEWORK: net9.0-ios
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_CONFIGURATION: release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
+        dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
+    - name: List Available Simulators
+      run: xcrun simctl list devices --json
+    - name: Create and Boot iOS Simulator
+      run: |
+        # Create a new simulator if it doesn't exist
+        SIMULATOR_UDID=$(xcrun simctl create "TCP-Test-iPhone" "iPhone 15" "iOS-17-4" 2>/dev/null || xcrun simctl list devices --json | jq -r '.devices[] | select(type == "array") | .[] | select(.name == "TCP-Test-iPhone") | .udid' | head -1)
+        if [ -z "$SIMULATOR_UDID" ]; then
+          echo "Failed to create or find simulator"
+          exit 1
+        fi
+        echo "Using simulator: $SIMULATOR_UDID"
+        echo "SIMULATOR_UDID=$SIMULATOR_UDID" >> $GITHUB_ENV
+        
+        # Boot the simulator
+        xcrun simctl boot "$SIMULATOR_UDID" || true
+        
+        # Wait for simulator to be ready
+        timeout 60 bash -c 'while [[ "$(xcrun simctl list devices | grep "$0" | grep -E "(Booted|Running)")" == "" ]]; do sleep 1; done' "$SIMULATOR_UDID"
+    - name: Publish App
+      run: |
+        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=NonInteractiveVisual \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
+        echo "Found app bundle: $app_bundle"
+        device-runners ios test --app "$app_bundle" --device "$SIMULATOR_UDID" --results-directory artifacts/test-results
+    - name: Shutdown Simulator
+      if: always()
+      run: |
+        if [ -n "$SIMULATOR_UDID" ]; then
+          xcrun simctl shutdown "$SIMULATOR_UDID" || true
+          xcrun simctl delete "$SIMULATOR_UDID" || true
+        fi
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Results (TCP) - iOS
+        path: ./artifacts

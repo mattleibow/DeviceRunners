@@ -9,4 +9,5 @@ public class TestStartResult : CommandResult
     public int TestFailures { get; set; }
     public string? TestResults { get; set; }
     public string? LogcatFile { get; set; }
+    public string? DeviceLogFile { get; set; }
 }
