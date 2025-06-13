@@ -15,6 +15,7 @@
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" />
     <PackageReference Include="AndroidSdk" />
+    <PackageReference Include="AppleDev" />
   </ItemGroup>
 
 </Project>
