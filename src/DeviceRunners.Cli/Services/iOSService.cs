@@ -1,18 +1,11 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using AppleDev;
+using System.Text.Json;
 
 namespace DeviceRunners.Cli.Services;
 
 public class iOSService
 {
-    private readonly SimCtl _simCtl;
-
-    public iOSService()
-    {
-        _simCtl = new SimCtl();
-    }
-
     public async Task InstallAppAsync(string appPath, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -36,12 +29,25 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var appDirectory = new DirectoryInfo(appPath);
-        var success = await _simCtl.InstallAppAsync(targetDevice, appDirectory);
-        
-        if (!success)
+        var process = new Process
         {
-            throw new InvalidOperationException($"Failed to install app: {appPath}");
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "xcrun",
+                Arguments = $"simctl install {targetDevice} \"{appPath}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+
+        process.Start();
+        var error = await process.StandardError.ReadToEndAsync();
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Failed to install app: {error}");
         }
     }
 
@@ -63,11 +69,25 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var success = await _simCtl.UninstallAppAsync(targetDevice, bundleIdentifier);
-        
-        if (!success)
+        var process = new Process
         {
-            throw new InvalidOperationException($"Failed to uninstall app: {bundleIdentifier}");
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = "xcrun",
+                Arguments = $"simctl uninstall {targetDevice} {bundleIdentifier}",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
+
+        process.Start();
+        var error = await process.StandardError.ReadToEndAsync();
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Failed to uninstall app: {error}");
         }
     }
 
@@ -91,8 +111,6 @@ public class iOSService
                 return false;
             }
 
-            // AppleDev.SimCtl doesn't have a direct method to check if app is installed
-            // We'll use the xcrun approach for now since it's a simple check
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -135,40 +153,29 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Note: AppleDev.SimCtl.LaunchAppAsync doesn't support custom arguments
-        // If arguments are needed, we might need to fallback to xcrun
-        if (!string.IsNullOrEmpty(arguments))
-        {
-            // Fallback to xcrun for custom arguments
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "xcrun",
-                    Arguments = $"simctl launch {targetDevice} {bundleIdentifier} {arguments}",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
+        var args = string.IsNullOrEmpty(arguments) 
+            ? $"simctl launch {targetDevice} {bundleIdentifier}"
+            : $"simctl launch {targetDevice} {bundleIdentifier} {arguments}";
 
-            process.Start();
-            process.WaitForExit();
-
-            if (process.ExitCode != 0)
-            {
-                var error = await process.StandardError.ReadToEndAsync();
-                throw new InvalidOperationException($"Failed to launch app: {error}");
-            }
-        }
-        else
+        var process = new Process
         {
-            var success = await _simCtl.LaunchAppAsync(targetDevice, bundleIdentifier);
-            
-            if (!success)
+            StartInfo = new ProcessStartInfo
             {
-                throw new InvalidOperationException($"Failed to launch app: {bundleIdentifier}");
+                FileName = "xcrun",
+                Arguments = args,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
             }
+        };
+
+        process.Start();
+        var error = await process.StandardError.ReadToEndAsync();
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Failed to launch app: {error}");
         }
     }
 
@@ -190,8 +197,6 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Note: AppleDev.SimCtl.TerminateAppAsync has a bug - it calls "launch" instead of "terminate"
-        // So we'll use xcrun directly for now
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -222,18 +227,48 @@ public class iOSService
             throw new FileNotFoundException($"App bundle not found: {appPath}");
         }
 
+        var infoPlistPath = Path.Combine(appPath, "Info.plist");
+        if (!File.Exists(infoPlistPath))
+        {
+            throw new FileNotFoundException($"Info.plist not found in app bundle: {infoPlistPath}");
+        }
+
         try
         {
-            var bundleReader = new AppBundleReader(appPath);
-            var infoPlist = bundleReader.ReadInfoPlist();
-            
-            var bundleIdentifier = infoPlist.CFBundleIdentifier;
-            if (string.IsNullOrEmpty(bundleIdentifier))
+            var process = new Process
             {
-                throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "plutil",
+                    Arguments = $"-convert json -o - \"{infoPlistPath}\"",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                throw new InvalidOperationException($"Failed to read Info.plist: {error}");
             }
-            
-            return bundleIdentifier;
+
+            var plistData = JsonSerializer.Deserialize<Dictionary<string, object>>(output);
+            if (plistData != null && plistData.TryGetValue("CFBundleIdentifier", out var bundleId))
+            {
+                var bundleIdentifier = bundleId.ToString();
+                if (string.IsNullOrEmpty(bundleIdentifier))
+                {
+                    throw new InvalidOperationException("CFBundleIdentifier is empty in Info.plist");
+                }
+                return bundleIdentifier;
+            }
+
+            throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
         }
         catch (Exception ex) when (!(ex is InvalidOperationException))
         {
@@ -250,9 +285,38 @@ public class iOSService
 
         try
         {
-            var simulators = await _simCtl.GetSimulatorsAsync(availableOnly: true);
-            var bootedSimulator = simulators.FirstOrDefault(s => s.IsBooted);
-            return bootedSimulator?.Udid;
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "dotnet",
+                    Arguments = "appledev simulator list --booted --format json",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            process.Start();
+            var output = await process.StandardOutput.ReadToEndAsync();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                return null;
+            }
+
+            var simulators = JsonSerializer.Deserialize<JsonElement[]>(output);
+            if (simulators != null && simulators.Length > 0)
+            {
+                var firstSim = simulators[0];
+                if (firstSim.TryGetProperty("UDID", out var udidProperty))
+                {
+                    return udidProperty.GetString();
+                }
+            }
+
+            return null;
         }
         catch
         {

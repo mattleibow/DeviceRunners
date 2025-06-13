@@ -25,28 +25,32 @@ jobs:
       uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Install AppleDev Tools
+      run: |
+        dotnet tool install --local AppleDev.Tools --version 0.6.2
     - name: Build and Install CLI Tool
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
         dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
     - name: List Available Simulators
-      run: xcrun simctl list devices --json
+      run: dotnet appledev simulator list
     - name: Create and Boot iOS Simulator
       run: |
-        # Create a new simulator if it doesn't exist
-        SIMULATOR_UDID=$(xcrun simctl create "TCP-Test-iPhone" "iPhone 15" 2>/dev/null || xcrun simctl list devices --json | jq -r '.devices[] | select(type == "array") | .[] | select(.name == "TCP-Test-iPhone") | .udid' | head -1)
+        # Find existing or create a new simulator
+        SIMULATOR_UDID=$(dotnet appledev simulator list --available --format json | jq -r '.[] | select(.Name == "TCP-Test-iPhone") | .UDID' | head -1)
         if [ -z "$SIMULATOR_UDID" ]; then
-          echo "Failed to create or find simulator"
-          exit 1
+          # Create a new simulator using xcrun (AppleDev.Tools doesn't have create command)
+          SIMULATOR_UDID=$(xcrun simctl create "TCP-Test-iPhone" "iPhone 15")
+          if [ -z "$SIMULATOR_UDID" ]; then
+            echo "Failed to create simulator"
+            exit 1
+          fi
         fi
         echo "Using simulator: $SIMULATOR_UDID"
         echo "SIMULATOR_UDID=$SIMULATOR_UDID" >> $GITHUB_ENV
         
-        # Boot the simulator
-        xcrun simctl boot "$SIMULATOR_UDID" || true
-        
-        # Wait for simulator to be ready
-        timeout 60 bash -c 'while [[ "$(xcrun simctl list devices | grep "$0" | grep -E "(Booted|Running)")" == "" ]]; do sleep 1; done' "$SIMULATOR_UDID"
+        # Boot the simulator using AppleDev.Tools
+        dotnet appledev simulator boot --wait --timeout 60 "$SIMULATOR_UDID"
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -64,7 +68,7 @@ jobs:
       if: always()
       run: |
         if [ -n "$SIMULATOR_UDID" ]; then
-          xcrun simctl shutdown "$SIMULATOR_UDID" || true
+          dotnet appledev simulator shutdown "$SIMULATOR_UDID" || true
           xcrun simctl delete "$SIMULATOR_UDID" || true
         fi
     - name: Clean up build artifacts before upload
