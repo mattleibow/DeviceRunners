@@ -1,12 +1,19 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Text.Json;
+using AppleDev;
 
 namespace DeviceRunners.Cli.Services;
 
 public class iOSService
 {
-    public void InstallApp(string appPath, string? deviceId = null)
+    private readonly SimCtl _simCtl;
+
+    public iOSService()
+    {
+        _simCtl = new SimCtl();
+    }
+
+    public async Task InstallAppAsync(string appPath, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -23,71 +30,53 @@ public class iOSService
             throw new ArgumentException("The specified path is not a .app bundle.", nameof(appPath));
         }
 
-        var targetDevice = deviceId ?? GetBootedSimulatorId();
+        var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
         if (string.IsNullOrEmpty(targetDevice))
         {
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Install the app to the simulator
-        var process = new Process
+        var appDirectory = new DirectoryInfo(appPath);
+        var success = await _simCtl.InstallAppAsync(targetDevice, appDirectory);
+        
+        if (!success)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "xcrun",
-                Arguments = $"simctl install {targetDevice} \"{appPath}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
-
-        process.Start();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            var error = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException($"Failed to install app: {error}");
+            throw new InvalidOperationException($"Failed to install app: {appPath}");
         }
     }
 
-    public void UninstallApp(string bundleIdentifier, string? deviceId = null)
+    public void InstallApp(string appPath, string? deviceId = null)
+    {
+        InstallAppAsync(appPath, deviceId).GetAwaiter().GetResult();
+    }
+
+    public async Task UninstallAppAsync(string bundleIdentifier, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException("iOS app uninstallation is only supported on macOS.");
         }
 
-        var targetDevice = deviceId ?? GetBootedSimulatorId();
+        var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
         if (string.IsNullOrEmpty(targetDevice))
         {
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var process = new Process
+        var success = await _simCtl.UninstallAppAsync(targetDevice, bundleIdentifier);
+        
+        if (!success)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "xcrun",
-                Arguments = $"simctl uninstall {targetDevice} {bundleIdentifier}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
-
-        process.Start();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            var error = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException($"Failed to uninstall app: {error}");
+            throw new InvalidOperationException($"Failed to uninstall app: {bundleIdentifier}");
         }
     }
 
-    public bool IsAppInstalled(string bundleIdentifier, string? deviceId = null)
+    public void UninstallApp(string bundleIdentifier, string? deviceId = null)
+    {
+        UninstallAppAsync(bundleIdentifier, deviceId).GetAwaiter().GetResult();
+    }
+
+    public async Task<bool> IsAppInstalledAsync(string bundleIdentifier, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -96,12 +85,14 @@ public class iOSService
 
         try
         {
-            var targetDevice = deviceId ?? GetBootedSimulatorId();
+            var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
             if (string.IsNullOrEmpty(targetDevice))
             {
                 return false;
             }
 
+            // AppleDev.SimCtl doesn't have a direct method to check if app is installed
+            // We'll use the xcrun approach for now since it's a simple check
             var process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -115,7 +106,7 @@ public class iOSService
             };
 
             process.Start();
-            var output = process.StandardOutput.ReadToEnd();
+            var output = await process.StandardOutput.ReadToEndAsync();
             process.WaitForExit();
 
             return process.ExitCode == 0 && output.Contains(bundleIdentifier);
@@ -126,55 +117,81 @@ public class iOSService
         }
     }
 
-    public void LaunchApp(string bundleIdentifier, string? deviceId = null, string? arguments = null)
+    public bool IsAppInstalled(string bundleIdentifier, string? deviceId = null)
+    {
+        return IsAppInstalledAsync(bundleIdentifier, deviceId).GetAwaiter().GetResult();
+    }
+
+    public async Task LaunchAppAsync(string bundleIdentifier, string? deviceId = null, string? arguments = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException("iOS app launching is only supported on macOS.");
         }
 
-        var targetDevice = deviceId ?? GetBootedSimulatorId();
+        var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
         if (string.IsNullOrEmpty(targetDevice))
         {
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var launchArgs = string.IsNullOrEmpty(arguments) ? "" : $" {arguments}";
-        var process = new Process
+        // Note: AppleDev.SimCtl.LaunchAppAsync doesn't support custom arguments
+        // If arguments are needed, we might need to fallback to xcrun
+        if (!string.IsNullOrEmpty(arguments))
         {
-            StartInfo = new ProcessStartInfo
+            // Fallback to xcrun for custom arguments
+            var process = new Process
             {
-                FileName = "xcrun",
-                Arguments = $"simctl launch {targetDevice} {bundleIdentifier}{launchArgs}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "xcrun",
+                    Arguments = $"simctl launch {targetDevice} {bundleIdentifier} {arguments}",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
+            };
+
+            process.Start();
+            process.WaitForExit();
+
+            if (process.ExitCode != 0)
+            {
+                var error = await process.StandardError.ReadToEndAsync();
+                throw new InvalidOperationException($"Failed to launch app: {error}");
             }
-        };
-
-        process.Start();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
+        }
+        else
         {
-            var error = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException($"Failed to launch app: {error}");
+            var success = await _simCtl.LaunchAppAsync(targetDevice, bundleIdentifier);
+            
+            if (!success)
+            {
+                throw new InvalidOperationException($"Failed to launch app: {bundleIdentifier}");
+            }
         }
     }
 
-    public void TerminateApp(string bundleIdentifier, string? deviceId = null)
+    public void LaunchApp(string bundleIdentifier, string? deviceId = null, string? arguments = null)
+    {
+        LaunchAppAsync(bundleIdentifier, deviceId, arguments).GetAwaiter().GetResult();
+    }
+
+    public async Task TerminateAppAsync(string bundleIdentifier, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException("iOS app termination is only supported on macOS.");
         }
 
-        var targetDevice = deviceId ?? GetBootedSimulatorId();
+        var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
         if (string.IsNullOrEmpty(targetDevice))
         {
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
+        // Note: AppleDev.SimCtl.TerminateAppAsync has a bug - it calls "launch" instead of "terminate"
+        // So we'll use xcrun directly for now
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -193,6 +210,11 @@ public class iOSService
         // Note: terminating an app that's not running returns exit code 1, which is expected
     }
 
+    public void TerminateApp(string bundleIdentifier, string? deviceId = null)
+    {
+        TerminateAppAsync(bundleIdentifier, deviceId).GetAwaiter().GetResult();
+    }
+
     public string GetAppIdentifier(string appPath)
     {
         if (!Directory.Exists(appPath))
@@ -200,118 +222,57 @@ public class iOSService
             throw new FileNotFoundException($"App bundle not found: {appPath}");
         }
 
-        var plistPath = Path.Combine(appPath, "Info.plist");
-        if (!File.Exists(plistPath))
-        {
-            throw new FileNotFoundException($"Info.plist not found in app bundle: {plistPath}");
-        }
-
-        // Use plutil to convert plist to JSON and extract bundle identifier
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "plutil",
-                Arguments = $"-convert json -o - \"{plistPath}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
-
-        process.Start();
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            var error = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException($"Failed to read Info.plist: {error}");
-        }
-
         try
         {
-            var plistData = JsonSerializer.Deserialize<Dictionary<string, object>>(output);
-            if (plistData != null && plistData.TryGetValue("CFBundleIdentifier", out var identifier))
+            var bundleReader = new AppBundleReader(appPath);
+            var infoPlist = bundleReader.ReadInfoPlist();
+            
+            var bundleIdentifier = infoPlist.CFBundleIdentifier;
+            if (string.IsNullOrEmpty(bundleIdentifier))
             {
-                return identifier.ToString()!;
+                throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
             }
+            
+            return bundleIdentifier;
         }
-        catch (JsonException ex)
+        catch (Exception ex) when (!(ex is InvalidOperationException))
         {
-            throw new InvalidOperationException($"Failed to parse Info.plist as JSON: {ex.Message}");
+            throw new InvalidOperationException($"Failed to read app bundle info: {ex.Message}", ex);
         }
-
-        throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
     }
 
-    public string? GetBootedSimulatorId()
+    public async Task<string?> GetBootedSimulatorIdAsync()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             return null;
         }
 
-        var process = new Process
+        try
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "xcrun",
-                Arguments = "simctl list devices --json",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
-
-        process.Start();
-        var output = process.StandardOutput.ReadToEnd();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
+            var simulators = await _simCtl.GetSimulatorsAsync(availableOnly: true);
+            var bootedSimulator = simulators.FirstOrDefault(s => s.IsBooted);
+            return bootedSimulator?.Udid;
+        }
+        catch
         {
             return null;
         }
-
-        try
-        {
-            var deviceData = JsonSerializer.Deserialize<Dictionary<string, object>>(output);
-            if (deviceData?.TryGetValue("devices", out var devicesObj) == true)
-            {
-                var devices = JsonSerializer.Deserialize<Dictionary<string, JsonElement[]>>(devicesObj.ToString()!);
-                if (devices != null)
-                {
-                    foreach (var runtime in devices)
-                    {
-                        foreach (var device in runtime.Value)
-                        {
-                            if (device.TryGetProperty("state", out var state) && 
-                                state.GetString() == "Booted" &&
-                                device.TryGetProperty("udid", out var udid))
-                            {
-                                return udid.GetString();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        catch (JsonException)
-        {
-            // If JSON parsing fails, fallback to null
-        }
-
-        return null;
     }
 
-    public void SaveDeviceLog(string outputPath, string? deviceId = null)
+    public string? GetBootedSimulatorId()
+    {
+        return GetBootedSimulatorIdAsync().GetAwaiter().GetResult();
+    }
+
+    public async Task SaveDeviceLogAsync(string outputPath, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
             throw new PlatformNotSupportedException("iOS device log saving is only supported on macOS.");
         }
 
-        var targetDevice = deviceId ?? GetBootedSimulatorId();
+        var targetDevice = deviceId ?? await GetBootedSimulatorIdAsync();
         if (string.IsNullOrEmpty(targetDevice))
         {
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
@@ -330,17 +291,22 @@ public class iOSService
         };
 
         process.Start();
-        var output = process.StandardOutput.ReadToEnd();
+        var output = await process.StandardOutput.ReadToEndAsync();
         process.WaitForExit();
 
         if (process.ExitCode == 0)
         {
-            File.WriteAllText(outputPath, output);
+            await File.WriteAllTextAsync(outputPath, output);
         }
         else
         {
-            var error = process.StandardError.ReadToEnd();
+            var error = await process.StandardError.ReadToEndAsync();
             throw new InvalidOperationException($"Failed to get device log: {error}");
         }
+    }
+
+    public void SaveDeviceLog(string outputPath, string? deviceId = null)
+    {
+        SaveDeviceLogAsync(outputPath, deviceId).GetAwaiter().GetResult();
     }
 }
