@@ -5,16 +5,34 @@ var app = new CommandApp();
 
 app.Configure(config =>
 {
+    // Set global information for the application
+    config.SetApplicationName("device-runners");
+
+    // These examples demonstrate the power of using DeviceRunners across different platforms
+    config.AddExample(["windows", "test", "--app", "MyTests.msix", "--results-directory", "results"]);
+    config.AddExample(["android", "test", "--app", "MyTests.apk", "--results-directory", "results"]);
+    config.AddExample(["macos", "test", "--app", "MyTests.app", "--results-directory", "results"]);
+    config.AddExample(["android", "install", "--app", "path/to/app.apk", "--device", "emulator-5554"]);
+    config.AddExample(["listen", "--port", "16384", "--non-interactive"]);
+
+    // TCP commands
+    config.AddCommand<PortListenerCommand>("listen")
+        .WithDescription("Start a TCP port listener")
+        .WithExample(["listen", "--port", "16384"])
+        .WithExample(["listen", "--port", "16384", "--non-interactive"])
+        .WithExample(["listen", "--port", "16384", "--non-interactive", "--connection-timeout", "60", "--data-timeout", "45"])
+        .WithExample(["listen", "--port", "16384", "--results-file", "results.txt", "--non-interactive"]);
+
     // Windows-specific commands
     config.AddBranch("windows", windows =>
     {
-        windows.SetDescription("Windows-specific commands for certificate and test management");
-        
+        windows.SetDescription("Windows-specific commands for certificate, app and test management");
+
         // Certificate management commands
         windows.AddBranch("cert", cert =>
         {
             cert.SetDescription("Certificate management commands");
-            
+
             cert.AddCommand<WindowCertificateCreateCommand>("install")
                 .WithDescription("Generate and install a self-signed certificate for MSIX packages")
                 .WithExample(["windows", "cert", "install", "--publisher", "CN=MyCompany"])
@@ -52,8 +70,8 @@ app.Configure(config =>
     // Android-specific commands
     config.AddBranch("android", android =>
     {
-        android.SetDescription("Android-specific commands for emulator and test management");
-        
+        android.SetDescription("Android-specific commands for emulator, app and test management");
+
         // App management commands
         android.AddCommand<AndroidAppInstallCommand>("install")
             .WithDescription("Install an APK application package")
@@ -72,7 +90,7 @@ app.Configure(config =>
             .WithExample(["android", "launch", "--app", "path/to/app.apk"])
             .WithExample(["android", "launch", "--package", "com.example.app", "--activity", "com.example.app.MainActivity"])
             .WithExample(["android", "launch", "--package", "com.example.app", "--device", "emulator-5554"]);
-        
+
         // Test command
         android.AddCommand<AndroidTestCommand>("test")
             .WithDescription("Install and start an Android test application")
@@ -84,13 +102,33 @@ app.Configure(config =>
             .WithExample(["android", "test", "--app", "path/to/app.apk", "--connection-timeout", "60", "--data-timeout", "45"]);
     });
 
-    // TCP commands
-    config.AddCommand<PortListenerCommand>("listen")
-        .WithDescription("Start a TCP port listener")
-        .WithExample(["listen", "--port", "16384"])
-        .WithExample(["listen", "--port", "16384", "--non-interactive"])
-        .WithExample(["listen", "--port", "16384", "--non-interactive", "--connection-timeout", "60", "--data-timeout", "45"])
-        .WithExample(["listen", "--port", "16384", "--results-file", "results.txt", "--non-interactive"]);
+    // macOS-specific commands
+    config.AddBranch("macos", macos =>
+    {
+        macos.SetDescription("macOS-specific commands for app and test management");
+
+        // App management commands
+        macos.AddCommand<MacOSAppInstallCommand>("install")
+            .WithDescription("Install a .app application bundle")
+            .WithExample(["macos", "install", "--app", "path/to/app.app"]);
+
+        macos.AddCommand<MacOSAppUninstallCommand>("uninstall")
+            .WithDescription("Uninstall an application")
+            .WithExample(["macos", "uninstall", "--app", "path/to/app.app"]);
+
+        macos.AddCommand<MacOSAppLaunchCommand>("launch")
+            .WithDescription("Launch an installed application")
+            .WithExample(["macos", "launch", "--app", "path/to/app.app"])
+            .WithExample(["macos", "launch", "--app", "path/to/app.app", "--args", "test-arguments"]);
+
+        // Test command
+        macos.AddCommand<MacOSTestCommand>("test")
+            .WithDescription("Install and start a macOS test application")
+            .WithExample(["macos", "test", "--app", "path/to/app.app"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--port", "8080"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--results-directory", "test-results"])
+            .WithExample(["macos", "test", "--app", "path/to/app.app", "--connection-timeout", "60", "--data-timeout", "45"]);
+    });
 });
 
 return await app.RunAsync(args);
