@@ -40,7 +40,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             }
             else
             {
-                targetDevice = iOSService.GetBootedSimulatorId();
+                targetDevice = await iOSService.GetBootedSimulatorIdAsync();
                 if (string.IsNullOrEmpty(targetDevice))
                 {
                     var errorResult = new TestStartResult
@@ -58,10 +58,10 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
             // Check if app is already installed
             WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (iOSService.IsAppInstalled(appIdentifier, targetDevice))
+            if (await iOSService.IsAppInstalledAsync(appIdentifier, targetDevice))
             {
                 WriteConsoleOutput($"    App was installed, uninstalling...", settings);
-                iOSService.UninstallApp(appIdentifier, targetDevice);
+                await iOSService.UninstallAppAsync(appIdentifier, targetDevice);
                 WriteConsoleOutput($"    Uninstall complete...", settings);
             }
             else
@@ -71,12 +71,12 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
             // Install the app
             WriteConsoleOutput($"  - Installing the app...", settings);
-            iOSService.InstallApp(settings.App, targetDevice);
+            await iOSService.InstallAppAsync(settings.App, targetDevice);
             WriteConsoleOutput($"    Application installed.", settings);
 
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
-            iOSService.LaunchApp(appIdentifier, targetDevice);
+            await iOSService.LaunchAppAsync(appIdentifier, targetDevice);
             WriteConsoleOutput($"    Application started.", settings);
 
             // Handle TCP test results
@@ -89,7 +89,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
             // Terminate the app
             WriteConsoleOutput($"  - Terminating the application...", settings);
-            iOSService.TerminateApp(appIdentifier, targetDevice);
+            await iOSService.TerminateAppAsync(appIdentifier, targetDevice);
             WriteConsoleOutput($"    Application terminated.", settings);
 
             // Save device log
@@ -97,7 +97,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             WriteConsoleOutput($"  - Saving device log to: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
             try
             {
-                iOSService.SaveDeviceLog(deviceLogFile, targetDevice);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, targetDevice);
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)
@@ -129,7 +129,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             try
             {
                 WriteConsoleOutput($"  - Saving device log due to error: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
-                iOSService.SaveDeviceLog(deviceLogFile, settings.Device);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, settings.Device);
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)
