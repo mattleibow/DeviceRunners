@@ -17,6 +17,8 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
+        var testStartTime = DateTime.Now;
+        
         try
         {
             WriteConsoleOutput($"[blue]============================================================[/]", settings);
@@ -97,7 +99,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             WriteConsoleOutput($"  - Saving device log to: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
             try
             {
-                await iOSService.SaveDeviceLogAsync(deviceLogFile, targetDevice);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, targetDevice);
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)
@@ -129,7 +131,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             try
             {
                 WriteConsoleOutput($"  - Saving device log due to error: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
-                await iOSService.SaveDeviceLogAsync(deviceLogFile, settings.Device);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, settings.Device);
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)

@@ -82,25 +82,9 @@ public class iOSService
                 return false;
             }
 
-            // AppleDev.SimCtl doesn't have a direct method to check if app is installed
-            // We'll use the xcrun approach for now since it's a simple check
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = "xcrun",
-                    Arguments = $"simctl listapps {targetDevice}",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
-
-            process.Start();
-            var output = await process.StandardOutput.ReadToEndAsync();
-            process.WaitForExit();
-
-            return process.ExitCode == 0 && output.Contains(bundleIdentifier);
+            // Use AppleDev.SimCtl to get installed apps
+            var apps = await _simCtl.GetAppsAsync(targetDevice);
+            return apps.Any(app => app.CFBundleIdentifier == bundleIdentifier);
         }
         catch
         {
@@ -142,24 +126,10 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Note: AppleDev.SimCtl.TerminateAppAsync has a bug - it calls "launch" instead of "terminate"
-        // So we'll use xcrun directly for now
-        var process = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "xcrun",
-                Arguments = $"simctl terminate {targetDevice} {bundleIdentifier}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
+        // Use AppleDev.SimCtl for app termination
+        var success = await _simCtl.TerminateAppAsync(targetDevice, bundleIdentifier);
 
-        process.Start();
-        process.WaitForExit();
-
-        // Note: terminating an app that's not running returns exit code 1, which is expected
+        // Note: terminating an app that's not running returns false, which is expected
     }
 
     public string GetAppIdentifier(string appPath)
@@ -207,7 +177,7 @@ public class iOSService
         }
     }
 
-    public async Task SaveDeviceLogAsync(string outputPath, string? deviceId = null)
+    public async Task SaveDeviceLogAsync(string outputPath, DateTime? startDate = null, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -220,12 +190,14 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
+        var startDateString = startDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "1970-01-01 00:00:00";
+        
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = "xcrun",
-                Arguments = $"simctl spawn {targetDevice} log show --style syslog --start '1970-01-01 00:00:00'",
+                Arguments = $"simctl spawn {targetDevice} log show --style syslog --start '{startDateString}'",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
