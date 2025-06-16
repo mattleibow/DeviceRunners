@@ -30,16 +30,16 @@
                         <StackLayout Orientation="Horizontal" Spacing="5">
 
                             <Label Text="✔" TextColor="{StaticResource SuccessfulTestsColor}" />
-                            <Label Text="{Binding Passed}" TextColor="{StaticResource SuccessfulTestsColor}" Margin="0,0,15,0" />
+                            <Label Text="{Binding Passed}" TextColor="{StaticResource SuccessfulTestsColor}" Margin="0,0,15,0" AutomationId="SuccessfulTestsCount" />
 
                             <Label Text="⛔" TextColor="{StaticResource FailedTestsColor}" />
-                            <Label Text="{Binding Failed}" TextColor="{StaticResource FailedTestsColor}" Margin="0,0,15,0" />
+                            <Label Text="{Binding Failed}" TextColor="{StaticResource FailedTestsColor}" Margin="0,0,15,0" AutomationId="FailedTestsCount" />
 
                             <Label Text="⚠" TextColor="{StaticResource SkippedTestsColor}" />
-                            <Label Text="{Binding Skipped}" TextColor="{StaticResource SkippedTestsColor}" Margin="0,0,15,0" />
+                            <Label Text="{Binding Skipped}" TextColor="{StaticResource SkippedTestsColor}" Margin="0,0,15,0" AutomationId="SkippedTestsCount" />
 
                             <Label Text="🔷" TextColor="{StaticResource NotRunTestsColor}" />
-                            <Label Text="{Binding NotRun}" TextColor="{StaticResource NotRunTestsColor}" />
+                            <Label Text="{Binding NotRun}" TextColor="{StaticResource NotRunTestsColor}" AutomationId="NotRunTestsCount" />
 
                         </StackLayout>
                     </StackLayout>
