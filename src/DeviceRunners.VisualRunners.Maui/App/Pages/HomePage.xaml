@@ -14,6 +14,7 @@
         <Button Text="Run All  ►►"
                 Command="{Binding RunEverythingCommand}"
                 Style="{StaticResource RunButtonStyle}"
+                AutomationId="RunAllTestsButton"
                 Grid.Column="1" />
 
         <!-- assembly list -->
@@ -22,6 +23,7 @@
                         SelectionMode="Single"
                         SelectionChangedCommand="{Binding NavigateToTestAssemblyCommand}"
                         SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference assemblyList}}"
+                        AutomationId="TestAssembliesList"
                         Margin="-20,0" Grid.Row="1" Grid.ColumnSpan="2">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
