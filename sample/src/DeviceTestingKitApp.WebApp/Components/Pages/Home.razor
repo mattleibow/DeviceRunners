@@ -1,0 +1,34 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>Home</h1>
+
+<img src="https://raw.githubusercontent.com/mattleibow/DeviceRunners/main/sample/src/DeviceTestingKitApp/Resources/Images/dotnet_bot.png"
+     alt="dot net bot in a race car number eight"
+     style="width: 300px"/>
+
+<p>Hello, World</p>
+
+<p>Welcome to <br />.NET Blazor</p>
+
+<button id="CounterButton" 
+        class="btn btn-primary" @onclick="IncrementCount"
+        title="Counts the number of times you click">@message</button>
+
+@code {
+    private int currentCount = 0;
+    private string message = "Click me!";
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        message = currentCount switch
+        {
+            0 => "Click me!",
+            1 => $"Clicked {currentCount} time",
+            _ => $"Clicked {currentCount} times"
+        };
+    }
+}
