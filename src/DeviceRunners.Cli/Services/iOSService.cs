@@ -189,57 +189,20 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var startDateString = startDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "1970-01-01 00:00:00";
+        // Convert DateTime to DateTimeOffset for AppleDev library
+        DateTimeOffset? startDateOffset = startDate?.ToUniversalTime();
         
-        // Use the AppleDev library approach with CliWrap and xcrun like SimCtl does
-        var success = await SpawnDeviceLogAsync(targetDevice, outputPath, startDateString);
-        
-        if (!success)
-        {
-            throw new InvalidOperationException("Failed to get device log");
-        }
-    }
-
-    private async Task<bool> SpawnDeviceLogAsync(string deviceId, string outputPath, string startDateString)
-    {
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            return false;
-        }
-
         try
         {
-            // Use reflection to access the protected LocateOrThrow method from the base XCRun class
-            var locateMethod = typeof(SimCtl).BaseType?.GetMethod("LocateOrThrow", 
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var xcrun = locateMethod?.Invoke(_simCtl, null) as FileInfo;
+            // Use the AppleDev library's GetLogsPlainAsync method
+            var logLines = await _simCtl.GetLogsPlainAsync(targetDevice, start: startDateOffset);
             
-            if (xcrun == null || !xcrun.Exists)
-            {
-                return false;
-            }
-
-            var result = await CliWrap.Cli.Wrap(xcrun.FullName)
-                .WithArguments(args =>
-                {
-                    args.Add("simctl");
-                    args.Add("spawn");
-                    args.Add(deviceId);
-                    args.Add("log");
-                    args.Add("show");
-                    args.Add("--style");
-                    args.Add("syslog");
-                    args.Add("--start");
-                    args.Add(startDateString);
-                })
-                .WithStandardOutputPipe(CliWrap.PipeTarget.ToFile(outputPath))
-                .ExecuteAsync();
-
-            return result.ExitCode == 0;
+            // Write the log lines to the output file
+            await File.WriteAllLinesAsync(outputPath, logLines);
         }
-        catch
+        catch (Exception ex)
         {
-            return false;
+            throw new InvalidOperationException($"Failed to get device log: {ex.Message}", ex);
         }
     }
 }
