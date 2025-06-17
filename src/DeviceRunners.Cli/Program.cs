@@ -134,7 +134,25 @@ app.Configure(config =>
     // iOS-specific commands
     config.AddBranch("ios", ios =>
     {
-        ios.SetDescription("iOS-specific commands for simulator and test management");
+        ios.SetDescription("iOS-specific commands for simulator, app and test management");
+
+        // App management commands
+        ios.AddCommand<iOSAppInstallCommand>("install")
+            .WithDescription("Install a .app application bundle on iOS simulator")
+            .WithExample(["ios", "install", "--app", "path/to/app.app"])
+            .WithExample(["ios", "install", "--app", "path/to/app.app", "--device", "simulator-id"]);
+
+        ios.AddCommand<iOSAppUninstallCommand>("uninstall")
+            .WithDescription("Uninstall an application from iOS simulator")
+            .WithExample(["ios", "uninstall", "--app", "path/to/app.app"])
+            .WithExample(["ios", "uninstall", "--bundle-id", "com.example.app"])
+            .WithExample(["ios", "uninstall", "--bundle-id", "com.example.app", "--device", "simulator-id"]);
+
+        ios.AddCommand<iOSAppLaunchCommand>("launch")
+            .WithDescription("Launch an installed application on iOS simulator")
+            .WithExample(["ios", "launch", "--bundle-id", "com.example.app"])
+            .WithExample(["ios", "launch", "--app", "path/to/app.app"])
+            .WithExample(["ios", "launch", "--bundle-id", "com.example.app", "--device", "simulator-id"]);
 
         // Test command
         ios.AddCommand<iOSTestCommand>("test")
