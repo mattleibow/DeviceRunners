@@ -83,7 +83,6 @@ public class iOSService
                 return false;
             }
 
-            // Use AppleDev.SimCtl to get installed apps
             var apps = await _simCtl.GetAppsAsync(targetDevice);
             return apps.Any(app => app.CFBundleIdentifier == bundleIdentifier);
         }
