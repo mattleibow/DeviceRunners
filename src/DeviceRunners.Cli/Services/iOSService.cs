@@ -127,7 +127,6 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Use AppleDev.SimCtl for app termination
         var success = await _simCtl.TerminateAppAsync(targetDevice, bundleIdentifier);
 
         // Note: terminating an app that's not running returns false, which is expected
