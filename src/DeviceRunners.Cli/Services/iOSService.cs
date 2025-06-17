@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using AppleDev;
-using CliWrap;
 
 namespace DeviceRunners.Cli.Services;
 
@@ -176,7 +175,7 @@ public class iOSService
         }
     }
 
-    public async Task SaveDeviceLogAsync(string outputPath, DateTime? startDate = null, string? deviceId = null)
+    public async Task SaveDeviceLogAsync(string outputPath, DateTimeOffset? startDate = null, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -189,13 +188,10 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        // Convert DateTime to DateTimeOffset for AppleDev library
-        DateTimeOffset? startDateOffset = startDate?.ToUniversalTime();
-        
         try
         {
             // Use the AppleDev library's GetLogsPlainAsync method
-            var logLines = await _simCtl.GetLogsPlainAsync(targetDevice, start: startDateOffset);
+            var logLines = await _simCtl.GetLogsPlainAsync(targetDevice, start: startDate);
             
             // Write the log lines to the output file
             await File.WriteAllLinesAsync(outputPath, logLines);

@@ -17,7 +17,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
     protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
     {
-        var testStartTime = DateTime.Now;
+        var testStartTime = DateTimeOffset.Now;
         
         try
         {
