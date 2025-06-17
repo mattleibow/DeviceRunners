@@ -21,15 +21,15 @@ jobs:
           - name: Windows
             os: windows-latest
           - name: macOS
-            os: macos-14
+            os: macos-15
         configuration: 
-          - Debug
-          - Release
+          - debug
+          - release
         # Tries to AOT the test infrastructure assemblies which is not supported
         exclude:
           - platform:
               name: macOS
-            configuration: Release
+            configuration: release
     name: ${{ matrix.platform.name }} (${{ matrix.configuration }})
     runs-on: ${{ matrix.platform.os }}
     steps:

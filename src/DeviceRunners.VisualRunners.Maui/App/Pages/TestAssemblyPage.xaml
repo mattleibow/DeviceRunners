@@ -15,18 +15,21 @@
         <Button Text="Run Filtered  ►"
                 Command="{Binding RunFilteredTestsCommand}"
                 Style="{StaticResource RunButtonStyle}"
+                AutomationId="RunFilteredTestsButton"
                 Grid.Column="1" />
         <Button Text="Run All  ►►"
                 Command="{Binding RunAllTestsCommand}"
                 Style="{StaticResource RunButtonStyle}"
+                AutomationId="RunAllAssemblyTestsButton"
                 Grid.Column="2" />
 
         <!-- search and filter -->
         <Grid ColumnSpacing="10" ColumnDefinitions="*,Auto" RowDefinitions="Auto"
               Grid.Row="1" Grid.ColumnSpan="3">
-            <Entry Placeholder="filter" Text="{Binding SearchQuery}" />
+            <Entry Placeholder="filter" Text="{Binding SearchQuery}" AutomationId="TestFilterEntry" />
             <Picker Title="Filter by results"
                     SelectedItem="{Binding ResultFilter}"
+                    AutomationId="TestResultFilterPicker"
                     WidthRequest="130" Grid.Column="1">
                 <Picker.ItemsSource>
                     <x:Array Type="{x:Type vr:TestState}">
@@ -46,6 +49,7 @@
                         SelectionMode="Single"
                         SelectionChangedCommand="{Binding NavigateToResultCommand}"
                         SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}}"
+                        AutomationId="TestCasesList"
                         Margin="-20,0" Grid.Row="2" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
                 <DataTemplate>

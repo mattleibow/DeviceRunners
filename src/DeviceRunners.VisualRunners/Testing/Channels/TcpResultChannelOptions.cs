@@ -11,4 +11,10 @@ public record TcpResultChannelOptions
 	public IResultChannelFormatter? Formatter { get; init; }
 
 	public bool Required { get; init; }
+
+	public int Retries { get; init; }
+
+	public TimeSpan RetryTimeout { get; init; }
+
+	public TimeSpan Timeout { get; init; }
 }

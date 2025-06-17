@@ -12,6 +12,15 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
+		Console.WriteLine("Creating the test runner application:");
+		Console.WriteLine(" - Visual test runner");
+#if MODE_NON_INTERACTIVE_VISUAL
+		Console.WriteLine(" - Non-interactive visual test runner");
+#endif
+#if MODE_XHARNESS
+		Console.WriteLine(" - XHarness test runner");
+#endif
+
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.ConfigureUITesting()
@@ -29,7 +38,10 @@ public static class MauiProgram
 					HostNames = ["localhost", "10.0.2.2"],
 					Port = 16384,
 					Formatter = new TextResultChannelFormatter(),
-					Required = false
+					Required = false,
+					Retries = 3,
+					RetryTimeout = TimeSpan.FromSeconds(5),
+					Timeout = TimeSpan.FromSeconds(30)
 				})
 #endif
 				.AddConsoleResultChannel()
@@ -41,6 +53,8 @@ public static class MauiProgram
 
 #if DEBUG
 		builder.Logging.AddDebug();
+#else
+		builder.Logging.AddConsole();
 #endif
 
 		return builder.Build();
