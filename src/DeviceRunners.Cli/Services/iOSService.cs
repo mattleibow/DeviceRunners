@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using AppleDev;
+using CliWrap;
 
 namespace DeviceRunners.Cli.Services;
 
@@ -192,30 +193,55 @@ public class iOSService
 
         var startDateString = startDate?.ToString("yyyy-MM-dd HH:mm:ss") ?? "1970-01-01 00:00:00";
         
-        var process = new Process
+        // Use the AppleDev library approach with CliWrap and xcrun like SimCtl does
+        var success = await SpawnDeviceLogAsync(targetDevice, outputPath, startDateString);
+        
+        if (!success)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "xcrun",
-                Arguments = $"simctl spawn {targetDevice} log show --style syslog --start '{startDateString}'",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
-        };
-
-        process.Start();
-        var output = await process.StandardOutput.ReadToEndAsync();
-        process.WaitForExit();
-
-        if (process.ExitCode == 0)
-        {
-            await File.WriteAllTextAsync(outputPath, output);
+            throw new InvalidOperationException("Failed to get device log");
         }
-        else
+    }
+
+    private async Task<bool> SpawnDeviceLogAsync(string deviceId, string outputPath, string startDateString)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            var error = await process.StandardError.ReadToEndAsync();
-            throw new InvalidOperationException($"Failed to get device log: {error}");
+            return false;
+        }
+
+        try
+        {
+            // Use reflection to access the protected LocateOrThrow method from the base XCRun class
+            var locateMethod = typeof(SimCtl).BaseType?.GetMethod("LocateOrThrow", 
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var xcrun = locateMethod?.Invoke(_simCtl, null) as FileInfo;
+            
+            if (xcrun == null || !xcrun.Exists)
+            {
+                return false;
+            }
+
+            var result = await CliWrap.Cli.Wrap(xcrun.FullName)
+                .WithArguments(args =>
+                {
+                    args.Add("simctl");
+                    args.Add("spawn");
+                    args.Add(deviceId);
+                    args.Add("log");
+                    args.Add("show");
+                    args.Add("--style");
+                    args.Add("syslog");
+                    args.Add("--start");
+                    args.Add(startDateString);
+                })
+                .WithStandardOutputPipe(CliWrap.PipeTarget.ToFile(outputPath))
+                .ExecuteAsync();
+
+            return result.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
         }
     }
 }
