@@ -50,6 +50,15 @@ public class iOSAppInstallCommand(IAnsiConsole console) : BaseAsyncCommand<iOSAp
                 settings.Device = bootedDevice;
             }
 
+            var simDetails = await iOSService.GetSimulatorDetailsAsync(settings.Device);
+            if (simDetails is not null)
+            {
+                if (!string.IsNullOrEmpty(simDetails.Name))
+                    WriteConsoleOutput($"    Name: '[green]{Markup.Escape(simDetails.Name)}[/]'", settings);
+                if (!string.IsNullOrEmpty(simDetails.Runtime?.Version))
+                    WriteConsoleOutput($"    OS Version: '[green]{Markup.Escape(simDetails.Runtime.Version)}[/]'", settings);
+            }
+
             // Determine app identifier
             WriteConsoleOutput($"  - Determining app identifier...", settings);
             string appIdentifier = iOSService.GetAppIdentifier(settings.App);

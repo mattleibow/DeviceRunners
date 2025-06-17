@@ -175,6 +175,25 @@ public class iOSService
         }
     }
 
+    public async Task<SimCtlDevice?> GetSimulatorDetailsAsync(string udid)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return null;
+        }
+
+        try
+        {
+            var simulators = await _simCtl.GetSimulatorsAsync(availableOnly: true);
+            var sim = simulators.FirstOrDefault(s => s.Udid == udid);
+            return sim;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     public async Task SaveDeviceLogAsync(string outputPath, DateTimeOffset? startDate = null, string? deviceId = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
