@@ -7,6 +7,10 @@ on:
   release:
     types: [ published ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   pack:
@@ -28,7 +32,7 @@ jobs:
         }
         echo "PACKAGE VERSION: $VERSION"
         
-        dotnet pack --output ./artifacts/nugets --configuration Release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
     - name: Upload NuGet Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -57,7 +61,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '9.0.x'
           source-url: ${{ env.NUGET_URL }}
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 

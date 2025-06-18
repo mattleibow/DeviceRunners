@@ -15,11 +15,11 @@ jobs:
 
   ios:
     name: iOS
-    runs-on: macos-14
+    runs-on: macos-15
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-ios
+      TEST_TARGET_FRAMEWORK: net9.0-ios
       TEST_RUNTIME_IDENTIFIER: iossimulator-x64
-      TEST_CONFIGURATION: Debug
+      TEST_CONFIGURATION: debug
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -41,14 +41,19 @@ jobs:
             --target ios-simulator-64 \
             --timeout="00:03:00" \
             --launch-timeout=00:06:00 \
-            --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
-            --output-directory artifacts \
+            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
+            --output-directory artifacts/test-results \
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results
+        name: Test Results (XHarness) - iOS
         path: ./artifacts

@@ -1,0 +1,54 @@
+name: TCP macOS Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  macos:
+    name: macOS
+    runs-on: macos-15
+    env:
+      TEST_TARGET_FRAMEWORK: net9.0-maccatalyst
+      TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
+      TEST_CONFIGURATION: release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Publish App
+      run: |
+        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=NonInteractiveVisual \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
+        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Results (TCP) - macOS
+        path: ./artifacts

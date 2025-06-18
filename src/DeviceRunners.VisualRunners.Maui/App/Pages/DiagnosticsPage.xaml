@@ -6,14 +6,14 @@
              Title="Diagnostics">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Clear" Command="{Binding ClearMessagesCommand}" />
+        <ToolbarItem Text="Clear" Command="{Binding ClearMessagesCommand}" AutomationId="ClearDiagnosticsButton" />
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto,*" Padding="20" RowSpacing="10">
 
         <Label Text="Diagnostic Messages:" FontAttributes="Bold" />
 
-        <Editor Text="{Binding MessagesString}" IsReadOnly="True" Grid.Row="1" />
+        <Editor Text="{Binding MessagesString}" IsReadOnly="True" AutomationId="DiagnosticsMessagesEditor" Grid.Row="1" />
 
     </Grid>
 

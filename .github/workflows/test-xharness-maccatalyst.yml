@@ -15,11 +15,11 @@ jobs:
 
   maccatalyst:
     name: Mac Catalyst
-    runs-on: macos-14
+    runs-on: macos-15
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-maccatalyst
+      TEST_TARGET_FRAMEWORK: net9.0-maccatalyst
       TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
-      TEST_CONFIGURATION: Debug
+      TEST_CONFIGURATION: debug
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -39,11 +39,16 @@ jobs:
           --target maccatalyst \
           --timeout="00:02:00" \
           --launch-timeout=00:06:00 \
-          --app sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
-          --output-directory artifacts
+          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
+          --output-directory artifacts/test-results
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results
+        name: Test Results (XHarness) - Mac Catalyst
         path: ./artifacts

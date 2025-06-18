@@ -1,0 +1,17 @@
+name: Copilot Setup Steps
+
+on: workflow_dispatch
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build
+      run: dotnet build DeviceRunners.sln
+      continue-on-error: true

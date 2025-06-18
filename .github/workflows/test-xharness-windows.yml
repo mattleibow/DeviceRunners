@@ -17,9 +17,9 @@ jobs:
     name: Windows
     runs-on: windows-latest
     env:
-      TEST_TARGET_FRAMEWORK: net8.0-windows10.0.19041.0
+      TEST_TARGET_FRAMEWORK: net9.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
-      TEST_CONFIGURATION: Release
+      TEST_CONFIGURATION: release
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -38,16 +38,21 @@ jobs:
           /bl:./artifacts/logs/msbuild-publish.binlog
         ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
     - name: Run Tests
+      shell: powershell
       run: |
-        $msix = Get-ChildItem "sample/test/DeviceTestingKitApp.DeviceTests/bin/${{ env.TEST_CONFIGURATION }}/${{ env.TEST_TARGET_FRAMEWORK }}/${{ env.TEST_RUNTIME_IDENTIFIER }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
         ./scripts/Start-Tests.ps1 `
           -App $msix `
-          -OutputDirectory artifacts `
+          -OutputDirectory artifacts/test-results `
           -TestingMode XHarness
-      shell: powershell
+    - name: Clean up build artifacts before upload
+      run: |
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+      if: ${{ always() }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results
+        name: Test Results (XHarness) - Windows
         path: ./artifacts
