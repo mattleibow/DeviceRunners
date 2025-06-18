@@ -1,4 +1,4 @@
-name: TCP macOS Test
+name: TCP iOS Test
 
 on:
   pull_request:
@@ -13,25 +13,37 @@ concurrency:
 
 jobs:
 
-  macos:
-    name: macOS
+  ios:
+    name: iOS
     runs-on: macos-15
     env:
-      TEST_TARGET_FRAMEWORK: net9.0-maccatalyst
-      TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
-      TEST_CONFIGURATION: release
+      TEST_TARGET_FRAMEWORK: net9.0-ios
+      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_CONFIGURATION: debug
+      TEST_SIMULATOR_NAME: TCPTestSimulator
+      TEST_SIMULATOR_DEVICE_TYPE: iPhone 16
     steps:
     - name: Checkout
       uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Temporary Install AppleDev.Tools
+      run: |
+        dotnet pack externals/AppleDev.Tools/AppleDev.Tool
+        dotnet tool install appledev.tools --add-source externals/AppleDev.Tools/AppleDev.Tool/bin/Release --prerelease
     - name: Build and Install CLI Tool
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: List Available Simulators
+      run: dotnet apple simulator list
+    - name: Create Simulator
+      run: dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}"
+    - name: Boot Simulator
+      run: dotnet apple simulator boot "${{ env.TEST_SIMULATOR_NAME }}" --wait
     - name: Publish App
       run: |
-        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+        dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
           -f ${{ env.TEST_TARGET_FRAMEWORK }} \
           -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
           -c ${{ env.TEST_CONFIGURATION }} \
@@ -40,7 +52,13 @@ jobs:
     - name: Run Tests
       run: |
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
-        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
+        echo "Found app bundle: $app_bundle"
+        device-runners ios test --app "$app_bundle" --device "${{ env.TEST_SIMULATOR_NAME }}" --results-directory artifacts/test-results
+    - name: Shutdown Simulator
+      if: always()
+      run: |
+        dotnet apple simulator shutdown "${{ env.TEST_SIMULATOR_NAME }}"
+        dotnet apple simulator delete "${{ env.TEST_SIMULATOR_NAME }}"
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -50,5 +68,5 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results (TCP) - macOS
+        name: Test Results (TCP) - iOS
         path: ./artifacts

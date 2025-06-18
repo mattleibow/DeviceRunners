@@ -27,8 +27,8 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ env.TEST_CONFIGURATION }}
-        dotnet tool install --global --add-source artifacts/package/${{ env.TEST_CONFIGURATION }} DeviceRunners.Cli
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Publish App
       run: |
         $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output Json

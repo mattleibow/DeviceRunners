@@ -11,6 +11,9 @@ inputs:
 runs:
   using: composite
   steps:
+  - name: Temporary submodule checkout
+    shell: pwsh
+    run: git submodule update --init --recursive
   - name: Setup Xcode
     uses: maxim-lobanov/setup-xcode@v1
     if: runner.os == 'macOS'

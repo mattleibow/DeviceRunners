@@ -12,6 +12,7 @@ app.Configure(config =>
     config.AddExample(["windows", "test", "--app", "MyTests.msix", "--results-directory", "results"]);
     config.AddExample(["android", "test", "--app", "MyTests.apk", "--results-directory", "results"]);
     config.AddExample(["macos", "test", "--app", "MyTests.app", "--results-directory", "results"]);
+    config.AddExample(["ios", "test", "--app", "MyTests.app", "--results-directory", "results"]);
     config.AddExample(["android", "install", "--app", "path/to/app.apk", "--device", "emulator-5554"]);
     config.AddExample(["listen", "--port", "16384", "--non-interactive"]);
 
@@ -128,6 +129,39 @@ app.Configure(config =>
             .WithExample(["macos", "test", "--app", "path/to/app.app", "--port", "8080"])
             .WithExample(["macos", "test", "--app", "path/to/app.app", "--results-directory", "test-results"])
             .WithExample(["macos", "test", "--app", "path/to/app.app", "--connection-timeout", "60", "--data-timeout", "45"]);
+    });
+
+    // iOS-specific commands
+    config.AddBranch("ios", ios =>
+    {
+        ios.SetDescription("iOS-specific commands for simulator, app and test management");
+
+        // App management commands
+        ios.AddCommand<iOSAppInstallCommand>("install")
+            .WithDescription("Install a .app application bundle on iOS simulator")
+            .WithExample(["ios", "install", "--app", "path/to/app.app"])
+            .WithExample(["ios", "install", "--app", "path/to/app.app", "--device", "simulator-id"]);
+
+        ios.AddCommand<iOSAppUninstallCommand>("uninstall")
+            .WithDescription("Uninstall an application from iOS simulator")
+            .WithExample(["ios", "uninstall", "--app", "path/to/app.app"])
+            .WithExample(["ios", "uninstall", "--bundle-id", "com.example.app"])
+            .WithExample(["ios", "uninstall", "--bundle-id", "com.example.app", "--device", "simulator-id"]);
+
+        ios.AddCommand<iOSAppLaunchCommand>("launch")
+            .WithDescription("Launch an installed application on iOS simulator")
+            .WithExample(["ios", "launch", "--bundle-id", "com.example.app"])
+            .WithExample(["ios", "launch", "--app", "path/to/app.app"])
+            .WithExample(["ios", "launch", "--bundle-id", "com.example.app", "--device", "simulator-id"]);
+
+        // Test command
+        ios.AddCommand<iOSTestCommand>("test")
+            .WithDescription("Install and start an iOS test application on simulator")
+            .WithExample(["ios", "test", "--app", "path/to/app.app"])
+            .WithExample(["ios", "test", "--app", "path/to/app.app", "--device", "simulator-id"])
+            .WithExample(["ios", "test", "--app", "path/to/app.app", "--port", "8080"])
+            .WithExample(["ios", "test", "--app", "path/to/app.app", "--results-directory", "test-results"])
+            .WithExample(["ios", "test", "--app", "path/to/app.app", "--connection-timeout", "60", "--data-timeout", "45"]);
     });
 });
 
