@@ -27,10 +27,6 @@ jobs:
       uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Temporary Install AppleDev.Tools
-      run: |
-        dotnet pack externals/AppleDev.Tools/AppleDev.Tool
-        dotnet tool install appledev.tools --add-source externals/AppleDev.Tools/AppleDev.Tool/bin/Release --prerelease
     - name: Build and Install CLI Tool
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
