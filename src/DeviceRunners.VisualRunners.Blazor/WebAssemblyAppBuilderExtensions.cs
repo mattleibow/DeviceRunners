@@ -1,17 +1,17 @@
 using DeviceRunners.Core;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DeviceRunners.VisualRunners;
 
-public static class BlazorAppBuilderExtensions
+public static class WebAssemblyAppBuilderExtensions
 {
 	// default to true as it is always supported
 	internal static bool IsUsingVisualRunner { get; set; } = true;
 
-	public static WebApplicationBuilder UseVisualTestRunner(this WebApplicationBuilder appBuilder, Action<BlazorVisualTestRunnerConfigurationBuilder> configurationBuilder)
+	public static WebAssemblyHostBuilder UseVisualTestRunner(this WebAssemblyHostBuilder appBuilder, Action<WebAssemblyVisualTestRunnerConfigurationBuilder> configurationBuilder)
 	{
-		var configBuilder = new BlazorVisualTestRunnerConfigurationBuilder(appBuilder);
+		var configBuilder = new WebAssemblyVisualTestRunnerConfigurationBuilder(appBuilder);
 		configurationBuilder?.Invoke(configBuilder);
 		var configuration = configBuilder.Build();
 
@@ -30,17 +30,13 @@ public static class BlazorAppBuilderExtensions
 			(configBuilder.RunnerUsage == VisualTestRunnerUsage.Automatic && IsUsingVisualRunner))
 		{
 			Console.WriteLine("Registering the visual runner app as the test runner app.");
-
-			// Add Blazor Server components
-			appBuilder.Services.AddRazorComponents()
-				.AddInteractiveServerComponents();
 		}
 
 		return appBuilder;
 	}
 
 	public static TBuilder SetTestRunnerUsage<TBuilder>(this TBuilder builder, VisualTestRunnerUsage usage)
-		where TBuilder : BlazorVisualTestRunnerConfigurationBuilder
+		where TBuilder : WebAssemblyVisualTestRunnerConfigurationBuilder
 	{
 		builder.RunnerUsage = usage;
 		return builder;

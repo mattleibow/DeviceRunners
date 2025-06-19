@@ -1,17 +1,17 @@
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DeviceRunners.VisualRunners;
 
-public class BlazorVisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurationBuilder
+public class WebAssemblyVisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurationBuilder
 {
-	readonly WebApplicationBuilder _appBuilder;
+	readonly WebAssemblyHostBuilder _appBuilder;
 	readonly List<Assembly> _testAssemblies = new();
 	bool _autoStart;
 	bool _autoTerminate;
 
-	public BlazorVisualTestRunnerConfigurationBuilder(WebApplicationBuilder appBuilder)
+	public WebAssemblyVisualTestRunnerConfigurationBuilder(WebAssemblyHostBuilder appBuilder)
 	{
 		_appBuilder = appBuilder;
 	}
