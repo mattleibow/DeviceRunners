@@ -1,13 +1,14 @@
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">DeviceRunners Test Runner</a>
+        <a class="navbar-brand" href="">Testing</a>
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
+<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+    <nav class="nav flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
@@ -15,13 +16,24 @@
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="diagnostics">
-                <span class="bi bi-bug-fill-nav-menu" aria-hidden="true"></span> Diagnostics
+                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Diagnostics
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="credits">
-                <span class="bi bi-info-circle-fill-nav-menu" aria-hidden="true"></span> Credits
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Credits
             </NavLink>
         </div>
     </nav>
 </div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

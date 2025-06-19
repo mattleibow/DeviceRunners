@@ -17,7 +17,8 @@ public static class WebAssemblyAppBuilderExtensions
 		var configuration = configBuilder.Build();
 
 		// register root components automatically
-		appBuilder.RootComponents.Add<DeviceRunners.VisualRunners.Blazor.Components.App>("#app");
+
+		appBuilder.RootComponents.Add<DeviceRunners.VisualRunners.Blazor.App>("#app");
 		appBuilder.RootComponents.Add<HeadOutlet>("head::after");
 
 		// register runner components
