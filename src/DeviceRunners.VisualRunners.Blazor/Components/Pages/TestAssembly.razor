@@ -1,0 +1,144 @@
+@page "/assembly/{id:int}"
+@using DeviceRunners.VisualRunners
+@inject NavigationManager Navigation
+
+<PageTitle>@(ViewModel?.DisplayName ?? "Test Assembly")</PageTitle>
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Tests:</h3>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-primary me-2" @onclick="RunFilteredTests" disabled="@(ViewModel?.IsBusy == true)">
+                Run Filtered ►
+            </button>
+            <button class="btn btn-success" @onclick="RunAllTests" disabled="@(ViewModel?.IsBusy == true)">
+                Run All ►►
+            </button>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col">
+            <input type="text" class="form-control" placeholder="Filter tests..." @bind="SearchQuery" @bind:event="oninput" />
+        </div>
+        <div class="col-auto">
+            <select class="form-select" @bind="ResultFilter" style="width: 150px;">
+                <option value="All">All</option>
+                <option value="Passed">Passed</option>
+                <option value="Failed">Failed</option>
+                <option value="Skipped">Skipped</option>
+                <option value="NotRun">Not Run</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            @if (ViewModel?.TestCases != null && ViewModel.TestCases.Any())
+            {
+                <div class="list-group">
+                    @foreach (var testCase in FilteredTestCases)
+                    {
+                        <a href="/result/@testCase.GetHashCode()" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">@testCase.DisplayName</h6>
+                                <small style="color: @GetStatusColor(testCase.ResultStatus)">@testCase.ResultStatus</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(testCase.Message))
+                            {
+                                <p class="mb-1" style="color: @GetStatusColor(testCase.ResultStatus)">@testCase.Message</p>
+                            }
+                        </a>
+                    }
+                </div>
+            }
+            else if (ViewModel == null)
+            {
+                <div class="alert alert-warning">
+                    Test assembly not found.
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No test cases found.
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (ViewModel?.IsBusy == true)
+    {
+        <div class="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center" style="background: rgba(0,0,0,0.5); z-index: 1050;">
+            <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Running tests...</span>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    
+    private TestAssemblyViewModel? ViewModel { get; set; }
+    private string SearchQuery { get; set; } = "";
+    private string ResultFilter { get; set; } = "All";
+
+    private IEnumerable<TestCaseViewModel> FilteredTestCases
+    {
+        get
+        {
+            if (ViewModel?.TestCases == null) return Enumerable.Empty<TestCaseViewModel>();
+            
+            var filtered = ViewModel.TestCases.AsEnumerable();
+            
+            if (!string.IsNullOrEmpty(SearchQuery))
+            {
+                filtered = filtered.Where(tc => tc.DisplayName.Contains(SearchQuery, StringComparison.OrdinalIgnoreCase));
+            }
+            
+            if (ResultFilter != "All" && Enum.TryParse<TestResultStatus>(ResultFilter, out var status))
+            {
+                filtered = filtered.Where(tc => tc.ResultStatus == status);
+            }
+            
+            return filtered;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        // In a real implementation, you would look up the TestAssemblyViewModel by ID
+        // For now, this is just a placeholder structure
+        // ViewModel = GetTestAssemblyById(Id);
+    }
+
+    private async Task RunFilteredTests()
+    {
+        if (ViewModel?.RunFilteredTestsCommand?.CanExecute(null) == true)
+        {
+            ViewModel.RunFilteredTestsCommand.Execute(null);
+        }
+    }
+
+    private async Task RunAllTests()
+    {
+        if (ViewModel?.RunAllTestsCommand?.CanExecute(null) == true)
+        {
+            ViewModel.RunAllTestsCommand.Execute(null);
+        }
+    }
+
+    private string GetStatusColor(TestResultStatus status)
+    {
+        return status switch
+        {
+            TestResultStatus.Passed => "#28a745",
+            TestResultStatus.Failed => "#dc3545",
+            TestResultStatus.Skipped => "#ffc107",
+            _ => "#6c757d"
+        };
+    }
+}

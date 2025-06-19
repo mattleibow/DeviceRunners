@@ -1,0 +1,35 @@
+@page "/diagnostics"
+@using DeviceRunners.VisualRunners
+@inject DiagnosticsViewModel ViewModel
+
+<PageTitle>Diagnostics</PageTitle>
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <h3>Diagnostics</h3>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            @if (!string.IsNullOrEmpty(ViewModel.MessagesString))
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Diagnostic Messages</h5>
+                    </div>
+                    <div class="card-body">
+                        <pre style="max-height: 500px; overflow-y: auto;">@ViewModel.MessagesString</pre>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No diagnostic messages available.
+                </div>
+            }
+        </div>
+    </div>
+</div>
