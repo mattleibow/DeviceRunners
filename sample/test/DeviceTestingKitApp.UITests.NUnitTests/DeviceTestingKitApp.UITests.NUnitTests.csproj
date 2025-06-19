@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <!-- <IsTestProject>true</IsTestProject> -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers" />
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Playwright\DeviceRunners.UIAutomation.Playwright.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+  </ItemGroup>
+
+</Project>
