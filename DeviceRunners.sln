@@ -51,17 +51,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7FD9E644-B76
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EE37724C-5FEF-46BB-AD80-CD002CC7FF54}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.WebApp", "sample\src\DeviceTestingKitApp.WebApp\DeviceTestingKitApp.WebApp.csproj", "{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Web", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Web\DeviceTestingKitApp.UITests.XunitTests.Web.csproj", "{5F75C9B7-3838-4045-B7BD-963B338B14FD}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests", "sample\test\DeviceTestingKitApp.UITests.XunitTests\DeviceTestingKitApp.UITests.XunitTests.csproj", "{7F8A6736-38CC-42DE-A609-399FC3C7FFEA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Windows", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Windows\DeviceTestingKitApp.UITests.XunitTests.Windows.csproj", "{C2A34B21-6334-4B31-9617-D1648C6B0A50}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Android", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Android\DeviceTestingKitApp.UITests.XunitTests.Android.csproj", "{34618A8D-7BA5-4999-8049-3220DC63648C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.NUnitTests", "sample\test\DeviceTestingKitApp.UITests.NUnitTests\DeviceTestingKitApp.UITests.NUnitTests.csproj", "{03A0F40A-9234-4DCE-AC34-0A1138525DD4}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Appium", "src\DeviceRunners.UIAutomation.Appium\DeviceRunners.UIAutomation.Appium.csproj", "{B1A52689-AE30-4136-9502-AD2B6A6D154A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation", "src\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj", "{4B514D48-D89C-457D-B2DE-F7822A7225B9}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.NUnitTests", "sample\test\DeviceTestingKitApp.UITests.NUnitTests\DeviceTestingKitApp.UITests.NUnitTests.csproj", "{03A0F40A-9234-4DCE-AC34-0A1138525DD4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Selenium", "src\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj", "{CBF6C8E0-681A-426C-9A44-91125AB3208C}"
 EndProject
@@ -71,15 +75,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Selenium.Tests", "test\DeviceRunners.UIAutomation.Selenium.Tests\DeviceRunners.UIAutomation.Selenium.Tests.csproj", "{21884F7C-DA99-4359-9D3B-93399046FF9B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.WebApp", "sample\src\DeviceTestingKitApp.WebApp\DeviceTestingKitApp.WebApp.csproj", "{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.UITests.XunitTests.Web", "sample\test\DeviceTestingKitApp.UITests.XunitTests.Web\DeviceTestingKitApp.UITests.XunitTests.Web.csproj", "{5F75C9B7-3838-4045-B7BD-963B338B14FD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Playwright", "src\DeviceRunners.UIAutomation.Playwright\DeviceRunners.UIAutomation.Playwright.csproj", "{A1FF7FA0-3842-4131-90B9-98D0D6B237C2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceRunners.UIAutomation.Playwright.Tests", "test\DeviceRunners.UIAutomation.Playwright.Tests\DeviceRunners.UIAutomation.Playwright.Tests.csproj", "{9F6C3958-DFDA-40C7-917B-2BC4984EEBCA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceTestingKitApp.WebApp", "sample\src\DeviceTestingKitApp.WebApp\DeviceTestingKitApp.WebApp.csproj", "{2A387F0F-3DBE-4A6C-BEB5-60CA6CE6F4B4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.Cli", "src\DeviceRunners.Cli\DeviceRunners.Cli.csproj", "{E0CEF24B-9991-4BE0-8FD6-4BC464A8D59B}"
 EndProject

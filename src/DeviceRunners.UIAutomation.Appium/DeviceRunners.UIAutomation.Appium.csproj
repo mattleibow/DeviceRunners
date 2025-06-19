@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.1.0" />
+    <PackageReference Include="Appium.WebDriver" />
   </ItemGroup>
 
   <ItemGroup>

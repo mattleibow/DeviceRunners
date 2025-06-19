@@ -21,7 +21,9 @@ public class UITestsSetupFixture
 					.UsePackageName("com.companyname.devicetestingkitapp")
 					.UseActivityName(".MainActivity"))
 				.AddWindowsApp("windows", options => options
-					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App")))
+					.UseAppId("com.companyname.devicetestingkitapp_9zz4h110yvjzm!App"))
+				.AddMacApp("mac", options => options
+					.UseBundleId("com.companyname.devicetestingkitapp")))
 			.AddSelenium(selenium => selenium
 				.AddLogger(new TestContextLogger())
 				.AddMicrosoftEdge("web", options => options

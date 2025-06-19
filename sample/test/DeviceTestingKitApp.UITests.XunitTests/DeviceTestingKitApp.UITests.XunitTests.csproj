@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" Version="2.6.6" />
-    <PackageReference Include="xunit.core" Version="2.6.6" ExcludeAssets="build;buildTransitive" />
-    <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.core" ExcludeAssets="build;buildTransitive" />
+    <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,7 +29,7 @@
 <!--<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

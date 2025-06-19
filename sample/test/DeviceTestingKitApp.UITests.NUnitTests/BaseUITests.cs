@@ -8,6 +8,7 @@ namespace DeviceTestingKitApp.UITests.NUnitTests;
 
 [TestFixture("android")]
 [TestFixture("windows")]
+[TestFixture("mac")]
 [TestFixture("web")]
 [TestFixture("web_playwright")]
 [Parallelizable(ParallelScope.Fixtures)]

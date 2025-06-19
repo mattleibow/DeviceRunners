@@ -13,7 +13,7 @@ public class MainPageTests : BaseUITests
 	public void InitialStateIsCorrect()
 	{
 		var element = App.FindElement(by => by.Id("CounterButton"));
-		Assert.NotNull(element);
+		Assert.That(element, Is.Not.Null);
 
 		Assert.That(element.GetText(), Is.EqualTo("Click me!"));
 	}
@@ -22,7 +22,7 @@ public class MainPageTests : BaseUITests
 	public async Task SingleIncrementIncrementsByOne()
 	{
 		var element = App.FindElement(by => by.Id("CounterButton"));
-		Assert.NotNull(element);
+		Assert.That(element, Is.Not.Null);
 
 		element.Click();
 		await Task.Delay(500);
@@ -38,7 +38,7 @@ public class MainPageTests : BaseUITests
 	public async Task ClickingMultipleTimesKeepsIncrementing(int clicks, string text)
 	{
 		var element = App.FindElement(by => by.Id("CounterButton"));
-		Assert.NotNull(element);
+		Assert.That(element, Is.Not.Null);
 
 		for (var i = 0; i < clicks; i++)
 		{
