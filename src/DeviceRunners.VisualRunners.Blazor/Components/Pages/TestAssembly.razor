@@ -1,6 +1,8 @@
-@page "/assembly/{id:int}"
+@page "/assembly/{assemblyName}"
 @using DeviceRunners.VisualRunners
+@using System.IO
 @inject NavigationManager Navigation
+@inject HomeViewModel HomeViewModel
 
 <PageTitle>@(ViewModel?.DisplayName ?? "Test Assembly")</PageTitle>
 
@@ -39,16 +41,18 @@
             @if (ViewModel?.TestCases != null && ViewModel.TestCases.Any())
             {
                 <div class="list-group">
-                    @foreach (var testCase in FilteredTestCases)
+                    @for (int i = 0; i < FilteredTestCases.Count(); i++)
                     {
-                        <a href="/result/@testCase.GetHashCode()" class="list-group-item list-group-item-action">
+                        var testCase = FilteredTestCases.ElementAt(i);
+                        var testIndex = i;
+                        <a href="/result/@Uri.EscapeDataString(Path.GetFileNameWithoutExtension(ViewModel.TestAssemblyInfo.AssemblyFileName))/@testIndex" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
                                 <h6 class="mb-1">@testCase.DisplayName</h6>
-                                <small style="color: @GetStatusColor(testCase.ResultStatus)">@testCase.ResultStatus</small>
+                                <small class="@GetStatusCssClass(testCase.ResultStatus)">@testCase.ResultStatus</small>
                             </div>
                             @if (!string.IsNullOrEmpty(testCase.Message))
                             {
-                                <p class="mb-1" style="color: @GetStatusColor(testCase.ResultStatus)">@testCase.Message</p>
+                                <p class="mb-1 @GetStatusCssClass(testCase.ResultStatus)">@testCase.Message</p>
                             }
                         </a>
                     }
@@ -80,7 +84,7 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public string AssemblyName { get; set; } = "";
     
     private TestAssemblyViewModel? ViewModel { get; set; }
     private string SearchQuery { get; set; } = "";
@@ -110,9 +114,9 @@
 
     protected override void OnParametersSet()
     {
-        // In a real implementation, you would look up the TestAssemblyViewModel by ID
-        // For now, this is just a placeholder structure
-        // ViewModel = GetTestAssemblyById(Id);
+        // Look up the TestAssemblyViewModel by assembly name
+        ViewModel = HomeViewModel.TestAssemblies.FirstOrDefault(a => 
+            Uri.EscapeDataString(Path.GetFileNameWithoutExtension(a.TestAssemblyInfo.AssemblyFileName)) == AssemblyName);
     }
 
     private async Task RunFilteredTests()
@@ -131,14 +135,14 @@
         }
     }
 
-    private string GetStatusColor(TestResultStatus status)
+    private string GetStatusCssClass(TestResultStatus status)
     {
         return status switch
         {
-            TestResultStatus.Passed => "#28a745",
-            TestResultStatus.Failed => "#dc3545",
-            TestResultStatus.Skipped => "#ffc107",
-            _ => "#6c757d"
+            TestResultStatus.Passed => "test-result-status-passed",
+            TestResultStatus.Failed => "test-result-status-failed",
+            TestResultStatus.Skipped => "test-result-status-skipped",
+            _ => "test-result-status-notrun"
         };
     }
 }

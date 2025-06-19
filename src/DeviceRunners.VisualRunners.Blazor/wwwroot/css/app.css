@@ -124,6 +124,23 @@ main {
     flex: 1;
 }
 
+/* Test result status colors */
+.test-result-status-passed {
+    color: #28a745;
+}
+
+.test-result-status-failed {
+    color: #dc3545;
+}
+
+.test-result-status-skipped {
+    color: #ffc107;
+}
+
+.test-result-status-notrun {
+    color: #6c757d;
+}
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

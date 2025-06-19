@@ -1,6 +1,8 @@
-@page "/result/{id:int}"
+@page "/result/{assemblyName}/{testIndex:int}"
 @using DeviceRunners.VisualRunners
+@using System.IO
 @inject NavigationManager Navigation
+@inject HomeViewModel HomeViewModel
 
 <PageTitle>Test Result</PageTitle>
 
@@ -10,7 +12,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/">Home</a></li>
-                    <li class="breadcrumb-item"><a href="/assembly/@AssemblyId">Test Assembly</a></li>
+                    <li class="breadcrumb-item"><a href="/assembly/@Uri.EscapeDataString(AssemblyName)">Test Assembly</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Test Result</li>
                 </ol>
             </nav>
@@ -23,7 +25,7 @@
             <div class="col">
                 <div class="card">
                     <div class="card-header">
-                        <h4 style="color: @GetStatusColor(ViewModel.ResultStatus)">
+                        <h4 class="@GetStatusCssClass(ViewModel.ResultStatus)">
                             @(ViewModel.TestCase?.DisplayName ?? "Test Result")
                         </h4>
                         <span class="badge @GetStatusBadgeClass(ViewModel.ResultStatus)">
@@ -73,27 +75,32 @@
 </div>
 
 @code {
-    [Parameter] public int Id { get; set; }
+    [Parameter] public string AssemblyName { get; set; } = "";
+    [Parameter] public int TestIndex { get; set; }
     
     private TestResultViewModel? ViewModel { get; set; }
-    private int AssemblyId { get; set; }
 
     protected override void OnParametersSet()
     {
-        // In a real implementation, you would look up the TestResultViewModel by ID
-        // For now, this is just a placeholder structure
-        // ViewModel = GetTestResultById(Id);
-        // AssemblyId = GetAssemblyIdForResult(Id);
+        // Look up the TestAssemblyViewModel by assembly name
+        var assemblyViewModel = HomeViewModel.TestAssemblies.FirstOrDefault(a => 
+            Uri.EscapeDataString(Path.GetFileNameWithoutExtension(a.TestAssemblyInfo.AssemblyFileName)) == AssemblyName);
+            
+        if (assemblyViewModel != null && TestIndex >= 0 && TestIndex < assemblyViewModel.TestCases.Count())
+        {
+            var testCase = assemblyViewModel.TestCases.ElementAt(TestIndex);
+            ViewModel = testCase.TestResult;
+        }
     }
 
-    private string GetStatusColor(TestResultStatus status)
+    private string GetStatusCssClass(TestResultStatus status)
     {
         return status switch
         {
-            TestResultStatus.Passed => "#28a745",
-            TestResultStatus.Failed => "#dc3545",
-            TestResultStatus.Skipped => "#ffc107",
-            _ => "#6c757d"
+            TestResultStatus.Passed => "test-result-status-passed",
+            TestResultStatus.Failed => "test-result-status-failed",
+            TestResultStatus.Skipped => "test-result-status-skipped",
+            _ => "test-result-status-notrun"
         };
     }
 

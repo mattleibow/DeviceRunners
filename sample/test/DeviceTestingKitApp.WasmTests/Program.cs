@@ -13,8 +13,6 @@ public class Program
         Console.WriteLine(" - Blazor WASM visual test runner");
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
-        builder.RootComponents.Add<DeviceRunners.VisualRunners.Blazor.Components.App.App>("#app");
-        builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // Add HttpClient for dependency injection
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

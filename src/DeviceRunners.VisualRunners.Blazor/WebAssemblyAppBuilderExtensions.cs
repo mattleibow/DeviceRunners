@@ -1,4 +1,5 @@
 using DeviceRunners.Core;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,6 +15,10 @@ public static class WebAssemblyAppBuilderExtensions
 		var configBuilder = new WebAssemblyVisualTestRunnerConfigurationBuilder(appBuilder);
 		configurationBuilder?.Invoke(configBuilder);
 		var configuration = configBuilder.Build();
+
+		// register root components automatically
+		appBuilder.RootComponents.Add<DeviceRunners.VisualRunners.Blazor.Components.App>("#app");
+		appBuilder.RootComponents.Add<HeadOutlet>("head::after");
 
 		// register runner components
 		appBuilder.Services.AddSingleton<IVisualTestRunnerConfiguration>(configuration);

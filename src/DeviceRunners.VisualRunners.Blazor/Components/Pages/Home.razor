@@ -1,5 +1,6 @@
 @page "/"
 @using DeviceRunners.VisualRunners
+@using System.IO
 @inject HomeViewModel ViewModel
 @inject IJSRuntime JSRuntime
 
@@ -24,9 +25,9 @@
                 <div class="list-group">
                     @foreach (var assembly in ViewModel.TestAssemblies)
                     {
-                        <a href="/assembly/@assembly.GetHashCode()" class="list-group-item list-group-item-action">
+                        <a href="/assembly/@Uri.EscapeDataString(Path.GetFileNameWithoutExtension(assembly.TestAssemblyInfo.AssemblyFileName))" class="list-group-item list-group-item-action">
                             <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1" style="color: @GetStatusColor(assembly.ResultStatus)">@assembly.DisplayName</h5>
+                                <h5 class="mb-1 @GetStatusCssClass(assembly.ResultStatus)">@assembly.DisplayName</h5>
                             </div>
                             <div class="d-flex gap-3">
                                 <span class="text-success">✔ @assembly.Passed</span>
@@ -93,14 +94,14 @@
         }
     }
 
-    private string GetStatusColor(TestResultStatus status)
+    private string GetStatusCssClass(TestResultStatus status)
     {
         return status switch
         {
-            TestResultStatus.Passed => "#28a745",
-            TestResultStatus.Failed => "#dc3545",
-            TestResultStatus.Skipped => "#ffc107",
-            _ => "#6c757d"
+            TestResultStatus.Passed => "test-result-status-passed",
+            TestResultStatus.Failed => "test-result-status-failed",
+            TestResultStatus.Skipped => "test-result-status-skipped",
+            _ => "test-result-status-notrun"
         };
     }
 }
