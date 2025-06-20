@@ -1,0 +1,117 @@
+@page "/result/{assemblyName}/{testIndex:int}"
+@using DeviceRunners.VisualRunners
+@using System.IO
+@inject NavigationManager Navigation
+@inject HomeViewModel HomeViewModel
+
+<PageTitle>Test Result</PageTitle>
+
+<div class="container">
+    <div class="row mb-3">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/assembly/@Uri.EscapeDataString(AssemblyName)">Test Assembly</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Test Result</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    @if (ViewModel != null)
+    {
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="@GetStatusCssClass(ViewModel.ResultStatus)">
+                            @(ViewModel.TestCase?.DisplayName ?? "Test Result")
+                        </h4>
+                        <span class="badge @GetStatusBadgeClass(ViewModel.ResultStatus)">
+                            @ViewModel.ResultStatus
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(ViewModel.ErrorMessage))
+                        {
+                            <h6>Message:</h6>
+                            <div class="alert alert-info">
+                                <pre>@ViewModel.ErrorMessage</pre>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(ViewModel.Output))
+                        {
+                            <h6>Output:</h6>
+                            <div class="alert alert-secondary">
+                                <pre>@ViewModel.Output</pre>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(ViewModel.ErrorStackTrace))
+                        {
+                            <h6>Stack Trace:</h6>
+                            <div class="alert alert-danger">
+                                <pre>@ViewModel.ErrorStackTrace</pre>
+                            </div>
+                        }
+
+                        @if (ViewModel.Duration != TimeSpan.Zero)
+                        {
+                            <p><strong>Duration:</strong> @ViewModel.Duration.TotalMilliseconds ms</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            Test result not found.
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string AssemblyName { get; set; } = "";
+    [Parameter] public int TestIndex { get; set; }
+    
+    private TestResultViewModel? ViewModel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Look up the TestAssemblyViewModel by assembly name
+        var assemblyViewModel = HomeViewModel.TestAssemblies.FirstOrDefault(a => 
+            Uri.EscapeDataString(Path.GetFileNameWithoutExtension(a.TestAssemblyInfo.AssemblyFileName)) == AssemblyName);
+            
+        if (assemblyViewModel != null && TestIndex >= 0 && TestIndex < assemblyViewModel.TestCases.Count())
+        {
+            var testCase = assemblyViewModel.TestCases.ElementAt(TestIndex);
+            ViewModel = testCase.TestResult;
+        }
+    }
+
+    private string GetStatusCssClass(TestResultStatus status)
+    {
+        return status switch
+        {
+            TestResultStatus.Passed => "test-result-status-passed",
+            TestResultStatus.Failed => "test-result-status-failed",
+            TestResultStatus.Skipped => "test-result-status-skipped",
+            _ => "test-result-status-notrun"
+        };
+    }
+
+    private string GetStatusBadgeClass(TestResultStatus status)
+    {
+        return status switch
+        {
+            TestResultStatus.Passed => "bg-success",
+            TestResultStatus.Failed => "bg-danger",
+            TestResultStatus.Skipped => "bg-warning",
+            _ => "bg-secondary"
+        };
+    }
+}
