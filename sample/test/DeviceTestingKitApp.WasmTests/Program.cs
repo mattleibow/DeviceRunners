@@ -15,6 +15,6 @@ builder.UseVisualTestRunner(conf => conf
     .AddConsoleResultChannel()
     .AddTestAssembly(typeof(Program).Assembly)
     .AddTestAssemblies(typeof(DeviceTestingKitApp.BlazorLibrary.XunitTests.BlazorUnitTests).Assembly)
-    .AddXunit());
+    .AddThreadlessXunit());
 
 await builder.Build().RunAsync();
