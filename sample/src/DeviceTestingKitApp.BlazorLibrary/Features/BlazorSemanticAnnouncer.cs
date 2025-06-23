@@ -1,7 +1,7 @@
 using DeviceTestingKitApp.Features;
 using Microsoft.JSInterop;
 
-namespace DeviceTestingKitApp.WebApp.Features;
+namespace DeviceTestingKitApp.Features;
 
 public class BlazorSemanticAnnouncer : ISemanticAnnouncer
 {

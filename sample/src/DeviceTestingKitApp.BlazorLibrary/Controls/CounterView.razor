@@ -1,4 +1,5 @@
 @using DeviceTestingKitApp.ViewModels
+@using DeviceTestingKitApp.Converters
 @implements IDisposable
 
 <button id="CounterButton" 
@@ -34,14 +35,9 @@
 
     private string GetCounterText()
     {
-        if (ViewModel == null) return "Click me!";
+        if (ViewModel == null) return CounterTextConverter.ConvertCountToText(0);
         
-        return ViewModel.Count switch
-        {
-            0 => "Click me!",
-            1 => $"Clicked {ViewModel.Count} time",
-            _ => $"Clicked {ViewModel.Count} times"
-        };
+        return CounterTextConverter.ConvertCountToText(ViewModel.Count);
     }
 
     public void Dispose()

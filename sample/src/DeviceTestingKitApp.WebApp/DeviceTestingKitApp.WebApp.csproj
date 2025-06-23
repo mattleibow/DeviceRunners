@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DeviceTestingKitApp.Library\DeviceTestingKitApp.Library.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary\DeviceTestingKitApp.BlazorLibrary.csproj" />
   </ItemGroup>
 
 </Project>
