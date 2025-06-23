@@ -1,10 +1,20 @@
 using DeviceTestingKitApp.WebApp.Components;
+using DeviceTestingKitApp.WebApp.Features;
+using DeviceTestingKitApp.Features;
+using DeviceTestingKitApp.ViewModels;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// Register view models from the library project (same as MAUI app)
+builder.Services.AddTransient<MainViewModel>();
+builder.Services.AddTransient<CounterViewModel>();
+
+// Register Blazor-specific semantic announcer
+builder.Services.AddTransient<ISemanticAnnouncer, BlazorSemanticAnnouncer>();
 
 var app = builder.Build();
 
