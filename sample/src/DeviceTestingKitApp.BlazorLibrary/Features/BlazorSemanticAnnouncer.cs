@@ -14,13 +14,12 @@ public class BlazorSemanticAnnouncer : ISemanticAnnouncer
 
 	public void Announce(string message)
 	{
-		// In a web context, we can use ARIA live regions or console for accessibility
-		// For simplicity, we'll use console.log, but in a real app you might want to use ARIA live regions
+		// Use ARIA live regions for proper accessibility announcements
 		_ = Task.Run(async () =>
 		{
 			try
 			{
-				await _jsRuntime.InvokeVoidAsync("console.log", $"Accessibility announcement: {message}");
+				await _jsRuntime.InvokeVoidAsync("announceToScreenReader", message);
 			}
 			catch
 			{
