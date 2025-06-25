@@ -48,11 +48,11 @@ jobs:
 
   publish:
     name: Publish NuGet Packages
-    if: github.event_name == 'release'
     needs: pack
     env:
       NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
     runs-on: windows-latest
+    if: github.event_name == 'release'
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
