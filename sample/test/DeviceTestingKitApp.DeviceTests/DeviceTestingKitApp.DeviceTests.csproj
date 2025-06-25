@@ -58,6 +58,8 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.SourceGenerators.Attributes\DeviceRunners.SourceGenerators.Attributes.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.SourceGenerators\DeviceRunners.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">

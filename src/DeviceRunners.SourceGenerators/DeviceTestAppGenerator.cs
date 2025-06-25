@@ -122,52 +122,11 @@ public class DeviceTestAppGenerator : ISourceGenerator
 
     private void GenerateFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
     {
-        // Generate MauiProgram.cs
-        GenerateMauiProgram(context, config);
-
-        // Generate Usings.cs
-        GenerateUsings(context, config);
-
-        // Generate platform-specific files
+        // Generate platform-specific files only - MauiProgram.cs and Usings.cs should be in the app
         GenerateAndroidFiles(context, config);
         GenerateiOSFiles(context, config);
         GenerateWindowsFiles(context, config);
         GenerateMacCatalystFiles(context, config);
-
-        // Note: Properties/launchSettings.json should be created manually as source generators only generate C# files
-    }
-
-    private void GenerateMauiProgram(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
-    {
-        var source = GetEmbeddedResource("Templates.MauiProgram.cs.template")
-            .Replace("{{RootNamespace}}", config.RootNamespace);
-
-        // Handle conditional blocks for test frameworks
-        if (config.TestFrameworks.HasFlag(TestFrameworksEnum.Xunit))
-        {
-            source = source.Replace("{{#if IncludeXunit}}", "").Replace("{{/if}}", "");
-        }
-        else
-        {
-            source = RemoveConditionalBlock(source, "{{#if IncludeXunit}}", "{{/if}}");
-        }
-
-        if (config.TestFrameworks.HasFlag(TestFrameworksEnum.NUnit))
-        {
-            source = source.Replace("{{#if IncludeNUnit}}", "").Replace("{{/if}}", "");
-        }
-        else
-        {
-            source = RemoveConditionalBlock(source, "{{#if IncludeNUnit}}", "{{/if}}");
-        }
-
-        context.AddSource("MauiProgram.g.cs", SourceText.From(source, Encoding.UTF8));
-    }
-
-    private void GenerateUsings(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
-    {
-        var source = GetEmbeddedResource("Templates.Usings.cs.template");
-        context.AddSource("Usings.g.cs", SourceText.From(source, Encoding.UTF8));
     }
 
     private void GenerateAndroidFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)

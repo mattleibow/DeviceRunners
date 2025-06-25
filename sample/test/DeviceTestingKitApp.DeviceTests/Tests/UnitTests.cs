@@ -1,5 +1,8 @@
-﻿namespace DeviceTestingKitApp.DeviceTests;
+﻿using DeviceRunners.SourceGenerators;
 
+namespace DeviceTestingKitApp.DeviceTests;
+
+[DeviceTestApp(AppTitle = "DeviceTestingKitApp.DeviceTests", AppId = "com.companyname.devicetestingkitapp.devicetests")]
 public class UnitTests
 {
 	[Fact]
