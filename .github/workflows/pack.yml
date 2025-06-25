@@ -58,6 +58,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: NuGet
+          path: artifacts
+      - name: Validate Artifact Downloads
+        run: dir artifacts
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -66,4 +69,4 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
       - name: Push NuGet
-        run: dotnet nuget push NuGet\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
+        run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
