@@ -92,7 +92,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
                     break;
                 case "TestFrameworks":
                     if (namedArg.Value.Value is int frameworks)
-                        config.TestFrameworks = (TestFrameworks)frameworks;
+                        config.TestFrameworks = (TestFrameworksEnum)frameworks;
                     break;
             }
         }
@@ -115,7 +115,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
 
         if (options.TryGetValue("build_property.DeviceTestFrameworks", out var frameworks))
         {
-            if (Enum.TryParse<TestFrameworks>(frameworks, true, out var parsed))
+            if (Enum.TryParse<TestFrameworksEnum>(frameworks, true, out var parsed))
                 config.TestFrameworks = parsed;
         }
     }
@@ -134,8 +134,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
         GenerateWindowsFiles(context, config);
         GenerateMacCatalystFiles(context, config);
 
-        // Generate Properties/launchSettings.json
-        GenerateLaunchSettings(context, config);
+        // Note: Properties/launchSettings.json should be created manually as source generators only generate C# files
     }
 
     private void GenerateMauiProgram(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
@@ -144,7 +143,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
             .Replace("{{RootNamespace}}", config.RootNamespace);
 
         // Handle conditional blocks for test frameworks
-        if (config.TestFrameworks.HasFlag(TestFrameworks.Xunit))
+        if (config.TestFrameworks.HasFlag(TestFrameworksEnum.Xunit))
         {
             source = source.Replace("{{#if IncludeXunit}}", "").Replace("{{/if}}", "");
         }
@@ -153,7 +152,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
             source = RemoveConditionalBlock(source, "{{#if IncludeXunit}}", "{{/if}}");
         }
 
-        if (config.TestFrameworks.HasFlag(TestFrameworks.NUnit))
+        if (config.TestFrameworks.HasFlag(TestFrameworksEnum.NUnit))
         {
             source = source.Replace("{{#if IncludeNUnit}}", "").Replace("{{/if}}", "");
         }
@@ -219,24 +218,31 @@ public class DeviceTestAppGenerator : ISourceGenerator
         context.AddSource("Platforms.MacCatalyst.AppDelegate.g.cs", SourceText.From(appDelegate, Encoding.UTF8));
     }
 
-    private void GenerateLaunchSettings(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
-    {
-        var launchSettings = GetEmbeddedResource("Templates.Properties.launchSettings.json.template");
-        context.AddSource("Properties.launchSettings.json.g.cs", 
-            SourceText.From($"// {launchSettings}", Encoding.UTF8)); // We'll handle JSON files differently
-    }
-
     private string GetEmbeddedResource(string resourceName)
     {
         var assembly = typeof(DeviceTestAppGenerator).Assembly;
-        var fullResourceName = $"DeviceRunners.SourceGenerators.{resourceName}";
         
-        using var stream = assembly.GetManifestResourceStream(fullResourceName);
-        if (stream == null)
-            return $"// Resource not found: {fullResourceName}";
+        // Try different resource name formats
+        var possibleNames = new[]
+        {
+            $"DeviceRunners.SourceGenerators.{resourceName}",
+            resourceName,
+            resourceName.Replace('.', '_')
+        };
+
+        foreach (var name in possibleNames)
+        {
+            using var stream = assembly.GetManifestResourceStream(name);
+            if (stream != null)
+            {
+                using var reader = new StreamReader(stream);
+                return reader.ReadToEnd();
+            }
+        }
         
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
+        // If not found, list all available resources for debugging
+        var availableResources = string.Join(", ", assembly.GetManifestResourceNames());
+        return $"// Resource not found: {resourceName}\n// Available resources: {availableResources}";
     }
 
     private string RemoveConditionalBlock(string source, string startTag, string endTag)
@@ -285,5 +291,14 @@ public class DeviceTestAppConfiguration
     public string RootNamespace { get; set; } = "DeviceTestApp";
     public string AppTitle { get; set; } = "DeviceTestApp";
     public string AppId { get; set; } = "com.companyname.devicetestapp";
-    public TestFrameworks TestFrameworks { get; set; } = TestFrameworks.Xunit;
+    public TestFrameworksEnum TestFrameworks { get; set; } = TestFrameworksEnum.Xunit;
+}
+
+[Flags]
+public enum TestFrameworksEnum
+{
+    None = 0,
+    Xunit = 1,
+    NUnit = 2,
+    Both = Xunit | NUnit
 }

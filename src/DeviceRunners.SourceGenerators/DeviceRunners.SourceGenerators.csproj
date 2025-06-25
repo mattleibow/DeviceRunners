@@ -16,7 +16,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Templates\**\*" />
+    <EmbeddedResource Include="Templates/MauiProgram.cs.template" />
+    <EmbeddedResource Include="Templates/Usings.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/Android/MainActivity.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/Android/MainApplication.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/iOS/Program.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/iOS/AppDelegate.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/Windows/App.xaml.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/MacCatalyst/Program.cs.template" />
+    <EmbeddedResource Include="Templates/Platforms/MacCatalyst/AppDelegate.cs.template" />
+    <EmbeddedResource Include="Templates/Properties/launchSettings.json.template" />
   </ItemGroup>
 
   <ItemGroup>
