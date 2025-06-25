@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
-using DeviceRunners.SourceGenerators;
+using DeviceRunners.VisualRunners.Maui.SourceGen;
 using System.Collections.Immutable;
 using Xunit;
 
-namespace DeviceRunners.SourceGenerators.Tests;
+namespace DeviceRunners.VisualRunners.Maui.SourceGen.Tests;
 
 public class DeviceTestAppGeneratorTests
 {

@@ -29,22 +29,12 @@
   <ItemGroup>
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
 
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
 
     <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Microsoft.Maui.Controls" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.utility" />
   </ItemGroup>
 
   <ItemGroup>
@@ -55,11 +45,11 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.SourceGenerators\DeviceRunners.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
   
   <ItemGroup>
-    <Analyzer Include="..\..\..\artifacts\bin\DeviceRunners.SourceGenerators\debug\DeviceRunners.SourceGenerators.dll" Condition="Exists('..\..\..\artifacts\bin\DeviceRunners.SourceGenerators\debug\DeviceRunners.SourceGenerators.dll')" />
+    <Analyzer Include="..\..\..\artifacts\bin\DeviceRunners.VisualRunners.Maui.SourceGen\debug\DeviceRunners.VisualRunners.Maui.SourceGen.dll" Condition="Exists('..\..\..\artifacts\bin\DeviceRunners.VisualRunners.Maui.SourceGen\debug\DeviceRunners.VisualRunners.Maui.SourceGen.dll')" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">

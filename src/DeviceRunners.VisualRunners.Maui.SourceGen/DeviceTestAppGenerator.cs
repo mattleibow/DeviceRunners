@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using System.Linq;
 
-namespace DeviceRunners.SourceGenerators;
+namespace DeviceRunners.VisualRunners.Maui.SourceGen;
 
 [Generator]
 public class DeviceTestAppGenerator : ISourceGenerator
@@ -164,7 +164,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
         var assembly = typeof(DeviceTestAppGenerator).Assembly;
         
         // Convert the resource name to the actual embedded resource name
-        var actualResourceName = $"DeviceRunners.SourceGenerators.{resourceName}";
+        var actualResourceName = $"DeviceRunners.VisualRunners.Maui.SourceGen.{resourceName}";
         
         using var stream = assembly.GetManifestResourceStream(actualResourceName);
         if (stream != null)

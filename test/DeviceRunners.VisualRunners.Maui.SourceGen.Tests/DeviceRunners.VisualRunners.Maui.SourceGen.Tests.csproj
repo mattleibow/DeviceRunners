@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/DeviceRunners.SourceGenerators/DeviceRunners.SourceGenerators.csproj" />
+    <ProjectReference Include="../../src/DeviceRunners.VisualRunners.Maui.SourceGen/DeviceRunners.VisualRunners.Maui.SourceGen.csproj" />
   </ItemGroup>
 
 </Project>
