@@ -92,13 +92,17 @@ public class FileSystemUtils
 #elif ANDROID
 		// this is required to exist (although not actually used) so we create a dummy file
 		var root = Android.App.Application.Context.CacheDir.AbsolutePath;
+#else
+		// for other platforms, we use the local application data folder
+		var root = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+#endif
+		if (!string.IsNullOrEmpty(assm.Location))
+			return assm.Location;
+
 		var path = Path.Combine(root, filename);
 		if (!File.Exists(path))
 			File.Create(path).Close();
 		return path;
-#else
-		return assm.Location;
-#endif
 	}
 
 	static string NormalizePath(string filename) =>

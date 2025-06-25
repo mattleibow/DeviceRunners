@@ -10,4 +10,11 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		builder.AddTestPlatform<XunitTestDiscoverer, XunitTestRunner>();
 		return builder;
 	}
+
+	public static TBuilder AddThreadlessXunit<TBuilder>(this TBuilder builder)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+	{
+		builder.AddTestPlatform<ThreadlessXunitTestDiscoverer, ThreadlessXunitTestRunner>();
+		return builder;
+	}
 }
