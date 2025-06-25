@@ -6,7 +6,7 @@
         class="btn btn-primary" 
         @onclick="HandleIncrement"
         title="Counts the number of times you click">
-    @GetCounterText()
+    @CounterTextConverter.ConvertCountToText(ViewModel?.Count ?? 0)
 </button>
 
 @code {
@@ -31,13 +31,6 @@
     private void HandleIncrement()
     {
         ViewModel?.IncrementCommand.Execute(null);
-    }
-
-    private string GetCounterText()
-    {
-        if (ViewModel == null) return CounterTextConverter.ConvertCountToText(0);
-        
-        return CounterTextConverter.ConvertCountToText(ViewModel.Count);
     }
 
     public void Dispose()

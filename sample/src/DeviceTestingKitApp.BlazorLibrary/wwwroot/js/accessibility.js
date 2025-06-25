@@ -1,6 +1,6 @@
-// Accessibility support functions
+// Accessibility support functions module
 
-window.announceToScreenReader = function (message) {
+export function announceToScreenReader(message) {
     // Create or get the live region element
     let liveRegion = document.getElementById('sr-live-region');
     if (!liveRegion) {
@@ -21,4 +21,4 @@ window.announceToScreenReader = function (message) {
     setTimeout(() => {
         liveRegion.textContent = message;
     }, 100);
-};
+}
