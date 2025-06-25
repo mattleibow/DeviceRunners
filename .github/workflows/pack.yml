@@ -52,12 +52,15 @@ jobs:
     env:
       NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
     runs-on: windows-latest
-    if: github.event_name == 'release'
     steps:
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: NuGet
+      - name: Vadidate downlaods
+        run: |
+          dir
+          dir NuGet
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -66,4 +69,5 @@ jobs:
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
       - name: Push NuGet
+        if: github.event_name == 'release'
         run: dotnet nuget push NuGet\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
