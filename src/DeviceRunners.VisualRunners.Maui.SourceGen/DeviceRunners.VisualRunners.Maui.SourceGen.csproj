@@ -4,26 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <IsRoslynComponent>true</IsRoslynComponent>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Templates/Platforms/Android/MainActivity.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/Android/MainApplication.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/iOS/Program.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/iOS/AppDelegate.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/Windows/App.xaml.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/MacCatalyst/Program.cs.template" />
-    <EmbeddedResource Include="Templates/Platforms/MacCatalyst/AppDelegate.cs.template" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="build\DeviceRunners.VisualRunners.Maui.SourceGen.targets" Pack="true" PackagePath="build\" />

@@ -59,8 +59,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.Cli.Tests", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.VisualRunners.Maui.SourceGen", "src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj", "{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.VisualRunners.Maui.SourceGen.Tests", "test\DeviceRunners.VisualRunners.Maui.SourceGen.Tests\DeviceRunners.VisualRunners.Maui.SourceGen.Tests.csproj", "{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}"
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -351,18 +350,6 @@ Global
 		{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}.Release|x64.Build.0 = Release|Any CPU
 		{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}.Release|x86.Build.0 = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|x64.Build.0 = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Debug|x86.Build.0 = Debug|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|x64.ActiveCfg = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|x64.Build.0 = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|x86.ActiveCfg = Release|Any CPU
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -393,7 +380,6 @@ Global
 		{E0CEF24B-9991-4BE0-8FD6-4BC464A8D59B} = {DBF1C119-C96C-4DD3-810B-52451603475C}
 		{CADA0B60-3175-4471-814F-635D701BBD44} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
 		{7CC730A2-E469-4A6E-87E1-BE00E6F208C8} = {DBF1C119-C96C-4DD3-810B-52451603475C}
-		{8E2EDAE6-FD7B-4AC6-93A3-B12D4719B07A} = {5073EAFD-FF7B-4C4E-84D2-3AA38A91DE73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2DABD41C-B083-429E-AE1E-971CFF8DC199}

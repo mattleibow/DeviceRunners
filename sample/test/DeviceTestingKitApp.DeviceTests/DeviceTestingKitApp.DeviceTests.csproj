@@ -12,8 +12,7 @@
     <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 
-    <!-- Enable source generator explicitly for testing -->
-    <GenerateDeviceTestApp>true</GenerateDeviceTestApp>
+
 
     <!-- Display name -->
     <ApplicationTitle>DeviceTestingKitApp.DeviceTests</ApplicationTitle>
@@ -45,12 +44,13 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Analyzer Include="..\..\..\artifacts\bin\DeviceRunners.VisualRunners.Maui.SourceGen\debug\DeviceRunners.VisualRunners.Maui.SourceGen.dll" Condition="Exists('..\..\..\artifacts\bin\DeviceRunners.VisualRunners.Maui.SourceGen\debug\DeviceRunners.VisualRunners.Maui.SourceGen.dll')" />
-  </ItemGroup>
+
+  <!-- Import the device test app generation targets -->
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\build\DeviceRunners.VisualRunners.Maui.SourceGen.props" />
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\build\DeviceRunners.VisualRunners.Maui.SourceGen.targets" />
+
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
     <ProjectReference Include="..\..\..\src\DeviceRunners.XHarness.Xunit\DeviceRunners.XHarness.Xunit.csproj" />
