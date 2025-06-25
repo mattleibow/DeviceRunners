@@ -52,12 +52,31 @@
     </PropertyGroup>
     
     <WriteLinesToFile File="$(_DeviceRunnerWindowsAppManifestDestination)" Lines="$(_WindowsAppManifestContent)" Overwrite="true" />
+
+    <!-- Copy and process Package.appxmanifest -->
+    <PropertyGroup>
+      <_DeviceRunnerWindowsPackageManifestTemplate>$(MSBuildThisFileDirectory)templates/Windows/Package.appxmanifest</_DeviceRunnerWindowsPackageManifestTemplate>
+      <_DeviceRunnerWindowsPackageManifestDestination>$(IntermediateOutputPath)Platforms/Windows/Package.appxmanifest</_DeviceRunnerWindowsPackageManifestDestination>
+    </PropertyGroup>
+    
+    <ReadLinesFromFile File="$(_DeviceRunnerWindowsPackageManifestTemplate)">
+      <Output TaskParameter="Lines" ItemName="_WindowsPackageManifestLines" />
+    </ReadLinesFromFile>
+    
+    <PropertyGroup>
+      <_WindowsPackageManifestContent>@(_WindowsPackageManifestLines, '%0D%0A')</_WindowsPackageManifestContent>
+      <_WindowsPackageManifestContent>$(_WindowsPackageManifestContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_WindowsPackageManifestContent>
+      <_WindowsPackageManifestContent>$(_WindowsPackageManifestContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_WindowsPackageManifestContent>
+    </PropertyGroup>
+    
+    <WriteLinesToFile File="$(_DeviceRunnerWindowsPackageManifestDestination)" Lines="$(_WindowsPackageManifestContent)" Overwrite="true" />
   </Target>
 
   <!-- Add the processed Windows files to the build -->
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'windows'">
-    <MauiXaml Include="$(IntermediateOutputPath)Platforms/Windows/App.xaml" />
+    <Page Include="$(IntermediateOutputPath)Platforms/Windows/App.xaml" />
     <ApplicationManifest Include="$(IntermediateOutputPath)Platforms/Windows/app.manifest" />
+    <AppxManifest Include="$(IntermediateOutputPath)Platforms/Windows/Package.appxmanifest" />
   </ItemGroup>
 
   <!-- Exclude default Visual Studio test runner files from packaging -->
@@ -67,5 +86,11 @@
       <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
     </ItemGroup>
   </Target>
+
+  <!-- Add default app icon and splash screen from templates -->
+  <ItemGroup>
+    <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg" ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg" Color="#512BD4" />
+    <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg" Color="#512BD4" BaseSize="128,128" />
+  </ItemGroup>
 
 </Project>

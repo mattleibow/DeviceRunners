@@ -12,6 +12,9 @@
     <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 
+    <!-- Enable source generator explicitly for testing -->
+    <GenerateDeviceTestApp>true</GenerateDeviceTestApp>
+
     <!-- Display name -->
     <ApplicationTitle>DeviceTestingKitApp.DeviceTests</ApplicationTitle>
 
@@ -24,12 +27,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- App Icon -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
-
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
