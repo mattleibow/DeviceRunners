@@ -57,9 +57,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: NuGet
+          path: artifacts
       - name: Vadidate downlaods
         run: |
           dir
+          dir artifacts
           dir NuGet
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
