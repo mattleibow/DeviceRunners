@@ -132,13 +132,13 @@ public class DeviceTestAppGenerator : ISourceGenerator
     private void GenerateAndroidFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
     {
         // MainActivity.cs
-        var mainActivity = GetEmbeddedResource("Templates.Platforms.Android.MainActivity.cs.template")
+        var mainActivity = GetEmbeddedResource("Templates.Platforms.Android.MainActivity.template")
             .Replace("{{RootNamespace}}", config.RootNamespace)
             .Replace("{{AppId}}", config.AppId);
         context.AddSource("Platforms.Android.MainActivity.g.cs", SourceText.From(mainActivity, Encoding.UTF8));
 
         // MainApplication.cs
-        var mainApplication = GetEmbeddedResource("Templates.Platforms.Android.MainApplication.cs.template")
+        var mainApplication = GetEmbeddedResource("Templates.Platforms.Android.MainApplication.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.Android.MainApplication.g.cs", SourceText.From(mainApplication, Encoding.UTF8));
     }
@@ -146,12 +146,12 @@ public class DeviceTestAppGenerator : ISourceGenerator
     private void GenerateiOSFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
     {
         // Program.cs
-        var program = GetEmbeddedResource("Templates.Platforms.iOS.Program.cs.template")
+        var program = GetEmbeddedResource("Templates.Platforms.iOS.Program.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.iOS.Program.g.cs", SourceText.From(program, Encoding.UTF8));
 
         // AppDelegate.cs
-        var appDelegate = GetEmbeddedResource("Templates.Platforms.iOS.AppDelegate.cs.template")
+        var appDelegate = GetEmbeddedResource("Templates.Platforms.iOS.AppDelegate.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.iOS.AppDelegate.g.cs", SourceText.From(appDelegate, Encoding.UTF8));
     }
@@ -159,7 +159,7 @@ public class DeviceTestAppGenerator : ISourceGenerator
     private void GenerateWindowsFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
     {
         // App.xaml.cs
-        var appXamlCs = GetEmbeddedResource("Templates.Platforms.Windows.App.xaml.cs.template")
+        var appXamlCs = GetEmbeddedResource("Templates.Platforms.Windows.App.xaml.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.Windows.App.xaml.g.cs", SourceText.From(appXamlCs, Encoding.UTF8));
     }
@@ -167,12 +167,12 @@ public class DeviceTestAppGenerator : ISourceGenerator
     private void GenerateMacCatalystFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
     {
         // Program.cs
-        var program = GetEmbeddedResource("Templates.Platforms.MacCatalyst.Program.cs.template")
+        var program = GetEmbeddedResource("Templates.Platforms.MacCatalyst.Program.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.MacCatalyst.Program.g.cs", SourceText.From(program, Encoding.UTF8));
 
         // AppDelegate.cs
-        var appDelegate = GetEmbeddedResource("Templates.Platforms.MacCatalyst.AppDelegate.cs.template")
+        var appDelegate = GetEmbeddedResource("Templates.Platforms.MacCatalyst.AppDelegate.template")
             .Replace("{{RootNamespace}}", config.RootNamespace);
         context.AddSource("Platforms.MacCatalyst.AppDelegate.g.cs", SourceText.From(appDelegate, Encoding.UTF8));
     }
@@ -181,22 +181,14 @@ public class DeviceTestAppGenerator : ISourceGenerator
     {
         var assembly = typeof(DeviceTestAppGenerator).Assembly;
         
-        // Try different resource name formats
-        var possibleNames = new[]
+        // Convert the resource name to the actual embedded resource name
+        var actualResourceName = $"DeviceRunners.SourceGenerators.{resourceName}";
+        
+        using var stream = assembly.GetManifestResourceStream(actualResourceName);
+        if (stream != null)
         {
-            $"DeviceRunners.SourceGenerators.{resourceName}",
-            resourceName,
-            resourceName.Replace('.', '_')
-        };
-
-        foreach (var name in possibleNames)
-        {
-            using var stream = assembly.GetManifestResourceStream(name);
-            if (stream != null)
-            {
-                using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
-            }
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
         }
         
         // If not found, list all available resources for debugging

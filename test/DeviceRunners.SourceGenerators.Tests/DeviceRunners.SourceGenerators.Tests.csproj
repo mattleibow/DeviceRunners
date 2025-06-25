@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/DeviceRunners.SourceGenerators/DeviceRunners.SourceGenerators.csproj" />
+    <ProjectReference Include="../../src/DeviceRunners.SourceGenerators.Attributes/DeviceRunners.SourceGenerators.Attributes.csproj" />
   </ItemGroup>
 
 </Project>
