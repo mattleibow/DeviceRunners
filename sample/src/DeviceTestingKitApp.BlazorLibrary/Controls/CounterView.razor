@@ -1,0 +1,43 @@
+@using DeviceTestingKitApp.ViewModels
+@using DeviceTestingKitApp.Converters
+@implements IDisposable
+
+<button id="CounterButton" 
+        class="btn btn-primary" 
+        @onclick="HandleIncrement"
+        title="Counts the number of times you click">
+    @CounterTextConverter.ConvertCountToText(ViewModel?.Count ?? 0)
+</button>
+
+@code {
+    [Parameter] public CounterViewModel? ViewModel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        }
+    }
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(CounterViewModel.Count))
+        {
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void HandleIncrement()
+    {
+        ViewModel?.IncrementCommand.Execute(null);
+    }
+
+    public void Dispose()
+    {
+        if (ViewModel != null)
+        {
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+}
