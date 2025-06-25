@@ -3,4 +3,69 @@
   <ItemGroup>
     <Analyzer Include="$(MSBuildThisFileDirectory)../analyzers/dotnet/cs/DeviceRunners.SourceGenerators.dll" />
   </ItemGroup>
+
+  <!-- Add iOS partial app manifest -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios'">
+    <PartialAppManifest Include="$(MSBuildThisFileDirectory)templates/iOS/Info.plist" />
+  </ItemGroup>
+
+  <!-- Add macOS Catalyst partial app manifest -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'maccatalyst'">
+    <PartialAppManifest Include="$(MSBuildThisFileDirectory)templates/MacCatalyst/Info.plist" />
+  </ItemGroup>
+
+  <!-- Windows XAML and manifest files -->
+  <Target Name="PrepareWindowsFiles" BeforeTargets="BeforeBuild" Condition="'$(TargetPlatformIdentifier)' == 'windows'">
+    
+    <!-- Copy and process App.xaml -->
+    <PropertyGroup>
+      <_DeviceRunnerWindowsAppXamlTemplate>$(MSBuildThisFileDirectory)templates/Windows/App.xaml</_DeviceRunnerWindowsAppXamlTemplate>
+      <_DeviceRunnerWindowsAppXamlDestination>$(IntermediateOutputPath)Platforms/Windows/App.xaml</_DeviceRunnerWindowsAppXamlDestination>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(IntermediateOutputPath)Platforms/Windows/" />
+    
+    <ReadLinesFromFile File="$(_DeviceRunnerWindowsAppXamlTemplate)">
+      <Output TaskParameter="Lines" ItemName="_WindowsAppXamlLines" />
+    </ReadLinesFromFile>
+    
+    <PropertyGroup>
+      <_WindowsAppXamlContent>@(_WindowsAppXamlLines, '%0D%0A')</_WindowsAppXamlContent>
+      <_WindowsAppXamlContent>$(_WindowsAppXamlContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_WindowsAppXamlContent>
+    </PropertyGroup>
+    
+    <WriteLinesToFile File="$(_DeviceRunnerWindowsAppXamlDestination)" Lines="$(_WindowsAppXamlContent)" Overwrite="true" />
+    
+    <!-- Copy and process app.manifest -->
+    <PropertyGroup>
+      <_DeviceRunnerWindowsAppManifestTemplate>$(MSBuildThisFileDirectory)templates/Windows/app.manifest</_DeviceRunnerWindowsAppManifestTemplate>
+      <_DeviceRunnerWindowsAppManifestDestination>$(IntermediateOutputPath)Platforms/Windows/app.manifest</_DeviceRunnerWindowsAppManifestDestination>
+    </PropertyGroup>
+    
+    <ReadLinesFromFile File="$(_DeviceRunnerWindowsAppManifestTemplate)">
+      <Output TaskParameter="Lines" ItemName="_WindowsAppManifestLines" />
+    </ReadLinesFromFile>
+    
+    <PropertyGroup>
+      <_WindowsAppManifestContent>@(_WindowsAppManifestLines, '%0D%0A')</_WindowsAppManifestContent>
+      <_WindowsAppManifestContent>$(_WindowsAppManifestContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_WindowsAppManifestContent>
+    </PropertyGroup>
+    
+    <WriteLinesToFile File="$(_DeviceRunnerWindowsAppManifestDestination)" Lines="$(_WindowsAppManifestContent)" Overwrite="true" />
+  </Target>
+
+  <!-- Add the processed Windows files to the build -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'windows'">
+    <MauiXaml Include="$(IntermediateOutputPath)Platforms/Windows/App.xaml" />
+    <ApplicationManifest Include="$(IntermediateOutputPath)Platforms/Windows/app.manifest" />
+  </ItemGroup>
+
+  <!-- Exclude default Visual Studio test runner files from packaging -->
+  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
 </Project>

@@ -38,22 +38,45 @@ public class DeviceTestAppGenerator : ISourceGenerator
         if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.GenerateDeviceTestApp", out var value))
             return bool.TrueString.Equals(value, StringComparison.OrdinalIgnoreCase);
 
-        // Auto-detect based on project references to DeviceRunners
-        if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectName", out var projectName) &&
-            projectName.Contains("DeviceTests"))
-            return true;
-
-        // Check if this is a MAUI project with test framework references
+        // Check if this is a MAUI project
         var isMauiProject = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.UseMaui", out var useMaui) &&
                            bool.TrueString.Equals(useMaui, StringComparison.OrdinalIgnoreCase);
 
-        if (isMauiProject)
+        if (!isMauiProject)
+            return false;
+
+        // Check for test framework references (Xunit, NUnit, etc.)
+        var hasTestFramework = context.Compilation.ReferencedAssemblyNames.Any(name => 
+            name.Name.IndexOf("xunit", StringComparison.OrdinalIgnoreCase) >= 0 || 
+            name.Name.IndexOf("nunit", StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.Name.IndexOf("mstest", StringComparison.OrdinalIgnoreCase) >= 0);
+        
+        if (!hasTestFramework)
+            return false;
+
+        // Check for DeviceRunners references
+        var hasDeviceRunners = context.Compilation.ReferencedAssemblyNames.Any(name => 
+            name.Name.IndexOf("DeviceRunners", StringComparison.OrdinalIgnoreCase) >= 0);
+
+        if (!hasDeviceRunners)
+            return false;
+
+        // Auto-detect based on project name patterns
+        if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectName", out var projectName))
         {
-            // Check for common test framework patterns
-            var hasTestFramework = context.Compilation.ReferencedAssemblyNames.Any(name => 
-                name.Name.Contains("xunit") || name.Name.Contains("nunit"));
-            
-            if (hasTestFramework)
+            var lowerProjectName = projectName.ToLower();
+            if (lowerProjectName.Contains("devicetest") || 
+                lowerProjectName.Contains("device.test") ||
+                lowerProjectName.EndsWith(".devicetests") ||
+                lowerProjectName.EndsWith("tests") && lowerProjectName.Contains("device"))
+                return true;
+        }
+
+        // Check for ApplicationId starting with common test patterns
+        if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.ApplicationId", out var appId))
+        {
+            var lowerAppId = appId.ToLower();
+            if (lowerAppId.Contains("test") || lowerAppId.Contains("devicetest"))
                 return true;
         }
 
