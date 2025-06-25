@@ -58,11 +58,8 @@ jobs:
         with:
           name: NuGet
           path: artifacts
-      - name: Vadidate downlaods
-        run: |
-          dir
-          dir artifacts
-          dir NuGet
+      - name: Valdidate Artifact Downloads
+        run: dir artifacts
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -72,4 +69,4 @@ jobs:
           NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
       - name: Push NuGet
         if: github.event_name == 'release'
-        run: dotnet nuget push NuGet\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
+        run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
