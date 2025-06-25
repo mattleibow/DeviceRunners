@@ -11,44 +11,36 @@
     <PartialAppManifest Include="$(MSBuildThisFileDirectory)templates/MacCatalyst/Info.plist" />
   </ItemGroup>
 
+  <!-- Reusable target for processing template files -->
+  <Target Name="ProcessTemplate">
+    <ReadLinesFromFile File="$(TemplateFile)">
+      <Output TaskParameter="Lines" ItemName="_TemplateLines" />
+    </ReadLinesFromFile>
+    
+    <PropertyGroup>
+      <_ProcessedContent>@(_TemplateLines, '%0D%0A')</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{AppId}}', '$(ApplicationId)'))</_ProcessedContent>
+    </PropertyGroup>
+    
+    <WriteLinesToFile File="$(DestinationFile)" Lines="$(_ProcessedContent)" Overwrite="true" />
+  </Target>
+
   <!-- Android platform files -->
   <Target Name="PrepareAndroidFiles" BeforeTargets="BeforeCompile" Condition="'$(TargetPlatformIdentifier)' == 'android' AND '$(_ShouldGenerateDeviceTestApp)' == 'true'">
     <MakeDir Directories="$(IntermediateOutputPath)Platforms/Android/" />
     
     <!-- MainActivity.cs -->
-    <PropertyGroup>
-      <_AndroidMainActivityTemplate>$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template</_AndroidMainActivityTemplate>
-      <_AndroidMainActivityDestination>$(IntermediateOutputPath)Platforms/Android/MainActivity.cs</_AndroidMainActivityDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_AndroidMainActivityTemplate)">
-      <Output TaskParameter="Lines" ItemName="_AndroidMainActivityLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_AndroidMainActivityContent>@(_AndroidMainActivityLines, '%0D%0A')</_AndroidMainActivityContent>
-      <_AndroidMainActivityContent>$(_AndroidMainActivityContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_AndroidMainActivityContent>
-      <_AndroidMainActivityContent>$(_AndroidMainActivityContent.Replace('{{AppId}}', '$(ApplicationId)'))</_AndroidMainActivityContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_AndroidMainActivityDestination)" Lines="$(_AndroidMainActivityContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/Android/MainActivity.cs" />
     
     <!-- MainApplication.cs -->
-    <PropertyGroup>
-      <_AndroidMainApplicationTemplate>$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template</_AndroidMainApplicationTemplate>
-      <_AndroidMainApplicationDestination>$(IntermediateOutputPath)Platforms/Android/MainApplication.cs</_AndroidMainApplicationDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_AndroidMainApplicationTemplate)">
-      <Output TaskParameter="Lines" ItemName="_AndroidMainApplicationLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_AndroidMainApplicationContent>@(_AndroidMainApplicationLines, '%0D%0A')</_AndroidMainApplicationContent>
-      <_AndroidMainApplicationContent>$(_AndroidMainApplicationContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_AndroidMainApplicationContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_AndroidMainApplicationDestination)" Lines="$(_AndroidMainApplicationContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/Android/MainApplication.cs" />
   </Target>
 
   <!-- iOS platform files -->
@@ -56,38 +48,14 @@
     <MakeDir Directories="$(IntermediateOutputPath)Platforms/iOS/" />
     
     <!-- Program.cs -->
-    <PropertyGroup>
-      <_iOSProgramTemplate>$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template</_iOSProgramTemplate>
-      <_iOSProgramDestination>$(IntermediateOutputPath)Platforms/iOS/Program.cs</_iOSProgramDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_iOSProgramTemplate)">
-      <Output TaskParameter="Lines" ItemName="_iOSProgramLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_iOSProgramContent>@(_iOSProgramLines, '%0D%0A')</_iOSProgramContent>
-      <_iOSProgramContent>$(_iOSProgramContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_iOSProgramContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_iOSProgramDestination)" Lines="$(_iOSProgramContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/iOS/Program.cs" />
     
     <!-- AppDelegate.cs -->
-    <PropertyGroup>
-      <_iOSAppDelegateTemplate>$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template</_iOSAppDelegateTemplate>
-      <_iOSAppDelegateDestination>$(IntermediateOutputPath)Platforms/iOS/AppDelegate.cs</_iOSAppDelegateDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_iOSAppDelegateTemplate)">
-      <Output TaskParameter="Lines" ItemName="_iOSAppDelegateLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_iOSAppDelegateContent>@(_iOSAppDelegateLines, '%0D%0A')</_iOSAppDelegateContent>
-      <_iOSAppDelegateContent>$(_iOSAppDelegateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_iOSAppDelegateContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_iOSAppDelegateDestination)" Lines="$(_iOSAppDelegateContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/iOS/AppDelegate.cs" />
   </Target>
 
   <!-- macOS Catalyst platform files -->
@@ -95,38 +63,14 @@
     <MakeDir Directories="$(IntermediateOutputPath)Platforms/MacCatalyst/" />
     
     <!-- Program.cs -->
-    <PropertyGroup>
-      <_MacCatalystProgramTemplate>$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template</_MacCatalystProgramTemplate>
-      <_MacCatalystProgramDestination>$(IntermediateOutputPath)Platforms/MacCatalyst/Program.cs</_MacCatalystProgramDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_MacCatalystProgramTemplate)">
-      <Output TaskParameter="Lines" ItemName="_MacCatalystProgramLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_MacCatalystProgramContent>@(_MacCatalystProgramLines, '%0D%0A')</_MacCatalystProgramContent>
-      <_MacCatalystProgramContent>$(_MacCatalystProgramContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_MacCatalystProgramContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_MacCatalystProgramDestination)" Lines="$(_MacCatalystProgramContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/MacCatalyst/Program.cs" />
     
     <!-- AppDelegate.cs -->
-    <PropertyGroup>
-      <_MacCatalystAppDelegateTemplate>$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template</_MacCatalystAppDelegateTemplate>
-      <_MacCatalystAppDelegateDestination>$(IntermediateOutputPath)Platforms/MacCatalyst/AppDelegate.cs</_MacCatalystAppDelegateDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_MacCatalystAppDelegateTemplate)">
-      <Output TaskParameter="Lines" ItemName="_MacCatalystAppDelegateLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_MacCatalystAppDelegateContent>@(_MacCatalystAppDelegateLines, '%0D%0A')</_MacCatalystAppDelegateContent>
-      <_MacCatalystAppDelegateContent>$(_MacCatalystAppDelegateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_MacCatalystAppDelegateContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_MacCatalystAppDelegateDestination)" Lines="$(_MacCatalystAppDelegateContent)" Overwrite="true" />
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/MacCatalyst/AppDelegate.cs" />
   </Target>
 
   <!-- Windows platform files -->
@@ -134,73 +78,24 @@
     <MakeDir Directories="$(IntermediateOutputPath)Platforms/Windows/" />
     
     <!-- App.xaml.cs -->
-    <PropertyGroup>
-      <_WindowsAppXamlCsTemplate>$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template</_WindowsAppXamlCsTemplate>
-      <_WindowsAppXamlCsDestination>$(IntermediateOutputPath)Platforms/Windows/App.xaml.cs</_WindowsAppXamlCsDestination>
-    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template;DestinationFile=$(IntermediateOutputPath)Platforms/Windows/App.xaml.cs" />
     
-    <ReadLinesFromFile File="$(_WindowsAppXamlCsTemplate)">
-      <Output TaskParameter="Lines" ItemName="_WindowsAppXamlCsLines" />
-    </ReadLinesFromFile>
+    <!-- App.xaml -->
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Windows/App.xaml;DestinationFile=$(IntermediateOutputPath)Platforms/Windows/App.xaml" />
     
-    <PropertyGroup>
-      <_WindowsAppXamlCsContent>@(_WindowsAppXamlCsLines, '%0D%0A')</_WindowsAppXamlCsContent>
-      <_WindowsAppXamlCsContent>$(_WindowsAppXamlCsContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_WindowsAppXamlCsContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_WindowsAppXamlCsDestination)" Lines="$(_WindowsAppXamlCsContent)" Overwrite="true" />
-    
-    <!-- Copy and process App.xaml -->
-    <PropertyGroup>
-      <_DeviceRunnerWindowsAppXamlTemplate>$(MSBuildThisFileDirectory)templates/Windows/App.xaml</_DeviceRunnerWindowsAppXamlTemplate>
-      <_DeviceRunnerWindowsAppXamlDestination>$(IntermediateOutputPath)Platforms/Windows/App.xaml</_DeviceRunnerWindowsAppXamlDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_DeviceRunnerWindowsAppXamlTemplate)">
-      <Output TaskParameter="Lines" ItemName="_WindowsAppXamlLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_WindowsAppXamlContent>@(_WindowsAppXamlLines, '%0D%0A')</_WindowsAppXamlContent>
-      <_WindowsAppXamlContent>$(_WindowsAppXamlContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_WindowsAppXamlContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_DeviceRunnerWindowsAppXamlDestination)" Lines="$(_WindowsAppXamlContent)" Overwrite="true" />
-    
-    <!-- Copy and process app.manifest -->
-    <PropertyGroup>
-      <_DeviceRunnerWindowsAppManifestTemplate>$(MSBuildThisFileDirectory)templates/Windows/app.manifest</_DeviceRunnerWindowsAppManifestTemplate>
-      <_DeviceRunnerWindowsAppManifestDestination>$(IntermediateOutputPath)Platforms/Windows/app.manifest</_DeviceRunnerWindowsAppManifestDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_DeviceRunnerWindowsAppManifestTemplate)">
-      <Output TaskParameter="Lines" ItemName="_WindowsAppManifestLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_WindowsAppManifestContent>@(_WindowsAppManifestLines, '%0D%0A')</_WindowsAppManifestContent>
-      <_WindowsAppManifestContent>$(_WindowsAppManifestContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_WindowsAppManifestContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_DeviceRunnerWindowsAppManifestDestination)" Lines="$(_WindowsAppManifestContent)" Overwrite="true" />
+    <!-- app.manifest -->
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Windows/app.manifest;DestinationFile=$(IntermediateOutputPath)Platforms/Windows/app.manifest" />
 
-    <!-- Copy and process Package.appxmanifest -->
-    <PropertyGroup>
-      <_DeviceRunnerWindowsPackageManifestTemplate>$(MSBuildThisFileDirectory)templates/Windows/Package.appxmanifest</_DeviceRunnerWindowsPackageManifestTemplate>
-      <_DeviceRunnerWindowsPackageManifestDestination>$(IntermediateOutputPath)Platforms/Windows/Package.appxmanifest</_DeviceRunnerWindowsPackageManifestDestination>
-    </PropertyGroup>
-    
-    <ReadLinesFromFile File="$(_DeviceRunnerWindowsPackageManifestTemplate)">
-      <Output TaskParameter="Lines" ItemName="_WindowsPackageManifestLines" />
-    </ReadLinesFromFile>
-    
-    <PropertyGroup>
-      <_WindowsPackageManifestContent>@(_WindowsPackageManifestLines, '%0D%0A')</_WindowsPackageManifestContent>
-      <_WindowsPackageManifestContent>$(_WindowsPackageManifestContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_WindowsPackageManifestContent>
-      <_WindowsPackageManifestContent>$(_WindowsPackageManifestContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_WindowsPackageManifestContent>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(_DeviceRunnerWindowsPackageManifestDestination)" Lines="$(_WindowsPackageManifestContent)" Overwrite="true" />
+    <!-- Package.appxmanifest -->
+    <MSBuild Projects="$(MSBuildProjectFile)" 
+             Targets="ProcessTemplate" 
+             Properties="TemplateFile=$(MSBuildThisFileDirectory)templates/Windows/Package.appxmanifest;DestinationFile=$(IntermediateOutputPath)Platforms/Windows/Package.appxmanifest" />
   </Target>
 
   <!-- Add the processed platform C# files to the build -->
