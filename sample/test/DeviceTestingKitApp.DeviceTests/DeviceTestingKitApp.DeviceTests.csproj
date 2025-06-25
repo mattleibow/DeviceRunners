@@ -21,6 +21,9 @@
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
+    
+    <!-- Enable DeviceRunners source generator -->
+    <GenerateDeviceTestApp>true</GenerateDeviceTestApp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,8 +61,11 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.SourceGenerators.Attributes\DeviceRunners.SourceGenerators.Attributes.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.SourceGenerators\DeviceRunners.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Analyzer Include="..\..\..\artifacts\bin\DeviceRunners.SourceGenerators\debug\DeviceRunners.SourceGenerators.dll" Condition="Exists('..\..\..\artifacts\bin\DeviceRunners.SourceGenerators\debug\DeviceRunners.SourceGenerators.dll')" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">

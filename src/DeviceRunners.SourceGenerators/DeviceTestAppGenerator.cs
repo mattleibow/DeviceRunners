@@ -1,6 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
 
@@ -11,113 +9,77 @@ public class DeviceTestAppGenerator : ISourceGenerator
 {
     public void Initialize(GeneratorInitializationContext context)
     {
-        context.RegisterForSyntaxNotifications(() => new DeviceTestAppSyntaxReceiver());
+        // No syntax receiver needed since we only use MSBuild properties
     }
 
     public void Execute(GeneratorExecutionContext context)
     {
-        if (context.SyntaxReceiver is not DeviceTestAppSyntaxReceiver receiver)
-            return;
-
+        // Always generate a test file to ensure the generator is running
+        context.AddSource("TestGenerator.g.cs", SourceText.From("// Test: Source generator is running", Encoding.UTF8));
+        
         // Check if this project should generate device test app files
-        var shouldGenerate = ShouldGenerateDeviceTestApp(context, receiver);
+        var shouldGenerate = ShouldGenerateDeviceTestApp(context);
         if (!shouldGenerate)
+        {
+            context.AddSource("TestGenerator2.g.cs", SourceText.From("// Test: shouldGenerate = false", Encoding.UTF8));
             return;
+        }
 
-        // Get configuration from attributes and MSBuild properties
-        var config = GetConfiguration(context, receiver);
+        // Get configuration from MSBuild properties
+        var config = GetConfiguration(context);
 
         // Generate all the required files
         GenerateFiles(context, config);
     }
 
-    private bool ShouldGenerateDeviceTestApp(GeneratorExecutionContext context, DeviceTestAppSyntaxReceiver receiver)
+    private bool ShouldGenerateDeviceTestApp(GeneratorExecutionContext context)
     {
-        // Check for DeviceTestApp attribute on any class
-        if (receiver.DeviceTestAppClasses.Count > 0)
-            return true;
-
-        // Check for MSBuild property
+        // Check for MSBuild property to explicitly enable generation
         if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.GenerateDeviceTestApp", out var value))
             return bool.TrueString.Equals(value, StringComparison.OrdinalIgnoreCase);
+
+        // Auto-detect based on project references to DeviceRunners
+        if (context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.MSBuildProjectName", out var projectName) &&
+            projectName.Contains("DeviceTests"))
+            return true;
+
+        // Check if this is a MAUI project with test framework references
+        var isMauiProject = context.AnalyzerConfigOptions.GlobalOptions.TryGetValue("build_property.UseMaui", out var useMaui) &&
+                           bool.TrueString.Equals(useMaui, StringComparison.OrdinalIgnoreCase);
+
+        if (isMauiProject)
+        {
+            // Check for common test framework patterns
+            var hasTestFramework = context.Compilation.ReferencedAssemblyNames.Any(name => 
+                name.Name.Contains("xunit") || name.Name.Contains("nunit"));
+            
+            if (hasTestFramework)
+                return true;
+        }
 
         return false;
     }
 
-    private DeviceTestAppConfiguration GetConfiguration(GeneratorExecutionContext context, DeviceTestAppSyntaxReceiver receiver)
+    private DeviceTestAppConfiguration GetConfiguration(GeneratorExecutionContext context)
     {
         var config = new DeviceTestAppConfiguration();
+        var options = context.AnalyzerConfigOptions.GlobalOptions;
 
-        // Get assembly name and namespace
+        // Get assembly name and root namespace
         config.AssemblyName = context.Compilation.AssemblyName ?? "DeviceTestApp";
         config.RootNamespace = config.AssemblyName;
 
-        // Get configuration from attribute if present
-        if (receiver.DeviceTestAppClasses.Count > 0)
-        {
-            var firstClass = receiver.DeviceTestAppClasses.First();
-            var semanticModel = context.Compilation.GetSemanticModel(firstClass.SyntaxTree);
-            var classSymbol = semanticModel.GetDeclaredSymbol(firstClass);
-            if (classSymbol != null)
-            {
-                var attribute = classSymbol.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.Name == "DeviceTestAppAttribute");
-                
-                if (attribute != null)
-                {
-                    // Extract configuration from attribute parameters
-                    config = ExtractConfigurationFromAttribute(attribute, config);
-                }
-            }
-        }
-
-        // Override with MSBuild properties if present
-        ApplyMSBuildProperties(context, config);
-
-        return config;
-    }
-
-    private DeviceTestAppConfiguration ExtractConfigurationFromAttribute(AttributeData attribute, DeviceTestAppConfiguration config)
-    {
-        // Extract named arguments
-        foreach (var namedArg in attribute.NamedArguments)
-        {
-            switch (namedArg.Key)
-            {
-                case "AppTitle":
-                    config.AppTitle = namedArg.Value.Value?.ToString() ?? config.AppTitle;
-                    break;
-                case "AppId":
-                    config.AppId = namedArg.Value.Value?.ToString() ?? config.AppId;
-                    break;
-                case "TestFrameworks":
-                    if (namedArg.Value.Value is int frameworks)
-                        config.TestFrameworks = (TestFrameworksEnum)frameworks;
-                    break;
-            }
-        }
-
-        return config;
-    }
-
-    private void ApplyMSBuildProperties(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
-    {
-        var options = context.AnalyzerConfigOptions.GlobalOptions;
-
-        if (options.TryGetValue("build_property.DeviceTestAppTitle", out var title))
+        // Override with MSBuild properties
+        if (options.TryGetValue("build_property.ApplicationTitle", out var title) && !string.IsNullOrEmpty(title))
             config.AppTitle = title;
 
-        if (options.TryGetValue("build_property.DeviceTestAppId", out var appId))
+        if (options.TryGetValue("build_property.ApplicationId", out var appId) && !string.IsNullOrEmpty(appId))
             config.AppId = appId;
 
-        if (options.TryGetValue("build_property.DeviceTestAppRootNamespace", out var rootNamespace))
+        if (options.TryGetValue("build_property.RootNamespace", out var rootNamespace) && !string.IsNullOrEmpty(rootNamespace))
             config.RootNamespace = rootNamespace;
 
-        if (options.TryGetValue("build_property.DeviceTestFrameworks", out var frameworks))
-        {
-            if (Enum.TryParse<TestFrameworksEnum>(frameworks, true, out var parsed))
-                config.TestFrameworks = parsed;
-        }
+        return config;
     }
 
     private void GenerateFiles(GeneratorExecutionContext context, DeviceTestAppConfiguration config)
@@ -195,45 +157,6 @@ public class DeviceTestAppGenerator : ISourceGenerator
         var availableResources = string.Join(", ", assembly.GetManifestResourceNames());
         return $"// Resource not found: {resourceName}\n// Available resources: {availableResources}";
     }
-
-    private string RemoveConditionalBlock(string source, string startTag, string endTag)
-    {
-        var startIndex = source.IndexOf(startTag);
-        if (startIndex == -1) return source;
-
-        var endIndex = source.IndexOf(endTag, startIndex);
-        if (endIndex == -1) return source;
-
-        return source.Remove(startIndex, endIndex + endTag.Length - startIndex);
-    }
-}
-
-public class DeviceTestAppSyntaxReceiver : ISyntaxReceiver
-{
-    public List<ClassDeclarationSyntax> DeviceTestAppClasses { get; } = new();
-
-    public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-    {
-        if (syntaxNode is ClassDeclarationSyntax classDeclaration)
-        {
-            // Look for classes with DeviceTestApp attribute
-            if (classDeclaration.AttributeLists.Count > 0)
-            {
-                foreach (var attributeList in classDeclaration.AttributeLists)
-                {
-                    foreach (var attribute in attributeList.Attributes)
-                    {
-                        var attributeName = attribute.Name.ToString();
-                        if (attributeName == "DeviceTestApp" || attributeName == "DeviceTestAppAttribute")
-                        {
-                            DeviceTestAppClasses.Add(classDeclaration);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 public class DeviceTestAppConfiguration
@@ -242,14 +165,4 @@ public class DeviceTestAppConfiguration
     public string RootNamespace { get; set; } = "DeviceTestApp";
     public string AppTitle { get; set; } = "DeviceTestApp";
     public string AppId { get; set; } = "com.companyname.devicetestapp";
-    public TestFrameworksEnum TestFrameworks { get; set; } = TestFrameworksEnum.Xunit;
-}
-
-[Flags]
-public enum TestFrameworksEnum
-{
-    None = 0,
-    Xunit = 1,
-    NUnit = 2,
-    Both = Xunit | NUnit
 }
