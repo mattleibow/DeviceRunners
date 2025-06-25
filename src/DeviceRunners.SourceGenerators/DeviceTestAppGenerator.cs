@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Text;
+using System.Linq;
 
 namespace DeviceRunners.SourceGenerators;
 
@@ -14,14 +15,10 @@ public class DeviceTestAppGenerator : ISourceGenerator
 
     public void Execute(GeneratorExecutionContext context)
     {
-        // Always generate a test file to ensure the generator is running
-        context.AddSource("TestGenerator.g.cs", SourceText.From("// Test: Source generator is running", Encoding.UTF8));
-        
         // Check if this project should generate device test app files
         var shouldGenerate = ShouldGenerateDeviceTestApp(context);
         if (!shouldGenerate)
         {
-            context.AddSource("TestGenerator2.g.cs", SourceText.From("// Test: shouldGenerate = false", Encoding.UTF8));
             return;
         }
 
