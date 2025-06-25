@@ -1,0 +1,93 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net9.0-android;net9.0-ios;net9.0-maccatalyst;net9.0-windows10.0.19041.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <!-- NuGet package properties -->
+    <PackageId>DeviceRunners.TestApp</PackageId>
+    <PackageDescription>A complete package for creating device test apps with minimal setup. Just install this package and add the [DeviceTestApp] attribute to a class.</PackageDescription>
+    <PackageTags>maui;testing;device;xunit;nunit;mobile</PackageTags>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <!-- Default app properties when using this package -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ApplicationTitle Condition="'$(ApplicationTitle)' == ''">$(AssemblyName)</ApplicationTitle>
+    <ApplicationId Condition="'$(ApplicationId)' == ''">com.companyname.$(AssemblyName.ToLowerInvariant())</ApplicationId>
+    <ApplicationDisplayVersion Condition="'$(ApplicationDisplayVersion)' == ''">1.0</ApplicationDisplayVersion>
+    <ApplicationVersion Condition="'$(ApplicationVersion)' == ''">1</ApplicationVersion>
+  </PropertyGroup>
+
+  <!-- Conditional project references based on platforms -->
+  <ItemGroup>
+    <ProjectReference Include="../DeviceRunners.Core/DeviceRunners.Core.csproj" />
+    <ProjectReference Include="../DeviceRunners.UITesting/DeviceRunners.UITesting.csproj" />
+    <ProjectReference Include="../DeviceRunners.UITesting.Maui/DeviceRunners.UITesting.Maui.csproj" />
+    <ProjectReference Include="../DeviceRunners.VisualRunners/DeviceRunners.VisualRunners.csproj" />
+    <ProjectReference Include="../DeviceRunners.VisualRunners.Maui/DeviceRunners.VisualRunners.Maui.csproj" />
+    <ProjectReference Include="../DeviceRunners.VisualRunners.Xunit/DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="../DeviceRunners.VisualRunners.NUnit/DeviceRunners.VisualRunners.NUnit.csproj" />
+  </ItemGroup>
+
+  <!-- Conditional references for XHarness -->
+  <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
+    <ProjectReference Include="../DeviceRunners.XHarness/DeviceRunners.XHarness.csproj" />
+    <ProjectReference Include="../DeviceRunners.XHarness.Maui/DeviceRunners.XHarness.Maui.csproj" />
+    <ProjectReference Include="../DeviceRunners.XHarness.Xunit/DeviceRunners.XHarness.Xunit.csproj" />
+  </ItemGroup>
+
+  <!-- Source generator -->
+  <ItemGroup>
+    <ProjectReference Include="../DeviceRunners.SourceGenerators/DeviceRunners.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!-- MAUI dependencies -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
+  </ItemGroup>
+
+  <!-- Test framework packages -->
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.utility" />
+    <PackageReference Include="NUnit" />
+  </ItemGroup>
+
+  <!-- Default MAUI resources -->
+  <ItemGroup>
+    <!-- App Icon -->
+    <MauiIcon Include="Resources/AppIcon/appicon.svg" ForegroundFile="Resources/AppIcon/appiconfg.svg" Color="#512BD4" />
+
+    <!-- Splash Screen -->
+    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+    <!-- Images -->
+    <MauiImage Include="Resources/Images/*" />
+    <MauiImage Update="Resources/Images/dotnet_bot.svg" BaseSize="168,208" />
+
+    <!-- Custom Fonts -->
+    <MauiFont Include="Resources/Fonts/*" />
+
+    <!-- Raw Assets -->
+    <MauiAsset Include="Resources/Raw/**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!-- Target to remove Visual Studio test runner -->
+  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

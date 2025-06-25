@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <ItemGroup>
+    <Analyzer Include="$(MSBuildThisFileDirectory)../analyzers/dotnet/cs/DeviceRunners.SourceGenerators.dll" />
+  </ItemGroup>
+</Project>
