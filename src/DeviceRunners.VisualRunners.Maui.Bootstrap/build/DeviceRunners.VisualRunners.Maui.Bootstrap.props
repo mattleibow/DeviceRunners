@@ -1,7 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <!-- Auto-detect if we should generate device test app files -->
-  <PropertyGroup>
-    <_ShouldGenerateDeviceTestApp Condition="'$(UseMaui)' == 'true' AND '$(DesignTimeBuild)' != 'true'">true</_ShouldGenerateDeviceTestApp>
-  </PropertyGroup>
 </Project>
