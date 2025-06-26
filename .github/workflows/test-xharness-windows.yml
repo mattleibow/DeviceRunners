@@ -27,7 +27,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Publish App
       run: |
-        $fingerprint = ./scripts/New-Certificate.ps1 -Project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj
+        $fingerprint = ./scripts/New-Certificate.ps1 -Publisher "CN=DeviceTestingKitApp.DeviceTests Authors"
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
           -c ${{ env.TEST_CONFIGURATION }} `

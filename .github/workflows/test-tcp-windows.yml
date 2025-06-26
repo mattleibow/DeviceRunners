@@ -31,7 +31,7 @@ jobs:
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Publish App
       run: |
-        $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output Json
+        $certResult = device-runners windows cert install --publisher "CN=DeviceTestingKitApp.DeviceTests Authors" --output Json
         $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
           -f ${{ env.TEST_TARGET_FRAMEWORK }} `
