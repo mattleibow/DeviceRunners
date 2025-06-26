@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build\DeviceRunners.VisualRunners.Maui.SourceGen.targets" Pack="true" PackagePath="build\" />
-    <None Include="build\DeviceRunners.VisualRunners.Maui.SourceGen.props" Pack="true" PackagePath="build\" />
+    <None Include="build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" Pack="true" PackagePath="build\" />
+    <None Include="build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" Pack="true" PackagePath="build\" />
     <None Include="build\templates\**\*" Pack="true" PackagePath="build\templates\" />
   </ItemGroup>
 

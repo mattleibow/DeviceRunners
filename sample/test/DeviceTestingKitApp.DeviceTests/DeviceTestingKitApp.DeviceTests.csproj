@@ -44,12 +44,12 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\DeviceRunners.VisualRunners.Maui.Bootstrap.csproj" />
   </ItemGroup>
 
   <!-- Import the device test app generation targets -->
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\build\DeviceRunners.VisualRunners.Maui.SourceGen.props" />
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.SourceGen\build\DeviceRunners.VisualRunners.Maui.SourceGen.targets" />
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" />
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" />
 
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">

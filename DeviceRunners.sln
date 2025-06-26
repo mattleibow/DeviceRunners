@@ -57,7 +57,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.Cli", "src\De
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.Cli.Tests", "test\DeviceRunners.Cli.Tests\DeviceRunners.Cli.Tests.csproj", "{CADA0B60-3175-4471-814F-635D701BBD44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.VisualRunners.Maui.SourceGen", "src\DeviceRunners.VisualRunners.Maui.SourceGen\DeviceRunners.VisualRunners.Maui.SourceGen.csproj", "{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceRunners.VisualRunners.Maui.Bootstrap", "src\DeviceRunners.VisualRunners.Maui.Bootstrap\DeviceRunners.VisualRunners.Maui.Bootstrap.csproj", "{7CC730A2-E469-4A6E-87E1-BE00E6F208C8}"
 EndProject
 
 Global
