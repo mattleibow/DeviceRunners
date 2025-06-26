@@ -79,6 +79,40 @@
     
     <!-- Write processed file -->
     <WriteLinesToFile File="%(TemplateFile.Destination)" Lines="$(_ProcessedContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    
+    <!-- Track generated files for clean -->
+    <ItemGroup>
+      <FileWrites Include="%(TemplateFile.Destination)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Dynamically add platform-specific files using CreateItem based on metadata -->
+  <Target Name="AddPlatformSpecificFiles" AfterTargets="ProcessAllTemplates" Condition="'$(_ShouldGenerateDeviceTestApp)' == 'true'">
+    
+    <!-- Add compile files for current platform -->
+    <CreateItem Include="@(TemplateFile->'%(Destination)')" 
+                Condition="'%(TemplateFile.Platform)' == '$(TargetPlatformIdentifier)' AND '%(TemplateFile.BuildAction)' == 'Compile'">
+      <Output TaskParameter="Include" ItemName="Compile" />
+    </CreateItem>
+    
+    <!-- Add Page files for Windows platform -->
+    <CreateItem Include="@(TemplateFile->'%(Destination)')" 
+                Condition="'%(TemplateFile.Platform)' == '$(TargetPlatformIdentifier)' AND '%(TemplateFile.BuildAction)' == 'Page'">
+      <Output TaskParameter="Include" ItemName="Page" />
+    </CreateItem>
+    
+    <!-- Add ApplicationManifest files for Windows platform -->
+    <CreateItem Include="@(TemplateFile->'%(Destination)')" 
+                Condition="'%(TemplateFile.Platform)' == '$(TargetPlatformIdentifier)' AND '%(TemplateFile.BuildAction)' == 'ApplicationManifest'">
+      <Output TaskParameter="Include" ItemName="ApplicationManifest" />
+    </CreateItem>
+    
+    <!-- Add AppxManifest files for Windows platform -->
+    <CreateItem Include="@(TemplateFile->'%(Destination)')" 
+                Condition="'%(TemplateFile.Platform)' == '$(TargetPlatformIdentifier)' AND '%(TemplateFile.BuildAction)' == 'AppxManifest'">
+      <Output TaskParameter="Include" ItemName="AppxManifest" />
+    </CreateItem>
+    
   </Target>
 
   <!-- Add iOS partial app manifest -->
@@ -89,29 +123,6 @@
   <!-- Add macOS Catalyst partial app manifest -->
   <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'maccatalyst'">
     <PartialAppManifest Include="$(MSBuildThisFileDirectory)templates/MacCatalyst/Info.plist" />
-  </ItemGroup>
-
-  <!-- Include processed files in build based on platform and build action -->
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android' AND '$(_ShouldGenerateDeviceTestApp)' == 'true'">
-    <Compile Include="$(IntermediateOutputPath)Platforms/Android/MainActivity.cs" />
-    <Compile Include="$(IntermediateOutputPath)Platforms/Android/MainApplication.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'ios' AND '$(_ShouldGenerateDeviceTestApp)' == 'true'">
-    <Compile Include="$(IntermediateOutputPath)Platforms/iOS/Program.cs" />
-    <Compile Include="$(IntermediateOutputPath)Platforms/iOS/AppDelegate.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'maccatalyst' AND '$(_ShouldGenerateDeviceTestApp)' == 'true'">
-    <Compile Include="$(IntermediateOutputPath)Platforms/MacCatalyst/Program.cs" />
-    <Compile Include="$(IntermediateOutputPath)Platforms/MacCatalyst/AppDelegate.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'windows' AND '$(_ShouldGenerateDeviceTestApp)' == 'true'">
-    <Compile Include="$(IntermediateOutputPath)Platforms/Windows/App.xaml.cs" />
-    <Page Include="$(IntermediateOutputPath)Platforms/Windows/App.xaml" />
-    <ApplicationManifest Include="$(IntermediateOutputPath)Platforms/Windows/app.manifest" />
-    <AppxManifest Include="$(IntermediateOutputPath)Platforms/Windows/Package.appxmanifest" />
   </ItemGroup>
 
   <!-- Exclude default Visual Studio test runner files from packaging -->
