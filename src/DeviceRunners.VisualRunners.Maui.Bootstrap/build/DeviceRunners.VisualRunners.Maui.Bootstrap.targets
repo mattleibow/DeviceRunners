@@ -75,11 +75,10 @@
       <_ProcessedContent>$(_TemplateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_ProcessedContent>
       <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_ProcessedContent>
       <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
-      <_ProcessedContent>$(_ProcessedContent.Replace('{{AppId}}', '$(ApplicationId)'))</_ProcessedContent>
     </PropertyGroup>
     
     <!-- Write processed file -->
-    <WriteLinesToFile File="%(TemplateFile.Destination)" Lines="$(_ProcessedContent)" Overwrite="true" />
+    <WriteLinesToFile File="%(TemplateFile.Destination)" Lines="$(_ProcessedContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
   </Target>
 
   <!-- Add iOS partial app manifest -->

@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Import the device test app generation targets from Bootstrap package -->
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" />
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" />
+
   <PropertyGroup>
     <TargetFrameworks>net9.0-android</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -49,10 +53,6 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\DeviceRunners.VisualRunners.Maui.Bootstrap.csproj" />
   </ItemGroup>
-
-  <!-- Import the device test app generation targets from Bootstrap package -->
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" />
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" />
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
     <ProjectReference Include="..\..\..\src\DeviceRunners.XHarness.Xunit\DeviceRunners.XHarness.Xunit.csproj" />
