@@ -9,126 +9,148 @@
   <ItemGroup>
 
     <!--
-      The below TemplateFile items define the source template, destination, platform, and build action for each platform-specific file.
+      The below _DeviceRunnersTemplateFile items define the source template, destination, platform, and build action for each platform-specific file.
       These templates are processed and copied to the intermediate output directory before compilation.
     -->
 
     <!--
       Android platform template files
     -->
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template">
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template">
       <Destination>Platforms/Android/MainActivity.cs</Destination>
       <Platform>android</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template">
       <Destination>Platforms/Android/MainApplication.cs</Destination>
       <Platform>android</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    
+    </_DeviceRunnersTemplateFile>
+
     <!--
       iOS platform template files
     -->
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template">
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template">
       <Destination>Platforms/iOS/Program.cs</Destination>
       <Platform>ios</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template">
       <Destination>Platforms/iOS/AppDelegate.cs</Destination>
       <Platform>ios</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Info.plist.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Info.plist.template">
       <Destination>Platforms/iOS/Info.plist</Destination>
       <Platform>ios</Platform>
       <BuildAction>PartialAppManifest</BuildAction>
-    </TemplateFile>
-    
+    </_DeviceRunnersTemplateFile>
+
     <!--
       Mac Catalyst platform template files
     -->
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template">
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template">
       <Destination>Platforms/MacCatalyst/Program.cs</Destination>
       <Platform>maccatalyst</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template">
       <Destination>Platforms/MacCatalyst/AppDelegate.cs</Destination>
       <Platform>maccatalyst</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Info.plist.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Info.plist.template">
       <Destination>Platforms/MacCatalyst/Info.plist</Destination>
       <Platform>maccatalyst</Platform>
       <BuildAction>PartialAppManifest</BuildAction>
-    </TemplateFile>
-    
+    </_DeviceRunnersTemplateFile>
+
     <!--
       Windows platform template files
     -->
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template">
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template">
       <Destination>Platforms/Windows/App.xaml.cs</Destination>
       <Platform>windows</Platform>
       <BuildAction>Compile</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.template">
       <Destination>Platforms/Windows/App.xaml</Destination>
       <Platform>windows</Platform>
       <BuildAction>Page</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
       <Destination>Platforms/Windows/app.manifest</Destination>
       <Platform>windows</Platform>
       <BuildAction>ApplicationManifest</BuildAction>
-    </TemplateFile>
-    <TemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/Package.appxmanifest.template">
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/Package.appxmanifest.template">
       <Destination>Platforms/Windows/Package.appxmanifest</Destination>
       <Platform>windows</Platform>
       <BuildAction>AppxManifest</BuildAction>
-    </TemplateFile>
+    </_DeviceRunnersTemplateFile>
 
   </ItemGroup>
 
   <!--
-    Target: ProcessAllTemplates
-    Processes all TemplateFile items, replacing template variables and writing the output to the appropriate destination.
+    This is mainly here as windows has some before build checks that we need to be ready for.
+  -->
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Target: _DeviceRunnersBeforeResizetizeCollectItems
+    This target is a "dummy" target that always runs, but the real work is done in the _DeviceRunnersProcessAllTemplates target.
+    This makes sure no additional work is done if the _DeviceRunnersProcessAllTemplates target has already run.
+  -->
+  <Target Name="_DeviceRunnersBeforeResizetizeCollectItems"
+          BeforeTargets="ResizetizeCollectItems"
+          DependsOnTargets="_DeviceRunnersProcessAllTemplates" />
+
+  <!--
+    Target: _DeviceRunnersProcessAllTemplates
+    Processes all _DeviceRunnersTemplateFile items, replacing template variables and writing the output to the appropriate destination.
     Ensures generated files are included in the build with the correct build action.
   -->
-  <Target Name="ProcessAllTemplates" BeforeTargets="ResizetizeCollectItems"
-          Inputs="@(TemplateFile)" Outputs="%(TemplateFile.Destination)">
+  <Target Name="_DeviceRunnersProcessAllTemplates"
+          BeforeTargets="ResizetizeCollectItems"
+          Inputs="@(_DeviceRunnersTemplateFile)"
+          Outputs="%(_DeviceRunnersTemplateFile.Destination)">
 
     <PropertyGroup>
-      <_DeviceRunnersIntermediateOutputPath>$(IntermediateOutputPath)bootstrap/%(TemplateFile.Destination)</_DeviceRunnersIntermediateOutputPath>
+      <_DeviceRunnersIntermediateOutputPath>$(IntermediateOutputPath)bootstrap/%(_DeviceRunnersTemplateFile.Destination)</_DeviceRunnersIntermediateOutputPath>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersIntermediateOutputPath)'))" />
-    
+
     <PropertyGroup>
-      <_TemplateContent>$([System.IO.File]::ReadAllText('%(TemplateFile.Identity)'))</_TemplateContent>
+      <_TemplateContent>$([System.IO.File]::ReadAllText('%(_DeviceRunnersTemplateFile.Identity)'))</_TemplateContent>
       <_ProcessedContent>$(_TemplateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_ProcessedContent>
       <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_ProcessedContent>
       <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
     </PropertyGroup>
-    
+
     <WriteLinesToFile File="$(_DeviceRunnersIntermediateOutputPath)" Lines="$(_ProcessedContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
-    
+
     <ItemGroup>
       <FileWrites Include="$(_DeviceRunnersIntermediateOutputPath)" />
     </ItemGroup>
 
-    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)" Condition="'%(TemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
-      <Output TaskParameter="Include" ItemName="%(TemplateFile.BuildAction)" />
+    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)" Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
+      <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
     </CreateItem>
 
   </Target>
 
   <!--
-    Target: RemoveVisualStudioTestRunner
+    Target: _DeviceRunnersRemoveVisualStudioTestRunner
     Removes default Visual Studio test runner files (e.g., xunit.runner.visualstudio) from the app package to avoid unnecessary bloat.
   -->
-  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
+  <Target Name="_DeviceRunnersRemoveVisualStudioTestRunner"
+          BeforeTargets="_ComputeAppxPackagePayload">
     <ItemGroup>
       <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
       <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
@@ -139,8 +161,15 @@
     Add default app icon and splash screen from templates for Maui projects.
   -->
   <ItemGroup>
-    <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg" ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg" Color="#512BD4" />
-    <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+    <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg"
+              ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg"
+              Color="#512BD4" />
+
+    <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg"
+                      Color="#512BD4"
+                      BaseSize="128,128" />
+
   </ItemGroup>
 
 </Project>
