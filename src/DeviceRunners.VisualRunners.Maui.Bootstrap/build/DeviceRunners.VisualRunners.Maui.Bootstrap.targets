@@ -100,6 +100,12 @@
       $(PrepareForBuildDependsOn);
     </PrepareForBuildDependsOn>
   </PropertyGroup>
+  <PropertyGroup>
+    <PrepareResourcesDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(PrepareResourcesDependsOn);
+    </PrepareResourcesDependsOn>
+  </PropertyGroup>
 
   <!--
     Target: _DeviceRunnersBeforeResizetizeCollectItems
