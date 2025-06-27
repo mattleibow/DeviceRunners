@@ -77,6 +77,7 @@
       <Destination>Platforms/Windows/App.xaml</Destination>
       <Platform>windows</Platform>
       <BuildAction>ApplicationDefinition</BuildAction>
+      <AdditionalMetadata>Generator=MSBuild:Compile;XamlRuntime=$(DefaultXamlRuntime)</AdditionalMetadata>
     </_DeviceRunnersTemplateFile>
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
       <Destination>Platforms/Windows/app.manifest</Destination>
@@ -137,13 +138,18 @@
       <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
     </PropertyGroup>
 
-    <WriteLinesToFile File="$(_DeviceRunnersIntermediateOutputPath)" Lines="$(_ProcessedContent)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <WriteLinesToFile File="$(_DeviceRunnersIntermediateOutputPath)"
+                      Lines="$(_ProcessedContent)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
 
     <ItemGroup>
       <FileWrites Include="$(_DeviceRunnersIntermediateOutputPath)" />
     </ItemGroup>
 
-    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)" Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
+    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)"
+                AdditionalMetadata="%(_DeviceRunnersTemplateFile.AdditionalMetadata)"
+                Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
       <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
     </CreateItem>
 
@@ -156,7 +162,8 @@
   <Target Name="_DeviceRunnersRemoveVisualStudioTestRunner"
           BeforeTargets="_ComputeAppxPackagePayload">
     <ItemGroup>
-      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)"
+                                    Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
       <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
     </ItemGroup>
   </Target>
