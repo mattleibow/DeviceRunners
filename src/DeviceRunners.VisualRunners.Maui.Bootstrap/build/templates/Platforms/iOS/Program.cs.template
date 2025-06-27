@@ -1,7 +1,7 @@
-﻿using ObjCRuntime;
+using ObjCRuntime;
 using UIKit;
 
-namespace DeviceTestingKitApp.DeviceTests;
+namespace {{RootNamespace}};
 
 public class Program
 {

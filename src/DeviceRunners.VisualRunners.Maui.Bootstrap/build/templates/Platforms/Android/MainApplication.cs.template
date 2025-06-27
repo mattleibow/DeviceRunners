@@ -1,9 +1,9 @@
-﻿using Android.App;
+using Android.App;
 using Android.Runtime;
 
-namespace DeviceTestingKitApp.DeviceTests;
+namespace {{RootNamespace}};
 
-[Application]
+[Application(Icon = "@mipmap/appicon", RoundIcon = "@mipmap/appicon_round")]
 public class MainApplication : MauiApplication
 {
 	public MainApplication(IntPtr handle, JniHandleOwnership ownership)

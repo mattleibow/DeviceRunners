@@ -1,5 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Import props at the top -->
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" />
+
   <PropertyGroup>
     <TargetFrameworks>net9.0-android</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
@@ -24,30 +27,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- App Icon -->
-    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-
-    <!-- Splash Screen -->
-    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
-
-    <!-- Images -->
-    <MauiImage Include="Resources\Images\*" />
-    <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
-
-    <!-- Custom Fonts -->
-    <MauiFont Include="Resources\Fonts\*" />
-
-    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
-    <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="xunit.runner.json" LogicalName="xunit.runner.json" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
-    <PackageReference Include="Microsoft.Maui.Controls" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.utility" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,6 +43,7 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\DeviceRunners.VisualRunners.Maui.Bootstrap.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestingMode)' == 'XHarness'">
@@ -65,11 +51,7 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.XHarness.Maui\DeviceRunners.XHarness.Maui.csproj" />
   </ItemGroup>
 
-  <Target Name="RemoveVisualStudioTestRunner" BeforeTargets="_ComputeAppxPackagePayload">
-    <ItemGroup>
-      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)" Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
-      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
-    </ItemGroup>
-  </Target>
+  <!-- Import targets at the bottom -->
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" />
 
 </Project>
