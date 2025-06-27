@@ -99,12 +99,10 @@
       _DeviceRunnersProcessAllTemplates;
       $(PrepareForBuildDependsOn);
     </PrepareForBuildDependsOn>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PrepareResourcesDependsOn>
+    <CoreCompileDependsOn>
       _DeviceRunnersProcessAllTemplates;
-      $(PrepareResourcesDependsOn);
-    </PrepareResourcesDependsOn>
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
   </PropertyGroup>
 
   <!--
