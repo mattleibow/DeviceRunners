@@ -76,7 +76,7 @@
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.template">
       <Destination>Platforms/Windows/App.xaml</Destination>
       <Platform>windows</Platform>
-      <BuildAction>Page</BuildAction>
+      <BuildAction>ApplicationDefinition</BuildAction>
     </_DeviceRunnersTemplateFile>
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
       <Destination>Platforms/Windows/app.manifest</Destination>
