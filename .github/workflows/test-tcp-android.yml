@@ -19,7 +19,7 @@ jobs:
       matrix:
         platform: 
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-latest
             gpu: swiftshader_indirect
           - name: macOS
             os: macos-13
