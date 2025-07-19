@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.UIAutomation\DeviceRunners.UIAutomation.csproj" />
+    <!-- <ProjectReference Include="..\DeviceRunners.UIAutomation.Selenium\DeviceRunners.UIAutomation.Selenium.csproj" /> -->
+  </ItemGroup>
+
+</Project>
