@@ -1,0 +1,115 @@
+name: Setup iOS Simulator
+description: Create, boot, and start log streaming for an iOS simulator
+
+inputs:
+  device-type:
+    description: 'Simulator device type (e.g. iPhone 16)'
+    required: false
+    default: iPhone 16
+  os-version:
+    description: 'iOS runtime version (e.g. 26.2). Use "latest" for newest installed.'
+    required: false
+    default: latest
+
+outputs:
+  simulator-udid:
+    description: 'UDID of the created simulator'
+    value: ${{ steps.create.outputs.udid }}
+  log-stream-pid:
+    description: 'PID of background log stream process'
+    value: ${{ steps.log-stream.outputs.pid }}
+  simulator-log-path:
+    description: 'Path to live simulator log file'
+    value: ${{ steps.log-stream.outputs.log_path }}
+  simulator-name:
+    description: 'Generated unique simulator name'
+    value: ${{ steps.name.outputs.sim_name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve iOS version
+      id: resolve-version
+      shell: bash
+      run: |
+        REQUESTED="${{ inputs.os-version }}"
+        if [ "$REQUESTED" = "latest" ]; then
+          # Get the newest installed iOS runtime
+          VERSION=$(xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
+        import json, sys
+        data = json.load(sys.stdin)
+        ios_runtimes = [r for r in data.get('runtimes', []) if r.get('platform') == 'iOS' and r.get('isAvailable')]
+        if not ios_runtimes:
+            print('NONE', file=sys.stderr)
+            sys.exit(1)
+        # Sort by version
+        ios_runtimes.sort(key=lambda r: [int(x) for x in r['version'].split('.')], reverse=True)
+        print(ios_runtimes[0]['version'])
+        ")
+          if [ -z "$VERSION" ] || [ "$VERSION" = "" ]; then
+            echo "ERROR: No iOS runtimes available"
+            xcrun simctl list runtimes
+            exit 1
+          fi
+          echo "Resolved 'latest' to iOS $VERSION"
+        else
+          VERSION="$REQUESTED"
+        fi
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Pre-check runtime
+      shell: bash
+      run: |
+        VERSION="${{ steps.resolve-version.outputs.version }}"
+        echo "Checking for iOS $VERSION runtime..."
+        if ! xcrun simctl list runtimes | grep -q "iOS $VERSION"; then
+          echo "ERROR: iOS runtime $VERSION not found"
+          echo ""
+          echo "Available runtimes:"
+          xcrun simctl list runtimes
+          exit 1
+        fi
+        echo "iOS $VERSION runtime available ✓"
+
+    - name: Generate unique sim name
+      id: name
+      shell: bash
+      run: |
+        SIM_NAME="DeviceRunner-${GITHUB_RUN_ID:-0}-${GITHUB_JOB:-default}"
+        echo "sim_name=$SIM_NAME" >> "$GITHUB_OUTPUT"
+        echo "Simulator name: $SIM_NAME"
+
+    - name: Create simulator
+      id: create
+      shell: bash
+      run: |
+        VERSION="${{ steps.resolve-version.outputs.version }}"
+        SIM_NAME="${{ steps.name.outputs.sim_name }}"
+        DEVICE_TYPE="${{ inputs.device-type }}"
+
+        echo "Creating simulator: $SIM_NAME ($DEVICE_TYPE, iOS $VERSION)"
+        UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "iOS $VERSION")
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+        echo "Simulator UDID: $UDID"
+
+    - name: Boot simulator
+      shell: bash
+      run: |
+        UDID="${{ steps.create.outputs.udid }}"
+        echo "Booting simulator $UDID..."
+        xcrun simctl boot "$UDID"
+
+    - name: Start log stream
+      id: log-stream
+      shell: bash
+      run: |
+        UDID="${{ steps.create.outputs.udid }}"
+        LOG_PATH="${{ runner.temp }}/simulator.log"
+        echo "log_path=$LOG_PATH" >> "$GITHUB_OUTPUT"
+
+        # Start log streaming in background
+        xcrun simctl spawn "$UDID" log stream --level info > "$LOG_PATH" 2>&1 &
+        STREAM_PID=$!
+        echo "$STREAM_PID" > "${{ runner.temp }}/simulator-log-stream.pid"
+        echo "pid=$STREAM_PID" >> "$GITHUB_OUTPUT"
+        echo "Log stream started with PID $STREAM_PID → $LOG_PATH"

@@ -1,0 +1,181 @@
+name: Setup Android Emulator
+description: Install SDK components, create AVD, configure, and start Android emulator in background
+
+inputs:
+  emulator-name:
+    description: AVD name
+    required: true
+  emulator-image:
+    description: 'SDK system image (e.g. system-images;android-36;google_apis;x86_64)'
+    required: true
+  device-profile:
+    description: 'Hardware profile for AVD (e.g. pixel, pixel_6, Nexus 5X)'
+    required: false
+    default: pixel
+  gpu-mode:
+    description: 'GPU mode override. Leave empty for auto-detect (Linux=swiftshader_indirect, macOS=guest)'
+    required: false
+    default: ''
+  ram-size:
+    description: 'Emulator RAM in MB'
+    required: false
+    default: '2048'
+
+outputs:
+  emulator-serial:
+    description: 'Device serial (e.g. emulator-5554)'
+    value: ${{ steps.detect-serial.outputs.serial }}
+  emulator-pid:
+    description: 'Emulator process PID'
+    value: ${{ steps.launch.outputs.pid }}
+  emulator-log-path:
+    description: 'Path to live emulator log file'
+    value: ${{ steps.launch.outputs.log_path }}
+  emulator-avd-name:
+    description: 'AVD name used'
+    value: ${{ inputs.emulator-name }}
+
+runs:
+  using: composite
+  steps:
+    - name: Accept SDK licenses
+      shell: bash
+      run: yes 2>/dev/null | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+    - name: Set ANDROID_AVD_HOME
+      shell: bash
+      run: |
+        export ANDROID_AVD_HOME="$HOME/.android/avd"
+        mkdir -p "$ANDROID_AVD_HOME"
+        echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+
+    - name: Start ADB server
+      shell: bash
+      run: adb start-server
+
+    - name: Install SDK components
+      shell: bash
+      run: |
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
+          "${{ inputs.emulator-image }}" \
+          "emulator" \
+          "platform-tools"
+
+    - name: Create AVD
+      shell: bash
+      run: |
+        echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
+          -n "${{ inputs.emulator-name }}" \
+          -k "${{ inputs.emulator-image }}" \
+          --device "${{ inputs.device-profile }}" \
+          --force
+
+    - name: Configure AVD
+      shell: bash
+      run: |
+        CONFIG_FILE="$ANDROID_AVD_HOME/${{ inputs.emulator-name }}.avd/config.ini"
+        if [ -f "$CONFIG_FILE" ]; then
+          # Set RAM and heap size
+          sed -i.bak "s/^hw.ramSize=.*/hw.ramSize=${{ inputs.ram-size }}/" "$CONFIG_FILE" || \
+            echo "hw.ramSize=${{ inputs.ram-size }}" >> "$CONFIG_FILE"
+          sed -i.bak "s/^vm.heapSize=.*/vm.heapSize=576/" "$CONFIG_FILE" || \
+            echo "vm.heapSize=576" >> "$CONFIG_FILE"
+          rm -f "${CONFIG_FILE}.bak"
+          echo "=== AVD config ==="
+          cat "$CONFIG_FILE"
+        fi
+
+    - name: Configure GPU and KVM
+      id: gpu-config
+      shell: bash
+      run: |
+        GPU_MODE="${{ inputs.gpu-mode }}"
+        if [ -z "$GPU_MODE" ]; then
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            # Check KVM accessibility
+            if [ -e /dev/kvm ]; then
+              sudo chmod 666 /dev/kvm
+              echo "KVM enabled"
+            else
+              echo "WARNING: /dev/kvm not found, emulator will be slow"
+            fi
+            GPU_MODE="swiftshader_indirect"
+          else
+            GPU_MODE="guest"
+          fi
+        fi
+        echo "gpu_mode=$GPU_MODE" >> "$GITHUB_OUTPUT"
+
+    - name: Find free emulator port
+      id: port
+      shell: bash
+      run: |
+        PORT=5554
+        while [ $PORT -lt 5600 ]; do
+          # Check both console port and ADB port (port+1)
+          if ! lsof -i :$PORT >/dev/null 2>&1 && ! lsof -i :$((PORT+1)) >/dev/null 2>&1; then
+            echo "Found free port: $PORT"
+            echo "port=$PORT" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          PORT=$((PORT + 2))
+        done
+        echo "ERROR: No free emulator port found"
+        exit 1
+
+    - name: Launch emulator
+      id: launch
+      shell: bash
+      run: |
+        LOG_PATH="${{ runner.temp }}/emulator.log"
+        echo "log_path=$LOG_PATH" >> "$GITHUB_OUTPUT"
+
+        $ANDROID_HOME/emulator/emulator \
+          -avd "${{ inputs.emulator-name }}" \
+          -port ${{ steps.port.outputs.port }} \
+          -gpu "${{ steps.gpu-config.outputs.gpu_mode }}" \
+          -no-window \
+          -no-audio \
+          -no-boot-anim \
+          -no-snapshot-load \
+          -no-snapshot-save \
+          > "$LOG_PATH" 2>&1 &
+
+        EMU_PID=$!
+        echo "$EMU_PID" > "${{ runner.temp }}/emulator.pid"
+        echo "pid=$EMU_PID" >> "$GITHUB_OUTPUT"
+        echo "Emulator started with PID $EMU_PID on port ${{ steps.port.outputs.port }}"
+
+    - name: Detect emulator serial
+      id: detect-serial
+      shell: bash
+      run: |
+        EXPECTED_SERIAL="emulator-${{ steps.port.outputs.port }}"
+        echo "Waiting for $EXPECTED_SERIAL to appear in adb devices..."
+
+        TIMEOUT=30
+        ELAPSED=0
+        while [ $ELAPSED -lt $TIMEOUT ]; do
+          SERIAL=$(adb devices | grep "^${EXPECTED_SERIAL}" | awk '{print $1}')
+          if [ -n "$SERIAL" ]; then
+            echo "serial=$SERIAL" >> "$GITHUB_OUTPUT"
+            echo "Emulator serial: $SERIAL"
+            exit 0
+          fi
+
+          # Check emulator process is still alive
+          EMU_PID=${{ steps.launch.outputs.pid }}
+          if ! kill -0 "$EMU_PID" 2>/dev/null; then
+            echo "ERROR: Emulator process died during startup"
+            cat "${{ runner.temp }}/emulator.log" | tail -30
+            exit 1
+          fi
+
+          sleep 2
+          ELAPSED=$((ELAPSED + 2))
+        done
+
+        echo "ERROR: Emulator serial not detected after ${TIMEOUT}s"
+        adb devices -l
+        tail -30 "${{ runner.temp }}/emulator.log"
+        exit 1

@@ -1,0 +1,77 @@
+name: Teardown Android Emulator
+description: Collect full device logs, shutdown emulator. MUST be called with if:always()
+
+inputs:
+  emulator-serial:
+    description: 'Device serial from setup-android-emulator output'
+    required: true
+  emulator-pid:
+    description: 'Emulator process PID from setup-android-emulator output'
+    required: true
+  logs-directory:
+    description: 'Directory to write logs to'
+    required: false
+    default: artifacts/logs
+
+runs:
+  using: composite
+  steps:
+    # ⚠️ IMPORTANT: This action MUST be called with if: always()
+    # Otherwise logs will be lost and emulator resources leaked on failure.
+    - name: Collect logs and shutdown
+      if: always()
+      shell: bash
+      run: |
+        SERIAL="${{ inputs.emulator-serial }}"
+        EMU_PID="${{ inputs.emulator-pid }}"
+        LOGS="${{ inputs.logs-directory }}"
+
+        echo "=== Teardown: Collecting logs for $SERIAL ==="
+        mkdir -p "$LOGS"
+
+        # 1. Full device logcat
+        echo "Collecting logcat..."
+        adb -s "$SERIAL" logcat -d > "$LOGS/logcat.txt" 2>/dev/null || echo "WARNING: logcat collection failed"
+
+        # 2. Emulator process log
+        EMU_LOG="${{ runner.temp }}/emulator.log"
+        if [ -f "$EMU_LOG" ]; then
+          cp "$EMU_LOG" "$LOGS/emulator.log"
+          echo "Copied emulator.log"
+        fi
+
+        # 3. Bugreport (with portable timeout — macOS lacks GNU timeout)
+        echo "Collecting bugreport (max 120s)..."
+        _collect_bugreport() {
+          adb -s "$SERIAL" bugreport "$LOGS/bugreport.zip" 2>/dev/null
+        }
+        _collect_bugreport &
+        BR_PID=$!
+        ( sleep 120 && kill "$BR_PID" 2>/dev/null ) &
+        WATCHDOG=$!
+        wait "$BR_PID" 2>/dev/null && echo "Bugreport collected" || echo "WARNING: bugreport timed out or failed"
+        kill "$WATCHDOG" 2>/dev/null
+        wait "$WATCHDOG" 2>/dev/null
+
+        # 4. ANR traces (best-effort)
+        echo "Collecting ANR traces..."
+        adb -s "$SERIAL" pull /data/anr/ "$LOGS/anr/" 2>/dev/null || true
+
+        # 5. Tombstones (best-effort)
+        echo "Collecting tombstones..."
+        adb -s "$SERIAL" pull /data/tombstones/ "$LOGS/tombstones/" 2>/dev/null || true
+
+        # 6. Shutdown emulator
+        echo "Shutting down emulator..."
+        adb -s "$SERIAL" emu kill 2>/dev/null || true
+
+        # Fallback: kill process directly if emu kill didn't work
+        sleep 3
+        if kill -0 "$EMU_PID" 2>/dev/null; then
+          echo "Emulator still running, force killing PID $EMU_PID"
+          kill -9 "$EMU_PID" 2>/dev/null || true
+        fi
+
+        echo ""
+        echo "=== Logs collected in $LOGS ==="
+        ls -la "$LOGS/" 2>/dev/null || true
