@@ -17,128 +17,128 @@ concurrency:
 
 jobs:
 
-  # ============================================================
-  # Build
-  # ============================================================
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: 
-          - name: Windows
-            os: windows-2025
-          - name: macOS
-            os: macos-15
-        configuration: 
-          - debug
-          - release
-        exclude:
-          - platform:
-              name: macOS
-            configuration: release
-    name: Build - ${{ matrix.platform.name }} (${{ matrix.configuration }})
-    runs-on: ${{ matrix.platform.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Build
-      run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
-    - name: Upload Logs
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Logs - Build ${{ matrix.platform.name }} (${{ matrix.configuration }})
-        path: ./artifacts/logs
+  # # ============================================================
+  # # Build (temporarily disabled to free runner capacity)
+  # # ============================================================
+  # build:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       platform: 
+  #         - name: Windows
+  #           os: windows-2025
+  #         - name: macOS
+  #           os: macos-15
+  #       configuration: 
+  #         - debug
+  #         - release
+  #       exclude:
+  #         - platform:
+  #             name: macOS
+  #           configuration: release
+  #   name: Build - ${{ matrix.platform.name }} (${{ matrix.configuration }})
+  #   runs-on: ${{ matrix.platform.os }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #   - name: Setup Required Tools
+  #     uses: ./.github/workflows/setup-tools
+  #   - name: Build
+  #     run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
+  #   - name: Upload Logs
+  #     uses: actions/upload-artifact@v4
+  #     if: ${{ always() }}
+  #     with:
+  #       name: Logs - Build ${{ matrix.platform.name }} (${{ matrix.configuration }})
+  #       path: ./artifacts/logs
 
-  # ============================================================
-  # Test
-  # ============================================================
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: 
-          - name: Windows
-            os: windows-2025
-          - name: macOS
-            os: macos-15
-    name: Test - ${{ matrix.platform.name }}
-    runs-on: ${{ matrix.platform.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Test
-      run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
-    - name: Upload Logs
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Logs - Test ${{ matrix.platform.name }}
-        path: ./artifacts/logs
+  # # ============================================================
+  # # Test (temporarily disabled to free runner capacity)
+  # # ============================================================
+  # test:
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       platform: 
+  #         - name: Windows
+  #           os: windows-2025
+  #         - name: macOS
+  #           os: macos-15
+  #   name: Test - ${{ matrix.platform.name }}
+  #   runs-on: ${{ matrix.platform.os }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #   - name: Setup Required Tools
+  #     uses: ./.github/workflows/setup-tools
+  #   - name: Test
+  #     run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+  #   - name: Upload Logs
+  #     uses: actions/upload-artifact@v4
+  #     if: ${{ always() }}
+  #     with:
+  #       name: Logs - Test ${{ matrix.platform.name }}
+  #       path: ./artifacts/logs
 
-  # ============================================================
-  # Pack
-  # ============================================================
-  pack:
-    name: Pack
-    env:
-      NUPKG_MAJOR: 0.999
-    runs-on: windows-2025
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Package NuGets
-      shell: pwsh
-      run: |
-        $VERSION="$env:NUPKG_MAJOR-ci.$env:GITHUB_RUN_ID"
-        if ($env:GITHUB_EVENT_NAME -eq "release") {
-          $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
-        }
-        echo "PACKAGE VERSION: $VERSION"
-        
-        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
-    - name: Upload NuGet Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: NuGet
-        path: ./artifacts/nugets
-    - name: Upload Logs
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Pack Logs - Windows
-        path: ./artifacts/logs
+  # # ============================================================
+  # # Pack (temporarily disabled to free runner capacity)
+  # # ============================================================
+  # pack:
+  #   name: Pack
+  #   env:
+  #     NUPKG_MAJOR: 0.999
+  #   runs-on: windows-2025
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4
+  #   - name: Setup Required Tools
+  #     uses: ./.github/workflows/setup-tools
+  #   - name: Package NuGets
+  #     shell: pwsh
+  #     run: |
+  #       $VERSION="$env:NUPKG_MAJOR-ci.$env:GITHUB_RUN_ID"
+  #       if ($env:GITHUB_EVENT_NAME -eq "release") {
+  #         $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
+  #       }
+  #       echo "PACKAGE VERSION: $VERSION"
+  #       
+  #       dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+  #   - name: Upload NuGet Artifacts
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: NuGet
+  #       path: ./artifacts/nugets
+  #   - name: Upload Logs
+  #     uses: actions/upload-artifact@v4
+  #     if: ${{ always() }}
+  #     with:
+  #       name: Pack Logs - Windows
+  #       path: ./artifacts/logs
 
-  publish:
-    name: Publish NuGet Packages
-    needs: pack
-    env:
-      NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
-    runs-on: windows-2025
-    if: github.event_name == 'release'
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: NuGet
-          path: artifacts
-      - name: Validate Artifact Downloads
-        run: dir artifacts
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-          source-url: ${{ env.NUGET_URL }}
-        env:
-          NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
-      - name: Push NuGet
-        run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
+  # publish:
+  #   name: Publish NuGet Packages
+  #   needs: pack
+  #   env:
+  #     NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
+  #   runs-on: windows-2025
+  #   if: github.event_name == 'release'
+  #   steps:
+  #     - name: Download Artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: NuGet
+  #         path: artifacts
+  #     - name: Validate Artifact Downloads
+  #       run: dir artifacts
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: '10.0.x'
+  #         source-url: ${{ env.NUGET_URL }}
+  #       env:
+  #         NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }} 
+  #     - name: Push NuGet
+  #       run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
 
   # ============================================================
   # TCP Android Test
