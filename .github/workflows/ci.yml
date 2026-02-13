@@ -166,6 +166,7 @@ jobs:
       TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: TCPTestEmulator
       TEST_EMULATOR_IMAGE: ${{ matrix.platform.emulator-image }}
+      ANDROID_AVD_HOME: ${{ github.workspace }}/.android/avd
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -200,6 +201,8 @@ jobs:
         AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
         echo "=== AVD Manager: $AVDMANAGER ==="
         echo "=== Creating AVD: ${{ env.TEST_EMULATOR_NAME }} ==="
+        mkdir -p "$ANDROID_AVD_HOME"
+        echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
         echo no | $AVDMANAGER create avd \
           -n "${{ env.TEST_EMULATOR_NAME }}" \
           -k "${{ env.TEST_EMULATOR_IMAGE }}" \
@@ -534,6 +537,7 @@ jobs:
       TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: XHarnessEmulator
       TEST_EMULATOR_IMAGE: ${{ matrix.platform.emulator-image }}
+      ANDROID_AVD_HOME: ${{ github.workspace }}/.android/avd
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -564,6 +568,8 @@ jobs:
         AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
         echo "=== AVD Manager: $AVDMANAGER ==="
         echo "=== Creating AVD: ${{ env.TEST_EMULATOR_NAME }} ==="
+        mkdir -p "$ANDROID_AVD_HOME"
+        echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME"
         echo no | $AVDMANAGER create avd \
           -n "${{ env.TEST_EMULATOR_NAME }}" \
           -k "${{ env.TEST_EMULATOR_IMAGE }}" \
