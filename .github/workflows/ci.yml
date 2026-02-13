@@ -26,7 +26,7 @@ jobs:
       matrix:
         platform: 
           - name: Windows
-            os: windows-latest
+            os: windows-2025
           - name: macOS
             os: macos-15
         configuration: 
@@ -61,7 +61,7 @@ jobs:
       matrix:
         platform: 
           - name: Windows
-            os: windows-latest
+            os: windows-2025
           - name: macOS
             os: macos-15
     name: Test - ${{ matrix.platform.name }}
@@ -87,7 +87,7 @@ jobs:
     name: Pack
     env:
       NUPKG_MAJOR: 0.999
-    runs-on: windows-latest
+    runs-on: windows-2025
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -120,7 +120,7 @@ jobs:
     needs: pack
     env:
       NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
-    runs-on: windows-latest
+    runs-on: windows-2025
     if: github.event_name == 'release'
     steps:
       - name: Download Artifacts
@@ -149,7 +149,7 @@ jobs:
       matrix:
         platform: 
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
@@ -191,6 +191,16 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --gpu ${{ matrix.platform.gpu }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+    - name: Wait for Emulator
+      run: |
+        $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
+        $ANDROID_SDK_ROOT/platform-tools/adb devices
+        # Wait for boot to fully complete
+        while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          echo "Waiting for boot_completed..."
+          sleep 5
+        done
+        echo "Emulator is ready"
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -344,7 +354,7 @@ jobs:
   # ============================================================
   tcp-windows:
     name: TCP Windows
-    runs-on: windows-latest
+    runs-on: windows-2025
     env:
       TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
@@ -392,7 +402,7 @@ jobs:
   # ============================================================
   tcp-windows-unpackaged:
     name: TCP Windows (Unpackaged)
-    runs-on: windows-latest
+    runs-on: windows-2025
     env:
       TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
@@ -435,7 +445,7 @@ jobs:
       matrix:
         platform: 
           - name: Linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
@@ -473,6 +483,16 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --gpu ${{ matrix.platform.gpu }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+    - name: Wait for Emulator
+      run: |
+        $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
+        $ANDROID_SDK_ROOT/platform-tools/adb devices
+        # Wait for boot to fully complete
+        while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          echo "Waiting for boot_completed..."
+          sleep 5
+        done
+        echo "Emulator is ready"
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -626,7 +646,7 @@ jobs:
   # ============================================================
   xharness-windows:
     name: XHarness Windows
-    runs-on: windows-latest
+    runs-on: windows-2025
     env:
       TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
       TEST_RUNTIME_IDENTIFIER: win10-x64
