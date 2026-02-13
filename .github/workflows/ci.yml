@@ -153,11 +153,16 @@ jobs:
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          - name: macOS (arm64)
-            os: macos-15
-            gpu: host
-            emulator-image: system-images;android-36;google_apis;arm64-v8a
-            runtime-identifier: android-arm64
+          - name: macOS (x64)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-36;google_apis;x86_64
+            runtime-identifier: android-x64
+          # - name: macOS (arm64)
+          #   os: macos-15-arm64
+          #   gpu: guest
+          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
+          #   runtime-identifier: android-arm64
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -446,11 +451,16 @@ jobs:
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          - name: macOS (arm64)
-            os: macos-15
-            gpu: host
-            emulator-image: system-images;android-36;google_apis;arm64-v8a
-            runtime-identifier: android-arm64
+          - name: macOS (x64)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-36;google_apis;x86_64
+            runtime-identifier: android-x64
+          # - name: macOS (arm64)
+          #   os: macos-15-arm64
+          #   gpu: guest
+          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
+          #   runtime-identifier: android-arm64
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
