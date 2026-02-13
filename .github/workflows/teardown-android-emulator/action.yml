@@ -50,8 +50,8 @@ runs:
         ( sleep 120 && kill "$BR_PID" 2>/dev/null ) &
         WATCHDOG=$!
         wait "$BR_PID" 2>/dev/null && echo "Bugreport collected" || echo "WARNING: bugreport timed out or failed"
-        kill "$WATCHDOG" 2>/dev/null
-        wait "$WATCHDOG" 2>/dev/null
+        kill "$WATCHDOG" 2>/dev/null || true
+        wait "$WATCHDOG" 2>/dev/null || true
 
         # 4. ANR traces (best-effort)
         echo "Collecting ANR traces..."

@@ -53,8 +53,8 @@ runs:
         ( sleep 60 && kill "$LOG_COLLECT_PID" 2>/dev/null ) &
         LC_WATCHDOG=$!
         wait "$LOG_COLLECT_PID" 2>/dev/null && echo "Log archive collected" || echo "WARNING: log collect timed out or failed"
-        kill "$LC_WATCHDOG" 2>/dev/null
-        wait "$LC_WATCHDOG" 2>/dev/null
+        kill "$LC_WATCHDOG" 2>/dev/null || true
+        wait "$LC_WATCHDOG" 2>/dev/null || true
 
         # 4. Convert to human-readable (if archive exists)
         if [ -e "$LOGS/system.logarchive" ]; then

@@ -156,7 +156,7 @@ runs:
         TIMEOUT=30
         ELAPSED=0
         while [ $ELAPSED -lt $TIMEOUT ]; do
-          SERIAL=$($ANDROID_HOME/platform-tools/adb devices | grep "^${EXPECTED_SERIAL}" | awk '{print $1}')
+          SERIAL=$($ANDROID_HOME/platform-tools/adb devices 2>/dev/null | grep "^${EXPECTED_SERIAL}" | awk '{print $1}' || true)
           if [ -n "$SERIAL" ]; then
             echo "serial=$SERIAL" >> "$GITHUB_OUTPUT"
             echo "Emulator serial: $SERIAL"

@@ -29,12 +29,12 @@ runs:
         WATCHDOG=$!
 
         if wait "$BOOT_PID" 2>/dev/null; then
-          kill "$WATCHDOG" 2>/dev/null
-          wait "$WATCHDOG" 2>/dev/null
+          kill "$WATCHDOG" 2>/dev/null || true
+          wait "$WATCHDOG" 2>/dev/null || true
           echo "Simulator booted ✓"
         else
-          kill "$WATCHDOG" 2>/dev/null
-          wait "$WATCHDOG" 2>/dev/null
+          kill "$WATCHDOG" 2>/dev/null || true
+          wait "$WATCHDOG" 2>/dev/null || true
           echo ""
           echo "========================================="
           echo "TIMEOUT: Simulator did not boot in ${TIMEOUT}s"
