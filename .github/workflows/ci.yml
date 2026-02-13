@@ -230,24 +230,46 @@ jobs:
     - name: Wait for Emulator
       run: |
         set -e
-        echo "=== Waiting for ADB device ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
-        echo "=== ADB devices ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
-        echo "=== Waiting for boot_completed ==="
+        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
         SECONDS=0
-        while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-          if [ $SECONDS -gt 300 ]; then
-            echo "ERROR: Emulator boot timed out after 300 seconds"
-            echo "=== Emulator log (last 50 lines) ==="
-            tail -50 /tmp/emulator.log || true
+        TIMEOUT=300
+
+        # Start streaming emulator log in background so we can see what's happening
+        tail -f /tmp/emulator.log 2>/dev/null &
+        TAIL_PID=$!
+
+        # Poll for ADB device (don't use wait-for-device as it blocks without output)
+        echo "=== Polling for ADB device ==="
+        while ! $ADB devices 2>/dev/null | grep -q "emulator"; do
+          if [ $SECONDS -gt $TIMEOUT ]; then
+            echo "ERROR: No emulator device found after ${TIMEOUT}s"
+            kill $TAIL_PID 2>/dev/null || true
             exit 1
           fi
-          echo "Waiting for boot_completed... (${SECONDS}s elapsed)"
+          echo "[${SECONDS}s] No emulator device yet, retrying..."
           sleep 5
         done
+        echo "=== ADB device found (${SECONDS}s) ==="
+        $ADB devices -l
+
+        # Poll for boot_completed
+        echo "=== Polling for sys.boot_completed ==="
+        while [ "$($ADB shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          if [ $SECONDS -gt $TIMEOUT ]; then
+            echo "ERROR: Emulator boot timed out after ${TIMEOUT}s"
+            kill $TAIL_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo "[${SECONDS}s] Waiting for boot_completed..."
+          sleep 5
+        done
+
+        # Stop streaming log
+        kill $TAIL_PID 2>/dev/null || true
+
         echo "=== Emulator is ready (took ${SECONDS}s) ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb shell getprop ro.build.version.sdk
+        $ADB shell getprop ro.build.version.sdk
+        $ADB shell getprop ro.product.cpu.abi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -572,24 +594,46 @@ jobs:
     - name: Wait for Emulator
       run: |
         set -e
-        echo "=== Waiting for ADB device ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
-        echo "=== ADB devices ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
-        echo "=== Waiting for boot_completed ==="
+        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
         SECONDS=0
-        while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-          if [ $SECONDS -gt 300 ]; then
-            echo "ERROR: Emulator boot timed out after 300 seconds"
-            echo "=== Emulator log (last 50 lines) ==="
-            tail -50 /tmp/emulator.log || true
+        TIMEOUT=300
+
+        # Start streaming emulator log in background so we can see what's happening
+        tail -f /tmp/emulator.log 2>/dev/null &
+        TAIL_PID=$!
+
+        # Poll for ADB device (don't use wait-for-device as it blocks without output)
+        echo "=== Polling for ADB device ==="
+        while ! $ADB devices 2>/dev/null | grep -q "emulator"; do
+          if [ $SECONDS -gt $TIMEOUT ]; then
+            echo "ERROR: No emulator device found after ${TIMEOUT}s"
+            kill $TAIL_PID 2>/dev/null || true
             exit 1
           fi
-          echo "Waiting for boot_completed... (${SECONDS}s elapsed)"
+          echo "[${SECONDS}s] No emulator device yet, retrying..."
           sleep 5
         done
+        echo "=== ADB device found (${SECONDS}s) ==="
+        $ADB devices -l
+
+        # Poll for boot_completed
+        echo "=== Polling for sys.boot_completed ==="
+        while [ "$($ADB shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
+          if [ $SECONDS -gt $TIMEOUT ]; then
+            echo "ERROR: Emulator boot timed out after ${TIMEOUT}s"
+            kill $TAIL_PID 2>/dev/null || true
+            exit 1
+          fi
+          echo "[${SECONDS}s] Waiting for boot_completed..."
+          sleep 5
+        done
+
+        # Stop streaming log
+        kill $TAIL_PID 2>/dev/null || true
+
         echo "=== Emulator is ready (took ${SECONDS}s) ==="
-        $ANDROID_SDK_ROOT/platform-tools/adb shell getprop ro.build.version.sdk
+        $ADB shell getprop ro.build.version.sdk
+        $ADB shell getprop ro.product.cpu.abi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
