@@ -178,7 +178,7 @@ jobs:
         java-version: '21'
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release -p:RuntimeIdentifier=""
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Install Android SDK Packages
       run: |
@@ -333,7 +333,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release -p:RuntimeIdentifier=""
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: List Available Simulators
       run: dotnet apple simulator list
@@ -398,7 +398,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release -p:RuntimeIdentifier=""
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Publish App
       run: |
@@ -441,7 +441,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release -p:RuntimeIdentifier=""
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Publish App
       run: |
@@ -489,7 +489,7 @@ jobs:
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release -p:RuntimeIdentifier=""
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Publish App as Unpackaged Executable
       run: |
