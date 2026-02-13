@@ -31,7 +31,7 @@ runs:
 
         # 1. Full device logcat
         echo "Collecting logcat..."
-        adb -s "$SERIAL" logcat -d > "$LOGS/logcat.txt" 2>/dev/null || echo "WARNING: logcat collection failed"
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" logcat -d > "$LOGS/logcat.txt" 2>/dev/null || echo "WARNING: logcat collection failed"
 
         # 2. Emulator process log
         EMU_LOG="${{ runner.temp }}/emulator.log"
@@ -43,7 +43,7 @@ runs:
         # 3. Bugreport (with portable timeout — macOS lacks GNU timeout)
         echo "Collecting bugreport (max 120s)..."
         _collect_bugreport() {
-          adb -s "$SERIAL" bugreport "$LOGS/bugreport.zip" 2>/dev/null
+          $ANDROID_HOME/platform-tools/adb -s "$SERIAL" bugreport "$LOGS/bugreport.zip" 2>/dev/null
         }
         _collect_bugreport &
         BR_PID=$!
@@ -55,15 +55,15 @@ runs:
 
         # 4. ANR traces (best-effort)
         echo "Collecting ANR traces..."
-        adb -s "$SERIAL" pull /data/anr/ "$LOGS/anr/" 2>/dev/null || true
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" pull /data/anr/ "$LOGS/anr/" 2>/dev/null || true
 
         # 5. Tombstones (best-effort)
         echo "Collecting tombstones..."
-        adb -s "$SERIAL" pull /data/tombstones/ "$LOGS/tombstones/" 2>/dev/null || true
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" pull /data/tombstones/ "$LOGS/tombstones/" 2>/dev/null || true
 
         # 6. Shutdown emulator
         echo "Shutting down emulator..."
-        adb -s "$SERIAL" emu kill 2>/dev/null || true
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" emu kill 2>/dev/null || true
 
         # Fallback: kill process directly if emu kill didn't work
         sleep 3

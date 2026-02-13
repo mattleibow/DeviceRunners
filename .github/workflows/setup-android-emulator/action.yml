@@ -49,10 +49,6 @@ runs:
         mkdir -p "$ANDROID_AVD_HOME"
         echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
 
-    - name: Start ADB server
-      shell: bash
-      run: adb start-server
-
     - name: Install SDK components
       shell: bash
       run: |
@@ -60,6 +56,10 @@ runs:
           "${{ inputs.emulator-image }}" \
           "emulator" \
           "platform-tools"
+
+    - name: Start ADB server
+      shell: bash
+      run: $ANDROID_HOME/platform-tools/adb start-server
 
     - name: Create AVD
       shell: bash
@@ -156,7 +156,7 @@ runs:
         TIMEOUT=30
         ELAPSED=0
         while [ $ELAPSED -lt $TIMEOUT ]; do
-          SERIAL=$(adb devices | grep "^${EXPECTED_SERIAL}" | awk '{print $1}')
+          SERIAL=$($ANDROID_HOME/platform-tools/adb devices | grep "^${EXPECTED_SERIAL}" | awk '{print $1}')
           if [ -n "$SERIAL" ]; then
             echo "serial=$SERIAL" >> "$GITHUB_OUTPUT"
             echo "Emulator serial: $SERIAL"
@@ -176,6 +176,6 @@ runs:
         done
 
         echo "ERROR: Emulator serial not detected after ${TIMEOUT}s"
-        adb devices -l
+        $ANDROID_HOME/platform-tools/adb devices -l
         tail -30 "${{ runner.temp }}/emulator.log"
         exit 1

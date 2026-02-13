@@ -35,27 +35,45 @@ runs:
         REQUESTED="${{ inputs.os-version }}"
         if [ "$REQUESTED" = "latest" ]; then
           # Get the newest installed iOS runtime
-          VERSION=$(xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
+          RUNTIME_INFO=$(xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
         import json, sys
         data = json.load(sys.stdin)
         ios_runtimes = [r for r in data.get('runtimes', []) if r.get('platform') == 'iOS' and r.get('isAvailable')]
         if not ios_runtimes:
-            print('NONE', file=sys.stderr)
             sys.exit(1)
-        # Sort by version
         ios_runtimes.sort(key=lambda r: [int(x) for x in r['version'].split('.')], reverse=True)
-        print(ios_runtimes[0]['version'])
+        rt = ios_runtimes[0]
+        print(f\"{rt['version']}|{rt['identifier']}\")
         ")
-          if [ -z "$VERSION" ] || [ "$VERSION" = "" ]; then
+          if [ -z "$RUNTIME_INFO" ]; then
             echo "ERROR: No iOS runtimes available"
             xcrun simctl list runtimes
             exit 1
           fi
-          echo "Resolved 'latest' to iOS $VERSION"
+          VERSION="${RUNTIME_INFO%%|*}"
+          RUNTIME_ID="${RUNTIME_INFO##*|}"
+          echo "Resolved 'latest' to iOS $VERSION ($RUNTIME_ID)"
         else
           VERSION="$REQUESTED"
+          # Look up the runtime identifier for the requested version
+          RUNTIME_ID=$(xcrun simctl list runtimes -j 2>/dev/null | python3 -c "
+        import json, sys
+        data = json.load(sys.stdin)
+        for r in data.get('runtimes', []):
+            if r.get('platform') == 'iOS' and r.get('isAvailable') and r.get('version') == '$VERSION':
+                print(r['identifier'])
+                sys.exit(0)
+        sys.exit(1)
+        ")
+          if [ -z "$RUNTIME_ID" ]; then
+            echo "ERROR: Could not find runtime identifier for iOS $VERSION"
+            xcrun simctl list runtimes
+            exit 1
+          fi
+          echo "iOS $VERSION → $RUNTIME_ID"
         fi
         echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "runtime_id=$RUNTIME_ID" >> "$GITHUB_OUTPUT"
 
     - name: Pre-check runtime
       shell: bash
@@ -83,12 +101,12 @@ runs:
       id: create
       shell: bash
       run: |
-        VERSION="${{ steps.resolve-version.outputs.version }}"
+        RUNTIME_ID="${{ steps.resolve-version.outputs.runtime_id }}"
         SIM_NAME="${{ steps.name.outputs.sim_name }}"
         DEVICE_TYPE="${{ inputs.device-type }}"
 
-        echo "Creating simulator: $SIM_NAME ($DEVICE_TYPE, iOS $VERSION)"
-        UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "iOS $VERSION")
+        echo "Creating simulator: $SIM_NAME ($DEVICE_TYPE, $RUNTIME_ID)"
+        UDID=$(xcrun simctl create "$SIM_NAME" "$DEVICE_TYPE" "$RUNTIME_ID")
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
 
