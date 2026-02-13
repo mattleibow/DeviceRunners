@@ -223,11 +223,21 @@ jobs:
   # TCP iOS Test
   # ============================================================
   tcp-ios:
-    name: TCP iOS
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: x64
+            os: macos-15
+            runtime-identifier: iossimulator-x64
+          - name: arm64
+            os: macos-15-arm64
+            runtime-identifier: iossimulator-arm64
+    name: TCP iOS (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net10.0-ios
-      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: debug
       TEST_SIMULATOR_NAME: TCPTestSimulator
       TEST_SIMULATOR_DEVICE_TYPE: iPhone 16
@@ -273,18 +283,28 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results (TCP) - iOS
+        name: Test Results (TCP) - iOS (${{ matrix.platform.name }})
         path: ./artifacts
 
   # ============================================================
   # TCP macOS Test
   # ============================================================
   tcp-macos:
-    name: TCP macOS
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: x64
+            os: macos-15
+            runtime-identifier: maccatalyst-x64
+          - name: arm64
+            os: macos-15-arm64
+            runtime-identifier: maccatalyst-arm64
+    name: TCP macOS (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net10.0-maccatalyst
-      TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
+      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: release
     steps:
     - name: Checkout
@@ -316,7 +336,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results (TCP) - macOS
+        name: Test Results (TCP) - macOS (${{ matrix.platform.name }})
         path: ./artifacts
 
   # ============================================================
@@ -494,11 +514,21 @@ jobs:
   # XHarness iOS Test
   # ============================================================
   xharness-ios:
-    name: XHarness iOS
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: x64
+            os: macos-15
+            runtime-identifier: iossimulator-x64
+          - name: arm64
+            os: macos-15-arm64
+            runtime-identifier: iossimulator-arm64
+    name: XHarness iOS (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net10.0-ios
-      TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: debug
     steps:
     - name: Checkout
@@ -535,18 +565,28 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results (XHarness) - iOS
+        name: Test Results (XHarness) - iOS (${{ matrix.platform.name }})
         path: ./artifacts
 
   # ============================================================
   # XHarness Mac Catalyst Test
   # ============================================================
   xharness-maccatalyst:
-    name: XHarness Mac Catalyst
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: x64
+            os: macos-15
+            runtime-identifier: maccatalyst-x64
+          - name: arm64
+            os: macos-15-arm64
+            runtime-identifier: maccatalyst-arm64
+    name: XHarness Mac Catalyst (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
     env:
       TEST_TARGET_FRAMEWORK: net10.0-maccatalyst
-      TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
+      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: debug
     steps:
     - name: Checkout
@@ -578,7 +618,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Results (XHarness) - Mac Catalyst
+        name: Test Results (XHarness) - Mac Catalyst (${{ matrix.platform.name }})
         path: ./artifacts
 
   # ============================================================
