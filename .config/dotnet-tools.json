@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "microsoft.dotnet.xharness.cli": {
-      "version": "10.0.0-prerelease.25262.1",
+      "version": "11.0.0-prerelease.26107.1",
       "commands": [
         "xharness"
       ],

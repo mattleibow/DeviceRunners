@@ -22,12 +22,12 @@ jobs:
             os: ubuntu-22.04
             gpu: swiftshader_indirect
           - name: macOS
-            os: macos-13
+            os: macos-15
             gpu: guest
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
-      TEST_TARGET_FRAMEWORK: net9.0-android
+      TEST_TARGET_FRAMEWORK: net10.0-android
       TEST_RUNTIME_IDENTIFIER: android-x64
       TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: XHarnessEmulator
@@ -38,7 +38,7 @@ jobs:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
       with:
-        xcode-version: '15.2'
+        xcode-version: '26.2'
     - uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'

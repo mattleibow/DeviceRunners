@@ -17,7 +17,7 @@ jobs:
     name: iOS
     runs-on: macos-15
     env:
-      TEST_TARGET_FRAMEWORK: net9.0-ios
+      TEST_TARGET_FRAMEWORK: net10.0-ios
       TEST_RUNTIME_IDENTIFIER: iossimulator-x64
       TEST_CONFIGURATION: debug
       TEST_SIMULATOR_NAME: TCPTestSimulator
