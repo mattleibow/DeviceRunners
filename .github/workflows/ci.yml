@@ -273,6 +273,16 @@ jobs:
         echo "=== Emulator is ready (took ${SECONDS}s) ==="
         $ADB shell getprop ro.build.version.sdk
         $ADB shell getprop ro.product.cpu.abi
+        # Wait for package manager service to be ready
+        echo "=== Waiting for package manager service ==="
+        for i in $(seq 1 30); do
+          if $ADB shell pm list packages > /dev/null 2>&1; then
+            echo "Package manager is ready (attempt $i)"
+            break
+          fi
+          echo "[attempt $i] Package manager not ready, waiting..."
+          sleep 5
+        done
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -640,6 +650,16 @@ jobs:
         echo "=== Emulator is ready (took ${SECONDS}s) ==="
         $ADB shell getprop ro.build.version.sdk
         $ADB shell getprop ro.product.cpu.abi
+        # Wait for package manager service to be ready
+        echo "=== Waiting for package manager service ==="
+        for i in $(seq 1 30); do
+          if $ADB shell pm list packages > /dev/null 2>&1; then
+            echo "Package manager is ready (attempt $i)"
+            break
+          fi
+          echo "[attempt $i] Package manager not ready, waiting..."
+          sleep 5
+        done
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
