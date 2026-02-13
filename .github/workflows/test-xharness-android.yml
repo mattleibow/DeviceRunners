@@ -21,9 +21,6 @@ jobs:
           - name: Linux
             os: ubuntu-22.04
             gpu: swiftshader_indirect
-          - name: macOS
-            os: macos-15
-            gpu: guest
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -37,8 +34,6 @@ jobs:
       uses: actions/checkout@v4
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-      with:
-        xcode-version: '26.2'
     - uses: actions/setup-java@v4
       with:
         distribution: 'microsoft'

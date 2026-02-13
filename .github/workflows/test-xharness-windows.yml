@@ -40,7 +40,7 @@ jobs:
     - name: Run Tests
       shell: powershell
       run: |
-        $msix = Get-ChildItem "artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}/AppPackages/*_Test/*.msix"
+        $msix = Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1
         ./scripts/Start-Tests.ps1 `
           -App $msix `
           -OutputDirectory artifacts/test-results `
