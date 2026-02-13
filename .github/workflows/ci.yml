@@ -206,9 +206,7 @@ jobs:
           --force
         echo "=== Verifying AVD was created ==="
         $AVDMANAGER list avd
-        echo "=== Checking AVD files ==="
-        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.ini
-        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/
+        $AVDMANAGER list avd | grep -q "${{ env.TEST_EMULATOR_NAME }}" || { echo "ERROR: AVD not found!"; exit 1; }
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
@@ -550,9 +548,7 @@ jobs:
           --force
         echo "=== Verifying AVD was created ==="
         $AVDMANAGER list avd
-        echo "=== Checking AVD files ==="
-        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.ini
-        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/
+        $AVDMANAGER list avd | grep -q "${{ env.TEST_EMULATOR_NAME }}" || { echo "ERROR: AVD not found!"; exit 1; }
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
