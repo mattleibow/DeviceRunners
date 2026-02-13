@@ -1,0 +1,541 @@
+trigger:
+  branches:
+    include:
+      - main
+      - releases/*
+
+pr:
+  branches:
+    include:
+      - main
+      - releases/*
+
+stages:
+
+  # ============================================================
+  # Stage: Build
+  # ============================================================
+  - stage: Build
+    jobs:
+      - job: Build
+        strategy:
+          matrix:
+            Windows_Debug:
+              poolImage: 'windows-latest'
+              configuration: debug
+            Windows_Release:
+              poolImage: 'windows-latest'
+              configuration: release
+            macOS_Debug:
+              poolImage: 'macOS-15'
+              configuration: debug
+        pool:
+          vmImage: $(poolImage)
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: dotnet build DeviceRunners.sln --configuration $(configuration) /bl:./artifacts/logs/msbuild-build.binlog
+            displayName: 'Build'
+          - publish: ./artifacts/logs
+            artifact: 'Logs - Build $(poolImage) ($(configuration))'
+            displayName: 'Upload Logs'
+            condition: always()
+
+  # ============================================================
+  # Stage: Test
+  # ============================================================
+  - stage: Test
+    dependsOn: []
+    jobs:
+      - job: Test
+        strategy:
+          matrix:
+            Windows:
+              poolImage: 'windows-latest'
+            macOS:
+              poolImage: 'macOS-15'
+        pool:
+          vmImage: $(poolImage)
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+            displayName: 'Test'
+          - publish: ./artifacts/logs
+            artifact: 'Logs - Test $(poolImage)'
+            displayName: 'Upload Logs'
+            condition: always()
+
+  # ============================================================
+  # Stage: Pack
+  # ============================================================
+  - stage: Pack
+    dependsOn: []
+    jobs:
+      - job: Pack
+        pool:
+          vmImage: 'windows-latest'
+        variables:
+          NUPKG_MAJOR: '0.999'
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - pwsh: |
+              $VERSION = "$(NUPKG_MAJOR)-ci.$(Build.BuildId)"
+              Write-Host "PACKAGE VERSION: $VERSION"
+              dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+            displayName: 'Pack NuGets'
+          - publish: ./artifacts/nugets
+            artifact: 'NuGet'
+            displayName: 'Upload NuGet Artifacts'
+          - publish: ./artifacts/logs
+            artifact: 'Pack Logs'
+            displayName: 'Upload Logs'
+            condition: always()
+
+  # ============================================================
+  # Stage: TCP Device Tests
+  # ============================================================
+  - stage: TCP_Device_Tests
+    displayName: 'TCP Device Tests'
+    dependsOn: []
+    jobs:
+
+      # ----------------------------------------------------------
+      # TCP Android
+      # ----------------------------------------------------------
+      - job: TCP_Android
+        strategy:
+          matrix:
+            Linux:
+              poolImage: 'ubuntu-latest'
+              emulatorImage: 'system-images;android-36;google_apis;x86_64'
+              gpu: swiftshader_indirect
+            macOS:
+              poolImage: 'macOS-15'
+              emulatorImage: 'system-images;android-36;google_apis;arm64-v8a'
+              gpu: guest
+        pool:
+          vmImage: $(poolImage)
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-android
+          TEST_RUNTIME_IDENTIFIER: android-x64
+          TEST_CONFIGURATION: release
+          TEST_EMULATOR_NAME: TCPTestEmulator
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - task: JavaToolInstaller@0
+            displayName: 'Setup Java 21'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+          - script: |
+              dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+              dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+            displayName: 'Build and Install CLI Tool'
+          - script: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '$(emulatorImage)'
+            displayName: 'Install Android SDK Packages'
+          - script: dotnet android avd create --name $(TEST_EMULATOR_NAME) --sdk '$(emulatorImage)' --force
+            displayName: 'Create Emulator'
+          - script: |
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+            displayName: 'Enable KVM'
+            condition: eq(variables['Agent.OS'], 'Linux')
+          - script: dotnet android avd start --name $(TEST_EMULATOR_NAME) --gpu $(gpu) --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+            displayName: 'Start Emulator'
+          - script: |
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=NonInteractiveVisual \
+                -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              device-runners android test \
+                --app artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER)/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+                --results-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - script: $ANDROID_SDK_ROOT/platform-tools/adb emu kill
+            displayName: 'Shutdown Emulator'
+            condition: always()
+          - publish: ./artifacts
+            artifact: 'Test Results (TCP) - Android ($(Agent.OS))'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # TCP iOS
+      # ----------------------------------------------------------
+      - job: TCP_iOS
+        pool:
+          vmImage: 'macOS-15'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-ios
+          TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+          TEST_CONFIGURATION: debug
+          TEST_SIMULATOR_NAME: TCPTestSimulator
+          TEST_SIMULATOR_DEVICE_TYPE: 'iPhone 16'
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: |
+              dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+              dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+            displayName: 'Build and Install CLI Tool'
+          - script: dotnet apple simulator list
+            displayName: 'List Available Simulators'
+          - script: dotnet apple simulator create "$(TEST_SIMULATOR_NAME)" --device-type "$(TEST_SIMULATOR_DEVICE_TYPE)"
+            displayName: 'Create Simulator'
+          - script: dotnet apple simulator boot "$(TEST_SIMULATOR_NAME)" --wait
+            displayName: 'Boot Simulator'
+          - script: |
+              dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=NonInteractiveVisual \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER) -name "*.app" -type d)
+              echo "Found app bundle: $app_bundle"
+              device-runners ios test --app "$app_bundle" --device "$(TEST_SIMULATOR_NAME)" --results-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - script: |
+              dotnet apple simulator shutdown "$(TEST_SIMULATOR_NAME)"
+              dotnet apple simulator delete "$(TEST_SIMULATOR_NAME)"
+            displayName: 'Shutdown Simulator'
+            condition: always()
+          - publish: ./artifacts
+            artifact: 'Test Results (TCP) - iOS'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # TCP macOS
+      # ----------------------------------------------------------
+      - job: TCP_macOS
+        pool:
+          vmImage: 'macOS-15'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-maccatalyst
+          TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
+          TEST_CONFIGURATION: release
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: |
+              dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+              dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+            displayName: 'Build and Install CLI Tool'
+          - script: |
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=NonInteractiveVisual \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER) -name "*.app" -type d)
+              device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (TCP) - macOS'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # TCP Windows (Packaged)
+      # ----------------------------------------------------------
+      - job: TCP_Windows
+        pool:
+          vmImage: 'windows-latest'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
+          TEST_RUNTIME_IDENTIFIER: win10-x64
+          TEST_CONFIGURATION: release
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - pwsh: |
+              dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+              dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+            displayName: 'Build and Install CLI Tool'
+          - pwsh: |
+              $certResult = device-runners windows cert install --publisher "CN=DeviceTestingKitApp.DeviceTests Authors" --output Json
+              $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+                -f $(TEST_TARGET_FRAMEWORK) `
+                -c $(TEST_CONFIGURATION) `
+                -p:TestingMode=NonInteractiveVisual `
+                -p:AppxPackageSigningEnabled=true `
+                -p:PackageCertificateThumbprint=$fingerprint `
+                -p:PackageCertificateKeyFile="" `
+                /bl:./artifacts/logs/msbuild-publish.binlog
+              device-runners windows cert uninstall --fingerprint $fingerprint
+            displayName: 'Publish App'
+          - pwsh: |
+              $msix = Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1
+              device-runners windows test --app $msix --results-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (TCP) - Windows'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # TCP Windows (Unpackaged)
+      # ----------------------------------------------------------
+      - job: TCP_Windows_Unpackaged
+        displayName: 'TCP Windows Unpackaged'
+        pool:
+          vmImage: 'windows-latest'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
+          TEST_RUNTIME_IDENTIFIER: win10-x64
+          TEST_CONFIGURATION: release
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - pwsh: |
+              dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+              dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+            displayName: 'Build and Install CLI Tool'
+          - pwsh: |
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+                -f $(TEST_TARGET_FRAMEWORK) `
+                -c $(TEST_CONFIGURATION) `
+                -p:TestingMode=NonInteractiveVisual `
+                -p:WindowsPackageType=None `
+                --output artifacts/publish `
+                /bl:./artifacts/logs/msbuild-publish-unpackaged.binlog
+            displayName: 'Publish App'
+          - pwsh: |
+              $exe = Get-ChildItem "artifacts/publish/DeviceTestingKitApp.DeviceTests.exe"
+              device-runners windows test --app $exe --results-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (TCP) - Windows Unpackaged'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+  # ============================================================
+  # Stage: XHarness Device Tests
+  # ============================================================
+  - stage: XHarness_Device_Tests
+    displayName: 'XHarness Device Tests'
+    dependsOn: []
+    jobs:
+
+      # ----------------------------------------------------------
+      # XHarness Android
+      # ----------------------------------------------------------
+      - job: XHarness_Android
+        strategy:
+          matrix:
+            Linux:
+              poolImage: 'ubuntu-latest'
+              emulatorImage: 'system-images;android-36;google_apis;x86_64'
+              gpu: swiftshader_indirect
+            macOS:
+              poolImage: 'macOS-15'
+              emulatorImage: 'system-images;android-36;google_apis;arm64-v8a'
+              gpu: guest
+        pool:
+          vmImage: $(poolImage)
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-android
+          TEST_RUNTIME_IDENTIFIER: android-x64
+          TEST_CONFIGURATION: release
+          TEST_EMULATOR_NAME: XHarnessEmulator
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - task: JavaToolInstaller@0
+            displayName: 'Setup Java 21'
+            inputs:
+              versionSpec: '21'
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+          - script: |
+              dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '$(emulatorImage)'
+            displayName: 'Install Android SDK Packages'
+          - script: dotnet android avd create --name $(TEST_EMULATOR_NAME) --sdk '$(emulatorImage)' --force
+            displayName: 'Create Emulator'
+          - script: |
+              echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+              sudo udevadm control --reload-rules
+              sudo udevadm trigger --name-match=kvm
+            displayName: 'Enable KVM'
+            condition: eq(variables['Agent.OS'], 'Linux')
+          - script: dotnet android avd start --name $(TEST_EMULATOR_NAME) --gpu $(gpu) --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+            displayName: 'Start Emulator'
+          - script: |
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=XHarness \
+                -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              for i in $(seq 1 3)
+              do
+                dotnet xharness android test \
+                  --timeout="00:05:00" \
+                  --launch-timeout=00:10:00 \
+                  --package-name com.companyname.devicetestingkitapp.devicetests \
+                  --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
+                  --app artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER)/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+                  --output-directory artifacts/test-results \
+                && code=0 && break || code=$? && sleep 15
+              done
+              exit $code
+            displayName: 'Run Tests'
+          - script: dotnet xharness android adb -- emu kill
+            displayName: 'Shutdown Emulator'
+            condition: always()
+          - publish: ./artifacts
+            artifact: 'Test Results (XHarness) - Android ($(Agent.OS))'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # XHarness iOS
+      # ----------------------------------------------------------
+      - job: XHarness_iOS
+        pool:
+          vmImage: 'macOS-15'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-ios
+          TEST_RUNTIME_IDENTIFIER: iossimulator-x64
+          TEST_CONFIGURATION: debug
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: |
+              dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=XHarness \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              for i in $(seq 1 3)
+              do
+                dotnet xharness apple test \
+                  --target ios-simulator-64 \
+                  --timeout="00:03:00" \
+                  --launch-timeout=00:06:00 \
+                  --app artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER)/DeviceTestingKitApp.DeviceTests.app \
+                  --output-directory artifacts/test-results \
+                && code=0 && break || code=$? && sleep 15
+              done
+              exit $code
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (XHarness) - iOS'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # XHarness Mac Catalyst
+      # ----------------------------------------------------------
+      - job: XHarness_MacCatalyst
+        displayName: 'XHarness Mac Catalyst'
+        pool:
+          vmImage: 'macOS-15'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-maccatalyst
+          TEST_RUNTIME_IDENTIFIER: maccatalyst-x64
+          TEST_CONFIGURATION: debug
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - script: |
+              dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+                -f $(TEST_TARGET_FRAMEWORK) \
+                -r $(TEST_RUNTIME_IDENTIFIER) \
+                -c $(TEST_CONFIGURATION) \
+                -p:TestingMode=XHarness \
+                /bl:./artifacts/logs/msbuild-publish.binlog
+            displayName: 'Publish App'
+          - script: |
+              dotnet xharness apple test \
+                --target maccatalyst \
+                --timeout="00:02:00" \
+                --launch-timeout=00:06:00 \
+                --app artifacts/bin/DeviceTestingKitApp.DeviceTests/$(TEST_CONFIGURATION)_$(TEST_TARGET_FRAMEWORK)_$(TEST_RUNTIME_IDENTIFIER)/DeviceTestingKitApp.DeviceTests.app \
+                --output-directory artifacts/test-results
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (XHarness) - Mac Catalyst'
+            displayName: 'Upload Artifacts'
+            condition: always()
+
+      # ----------------------------------------------------------
+      # XHarness Windows
+      # ----------------------------------------------------------
+      - job: XHarness_Windows
+        pool:
+          vmImage: 'windows-latest'
+        variables:
+          TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
+          TEST_RUNTIME_IDENTIFIER: win10-x64
+          TEST_CONFIGURATION: release
+        timeoutInMinutes: 30
+        steps:
+          - checkout: self
+            submodules: false
+          - template: .azure/templates/setup-tools.yml
+          - pwsh: |
+              $fingerprint = ./scripts/New-Certificate.ps1 -Publisher "CN=DeviceTestingKitApp.DeviceTests Authors"
+              dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+                -f $(TEST_TARGET_FRAMEWORK) `
+                -c $(TEST_CONFIGURATION) `
+                -p:TestingMode=XHarness `
+                -p:AppxPackageSigningEnabled=true `
+                -p:PackageCertificateThumbprint=$fingerprint `
+                -p:PackageCertificateKeyFile="" `
+                /bl:./artifacts/logs/msbuild-publish.binlog
+              ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
+            displayName: 'Publish App'
+          - pwsh: |
+              $msix = Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1
+              ./scripts/Start-Tests.ps1 `
+                -App $msix `
+                -OutputDirectory artifacts/test-results `
+                -TestingMode XHarness
+            displayName: 'Run Tests'
+          - publish: ./artifacts
+            artifact: 'Test Results (XHarness) - Windows'
+            displayName: 'Upload Artifacts'
+            condition: always()
