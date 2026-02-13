@@ -28,7 +28,7 @@ jobs:
           - name: Windows
             os: windows-2025
           - name: macOS
-            os: macos-15
+            os: macos-15-intel
         configuration:
           - debug
           - release
@@ -63,7 +63,7 @@ jobs:
           - name: Windows
             os: windows-2025
           - name: macOS
-            os: macos-15
+            os: macos-15-intel
     name: Test - ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
     steps:
@@ -154,7 +154,7 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
           - name: macOS (x64)
-            os: macos-15
+            os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
@@ -236,7 +236,7 @@ jobs:
       matrix:
         platform:
           - name: x64
-            os: macos-15
+            os: macos-15-intel
             runtime-identifier: iossimulator-x64
           # - name: arm64
           #   os: macos-15-arm64
@@ -307,7 +307,7 @@ jobs:
       matrix:
         platform:
           - name: x64
-            os: macos-15
+            os: macos-15-intel
             runtime-identifier: maccatalyst-x64
           # - name: arm64
           #   os: macos-15-arm64
@@ -452,7 +452,7 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
           - name: macOS (x64)
-            os: macos-15
+            os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
@@ -540,7 +540,7 @@ jobs:
       matrix:
         platform:
           - name: x64
-            os: macos-15
+            os: macos-15-intel
             runtime-identifier: iossimulator-x64
           # - name: arm64
           #   os: macos-15-arm64
@@ -612,7 +612,7 @@ jobs:
       matrix:
         platform:
           - name: x64
-            os: macos-15
+            os: macos-15-intel
             runtime-identifier: maccatalyst-x64
           # - name: arm64
           #   os: macos-15-arm64
