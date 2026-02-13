@@ -180,9 +180,35 @@ jobs:
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Install Android SDK Packages
-      run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+      run: |
+        set -e
+        SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+        echo "=== SDK Manager: $SDKMANAGER ==="
+        $SDKMANAGER --version
+        yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
+        echo "=== Installing packages ==="
+        $SDKMANAGER --install \
+          'platform-tools' \
+          'emulator' \
+          '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo "=== Installed packages ==="
+        $SDKMANAGER --list_installed 2>/dev/null | grep -E 'system-images|emulator|platform-tools' || \
+          $SDKMANAGER --list 2>/dev/null | grep -E 'Installed|system-images.*android-36|emulator|platform-tools' | head -20
     - name: Create Emulator
-      run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
+      run: |
+        set -e
+        AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+        echo "=== AVD Manager: $AVDMANAGER ==="
+        echo "=== Creating AVD: ${{ env.TEST_EMULATOR_NAME }} ==="
+        echo no | $AVDMANAGER create avd \
+          -n "${{ env.TEST_EMULATOR_NAME }}" \
+          -k "${{ env.TEST_EMULATOR_IMAGE }}" \
+          --force
+        echo "=== Verifying AVD was created ==="
+        $AVDMANAGER list avd
+        echo "=== Checking AVD files ==="
+        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.ini
+        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
@@ -190,17 +216,40 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
-      run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --gpu ${{ matrix.platform.gpu }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+      run: |
+        set -e
+        echo "=== Starting emulator ==="
+        nohup $ANDROID_SDK_ROOT/emulator/emulator \
+          -avd ${{ env.TEST_EMULATOR_NAME }} \
+          -gpu ${{ matrix.platform.gpu }} \
+          -no-window -no-snapshot -no-audio -no-boot-anim \
+          > /tmp/emulator.log 2>&1 &
+        EMULATOR_PID=$!
+        echo "Emulator PID: $EMULATOR_PID"
+        sleep 10
+        echo "=== Emulator log (first 50 lines) ==="
+        head -50 /tmp/emulator.log || true
     - name: Wait for Emulator
       run: |
+        set -e
+        echo "=== Waiting for ADB device ==="
         $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
-        $ANDROID_SDK_ROOT/platform-tools/adb devices
-        # Wait for boot to fully complete
+        echo "=== ADB devices ==="
+        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+        echo "=== Waiting for boot_completed ==="
+        SECONDS=0
         while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-          echo "Waiting for boot_completed..."
+          if [ $SECONDS -gt 300 ]; then
+            echo "ERROR: Emulator boot timed out after 300 seconds"
+            echo "=== Emulator log (last 50 lines) ==="
+            tail -50 /tmp/emulator.log || true
+            exit 1
+          fi
+          echo "Waiting for boot_completed... (${SECONDS}s elapsed)"
           sleep 5
         done
-        echo "Emulator is ready"
+        echo "=== Emulator is ready (took ${SECONDS}s) ==="
+        $ANDROID_SDK_ROOT/platform-tools/adb shell getprop ro.build.version.sdk
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -217,7 +266,10 @@ jobs:
           --results-directory artifacts/test-results
     - name: Shutdown the Emulator
       if: always()
-      run: $ANDROID_SDK_ROOT/platform-tools/adb emu kill
+      run: |
+        $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
+        echo "=== Final emulator log (last 30 lines) ==="
+        tail -30 /tmp/emulator.log 2>/dev/null || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -472,9 +524,35 @@ jobs:
         distribution: 'microsoft'
         java-version: '21'
     - name: Install Android SDK Packages
-      run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+      run: |
+        set -e
+        SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+        echo "=== SDK Manager: $SDKMANAGER ==="
+        $SDKMANAGER --version
+        yes | $SDKMANAGER --licenses > /dev/null 2>&1 || true
+        echo "=== Installing packages ==="
+        $SDKMANAGER --install \
+          'platform-tools' \
+          'emulator' \
+          '${{ env.TEST_EMULATOR_IMAGE }}'
+        echo "=== Installed packages ==="
+        $SDKMANAGER --list_installed 2>/dev/null | grep -E 'system-images|emulator|platform-tools' || \
+          $SDKMANAGER --list 2>/dev/null | grep -E 'Installed|system-images.*android-36|emulator|platform-tools' | head -20
     - name: Create Emulator
-      run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
+      run: |
+        set -e
+        AVDMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager"
+        echo "=== AVD Manager: $AVDMANAGER ==="
+        echo "=== Creating AVD: ${{ env.TEST_EMULATOR_NAME }} ==="
+        echo no | $AVDMANAGER create avd \
+          -n "${{ env.TEST_EMULATOR_NAME }}" \
+          -k "${{ env.TEST_EMULATOR_IMAGE }}" \
+          --force
+        echo "=== Verifying AVD was created ==="
+        $AVDMANAGER list avd
+        echo "=== Checking AVD files ==="
+        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.ini
+        ls -la $HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
@@ -482,17 +560,40 @@ jobs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
-      run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --gpu ${{ matrix.platform.gpu }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+      run: |
+        set -e
+        echo "=== Starting emulator ==="
+        nohup $ANDROID_SDK_ROOT/emulator/emulator \
+          -avd ${{ env.TEST_EMULATOR_NAME }} \
+          -gpu ${{ matrix.platform.gpu }} \
+          -no-window -no-snapshot -no-audio -no-boot-anim \
+          > /tmp/emulator.log 2>&1 &
+        EMULATOR_PID=$!
+        echo "Emulator PID: $EMULATOR_PID"
+        sleep 10
+        echo "=== Emulator log (first 50 lines) ==="
+        head -50 /tmp/emulator.log || true
     - name: Wait for Emulator
       run: |
+        set -e
+        echo "=== Waiting for ADB device ==="
         $ANDROID_SDK_ROOT/platform-tools/adb wait-for-device
-        $ANDROID_SDK_ROOT/platform-tools/adb devices
-        # Wait for boot to fully complete
+        echo "=== ADB devices ==="
+        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+        echo "=== Waiting for boot_completed ==="
+        SECONDS=0
         while [ "$($ANDROID_SDK_ROOT/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" != "1" ]; do
-          echo "Waiting for boot_completed..."
+          if [ $SECONDS -gt 300 ]; then
+            echo "ERROR: Emulator boot timed out after 300 seconds"
+            echo "=== Emulator log (last 50 lines) ==="
+            tail -50 /tmp/emulator.log || true
+            exit 1
+          fi
+          echo "Waiting for boot_completed... (${SECONDS}s elapsed)"
           sleep 5
         done
-        echo "Emulator is ready"
+        echo "=== Emulator is ready (took ${SECONDS}s) ==="
+        $ANDROID_SDK_ROOT/platform-tools/adb shell getprop ro.build.version.sdk
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -517,7 +618,11 @@ jobs:
         done
         exit $code
     - name: Shutdown the Emulator
-      run: dotnet xharness android adb -- emu kill
+      if: always()
+      run: |
+        $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
+        echo "=== Final emulator log (last 30 lines) ==="
+        tail -30 /tmp/emulator.log 2>/dev/null || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
