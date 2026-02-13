@@ -154,7 +154,7 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
           - name: macOS
-            os: macos-15
+            os: macos-15-arm64
             gpu: guest
             emulator-image: system-images;android-36;google_apis;arm64-v8a
             runtime-identifier: android-arm64
@@ -525,7 +525,7 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
           - name: macOS
-            os: macos-15
+            os: macos-15-arm64
             gpu: guest
             emulator-image: system-images;android-36;google_apis;arm64-v8a
             runtime-identifier: android-arm64
