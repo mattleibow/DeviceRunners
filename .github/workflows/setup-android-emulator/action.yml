@@ -38,6 +38,16 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Normalize Android SDK path
+      shell: bash
+      run: |
+        SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+        if [ -z "$SDK" ]; then
+          echo "ERROR: Neither ANDROID_HOME nor ANDROID_SDK_ROOT is set"
+          exit 1
+        fi
+        echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+
     - name: Accept SDK licenses
       shell: bash
       run: yes 2>/dev/null | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
