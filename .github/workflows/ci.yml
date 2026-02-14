@@ -283,11 +283,11 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        UDID=$(xcrun simctl create "${{ env.TEST_SIMULATOR_NAME }}" "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}")
+        dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}"
+        dotnet apple simulator boot --wait "${{ env.TEST_SIMULATOR_NAME }}"
+        UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | jq -r '.[0].udid')
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
-        xcrun simctl boot "$UDID"
-        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -304,8 +304,8 @@ jobs:
     - name: Shutdown Simulator
       if: always()
       run: |
-        xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" || true
-        xcrun simctl delete "${{ steps.simulator.outputs.udid }}" || true
+        dotnet apple simulator shutdown "${{ env.TEST_SIMULATOR_NAME }}" || true
+        dotnet apple simulator delete "${{ env.TEST_SIMULATOR_NAME }}" || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -601,11 +601,11 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        UDID=$(xcrun simctl create "${{ env.TEST_SIMULATOR_NAME }}" "iPhone 16")
+        dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16"
+        dotnet apple simulator boot --wait "${{ env.TEST_SIMULATOR_NAME }}"
+        UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | jq -r '.[0].udid')
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
-        xcrun simctl boot "$UDID"
-        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -631,8 +631,8 @@ jobs:
     - name: Shutdown Simulator
       if: always()
       run: |
-        xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" || true
-        xcrun simctl delete "${{ steps.simulator.outputs.udid }}" || true
+        dotnet apple simulator shutdown "${{ env.TEST_SIMULATOR_NAME }}" || true
+        dotnet apple simulator delete "${{ env.TEST_SIMULATOR_NAME }}" || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
