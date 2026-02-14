@@ -1,5 +1,52 @@
 name: CI
 
+# ============================================================
+# CI Matrix Overview
+# ============================================================
+#
+# | Job                    | Platform          | Runner (GH)       | Arch  | Config  | Emulator/Sim               |
+# |------------------------|-------------------|-------------------|-------|---------|----------------------------|
+# | Build                  | Windows           | windows-2025      | x64   | debug   | —                          |
+# | Build                  | Windows           | windows-2025      | x64   | release | —                          |
+# | Build                  | macOS             | macos-15-intel    | x64   | debug   | —                          |
+# | Test (unit)            | Windows           | windows-2025      | x64   | release | —                          |
+# | Test (unit)            | macOS             | macos-15-intel    | x64   | release | —                          |
+# | Pack                   | Windows           | windows-2025      | x64   | release | —                          |
+# | TCP Android            | Linux (API 36)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | TCP Android            | Linux (API 34)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | TCP Android            | Linux (API 24)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | TCP Android            | macOS (API 36)    | macos-15-intel    | x64   | release | x86_64                     |
+# | TCP Android            | macOS (API 34)    | macos-15-intel    | x64   | release | x86_64                     |
+# | TCP Android            | macOS (API 24)    | macos-15-intel    | x64   | release | x86_64                     |
+# | TCP iOS                | macOS             | macos-15-intel    | x64   | debug   | iossimulator-x64           |
+# | TCP iOS                | macOS             | macos-15          | arm64 | debug   | iossimulator-arm64         |
+# | TCP macOS              | macOS             | macos-15-intel    | x64   | release | maccatalyst-x64            |
+# | TCP macOS              | macOS             | macos-15          | arm64 | debug   | maccatalyst-arm64          |
+# | TCP Windows            | Windows           | windows-2025      | x64   | release | Packaged (MSIX)            |
+# | TCP Windows            | Windows           | windows-2025      | x64   | release | Unpackaged (EXE)           |
+# | XHarness Android       | Linux (API 36)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | XHarness Android       | Linux (API 34)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | XHarness Android       | Linux (API 24)    | ubuntu-24.04      | x64   | release | x86_64                     |
+# | XHarness Android       | macOS (API 36)    | macos-15-intel    | x64   | release | x86_64                     |
+# | XHarness Android       | macOS (API 34)    | macos-15-intel    | x64   | release | x86_64                     |
+# | XHarness Android       | macOS (API 24)    | macos-15-intel    | x64   | release | x86_64                     |
+# | XHarness iOS           | macOS             | macos-15-intel    | x64   | debug   | iossimulator-x64           |
+# | XHarness iOS           | macOS             | macos-15          | arm64 | debug   | iossimulator-arm64         |
+# | XHarness Mac Catalyst  | macOS             | macos-15-intel    | x64   | debug   | maccatalyst-x64            |
+# | XHarness Mac Catalyst  | macOS             | macos-15          | arm64 | debug   | maccatalyst-arm64          |
+# | XHarness Windows       | Windows           | windows-2025      | x64   | release | Packaged (MSIX)            |
+#
+# Runner Architecture Key (GitHub Actions):
+#   macos-15-intel = x64 Intel        macos-15 = ARM64 Apple Silicon
+#   ubuntu-24.04   = x64              windows-2025 = x64
+#
+# Notes:
+# - ARM64 Android emulation is disabled (HVF not available on CI ARM macOS runners)
+# - TCP macOS ARM64 uses debug config (AOT compiler crashes on ARM64 in .NET 10 preview)
+# - iOS/macOS debug config avoids AOT; release triggers full AOT compilation
+# - XHarness --verbosity must use = syntax: --verbosity=Debug (not --verbosity Debug)
+# ============================================================
+
 on:
   pull_request:
     paths-ignore:
@@ -202,6 +249,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - uses: actions/setup-java@v4
@@ -280,6 +331,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -352,6 +407,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -524,6 +583,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - uses: actions/setup-java@v4
@@ -615,6 +678,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Setup iOS Simulator
@@ -688,6 +755,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Publish App
