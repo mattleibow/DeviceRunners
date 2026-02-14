@@ -153,11 +153,13 @@ jobs:
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
+            connection-timeout: 120
           - name: macOS (x64)
             os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
+            connection-timeout: 300
           # - name: macOS (arm64)
           #   os: macos-15-arm64
           #   gpu: guest
@@ -208,7 +210,8 @@ jobs:
       run: |
         device-runners android test \
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
-          --results-directory artifacts/test-results
+          --results-directory artifacts/test-results \
+          --connection-timeout ${{ matrix.platform.connection-timeout }}
     - name: Teardown Android Emulator
       if: always()
       uses: ./.github/workflows/teardown-android-emulator
