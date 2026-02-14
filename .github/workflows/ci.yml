@@ -1,51 +1,8 @@
 name: CI
 
-# ============================================================
-# CI Matrix Overview
-# ============================================================
-#
-# | Job                    | Platform          | Runner (GH)       | Arch  | Config  | Emulator/Sim               |
-# |------------------------|-------------------|-------------------|-------|---------|----------------------------|
-# | Build                  | Windows           | windows-2025      | x64   | debug   | —                          |
-# | Build                  | Windows           | windows-2025      | x64   | release | —                          |
-# | Build                  | macOS             | macos-15-intel    | x64   | debug   | —                          |
-# | Test (unit)            | Windows           | windows-2025      | x64   | release | —                          |
-# | Test (unit)            | macOS             | macos-15-intel    | x64   | release | —                          |
-# | Pack                   | Windows           | windows-2025      | x64   | release | —                          |
-# | TCP Android            | Linux (API 36)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | TCP Android            | Linux (API 34)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | TCP Android            | Linux (API 24)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | TCP Android            | macOS (API 36)    | macos-15-intel    | x64   | release | x86_64                     |
-# | TCP Android            | macOS (API 34)    | macos-15-intel    | x64   | release | x86_64                     |
-# | TCP Android            | macOS (API 24)    | macos-15-intel    | x64   | release | x86_64                     |
-# | TCP iOS                | macOS             | macos-15-intel    | x64   | debug   | iossimulator-x64           |
-# | TCP iOS                | macOS             | macos-15          | arm64 | debug   | iossimulator-arm64         |
-# | TCP macOS              | macOS             | macos-15-intel    | x64   | release | maccatalyst-x64            |
-# | TCP macOS              | macOS             | macos-15          | arm64 | debug   | maccatalyst-arm64          |
-# | TCP Windows            | Windows           | windows-2025      | x64   | release | Packaged (MSIX)            |
-# | TCP Windows            | Windows           | windows-2025      | x64   | release | Unpackaged (EXE)           |
-# | XHarness Android       | Linux (API 36)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | XHarness Android       | Linux (API 34)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | XHarness Android       | Linux (API 24)    | ubuntu-24.04      | x64   | release | x86_64                     |
-# | XHarness Android       | macOS (API 36)    | macos-15-intel    | x64   | release | x86_64                     |
-# | XHarness Android       | macOS (API 34)    | macos-15-intel    | x64   | release | x86_64                     |
-# | XHarness Android       | macOS (API 24)    | macos-15-intel    | x64   | release | x86_64                     |
-# | XHarness iOS           | macOS             | macos-15-intel    | x64   | debug   | iossimulator-x64           |
-# | XHarness iOS           | macOS             | macos-15          | arm64 | debug   | iossimulator-arm64         |
-# | XHarness Mac Catalyst  | macOS             | macos-15-intel    | x64   | debug   | maccatalyst-x64            |
-# | XHarness Mac Catalyst  | macOS             | macos-15          | arm64 | debug   | maccatalyst-arm64          |
-# | XHarness Windows       | Windows           | windows-2025      | x64   | release | Packaged (MSIX)            |
-#
-# Runner Architecture Key (GitHub Actions):
-#   macos-15-intel = x64 Intel        macos-15 = ARM64 Apple Silicon
-#   ubuntu-24.04   = x64              windows-2025 = x64
-#
-# Notes:
-# - ARM64 Android emulation is disabled (HVF not available on CI ARM macOS runners)
-# - TCP macOS ARM64 uses debug config (AOT compiler crashes on ARM64 in .NET 10 preview)
-# - iOS/macOS debug config avoids AOT; release triggers full AOT compilation
-# - XHarness --verbosity must use = syntax: --verbosity=Debug (not --verbosity Debug)
-# ============================================================
+# Full matrix documentation: docs/ci-pipeline.md
+# This CI runs x64-only with Android API 36 for speed.
+# To expand (arm64, more API levels), add matrix entries — all config is parameterized.
 
 on:
   pull_request:
@@ -195,48 +152,24 @@ jobs:
       fail-fast: false
       matrix:
         platform: 
-          - name: Linux (API 36)
+          - name: Linux
             os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 120
-          - name: Linux (API 34)
-            os: ubuntu-24.04
-            gpu: swiftshader_indirect
-            emulator-image: system-images;android-34;google_apis;x86_64
-            runtime-identifier: android-x64
-            connection-timeout: 120
-          - name: Linux (API 24)
-            os: ubuntu-24.04
-            gpu: swiftshader_indirect
-            emulator-image: system-images;android-24;google_apis;x86_64
-            runtime-identifier: android-x64
-            connection-timeout: 120
-          - name: macOS (x64, API 36)
+          - name: macOS (x64)
             os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
-          - name: macOS (x64, API 34)
-            os: macos-15-intel
-            gpu: guest
-            emulator-image: system-images;android-34;google_apis;x86_64
-            runtime-identifier: android-x64
-            connection-timeout: 300
-          - name: macOS (x64, API 24)
-            os: macos-15-intel
-            gpu: guest
-            emulator-image: system-images;android-24;google_apis;x86_64
-            runtime-identifier: android-x64
-            connection-timeout: 300
-          # NOTE: ARM64 Android emulation requires HVF which is not available on GitHub's macOS ARM runners
-          # - name: macOS (arm64)
-          #   os: macos-15
-          #   gpu: host
-          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
-          #   runtime-identifier: android-arm64
+          # More API levels and ARM64 — see docs/ci-pipeline.md
+          # - name: Linux (API 34)
+          #   os: ubuntu-24.04
+          #   gpu: swiftshader_indirect
+          #   emulator-image: system-images;android-34;google_apis;x86_64
+          #   runtime-identifier: android-x64
           #   connection-timeout: 120
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
@@ -318,9 +251,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          - name: arm64
-            os: macos-15
-            runtime-identifier: iossimulator-arm64
+          # - name: arm64
+          #   os: macos-15
+          #   runtime-identifier: iossimulator-arm64
     name: TCP iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -394,10 +327,10 @@ jobs:
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
             configuration: release
-          - name: arm64
-            os: macos-15
-            runtime-identifier: maccatalyst-arm64
-            configuration: debug
+          # - name: arm64
+          #   os: macos-15
+          #   runtime-identifier: maccatalyst-arm64
+          #   configuration: debug  # AOT crashes on ARM64 in .NET 10 preview
     name: TCP macOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -536,42 +469,22 @@ jobs:
       fail-fast: false
       matrix:
         platform: 
-          - name: Linux (API 36)
+          - name: Linux
             os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          - name: Linux (API 34)
-            os: ubuntu-24.04
-            gpu: swiftshader_indirect
-            emulator-image: system-images;android-34;google_apis;x86_64
-            runtime-identifier: android-x64
-          - name: Linux (API 24)
-            os: ubuntu-24.04
-            gpu: swiftshader_indirect
-            emulator-image: system-images;android-24;google_apis;x86_64
-            runtime-identifier: android-x64
-          - name: macOS (x64, API 36)
+          - name: macOS (x64)
             os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          - name: macOS (x64, API 34)
-            os: macos-15-intel
-            gpu: guest
-            emulator-image: system-images;android-34;google_apis;x86_64
-            runtime-identifier: android-x64
-          - name: macOS (x64, API 24)
-            os: macos-15-intel
-            gpu: guest
-            emulator-image: system-images;android-24;google_apis;x86_64
-            runtime-identifier: android-x64
-          # NOTE: ARM64 Android emulation requires HVF which is not available on GitHub's macOS ARM runners
-          # - name: macOS (arm64, API 36)
-          #   os: macos-15
-          #   gpu: host
-          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
-          #   runtime-identifier: android-arm64
+          # More API levels and ARM64 — see docs/ci-pipeline.md
+          # - name: Linux (API 34)
+          #   os: ubuntu-24.04
+          #   gpu: swiftshader_indirect
+          #   emulator-image: system-images;android-34;google_apis;x86_64
+          #   runtime-identifier: android-x64
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -666,9 +579,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          - name: arm64
-            os: macos-15
-            runtime-identifier: iossimulator-arm64
+          # - name: arm64
+          #   os: macos-15
+          #   runtime-identifier: iossimulator-arm64
     name: XHarness iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -743,9 +656,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
-          - name: arm64
-            os: macos-15
-            runtime-identifier: maccatalyst-arm64
+          # - name: arm64
+          #   os: macos-15
+          #   runtime-identifier: maccatalyst-arm64
     name: XHarness Mac Catalyst (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
