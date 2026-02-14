@@ -451,11 +451,13 @@ jobs:
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          - name: macOS (x64)
-            os: macos-15-intel
-            gpu: guest
-            emulator-image: system-images;android-36;google_apis;x86_64
-            runtime-identifier: android-x64
+          # macOS x64 software emulation is too slow for XHarness instrumentation (APP_CRASH).
+          # TCP Android macOS works fine; XHarness requires hardware-accelerated emulation (Linux KVM).
+          # - name: macOS (x64)
+          #   os: macos-15-intel
+          #   gpu: guest
+          #   emulator-image: system-images;android-36;google_apis;x86_64
+          #   runtime-identifier: android-x64
           # - name: macOS (arm64)
           #   os: macos-15-arm64
           #   gpu: guest
