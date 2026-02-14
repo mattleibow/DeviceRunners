@@ -154,13 +154,11 @@ jobs:
         platform: 
           - name: Linux
             os: ubuntu-24.04
-            gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 120
           - name: macOS (x64)
             os: macos-15-intel
-            gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
@@ -189,12 +187,18 @@ jobs:
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Setup Android Emulator
-      id: emulator
-      uses: ./.github/workflows/setup-android-emulator
-      with:
-        emulator-name: ${{ env.TEST_EMULATOR_NAME }}
-        emulator-image: ${{ env.TEST_EMULATOR_IMAGE }}
+    - name: Install Android SDK Packages
+      run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+    - name: Create Emulator
+      run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
+    - name: Enable KVM
+      if: runner.os == 'Linux'
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Start Emulator
+      run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -204,24 +208,15 @@ jobs:
           -p:TestingMode=NonInteractiveVisual \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Wait for Android Emulator
-      uses: ./.github/workflows/wait-android-emulator
-      with:
-        emulator-serial: ${{ steps.emulator.outputs.emulator-serial }}
-        emulator-pid: ${{ steps.emulator.outputs.emulator-pid }}
     - name: Run Tests
       run: |
         device-runners android test \
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
           --results-directory artifacts/test-results \
           --connection-timeout ${{ matrix.platform.connection-timeout }}
-    - name: Teardown Android Emulator
+    - name: Shutdown the Emulator
       if: always()
-      uses: ./.github/workflows/teardown-android-emulator
-      with:
-        emulator-serial: ${{ steps.emulator.outputs.emulator-serial }}
-        emulator-pid: ${{ steps.emulator.outputs.emulator-pid }}
-        logs-directory: artifacts/logs
+      run: $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -251,6 +246,7 @@ jobs:
       TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: debug
       TEST_SIMULATOR_DEVICE_TYPE: iPhone 16
+      TEST_SIMULATOR_NAME: DeviceRunner-${{ github.run_id }}-tcp-ios
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -264,11 +260,14 @@ jobs:
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Setup iOS Simulator
+    - name: Create and Boot Simulator
       id: simulator
-      uses: ./.github/workflows/setup-ios-simulator
-      with:
-        device-type: ${{ env.TEST_SIMULATOR_DEVICE_TYPE }}
+      run: |
+        UDID=$(xcrun simctl create "${{ env.TEST_SIMULATOR_NAME }}" "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}")
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+        echo "Simulator UDID: $UDID"
+        xcrun simctl boot "$UDID"
+        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -277,22 +276,16 @@ jobs:
           -c ${{ env.TEST_CONFIGURATION }} \
           -p:TestingMode=NonInteractiveVisual \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Wait for iOS Simulator
-      uses: ./.github/workflows/wait-ios-simulator
-      with:
-        simulator-udid: ${{ steps.simulator.outputs.simulator-udid }}
     - name: Run Tests
       run: |
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
         echo "Found app bundle: $app_bundle"
-        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.simulator-udid }}" --results-directory artifacts/test-results
-    - name: Teardown iOS Simulator
+        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
+    - name: Shutdown Simulator
       if: always()
-      uses: ./.github/workflows/teardown-ios-simulator
-      with:
-        simulator-udid: ${{ steps.simulator.outputs.simulator-udid }}
-        log-stream-pid: ${{ steps.simulator.outputs.log-stream-pid }}
-        logs-directory: artifacts/logs
+      run: |
+        xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" || true
+        xcrun simctl delete "${{ steps.simulator.outputs.udid }}" || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -457,12 +450,10 @@ jobs:
         platform: 
           - name: Linux
             os: ubuntu-24.04
-            gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
           - name: macOS (x64)
             os: macos-15-intel
-            gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
     name: XHarness Android (${{ matrix.platform.name }})
@@ -486,12 +477,18 @@ jobs:
       with:
         distribution: 'microsoft'
         java-version: '21'
-    - name: Setup Android Emulator
-      id: emulator
-      uses: ./.github/workflows/setup-android-emulator
-      with:
-        emulator-name: ${{ env.TEST_EMULATOR_NAME }}
-        emulator-image: ${{ env.TEST_EMULATOR_IMAGE }}
+    - name: Install Android SDK Packages
+      run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+    - name: Create Emulator
+      run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
+    - name: Enable KVM
+      if: runner.os == 'Linux'
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Start Emulator
+      run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -501,11 +498,6 @@ jobs:
           -p:TestingMode=XHarness \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Wait for Android Emulator
-      uses: ./.github/workflows/wait-android-emulator
-      with:
-        emulator-serial: ${{ steps.emulator.outputs.emulator-serial }}
-        emulator-pid: ${{ steps.emulator.outputs.emulator-pid }}
     - name: Run Tests
       run: |
         for i in $(seq 1 3)
@@ -521,21 +513,12 @@ jobs:
             --verbosity=Debug \
           && code=0 && break || code=$?
           echo "=== Attempt $i failed with exit code $code ==="
-          echo "=== Logcat tail after failure ==="
-          $ANDROID_HOME/platform-tools/adb -s ${{ steps.emulator.outputs.emulator-serial }} logcat -d -t 100 2>/dev/null || true
-          echo "=== System load ==="
-          $ANDROID_HOME/platform-tools/adb -s ${{ steps.emulator.outputs.emulator-serial }} shell cat /proc/loadavg 2>/dev/null || true
-          echo "=== Waiting 30s before retry ==="
           sleep 30
         done
         exit $code
-    - name: Teardown Android Emulator
+    - name: Shutdown the Emulator
       if: always()
-      uses: ./.github/workflows/teardown-android-emulator
-      with:
-        emulator-serial: ${{ steps.emulator.outputs.emulator-serial }}
-        emulator-pid: ${{ steps.emulator.outputs.emulator-pid }}
-        logs-directory: artifacts/logs
+      run: $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -565,6 +548,7 @@ jobs:
       TEST_TARGET_FRAMEWORK: net10.0-ios
       TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
       TEST_CONFIGURATION: debug
+      TEST_SIMULATOR_NAME: DeviceRunner-${{ github.run_id }}-xharness-ios
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -574,9 +558,14 @@ jobs:
         runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Setup iOS Simulator
+    - name: Create and Boot Simulator
       id: simulator
-      uses: ./.github/workflows/setup-ios-simulator
+      run: |
+        UDID=$(xcrun simctl create "${{ env.TEST_SIMULATOR_NAME }}" "iPhone 16")
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+        echo "Simulator UDID: $UDID"
+        xcrun simctl boot "$UDID"
+        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -585,17 +574,13 @@ jobs:
           -c ${{ env.TEST_CONFIGURATION }} \
           -p:TestingMode=XHarness \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Wait for iOS Simulator
-      uses: ./.github/workflows/wait-ios-simulator
-      with:
-        simulator-udid: ${{ steps.simulator.outputs.simulator-udid }}
     - name: Run Tests
       run: |
         for i in $(seq 1 3)
         do
           dotnet xharness apple test \
             --target ios-simulator-64 \
-            --device "${{ steps.simulator.outputs.simulator-udid }}" \
+            --device "${{ steps.simulator.outputs.udid }}" \
             --timeout="00:10:00" \
             --launch-timeout=00:10:00 \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
@@ -603,13 +588,11 @@ jobs:
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
-    - name: Teardown iOS Simulator
+    - name: Shutdown Simulator
       if: always()
-      uses: ./.github/workflows/teardown-ios-simulator
-      with:
-        simulator-udid: ${{ steps.simulator.outputs.simulator-udid }}
-        log-stream-pid: ${{ steps.simulator.outputs.log-stream-pid }}
-        logs-directory: artifacts/logs
+      run: |
+        xcrun simctl shutdown "${{ steps.simulator.outputs.udid }}" || true
+        xcrun simctl delete "${{ steps.simulator.outputs.udid }}" || true
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
