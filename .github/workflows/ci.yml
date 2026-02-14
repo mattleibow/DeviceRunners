@@ -577,6 +577,7 @@ jobs:
         do
           dotnet xharness apple test \
             --target ios-simulator-64 \
+            --device "${{ steps.simulator.outputs.simulator-udid }}" \
             --timeout="00:10:00" \
             --launch-timeout=00:10:00 \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
