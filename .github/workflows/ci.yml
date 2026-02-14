@@ -148,10 +148,22 @@ jobs:
       fail-fast: false
       matrix:
         platform: 
-          - name: Linux
+          - name: Linux (API 36)
             os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
+            runtime-identifier: android-x64
+            connection-timeout: 120
+          - name: Linux (API 34)
+            os: ubuntu-24.04
+            gpu: swiftshader_indirect
+            emulator-image: system-images;android-34;google_apis;x86_64
+            runtime-identifier: android-x64
+            connection-timeout: 120
+          - name: Linux (API 24)
+            os: ubuntu-24.04
+            gpu: swiftshader_indirect
+            emulator-image: system-images;android-24;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 120
           - name: macOS (x64)
@@ -160,11 +172,12 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
-          # - name: macOS (arm64)
-          #   os: macos-15-arm64
-          #   gpu: guest
-          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
-          #   runtime-identifier: android-arm64
+          - name: macOS (arm64)
+            os: macos-15
+            gpu: host
+            emulator-image: system-images;android-36;google_apis;arm64-v8a
+            runtime-identifier: android-arm64
+            connection-timeout: 120
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -241,9 +254,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          # - name: arm64
-          #   os: macos-15-arm64
-          #   runtime-identifier: iossimulator-arm64
+          - name: arm64
+            os: macos-15
+            runtime-identifier: iossimulator-arm64
     name: TCP iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -312,9 +325,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
-          # - name: arm64
-          #   os: macos-15-arm64
-          #   runtime-identifier: maccatalyst-arm64
+          - name: arm64
+            os: macos-15
+            runtime-identifier: maccatalyst-arm64
     name: TCP macOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -479,11 +492,11 @@ jobs:
             gpu: guest
             emulator-image: system-images;android-24;google_apis;x86_64
             runtime-identifier: android-x64
-          # - name: macOS (arm64)
-          #   os: macos-15-arm64
-          #   gpu: guest
-          #   emulator-image: system-images;android-36;google_apis;arm64-v8a
-          #   runtime-identifier: android-arm64
+          - name: macOS (arm64, API 36)
+            os: macos-15
+            gpu: host
+            emulator-image: system-images;android-36;google_apis;arm64-v8a
+            runtime-identifier: android-arm64
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -574,9 +587,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          # - name: arm64
-          #   os: macos-15-arm64
-          #   runtime-identifier: iossimulator-arm64
+          - name: arm64
+            os: macos-15
+            runtime-identifier: iossimulator-arm64
     name: XHarness iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -647,9 +660,9 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
-          # - name: arm64
-          #   os: macos-15-arm64
-          #   runtime-identifier: maccatalyst-arm64
+          - name: arm64
+            os: macos-15
+            runtime-identifier: maccatalyst-arm64
     name: XHarness Mac Catalyst (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
