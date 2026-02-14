@@ -59,11 +59,14 @@ runs:
 
         echo "Waiting for SpringBoard and services to be ready..."
 
-        TIMEOUT=60
+        TIMEOUT=120
         ELAPSED=0
         while [ $ELAPSED -lt $TIMEOUT ]; do
           if xcrun simctl spawn "$UDID" launchctl print system 2>/dev/null | grep -q "com.apple.SpringBoard"; then
             echo "SpringBoard is running ✓"
+            # Give services a moment to fully initialize
+            echo "Waiting 10s for services to stabilize..."
+            sleep 10
             break
           fi
           sleep 5
@@ -73,6 +76,8 @@ runs:
 
         if [ $ELAPSED -ge $TIMEOUT ]; then
           echo "WARNING: SpringBoard readiness check timed out (services may still be starting)"
+          echo "Waiting additional 15s before proceeding..."
+          sleep 15
         fi
 
         echo ""
