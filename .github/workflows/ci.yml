@@ -214,6 +214,36 @@ jobs:
       run: |
         dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }}
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+    - name: Stabilize Emulator
+      run: |
+        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+        # Disable animations for test stability
+        $ADB shell settings put global window_animation_scale 0
+        $ADB shell settings put global transition_animation_scale 0
+        $ADB shell settings put global animator_duration_scale 0
+        # Wait for launcher to be ready
+        for i in $(seq 1 30); do
+          if $ADB shell dumpsys window 2>/dev/null | grep -q "mCurrentFocus.*Launcher"; then
+            echo "Launcher is ready ✓"
+            break
+          fi
+          sleep 2
+        done
+        # Wait for CPU load to stabilize (important for macOS software emulation)
+        for i in $(seq 1 60); do
+          LOAD=$($ADB shell cat /proc/loadavg 2>/dev/null | awk '{print $1}' | tr -d '\r' || true)
+          if [ -n "$LOAD" ]; then
+            LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1 * 10}')
+            if [ "$LOAD_INT" -lt 30 ] 2>/dev/null; then
+              echo "CPU load stabilized at $LOAD ✓"
+              break
+            fi
+            echo "  Load: $LOAD (waiting...)"
+          fi
+          sleep 2
+        done
+        sleep 10
+        echo "Emulator stabilized ✓"
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
@@ -525,6 +555,36 @@ jobs:
       run: |
         dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }}
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+    - name: Stabilize Emulator
+      run: |
+        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
+        # Disable animations for test stability
+        $ADB shell settings put global window_animation_scale 0
+        $ADB shell settings put global transition_animation_scale 0
+        $ADB shell settings put global animator_duration_scale 0
+        # Wait for launcher to be ready
+        for i in $(seq 1 30); do
+          if $ADB shell dumpsys window 2>/dev/null | grep -q "mCurrentFocus.*Launcher"; then
+            echo "Launcher is ready ✓"
+            break
+          fi
+          sleep 2
+        done
+        # Wait for CPU load to stabilize (important for macOS software emulation)
+        for i in $(seq 1 60); do
+          LOAD=$($ADB shell cat /proc/loadavg 2>/dev/null | awk '{print $1}' | tr -d '\r' || true)
+          if [ -n "$LOAD" ]; then
+            LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1 * 10}')
+            if [ "$LOAD_INT" -lt 30 ] 2>/dev/null; then
+              echo "CPU load stabilized at $LOAD ✓"
+              break
+            fi
+            echo "  Load: $LOAD (waiting...)"
+          fi
+          sleep 2
+        done
+        sleep 10
+        echo "Emulator stabilized ✓"
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
