@@ -187,6 +187,9 @@ jobs:
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Set AVD Home (Linux XDG workaround)
+      if: runner.os == 'Linux'
+      run: echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
@@ -199,6 +202,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+    - name: Verify Emulator
+      run: $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -477,6 +482,9 @@ jobs:
       with:
         distribution: 'microsoft'
         java-version: '21'
+    - name: Set AVD Home (Linux XDG workaround)
+      if: runner.os == 'Linux'
+      run: echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
@@ -489,6 +497,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
+    - name: Verify Emulator
+      run: $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
