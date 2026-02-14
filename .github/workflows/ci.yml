@@ -166,10 +166,22 @@ jobs:
             emulator-image: system-images;android-24;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 120
-          - name: macOS (x64)
+          - name: macOS (x64, API 36)
             os: macos-15-intel
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
+            runtime-identifier: android-x64
+            connection-timeout: 300
+          - name: macOS (x64, API 34)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-34;google_apis;x86_64
+            runtime-identifier: android-x64
+            connection-timeout: 300
+          - name: macOS (x64, API 24)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-24;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
           # NOTE: ARM64 Android emulation requires HVF which is not available on GitHub's macOS ARM runners
