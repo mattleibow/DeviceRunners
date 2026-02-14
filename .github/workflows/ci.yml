@@ -288,6 +288,7 @@ jobs:
         UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | grep '"udid"' | head -1 | grep -oi '[A-Fa-f0-9-]\{36\}')
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
+        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -606,6 +607,7 @@ jobs:
         UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | grep '"udid"' | head -1 | grep -oi '[A-Fa-f0-9-]\{36\}')
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
+        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -623,7 +625,6 @@ jobs:
             --device "${{ steps.simulator.outputs.udid }}" \
             --timeout="00:10:00" \
             --launch-timeout=00:10:00 \
-            --signal-app-end \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts/test-results \
           && code=0 && break || code=$? && sleep 15
