@@ -105,19 +105,19 @@ jobs:
           $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
         }
         echo "PACKAGE VERSION: $VERSION"
-  #       
-  #       dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
-  #   - name: Upload NuGet Artifacts
-  #     uses: actions/upload-artifact@v4
-  #     with:
-  #       name: NuGet
-  #       path: ./artifacts/nugets
-  #   - name: Upload Logs
-  #     uses: actions/upload-artifact@v4
-  #     if: ${{ always() }}
-  #     with:
-  #       name: Pack Logs - Windows
-  #       path: ./artifacts/logs
+        
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - name: Upload NuGet Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - name: Upload Logs
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Pack Logs - Windows
+        path: ./artifacts/logs
 
   publish:
     name: Publish NuGet Packages
@@ -164,13 +164,6 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
-          # More API levels and ARM64 — see docs/ci-pipeline.md
-          # - name: Linux (API 34)
-          #   os: ubuntu-24.04
-          #   gpu: swiftshader_indirect
-          #   emulator-image: system-images;android-34;google_apis;x86_64
-          #   runtime-identifier: android-x64
-          #   connection-timeout: 120
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -251,9 +244,6 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          # - name: arm64
-          #   os: macos-15
-          #   runtime-identifier: iossimulator-arm64
     name: TCP iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -327,10 +317,6 @@ jobs:
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
             configuration: release
-          # - name: arm64
-          #   os: macos-15
-          #   runtime-identifier: maccatalyst-arm64
-          #   configuration: debug  # AOT crashes on ARM64 in .NET 10 preview
     name: TCP macOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -479,12 +465,6 @@ jobs:
             gpu: guest
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          # More API levels and ARM64 — see docs/ci-pipeline.md
-          # - name: Linux (API 34)
-          #   os: ubuntu-24.04
-          #   gpu: swiftshader_indirect
-          #   emulator-image: system-images;android-34;google_apis;x86_64
-          #   runtime-identifier: android-x64
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -579,9 +559,6 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: iossimulator-x64
-          # - name: arm64
-          #   os: macos-15
-          #   runtime-identifier: iossimulator-arm64
     name: XHarness iOS (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
@@ -656,9 +633,6 @@ jobs:
           - name: x64
             os: macos-15-intel
             runtime-identifier: maccatalyst-x64
-          # - name: arm64
-          #   os: macos-15
-          #   runtime-identifier: maccatalyst-arm64
     name: XHarness Mac Catalyst (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     env:
