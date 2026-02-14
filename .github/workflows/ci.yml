@@ -194,14 +194,11 @@ jobs:
     - name: Set AVD Home (Linux XDG workaround)
       if: runner.os == 'Linux'
       run: |
-        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/avd)
-        # but emulator uses traditional path (~/.android/avd).
-        # Symlink so both tools find the same AVDs.
+        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/)
+        # but emulator uses traditional path (~/.android/).
+        # ANDROID_USER_HOME controls the .android prefs root for all SDK tools.
         mkdir -p $HOME/.android/avd
-        mkdir -p $HOME/.config/.android
-        ln -sfn $HOME/.android/avd $HOME/.config/.android/avd
-        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
-        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+        echo "ANDROID_USER_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
@@ -501,14 +498,11 @@ jobs:
     - name: Set AVD Home (Linux XDG workaround)
       if: runner.os == 'Linux'
       run: |
-        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/avd)
-        # but emulator uses traditional path (~/.android/avd).
-        # Symlink so both tools find the same AVDs.
+        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/)
+        # but emulator uses traditional path (~/.android/).
+        # ANDROID_USER_HOME controls the .android prefs root for all SDK tools.
         mkdir -p $HOME/.android/avd
-        mkdir -p $HOME/.config/.android
-        ln -sfn $HOME/.android/avd $HOME/.config/.android/avd
-        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
-        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+        echo "ANDROID_USER_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
     - name: Create Emulator
