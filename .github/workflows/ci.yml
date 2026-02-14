@@ -170,6 +170,7 @@ jobs:
       TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: TCPTestEmulator
       TEST_EMULATOR_IMAGE: ${{ matrix.platform.emulator-image }}
+      ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH: ./artifacts/logs/android-tool.log
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -187,6 +188,7 @@ jobs:
       run: |
         dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/android-tool -p:PackageVersion=99.0.0-local -p:ManagePackageVersionsCentrally=false
         dotnet tool update androidsdk.tool --add-source ./artifacts/android-tool --version 99.0.0-local
+        mkdir -p ./artifacts/logs
     - name: Build and Install CLI Tool
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
@@ -213,6 +215,9 @@ jobs:
       run: |
         dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+    - name: Display Android Tool Logs
+      if: always()
+      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -478,6 +483,7 @@ jobs:
       TEST_CONFIGURATION: release
       TEST_EMULATOR_NAME: XHarnessEmulator
       TEST_EMULATOR_IMAGE: ${{ matrix.platform.emulator-image }}
+      ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH: ./artifacts/logs/android-tool.log
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -495,6 +501,7 @@ jobs:
       run: |
         dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/android-tool -p:PackageVersion=99.0.0-local -p:ManagePackageVersionsCentrally=false
         dotnet tool update androidsdk.tool --add-source ./artifacts/android-tool --version 99.0.0-local
+        mkdir -p ./artifacts/logs
     - name: Set AVD Home (Linux XDG workaround)
       if: runner.os == 'Linux'
       run: |
@@ -517,6 +524,9 @@ jobs:
       run: |
         dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+    - name: Display Android Tool Logs
+      if: always()
+      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
