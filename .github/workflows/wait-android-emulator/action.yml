@@ -97,6 +97,59 @@ runs:
         $ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell settings put global transition_animation_scale 0 2>/dev/null || true
         $ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell settings put global animator_duration_scale 0 2>/dev/null || true
 
+        # Reduce background process limit to free resources on slow emulators
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell settings put global always_finish_activities 1 2>/dev/null || true
+        $ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell cmd activity set-inactive-timeout 0 2>/dev/null || true
+
+    - name: Wait for system to settle
+      shell: bash
+      run: |
+        SERIAL="${{ inputs.emulator-serial }}"
+
+        echo "Waiting for system services to settle..."
+
+        # Wait for package manager to be responsive
+        for i in $(seq 1 30); do
+          if $ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell pm list packages > /dev/null 2>&1; then
+            echo "Package manager responsive after ${i}s ✓"
+            break
+          fi
+          sleep 1
+        done
+
+        # Wait for launcher to be fully started
+        for i in $(seq 1 60); do
+          FOCUSED=$($ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell "dumpsys activity activities 2>/dev/null | grep -i 'mResumedActivity'" 2>/dev/null | tr -d '\r' || true)
+          if echo "$FOCUSED" | grep -qi "launcher\|home" 2>/dev/null; then
+            echo "Launcher focused after ${i}s ✓"
+            break
+          fi
+          sleep 1
+        done
+
+        # Check CPU load — wait until the system is not overwhelmed
+        echo "Waiting for CPU load to stabilize..."
+        for i in $(seq 1 60); do
+          # Get 1-minute load average
+          LOAD=$($ANDROID_HOME/platform-tools/adb -s "$SERIAL" shell cat /proc/loadavg 2>/dev/null | awk '{print $1}' | tr -d '\r' || true)
+          if [ -n "$LOAD" ]; then
+            # Compare as integer (multiply by 10 to handle decimals)
+            LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1 * 10}')
+            echo "  Load average: $LOAD (${i}s)"
+            # Wait until load drops below 3.0 (30 when * 10)
+            if [ "$LOAD_INT" -lt 30 ] 2>/dev/null; then
+              echo "CPU load stabilized at $LOAD ✓"
+              break
+            fi
+          fi
+          sleep 2
+        done
+
+        # Final settling pause
+        echo "Final settling pause (10s)..."
+        sleep 10
+        echo "System settling complete ✓"
+
     - name: Verify services
       shell: bash
       run: |

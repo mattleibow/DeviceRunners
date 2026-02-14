@@ -449,18 +449,36 @@ jobs:
       fail-fast: false
       matrix:
         platform: 
-          - name: Linux
+          - name: Linux (API 36)
             os: ubuntu-24.04
             gpu: swiftshader_indirect
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-          # macOS x64 software emulation is too slow for XHarness instrumentation (APP_CRASH).
-          # TCP Android macOS works fine; XHarness requires hardware-accelerated emulation (Linux KVM).
-          # - name: macOS (x64)
-          #   os: macos-15-intel
-          #   gpu: guest
-          #   emulator-image: system-images;android-36;google_apis;x86_64
-          #   runtime-identifier: android-x64
+          - name: Linux (API 34)
+            os: ubuntu-24.04
+            gpu: swiftshader_indirect
+            emulator-image: system-images;android-34;google_apis;x86_64
+            runtime-identifier: android-x64
+          - name: Linux (API 24)
+            os: ubuntu-24.04
+            gpu: swiftshader_indirect
+            emulator-image: system-images;android-24;google_apis;x86_64
+            runtime-identifier: android-x64
+          - name: macOS (x64, API 36)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-36;google_apis;x86_64
+            runtime-identifier: android-x64
+          - name: macOS (x64, API 34)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-34;google_apis;x86_64
+            runtime-identifier: android-x64
+          - name: macOS (x64, API 24)
+            os: macos-15-intel
+            gpu: guest
+            emulator-image: system-images;android-24;google_apis;x86_64
+            runtime-identifier: android-x64
           # - name: macOS (arm64)
           #   os: macos-15-arm64
           #   gpu: guest
@@ -507,14 +525,23 @@ jobs:
       run: |
         for i in $(seq 1 3)
         do
+          echo "=== XHarness attempt $i ==="
           dotnet xharness android test \
-            --timeout="00:05:00" \
+            --timeout="00:10:00" \
             --launch-timeout=00:10:00 \
             --package-name com.companyname.devicetestingkitapp.devicetests \
             --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
             --output-directory artifacts/test-results \
-          && code=0 && break || code=$? && sleep 15
+            --verbosity Debug \
+          && code=0 && break || code=$?
+          echo "=== Attempt $i failed with exit code $code ==="
+          echo "=== Logcat tail after failure ==="
+          $ANDROID_HOME/platform-tools/adb -s ${{ steps.emulator.outputs.emulator-serial }} logcat -d -t 100 2>/dev/null || true
+          echo "=== System load ==="
+          $ANDROID_HOME/platform-tools/adb -s ${{ steps.emulator.outputs.emulator-serial }} shell cat /proc/loadavg 2>/dev/null || true
+          echo "=== Waiting 30s before retry ==="
+          sleep 30
         done
         exit $code
     - name: Teardown Android Emulator
