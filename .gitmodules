@@ -1,0 +1,6 @@
+[submodule "external/AndroidSdk.Tools"]
+	path = external/AndroidSdk.Tools
+	url = https://github.com/redth/AndroidSdk.Tools.git
+[submodule "external/AppleDev.Tools"]
+	path = external/AppleDev.Tools
+	url = https://github.com/redth/AppleDev.Tools.git

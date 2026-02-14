@@ -50,7 +50,7 @@ runs:
 
     - name: Accept SDK licenses
       shell: bash
-      run: yes 2>/dev/null | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      run: dotnet android sdk accept-licenses
 
     - name: Set ANDROID_AVD_HOME
       shell: bash
@@ -62,10 +62,10 @@ runs:
     - name: Install SDK components
       shell: bash
       run: |
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install \
-          "${{ inputs.emulator-image }}" \
-          "emulator" \
-          "platform-tools"
+        dotnet android sdk install \
+          --package "${{ inputs.emulator-image }}" \
+          --package "emulator" \
+          --package "platform-tools"
 
     - name: Start ADB server
       shell: bash
@@ -74,9 +74,9 @@ runs:
     - name: Create AVD
       shell: bash
       run: |
-        echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd \
-          -n "${{ inputs.emulator-name }}" \
-          -k "${{ inputs.emulator-image }}" \
+        dotnet android avd create \
+          --name "${{ inputs.emulator-name }}" \
+          --sdk "${{ inputs.emulator-image }}" \
           --device "${{ inputs.device-profile }}" \
           --force
 
