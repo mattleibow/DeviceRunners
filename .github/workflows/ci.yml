@@ -533,7 +533,7 @@ jobs:
             --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
             --output-directory artifacts/test-results \
-            --verbosity Debug \
+            --verbosity=Debug \
           && code=0 && break || code=$?
           echo "=== Attempt $i failed with exit code $code ==="
           echo "=== Logcat tail after failure ==="
