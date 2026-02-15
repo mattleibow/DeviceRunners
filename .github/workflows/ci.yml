@@ -45,6 +45,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
@@ -73,6 +75,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Test
@@ -95,6 +99,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Package NuGets
@@ -176,6 +182,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -190,14 +198,6 @@ jobs:
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Set AVD Home (Linux XDG workaround)
-      if: runner.os == 'Linux'
-      run: |
-        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/)
-        # but emulator uses traditional path (~/.android/).
-        # ANDROID_USER_HOME controls the .android prefs root for all SDK tools.
-        mkdir -p $HOME/.android/avd
-        echo "ANDROID_USER_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: |
         mkdir -p ./artifacts/logs
@@ -212,38 +212,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }}
+        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
-    - name: Stabilize Emulator
-      run: |
-        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
-        # Disable animations for test stability
-        $ADB shell settings put global window_animation_scale 0
-        $ADB shell settings put global transition_animation_scale 0
-        $ADB shell settings put global animator_duration_scale 0
-        # Wait for launcher to be ready
-        for i in $(seq 1 30); do
-          if $ADB shell dumpsys window 2>/dev/null | grep -q "mCurrentFocus.*Launcher"; then
-            echo "Launcher is ready ✓"
-            break
-          fi
-          sleep 2
-        done
-        # Wait for CPU load to stabilize (important for macOS software emulation)
-        for i in $(seq 1 60); do
-          LOAD=$($ADB shell cat /proc/loadavg 2>/dev/null | awk '{print $1}' | tr -d '\r' || true)
-          if [ -n "$LOAD" ]; then
-            LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1 * 10}')
-            if [ "$LOAD_INT" -lt 30 ] 2>/dev/null; then
-              echo "CPU load stabilized at $LOAD ✓"
-              break
-            fi
-            echo "  Load: $LOAD (waiting...)"
-          fi
-          sleep 2
-        done
-        sleep 10
-        echo "Emulator stabilized ✓"
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
@@ -262,11 +232,12 @@ jobs:
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
           --results-directory artifacts/test-results \
           --connection-timeout ${{ matrix.platform.connection-timeout }}
-    - name: Shutdown the Emulator
+    - name: Capture Logcat
       if: always()
-      run: |
-        $ANDROID_SDK_ROOT/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
-        $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
+      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt || true
+    - name: Cleanup Emulator
+      if: always()
+      run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -300,6 +271,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -313,12 +286,10 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}"
-        dotnet apple simulator boot --wait "${{ env.TEST_SIMULATOR_NAME }}"
-        UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | grep '"udid"' | head -1 | grep -oi '[A-Fa-f0-9-]\{36\}')
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --format json)
+        UDID=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['udid'])")
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
-        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -332,11 +303,9 @@ jobs:
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
         echo "Found app bundle: $app_bundle"
         device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
-    - name: Shutdown Simulator
+    - name: Cleanup Simulator
       if: always()
-      run: |
-        dotnet apple simulator shutdown "${{ env.TEST_SIMULATOR_NAME }}" || true
-        dotnet apple simulator delete "${{ env.TEST_SIMULATOR_NAME }}" || true
+      run: dotnet apple simulator delete --force "${{ env.TEST_SIMULATOR_NAME }}"
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -370,6 +339,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -417,6 +388,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -465,6 +438,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -521,6 +496,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -531,14 +508,6 @@ jobs:
       with:
         distribution: 'microsoft'
         java-version: '21'
-    - name: Set AVD Home (Linux XDG workaround)
-      if: runner.os == 'Linux'
-      run: |
-        # On Ubuntu 24.04, avdmanager uses XDG path (~/.config/.android/)
-        # but emulator uses traditional path (~/.android/).
-        # ANDROID_USER_HOME controls the .android prefs root for all SDK tools.
-        mkdir -p $HOME/.android/avd
-        echo "ANDROID_USER_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Install Android SDK Packages
       run: |
         mkdir -p ./artifacts/logs
@@ -553,38 +522,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }}
+        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
-    - name: Stabilize Emulator
-      run: |
-        ADB="$ANDROID_SDK_ROOT/platform-tools/adb"
-        # Disable animations for test stability
-        $ADB shell settings put global window_animation_scale 0
-        $ADB shell settings put global transition_animation_scale 0
-        $ADB shell settings put global animator_duration_scale 0
-        # Wait for launcher to be ready
-        for i in $(seq 1 30); do
-          if $ADB shell dumpsys window 2>/dev/null | grep -q "mCurrentFocus.*Launcher"; then
-            echo "Launcher is ready ✓"
-            break
-          fi
-          sleep 2
-        done
-        # Wait for CPU load to stabilize (important for macOS software emulation)
-        for i in $(seq 1 60); do
-          LOAD=$($ADB shell cat /proc/loadavg 2>/dev/null | awk '{print $1}' | tr -d '\r' || true)
-          if [ -n "$LOAD" ]; then
-            LOAD_INT=$(echo "$LOAD" | awk '{printf "%d", $1 * 10}')
-            if [ "$LOAD_INT" -lt 30 ] 2>/dev/null; then
-              echo "CPU load stabilized at $LOAD ✓"
-              break
-            fi
-            echo "  Load: $LOAD (waiting...)"
-          fi
-          sleep 2
-        done
-        sleep 10
-        echo "Emulator stabilized ✓"
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
@@ -615,11 +554,12 @@ jobs:
           sleep 30
         done
         exit $code
-    - name: Shutdown the Emulator
+    - name: Capture Logcat
       if: always()
-      run: |
-        $ANDROID_SDK_ROOT/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
-        $ANDROID_SDK_ROOT/platform-tools/adb emu kill || true
+      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt || true
+    - name: Cleanup Emulator
+      if: always()
+      run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -653,6 +593,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -662,12 +604,10 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16"
-        dotnet apple simulator boot --wait "${{ env.TEST_SIMULATOR_NAME }}"
-        UDID=$(dotnet apple simulator list --name "${{ env.TEST_SIMULATOR_NAME }}" --format json | grep '"udid"' | head -1 | grep -oi '[A-Fa-f0-9-]\{36\}')
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --format json)
+        UDID=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['udid'])")
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
-        xcrun simctl bootstatus "$UDID" -b
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -690,11 +630,9 @@ jobs:
           && code=0 && break || code=$? && sleep 15
         done
         exit $code
-    - name: Shutdown Simulator
+    - name: Cleanup Simulator
       if: always()
-      run: |
-        dotnet apple simulator shutdown "${{ env.TEST_SIMULATOR_NAME }}" || true
-        dotnet apple simulator delete "${{ env.TEST_SIMULATOR_NAME }}" || true
+      run: dotnet apple simulator delete --force "${{ env.TEST_SIMULATOR_NAME }}"
     - name: Clean up build artifacts before upload
       run: |
         rm -rf ./artifacts/bin
@@ -727,6 +665,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -774,6 +714,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Publish App

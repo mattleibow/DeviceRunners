@@ -34,3 +34,17 @@ runs:
   - name: Setup Local .NET Tools
     shell: pwsh
     run: dotnet tool restore
+  - name: Build and Install Android Tool from Submodule
+    if: runner.os != 'macOS'
+    shell: pwsh
+    run: |
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
+  - name: Build and Install Android & Apple Tools from Submodules
+    if: runner.os == 'macOS'
+    shell: pwsh
+    run: |
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
+      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet tool install --global --add-source ./artifacts/tools appledev.tools
