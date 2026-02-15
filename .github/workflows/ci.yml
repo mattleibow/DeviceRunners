@@ -286,8 +286,14 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --format json)
-        UDID=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['udid'])")
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 300 --format json 2>/dev/null)
+        echo "Simulator create result: $RESULT"
+        UDID=$(echo "$RESULT" | jq -r '.udid')
+        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+          echo "❌ Failed to parse UDID from simulator create output"
+          dotnet apple simulator list || true
+          exit 1
+        fi
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
     - name: Publish App
@@ -604,8 +610,14 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --format json)
-        UDID=$(echo "$RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['udid'])")
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 300 --format json 2>/dev/null)
+        echo "Simulator create result: $RESULT"
+        UDID=$(echo "$RESULT" | jq -r '.udid')
+        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+          echo "❌ Failed to parse UDID from simulator create output"
+          dotnet apple simulator list || true
+          exit 1
+        fi
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
     - name: Publish App
