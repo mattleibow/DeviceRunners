@@ -216,7 +216,7 @@ jobs:
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Display Android Tool Logs
       if: always()
-      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
+      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -234,7 +234,7 @@ jobs:
           --connection-timeout ${{ matrix.platform.connection-timeout }}
     - name: Capture Logcat
       if: always()
-      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt || true
+      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
@@ -286,12 +286,12 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 300 --format json 2>/dev/null)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 300 --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
           echo "❌ Failed to parse UDID from simulator create output"
-          dotnet apple simulator list || true
+          dotnet apple simulator list
           exit 1
         fi
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
@@ -532,7 +532,7 @@ jobs:
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Display Android Tool Logs
       if: always()
-      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }} 2>/dev/null || echo "No android tool logs found"
+      run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -562,7 +562,7 @@ jobs:
         exit $code
     - name: Capture Logcat
       if: always()
-      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt || true
+      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
@@ -610,12 +610,12 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 300 --format json 2>/dev/null)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 300 --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
           echo "❌ Failed to parse UDID from simulator create output"
-          dotnet apple simulator list || true
+          dotnet apple simulator list
           exit 1
         fi
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
