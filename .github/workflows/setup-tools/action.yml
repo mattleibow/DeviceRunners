@@ -46,5 +46,7 @@ runs:
     run: |
       dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=99.0.0-dev
       dotnet tool install --local --add-source ./artifacts/tools androidsdk.tool --version "99.0.0-dev"
-      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools -p:Version=99.0.0-dev -p:NBGV_GitEngine=Disabled
-      dotnet tool install --local --add-source ./artifacts/tools appledev.tools --version "99.0.0-dev"
+      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
+      $pkg = Get-ChildItem ./artifacts/tools/AppleDev.Tools.*.nupkg | Select-Object -First 1
+      $ver = $pkg.BaseName -replace '^AppleDev\.Tools\.', ''
+      dotnet tool install --local --add-source ./artifacts/tools appledev.tools --version "$ver"
