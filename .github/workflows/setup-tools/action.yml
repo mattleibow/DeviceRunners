@@ -38,14 +38,14 @@ runs:
     if: runner.os != 'macOS'
     shell: pwsh
     run: |
-      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
-      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=99.0.0-dev
+      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool --version "99.0.0-dev"
   - name: Build and Install Android & Apple Tools from Submodules
     if: runner.os == 'macOS'
     shell: pwsh
     run: |
-      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
-      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=99.0.0-dev
+      dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool --version "99.0.0-dev"
       git -C external/AppleDev.Tools fetch --unshallow 2>$null; git -C external/AppleDev.Tools fetch --tags 2>$null
-      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
-      dotnet tool install --global --add-source ./artifacts/tools appledev.tools
+      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools -p:Version=99.0.0-dev
+      dotnet tool install --global --add-source ./artifacts/tools appledev.tools --version "99.0.0-dev"
