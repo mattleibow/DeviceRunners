@@ -46,5 +46,6 @@ runs:
     run: |
       dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
       dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
-      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
+      git -C external/AppleDev.Tools fetch --unshallow 2>$null; git -C external/AppleDev.Tools fetch --tags 2>$null
+      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
       dotnet tool install --global --add-source ./artifacts/tools appledev.tools
