@@ -38,13 +38,13 @@ runs:
     if: runner.os != 'macOS'
     shell: pwsh
     run: |
-      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
       dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
   - name: Build and Install Android & Apple Tools from Submodules
     if: runner.os == 'macOS'
     shell: pwsh
     run: |
-      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
       dotnet tool install --global --add-source ./artifacts/tools androidsdk.tool
-      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
+      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools -p:Version=0.0.0-dev
       dotnet tool install --global --add-source ./artifacts/tools appledev.tools
