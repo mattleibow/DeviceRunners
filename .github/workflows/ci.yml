@@ -293,7 +293,7 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 300 --format json)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 600 --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
@@ -624,7 +624,7 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 300 --format json)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 600 --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
