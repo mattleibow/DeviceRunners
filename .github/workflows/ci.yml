@@ -203,6 +203,11 @@ jobs:
       run: |
         mkdir -p ./artifacts/logs
         dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+    - name: Fix AVD path on Linux
+      if: runner.os == 'Linux'
+      run: |
+        mkdir -p $HOME/.android/avd
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
@@ -521,6 +526,11 @@ jobs:
       run: |
         mkdir -p ./artifacts/logs
         dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
+    - name: Fix AVD path on Linux
+      if: runner.os == 'Linux'
+      run: |
+        mkdir -p $HOME/.android/avd
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
