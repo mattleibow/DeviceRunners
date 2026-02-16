@@ -172,6 +172,7 @@ jobs:
             gpu: guest
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 60
     env:
       TEST_TARGET_FRAMEWORK: net10.0-android
       TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
@@ -212,7 +213,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
+        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --timeout 600 --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Display Android Tool Logs
       if: always()
@@ -492,6 +493,7 @@ jobs:
             gpu: guest
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 60
     env:
       TEST_TARGET_FRAMEWORK: net10.0-android
       TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
@@ -528,7 +530,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
+        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --timeout 600 --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
         $ANDROID_SDK_ROOT/platform-tools/adb devices -l
     - name: Display Android Tool Logs
       if: always()
