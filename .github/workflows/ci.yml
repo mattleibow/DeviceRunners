@@ -241,7 +241,7 @@ jobs:
           --connection-timeout ${{ matrix.platform.connection-timeout }}
     - name: Capture Logcat
       if: always()
-      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt
+      run: $ANDROID_HOME/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
@@ -576,7 +576,7 @@ jobs:
         exit $code
     - name: Capture Logcat
       if: always()
-      run: dotnet android avd logcat --output ./artifacts/logs/logcat.txt
+      run: $ANDROID_HOME/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
