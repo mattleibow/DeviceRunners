@@ -8,6 +8,13 @@
         "xharness"
       ],
       "rollForward": false
+    },
+    "androidsdk.tool": {
+      "version": "0.30.0",
+      "commands": [
+        "android"
+      ],
+      "rollForward": false
     }
   }
 }
