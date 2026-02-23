@@ -164,12 +164,18 @@ jobs:
             runtime-identifier: android-x64
             connection-timeout: 120
             gpu: swiftshader_indirect
+            cores: 2
+            cpu-threshold: 3
+            timeout-seconds: 1800
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             connection-timeout: 300
             gpu: guest
+            cores: 2
+            cpu-threshold: 25
+            timeout-seconds: 1800
     name: TCP Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 60
@@ -203,11 +209,11 @@ jobs:
       run: |
         mkdir -p ./artifacts/logs
         dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
-    - name: Fix AVD path on Linux
-      if: runner.os == 'Linux'
+    - name: Set AVD environment variables
       run: |
-        mkdir -p $HOME/.android/avd
-        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
@@ -218,8 +224,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --timeout 600 --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
-        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }}
+        dotnet android device list
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
@@ -241,7 +247,7 @@ jobs:
           --connection-timeout ${{ matrix.platform.connection-timeout }}
     - name: Capture Logcat
       if: always()
-      run: $ANDROID_HOME/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
+      run: dotnet android device logcat --output ./artifacts/logs/logcat.txt
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
@@ -492,11 +498,17 @@ jobs:
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             gpu: swiftshader_indirect
+            cores: 2
+            cpu-threshold: 3
+            timeout-seconds: 1800
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
             gpu: guest
+            cores: 2
+            cpu-threshold: 25
+            timeout-seconds: 1800
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 60
@@ -526,11 +538,11 @@ jobs:
       run: |
         mkdir -p ./artifacts/logs
         dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ env.TEST_EMULATOR_IMAGE }}'
-    - name: Fix AVD path on Linux
-      if: runner.os == 'Linux'
+    - name: Set AVD environment variables
       run: |
-        mkdir -p $HOME/.android/avd
-        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
     - name: Enable KVM
@@ -541,8 +553,8 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start --name ${{ env.TEST_EMULATOR_NAME }} --wait-boot --timeout 600 --no-window --no-snapshot --no-audio --no-boot-anim --gpu ${{ matrix.platform.gpu }} --disable-animations --cpu-threshold 3.0
-        $ANDROID_SDK_ROOT/platform-tools/adb devices -l
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }}
+        dotnet android device list
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
@@ -576,7 +588,7 @@ jobs:
         exit $code
     - name: Capture Logcat
       if: always()
-      run: $ANDROID_HOME/platform-tools/adb logcat -d > ./artifacts/logs/logcat.txt 2>&1 || true
+      run: dotnet android device logcat --output ./artifacts/logs/logcat.txt
     - name: Cleanup Emulator
       if: always()
       run: dotnet android avd delete --name ${{ env.TEST_EMULATOR_NAME }} --force
