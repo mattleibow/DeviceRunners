@@ -171,7 +171,7 @@ jobs:
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-            connection-timeout: 300
+            connection-timeout: 600
             gpu: guest
             cores: 2
             cpu-threshold: 25
@@ -229,6 +229,34 @@ jobs:
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
+    - name: Wait for Emulator Stability
+      timeout-minutes: 10
+      run: |
+        echo "Warming up emulator..."
+        dotnet android device launch --package com.android.settings || true
+        sleep 10
+        STABLE_COUNT=0
+        REQUIRED=3
+        for i in $(seq 1 30); do
+          START=$(date +%s)
+          dotnet android device info --prop ro.build.display.id --format json > /dev/null 2>&1
+          END=$(date +%s)
+          ELAPSED=$((END - START))
+          echo "Stability check $i: responded in ${ELAPSED}s"
+          if [ "$ELAPSED" -le 5 ]; then
+            STABLE_COUNT=$((STABLE_COUNT + 1))
+          else
+            STABLE_COUNT=0
+          fi
+          if [ "$STABLE_COUNT" -ge "$REQUIRED" ]; then
+            echo "✅ Emulator is stable ($REQUIRED consecutive fast responses)"
+            break
+          fi
+          sleep 10
+        done
+        if [ "$STABLE_COUNT" -lt "$REQUIRED" ]; then
+          echo "⚠️ Emulator may not be fully stable, proceeding anyway"
+        fi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -558,6 +586,34 @@ jobs:
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
+    - name: Wait for Emulator Stability
+      timeout-minutes: 10
+      run: |
+        echo "Warming up emulator..."
+        dotnet android device launch --package com.android.settings || true
+        sleep 10
+        STABLE_COUNT=0
+        REQUIRED=3
+        for i in $(seq 1 30); do
+          START=$(date +%s)
+          dotnet android device info --prop ro.build.display.id --format json > /dev/null 2>&1
+          END=$(date +%s)
+          ELAPSED=$((END - START))
+          echo "Stability check $i: responded in ${ELAPSED}s"
+          if [ "$ELAPSED" -le 5 ]; then
+            STABLE_COUNT=$((STABLE_COUNT + 1))
+          else
+            STABLE_COUNT=0
+          fi
+          if [ "$STABLE_COUNT" -ge "$REQUIRED" ]; then
+            echo "✅ Emulator is stable ($REQUIRED consecutive fast responses)"
+            break
+          fi
+          sleep 10
+        done
+        if [ "$STABLE_COUNT" -lt "$REQUIRED" ]; then
+          echo "⚠️ Emulator may not be fully stable, proceeding anyway"
+        fi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -583,7 +639,7 @@ jobs:
             --verbosity=Debug \
           && code=0 && break || code=$?
           echo "=== Attempt $i failed with exit code $code ==="
-          sleep 30
+          sleep 60
         done
         exit $code
     - name: Capture Logcat
@@ -665,7 +721,7 @@ jobs:
             --launch-timeout=00:10:00 \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts/test-results \
-          && code=0 && break || code=$? && sleep 15
+          && code=0 && break || code=$? && sleep 60
         done
         exit $code
     - name: Cleanup Simulator
