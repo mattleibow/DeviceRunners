@@ -224,39 +224,11 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }}
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --stability-check 3
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
-    - name: Wait for Emulator Stability
-      timeout-minutes: 10
-      run: |
-        echo "Warming up emulator..."
-        dotnet android device launch --package com.android.settings || true
-        sleep 10
-        STABLE_COUNT=0
-        REQUIRED=3
-        for i in $(seq 1 30); do
-          START=$(date +%s)
-          dotnet android device info --prop ro.build.display.id --format json > /dev/null 2>&1
-          END=$(date +%s)
-          ELAPSED=$((END - START))
-          echo "Stability check $i: responded in ${ELAPSED}s"
-          if [ "$ELAPSED" -le 5 ]; then
-            STABLE_COUNT=$((STABLE_COUNT + 1))
-          else
-            STABLE_COUNT=0
-          fi
-          if [ "$STABLE_COUNT" -ge "$REQUIRED" ]; then
-            echo "✅ Emulator is stable ($REQUIRED consecutive fast responses)"
-            break
-          fi
-          sleep 10
-        done
-        if [ "$STABLE_COUNT" -lt "$REQUIRED" ]; then
-          echo "⚠️ Emulator may not be fully stable, proceeding anyway"
-        fi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -581,39 +553,11 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }}
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --stability-check 3
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()
       run: cat ${{ env.ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH }}
-    - name: Wait for Emulator Stability
-      timeout-minutes: 10
-      run: |
-        echo "Warming up emulator..."
-        dotnet android device launch --package com.android.settings || true
-        sleep 10
-        STABLE_COUNT=0
-        REQUIRED=3
-        for i in $(seq 1 30); do
-          START=$(date +%s)
-          dotnet android device info --prop ro.build.display.id --format json > /dev/null 2>&1
-          END=$(date +%s)
-          ELAPSED=$((END - START))
-          echo "Stability check $i: responded in ${ELAPSED}s"
-          if [ "$ELAPSED" -le 5 ]; then
-            STABLE_COUNT=$((STABLE_COUNT + 1))
-          else
-            STABLE_COUNT=0
-          fi
-          if [ "$STABLE_COUNT" -ge "$REQUIRED" ]; then
-            echo "✅ Emulator is stable ($REQUIRED consecutive fast responses)"
-            break
-          fi
-          sleep 10
-        done
-        if [ "$STABLE_COUNT" -lt "$REQUIRED" ]; then
-          echo "⚠️ Emulator may not be fully stable, proceeding anyway"
-        fi
     - name: Publish App
       run: |
         dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \

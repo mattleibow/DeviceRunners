@@ -46,3 +46,14 @@ runs:
       $pkg = Get-ChildItem ./artifacts/tools/AppleDev.Tools.*.nupkg | Select-Object -First 1
       $ver = $pkg.BaseName -replace '^AppleDev\.Tools\.', ''
       dotnet tool install --local --add-source ./artifacts/tools appledev.tools --version "$ver"
+  - name: Build and Install Android Tool from Submodule
+    shell: pwsh
+    run: |
+      Push-Location external/AndroidSdk.Tools
+      git fetch --unshallow 2>$null; if (-not $?) { Write-Host "Already unshallowed or full clone" }
+      Pop-Location
+      $Env:GITHUB_ENV = if ($IsWindows) { "NUL" } else { "/dev/null" }
+      dotnet pack external/AndroidSdk.Tools/AndroidSdk.Tool/AndroidSdk.Tool.csproj -c Release -o ./artifacts/tools -p:NBGV_GitEngine=Disabled
+      $pkg = Get-ChildItem ./artifacts/tools/AndroidSdk.Tool.*.nupkg | Select-Object -First 1
+      $ver = $pkg.BaseName -replace '^AndroidSdk\.Tool\.', ''
+      dotnet tool install --local --add-source ./artifacts/tools androidsdk.tool --version "$ver"
