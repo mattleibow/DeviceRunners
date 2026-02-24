@@ -224,7 +224,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --stability-check 3
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --response-threshold 5
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()
@@ -553,7 +553,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --stability-check 3
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --response-threshold 5
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()
