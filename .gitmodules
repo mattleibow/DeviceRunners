@@ -2,7 +2,3 @@
 	path = external/AppleDev.Tools
 	url = https://github.com/Redth/AppleDev.Tools.git
 	branch = feature/simulator-enhancements
-[submodule "external/AndroidSdk.Tools"]
-	path = external/AndroidSdk.Tools
-	url = https://github.com/mattleibow/AndroidSdk.Tools.git
-	branch = feature/stability-check
