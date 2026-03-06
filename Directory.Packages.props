@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
-    <PackageVersion Include="AndroidSdk" Version="0.31.0" />
-    <PackageVersion Include="AppleDev" Version="0.8.2" />
+    <PackageVersion Include="AndroidSdk" Version="0.34.0" />
+    <PackageVersion Include="AppleDev" Version="0.8.7" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26107.1" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26107.1" />
