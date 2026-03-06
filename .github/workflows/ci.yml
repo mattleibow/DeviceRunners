@@ -299,7 +299,7 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --boot --wait --timeout 600 --format json)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
@@ -307,6 +307,11 @@ jobs:
           dotnet apple simulator list
           exit 1
         fi
+        echo "Booting simulator $UDID..."
+        xcrun simctl boot "$UDID"
+        echo "Waiting for simulator to finish booting..."
+        xcrun simctl bootstatus "$UDID" -b
+        echo "Simulator booted successfully"
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
     - name: Publish App
@@ -321,11 +326,6 @@ jobs:
       run: |
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
         echo "Found app bundle: $app_bundle"
-        echo "=== Simulator status ==="
-        xcrun simctl list devices booted
-        echo "=== Attempting manual simctl install for diagnostics ==="
-        xcrun simctl install "${{ steps.simulator.outputs.udid }}" "$app_bundle" && echo "Manual install succeeded" || echo "Manual install failed with exit code $?"
-        echo "=== Running device-runners test ==="
         device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
     - name: Cleanup Simulator
       if: always()
@@ -641,7 +641,7 @@ jobs:
     - name: Create and Boot Simulator
       id: simulator
       run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --boot --wait --timeout 600 --format json)
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --format json)
         echo "Simulator create result: $RESULT"
         UDID=$(echo "$RESULT" | jq -r '.udid')
         if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
@@ -649,6 +649,11 @@ jobs:
           dotnet apple simulator list
           exit 1
         fi
+        echo "Booting simulator $UDID..."
+        xcrun simctl boot "$UDID"
+        echo "Waiting for simulator to finish booting..."
+        xcrun simctl bootstatus "$UDID" -b
+        echo "Simulator booted successfully"
         echo "udid=$UDID" >> "$GITHUB_OUTPUT"
         echo "Simulator UDID: $UDID"
     - name: Publish App
