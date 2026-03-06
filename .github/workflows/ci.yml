@@ -321,6 +321,11 @@ jobs:
       run: |
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
         echo "Found app bundle: $app_bundle"
+        echo "=== Simulator status ==="
+        xcrun simctl list devices booted
+        echo "=== Attempting manual simctl install for diagnostics ==="
+        xcrun simctl install "${{ steps.simulator.outputs.udid }}" "$app_bundle" && echo "Manual install succeeded" || echo "Manual install failed with exit code $?"
+        echo "=== Running device-runners test ==="
         device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
     - name: Cleanup Simulator
       if: always()
