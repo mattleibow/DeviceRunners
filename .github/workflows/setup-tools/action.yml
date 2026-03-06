@@ -34,16 +34,4 @@ runs:
   - name: Setup Local .NET Tools
     shell: pwsh
     run: dotnet tool restore
-  - name: Build and Install Apple Tool from Submodule
-    if: runner.os == 'macOS'
-    shell: pwsh
-    run: |
-      Push-Location external/AppleDev.Tools
-      git fetch --unshallow 2>$null; if (-not $?) { Write-Host "Already unshallowed or full clone" }
-      Pop-Location
-      $Env:GITHUB_ENV = if ($IsWindows) { "NUL" } else { "/dev/null" }
-      dotnet pack external/AppleDev.Tools/AppleDev.Tool/AppleDev.Tool.csproj -c Release -o ./artifacts/tools
-      $pkg = Get-ChildItem ./artifacts/tools/AppleDev.Tools.*.nupkg | Select-Object -First 1
-      $ver = $pkg.BaseName -replace '^AppleDev\.Tools\.', ''
-      dotnet tool install --local --add-source ./artifacts/tools appledev.tools --version "$ver"
 

@@ -15,6 +15,13 @@
         "android"
       ],
       "rollForward": false
+    },
+    "appledev.tools": {
+      "version": "0.8.7",
+      "commands": [
+        "apple"
+      ],
+      "rollForward": false
     }
   }
 }

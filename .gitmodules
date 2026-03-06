@@ -1,4 +1,0 @@
-[submodule "external/AppleDev.Tools"]
-	path = external/AppleDev.Tools
-	url = https://github.com/Redth/AppleDev.Tools.git
-	branch = feature/simulator-enhancements
