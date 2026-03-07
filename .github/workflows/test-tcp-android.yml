@@ -96,6 +96,13 @@ jobs:
           -p:TestingMode=NonInteractiveVisual \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Wait for Emulator Stability
+      if: runner.os == 'macOS'
+      run: |
+        ADB="$(dotnet android sdk info --format json | jq -r '.path')/platform-tools/adb"
+        $ADB -s emulator-5554 shell am force-stop com.android.phone || true
+        sleep 30
+        dotnet android device list
     - name: Run Tests
       timeout-minutes: 30
       run: |
