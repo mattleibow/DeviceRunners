@@ -102,6 +102,20 @@ jobs:
         $ADB -s emulator-5554 shell am force-stop com.android.phone || true
         sleep 30
         dotnet android device list
+    - name: Align XHarness ADB with SDK
+      run: |
+        # XHarness bundles its own adb which may conflict with the SDK adb server.
+        # Replace it with the SDK adb so they share the same server.
+        SDK_ADB="$(dotnet android sdk info --format json | jq -r '.path')/platform-tools/adb"
+        if [ "$(uname)" = "Linux" ]; then
+          XHARNESS_ADB="$(find "$HOME/.nuget/packages/microsoft.dotnet.xharness.cli" -path '*/native/adb/linux/adb' 2>/dev/null | head -1)"
+        else
+          XHARNESS_ADB="$(find "$HOME/.nuget/packages/microsoft.dotnet.xharness.cli" -path '*/native/adb/macos/adb' 2>/dev/null | head -1)"
+        fi
+        if [ -n "$XHARNESS_ADB" ] && [ -n "$SDK_ADB" ]; then
+          echo "Replacing XHarness adb at $XHARNESS_ADB with SDK adb at $SDK_ADB"
+          cp "$SDK_ADB" "$XHARNESS_ADB"
+        fi
     - name: Run Tests
       timeout-minutes: 40
       run: |
