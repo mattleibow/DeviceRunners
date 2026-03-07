@@ -90,16 +90,6 @@ jobs:
           -p:TestingMode=XHarness \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Wait for Emulator Stability
-      if: runner.os == 'macOS'
-      run: |
-        ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
-        # Force-stop system apps that ANR on slow emulators and trigger SIGQUIT to all processes
-        $ADB -s emulator-5554 shell am force-stop com.android.phone || true
-        # Let system fully settle before running instrumentation tests
-        sleep 30
-        # Verify emulator is still responsive
-        $ADB -s emulator-5554 shell getprop ro.build.version.sdk
     - name: Run Tests
       timeout-minutes: 40
       run: |

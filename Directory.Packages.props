@@ -24,4 +24,10 @@
     <PackageVersion Include="xunit.runner.utility" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
+
+  <!-- MAUI 10.x requires .NET 10 workload; downgrade to 9.x for net9 TFMs -->
+  <ItemGroup Condition="$(TargetFramework.StartsWith('net9'))">
+    <PackageVersion Update="Microsoft.Maui.Controls" Version="9.0.120" />
+    <PackageVersion Update="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />
+  </ItemGroup>
 </Project>
