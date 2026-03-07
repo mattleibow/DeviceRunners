@@ -490,8 +490,6 @@ jobs:
             cores: 2
             cpu-threshold: 3
             timeout-seconds: 1800
-            # Mono runtime bug: jit-info.c:918 assertion in Finalizer thread on slow macOS Intel emulator
-            allow-failure: false
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
@@ -500,11 +498,8 @@ jobs:
             cores: 2
             cpu-threshold: 25
             timeout-seconds: 1800
-            # Mono runtime bug: jit-info.c:918 assertion in Finalizer thread on slow macOS Intel emulator
-            allow-failure: true
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
-    continue-on-error: ${{ matrix.platform.allow-failure }}
     timeout-minutes: 60
     env:
       TEST_TARGET_FRAMEWORK: net10.0-android
@@ -559,6 +554,16 @@ jobs:
           -p:TestingMode=XHarness \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Wait for Emulator Stability
+      if: runner.os == 'macOS'
+      run: |
+        ADB="${ANDROID_SDK_ROOT}/platform-tools/adb"
+        # Force-stop system apps that ANR on slow emulators and trigger SIGQUIT to all processes
+        $ADB -s emulator-5554 shell am force-stop com.android.phone || true
+        # Let system fully settle before running instrumentation tests
+        sleep 30
+        # Verify emulator is still responsive
+        $ADB -s emulator-5554 shell getprop ro.build.version.sdk
     - name: Run Tests
       timeout-minutes: 40
       run: |
