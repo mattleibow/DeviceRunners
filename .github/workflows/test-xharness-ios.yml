@@ -1,0 +1,93 @@
+name: XHarness iOS Test
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  ios:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: x64
+            os: macos-15-intel
+            runtime-identifier: iossimulator-x64
+    name: iOS (${{ matrix.platform.name }})
+    runs-on: ${{ matrix.platform.os }}
+    env:
+      TEST_TARGET_FRAMEWORK: net10.0-ios
+      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
+      TEST_CONFIGURATION: debug
+      TEST_SIMULATOR_NAME: DeviceRunner-${{ github.run_id }}-xharness-ios
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Create and Boot Simulator
+      id: simulator
+      run: |
+        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --format json)
+        echo "Simulator create result: $RESULT"
+        UDID=$(echo "$RESULT" | jq -r '.udid')
+        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
+          echo "❌ Failed to parse UDID from simulator create output"
+          dotnet apple simulator list
+          exit 1
+        fi
+        echo "Booting simulator $UDID..."
+        xcrun simctl boot "$UDID"
+        echo "Waiting for simulator to finish booting..."
+        xcrun simctl bootstatus "$UDID" -b
+        echo "Simulator booted successfully"
+        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
+        echo "Simulator UDID: $UDID"
+    - name: Publish App
+      run: |
+        dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
+          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
+          -c ${{ env.TEST_CONFIGURATION }} \
+          -p:TestingMode=XHarness \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      run: |
+        for i in $(seq 1 3)
+        do
+          dotnet xharness apple test \
+            --target ios-simulator-64 \
+            --device "${{ steps.simulator.outputs.udid }}" \
+            --timeout="00:10:00" \
+            --launch-timeout=00:10:00 \
+            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
+            --output-directory artifacts/test-results \
+          && code=0 && break || code=$? && sleep 60
+        done
+        exit $code
+    - name: Cleanup Simulator
+      if: always()
+      run: dotnet apple simulator delete --force "${{ env.TEST_SIMULATOR_NAME }}"
+    - name: Clean up build artifacts before upload
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+      if: ${{ always() }}
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Results (XHarness) - iOS (${{ matrix.platform.name }})
+        path: ./artifacts
