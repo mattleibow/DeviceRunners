@@ -101,7 +101,7 @@ jobs:
     - name: Wait for Emulator Stability
       if: runner.os == 'macOS'
       run: |
-        ADB="$(dotnet android sdk info --format json | jq -r '.path')/platform-tools/adb"
+        ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
         $ADB -s emulator-5554 shell am force-stop com.android.phone || true
         sleep 30
         dotnet android device list
