@@ -102,13 +102,6 @@ jobs:
         $ADB -s emulator-5554 shell am force-stop com.android.phone || true
         sleep 30
         dotnet android device list
-    - name: Reset ADB Server for XHarness
-      run: |
-        # XHarness bundles its own adb which starts a separate adb server.
-        # Kill the existing server so XHarness's adb can discover the emulator.
-        ADB="$(dotnet android sdk info --format json | jq -r '.path')/platform-tools/adb"
-        $ADB kill-server
-        sleep 5
     - name: Run Tests
       timeout-minutes: 40
       run: |
