@@ -31,7 +31,7 @@ jobs:
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
             runtime-identifier: android-x64
-            connection-timeout: 600
+            connection-timeout: 900
             gpu: guest
             cores: 2
             cpu-threshold: 25
