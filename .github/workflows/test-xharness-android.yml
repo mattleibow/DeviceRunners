@@ -26,6 +26,7 @@ jobs:
             cores: 2
             cpu-threshold: 3
             timeout-seconds: 1800
+            partition-size: 4096
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
@@ -34,6 +35,7 @@ jobs:
             cores: 2
             cpu-threshold: 25
             timeout-seconds: 1800
+            partition-size: 4096
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 60
@@ -76,7 +78,7 @@ jobs:
         sudo udevadm trigger --name-match=kvm
     - name: Start Emulator
       run: |
-        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --response-threshold 5
+        dotnet android avd start -p 5554 --name ${{ env.TEST_EMULATOR_NAME }} --no-window --gpu ${{ matrix.platform.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ matrix.platform.cpu-threshold }} --cores ${{ matrix.platform.cores }} --timeout ${{ matrix.platform.timeout-seconds }} --response-threshold 5 --partition-size ${{ matrix.platform.partition-size }}
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()
