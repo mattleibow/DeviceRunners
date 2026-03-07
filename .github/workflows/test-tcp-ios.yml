@@ -42,22 +42,14 @@ jobs:
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
         dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Create and Boot Simulator
+    - name: Create Simulator
       id: simulator
       run: |
         RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --format json)
-        echo "Simulator create result: $RESULT"
-        UDID=$(echo "$RESULT" | jq -r '.udid')
-        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-          echo "❌ Failed to parse UDID from simulator create output"
-          dotnet apple simulator list
-          exit 1
-        fi
-        echo "Booting simulator $UDID..."
-        dotnet apple simulator boot "$UDID" --wait --timeout 300
-        echo "Simulator booted successfully"
-        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-        echo "Simulator UDID: $UDID"
+        echo "udid=$(echo "$RESULT" | jq -r '.udid')" >> "$GITHUB_OUTPUT"
+        dotnet apple simulator list
+    - name: Boot Simulator
+      run: dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -69,7 +61,6 @@ jobs:
     - name: Run Tests
       run: |
         app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
-        echo "Found app bundle: $app_bundle"
         device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
     - name: Cleanup Simulator
       if: always()

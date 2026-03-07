@@ -37,22 +37,14 @@ jobs:
         runtime-identifier: ${{ matrix.platform.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Create and Boot Simulator
+    - name: Create Simulator
       id: simulator
       run: |
         RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "iPhone 16" --format json)
-        echo "Simulator create result: $RESULT"
-        UDID=$(echo "$RESULT" | jq -r '.udid')
-        if [ -z "$UDID" ] || [ "$UDID" = "null" ]; then
-          echo "❌ Failed to parse UDID from simulator create output"
-          dotnet apple simulator list
-          exit 1
-        fi
-        echo "Booting simulator $UDID..."
-        dotnet apple simulator boot "$UDID" --wait --timeout 300
-        echo "Simulator booted successfully"
-        echo "udid=$UDID" >> "$GITHUB_OUTPUT"
-        echo "Simulator UDID: $UDID"
+        echo "udid=$(echo "$RESULT" | jq -r '.udid')" >> "$GITHUB_OUTPUT"
+        dotnet apple simulator list
+    - name: Boot Simulator
+      run: dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
