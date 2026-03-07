@@ -90,6 +90,16 @@ jobs:
           -p:TestingMode=XHarness \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Wait for Emulator Stability
+      if: runner.os == 'macOS'
+      run: |
+        # Workaround: com.android.phone ANRs on slow x64 emulators, sending SIGQUIT
+        # to all processes which crashes Mono's Finalizer thread (jit-info.c:918).
+        # The dotnet android tool has no shell command, so we use adb directly here.
+        ADB="$(dotnet android sdk info --format json | jq -r '.path')/platform-tools/adb"
+        $ADB -s emulator-5554 shell am force-stop com.android.phone || true
+        sleep 30
+        dotnet android device list
     - name: Run Tests
       timeout-minutes: 40
       run: |
