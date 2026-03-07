@@ -46,7 +46,7 @@ jobs:
     - name: Boot Simulator
       run: |
         dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
-        sleep 10
+        sleep 30
     - name: Publish App
       run: |
         dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
@@ -66,7 +66,7 @@ jobs:
             --launch-timeout=00:10:00 \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts/test-results \
-          && code=0 && break || code=$? && sleep 60
+          && code=0 && break || code=$? && echo "Attempt $i failed (exit $code), rebooting simulator..." && dotnet apple simulator shutdown "${{ steps.simulator.outputs.udid }}" && sleep 5 && dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300 && sleep 30
         done
         exit $code
     - name: Cleanup Simulator
