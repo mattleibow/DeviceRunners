@@ -45,8 +45,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build
@@ -75,8 +73,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Test
@@ -99,8 +95,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Package NuGets
@@ -189,8 +183,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -284,8 +276,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -363,8 +353,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -412,8 +400,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -462,8 +448,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Build and Install CLI Tool
@@ -506,6 +490,8 @@ jobs:
             cores: 2
             cpu-threshold: 3
             timeout-seconds: 1800
+            # Mono runtime bug: jit-info.c:918 assertion in Finalizer thread on slow macOS Intel emulator
+            allow-failure: false
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
@@ -514,8 +500,11 @@ jobs:
             cores: 2
             cpu-threshold: 25
             timeout-seconds: 1800
+            # Mono runtime bug: jit-info.c:918 assertion in Finalizer thread on slow macOS Intel emulator
+            allow-failure: true
     name: XHarness Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
+    continue-on-error: ${{ matrix.platform.allow-failure }}
     timeout-minutes: 60
     env:
       TEST_TARGET_FRAMEWORK: net10.0-android
@@ -527,8 +516,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -630,8 +617,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -713,8 +698,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Validate Architecture
       uses: ./.github/workflows/validate-arch
       with:
@@ -762,8 +745,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Publish App
