@@ -26,7 +26,7 @@ jobs:
             cores: 2
             cpu-threshold: 3
             timeout-seconds: 1800
-            partition-size: 4096
+            partition-size: 2048
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
@@ -35,7 +35,7 @@ jobs:
             cores: 2
             cpu-threshold: 25
             timeout-seconds: 1800
-            partition-size: 4096
+            partition-size: 2048
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 60
@@ -95,27 +95,19 @@ jobs:
     - name: Wait for Emulator Stability
       if: runner.os == 'macOS'
       run: |
-        # Workaround: com.android.phone ANRs on slow x64 emulators, sending SIGQUIT
-        # to all processes which crashes Mono's Finalizer thread (jit-info.c:918).
-        # The dotnet android tool has no shell command, so we use adb directly here.
         ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
+        # Suppress ANR dialogs that crash Mono's Finalizer thread (jit-info.c:918)
+        $ADB -s emulator-5554 shell settings put global anr_show_background 0 || true
+        $ADB -s emulator-5554 shell settings put secure anr_show_background 0 || true
         $ADB -s emulator-5554 shell am force-stop com.android.phone || true
         sleep 30
         dotnet android device list
-    - name: Align XHarness ADB with SDK
+    - name: Set ADB_EXE_PATH for XHarness
       run: |
-        # XHarness bundles its own adb which may conflict with the SDK adb server.
-        # Replace it with the SDK adb so they share the same server.
+        # XHarness checks ADB_EXE_PATH before falling back to its bundled adb v32.
+        # Set it to the SDK adb so XHarness uses the same adb server as the emulator.
         SDK_ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
-        if [ "$(uname)" = "Linux" ]; then
-          XHARNESS_ADB="$(find "$HOME/.nuget/packages/microsoft.dotnet.xharness.cli" -path '*/native/adb/linux/adb' 2>/dev/null | head -1)"
-        else
-          XHARNESS_ADB="$(find "$HOME/.nuget/packages/microsoft.dotnet.xharness.cli" -path '*/native/adb/macos/adb' 2>/dev/null | head -1)"
-        fi
-        if [ -n "$XHARNESS_ADB" ] && [ -n "$SDK_ADB" ]; then
-          echo "Replacing XHarness adb at $XHARNESS_ADB with SDK adb at $SDK_ADB"
-          cp "$SDK_ADB" "$XHARNESS_ADB"
-        fi
+        echo "ADB_EXE_PATH=$SDK_ADB" >> "$GITHUB_ENV"
     - name: Run Tests
       timeout-minutes: 40
       run: |

@@ -27,7 +27,7 @@ jobs:
             cores: 2
             cpu-threshold: 3
             timeout-seconds: 1800
-            partition-size: 4096
+            partition-size: 2048
           - name: macOS (x64)
             os: macos-15-intel
             emulator-image: system-images;android-36;google_apis;x86_64
@@ -37,7 +37,7 @@ jobs:
             cores: 2
             cpu-threshold: 25
             timeout-seconds: 1800
-            partition-size: 4096
+            partition-size: 2048
     name: Android (${{ matrix.platform.name }})
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 60
@@ -102,6 +102,9 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
+        # Suppress ANR dialogs that crash Mono's Finalizer thread (jit-info.c:918)
+        $ADB -s emulator-5554 shell settings put global anr_show_background 0 || true
+        $ADB -s emulator-5554 shell settings put secure anr_show_background 0 || true
         $ADB -s emulator-5554 shell am force-stop com.android.phone || true
         sleep 30
         dotnet android device list
