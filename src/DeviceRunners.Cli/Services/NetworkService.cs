@@ -92,23 +92,31 @@ public class NetworkService
                 var dataToken = dataTimeoutSource?.Token ?? cancellationToken;
 
                 int bytesRead;
-                while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
+                try
                 {
-                    var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-                    connectionData.Append(data);
-
-                    // Emit data received event for each chunk
-                    DataReceived?.Invoke(this, new DataReceivedEventArgs
+                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
                     {
-                        Data = data,
-                        RemoteEndPoint = remoteEndPoint
-                    });
+                        var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                        connectionData.Append(data);
 
-                    // Reset data timeout on each data received (if non-interactive)
-                    if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataAgainTimeout)
-                    {
-                        dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataAgainTimeout));
+                        // Emit data received event for each chunk
+                        DataReceived?.Invoke(this, new DataReceivedEventArgs
+                        {
+                            Data = data,
+                            RemoteEndPoint = remoteEndPoint
+                        });
+
+                        // Reset data timeout on each data received (if non-interactive)
+                        if (dataTimeoutSource is not null && dataTimeoutSeconds is int dataAgainTimeout)
+                        {
+                            dataTimeoutSource.CancelAfter(TimeSpan.FromSeconds(dataAgainTimeout));
+                        }
                     }
+                }
+                catch (OperationCanceledException) when (connectionData.Length > 0)
+                {
+                    // Data timeout fired but we already have data — treat as normal completion
+                    // (the remote end may not close the connection cleanly)
                 }
 
                 // Emit connection closed event
