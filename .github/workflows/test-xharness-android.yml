@@ -74,7 +74,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         AVD_CONFIG="$HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/config.ini"
-        sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=4096M/' "$AVD_CONFIG"
+        sed -i 's/disk.dataPartition.size.*/disk.dataPartition.size = 4294967296/' "$AVD_CONFIG"
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
