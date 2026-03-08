@@ -76,6 +76,11 @@ jobs:
         echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
     - name: Create Emulator
       run: dotnet android avd create --name ${{ env.TEST_EMULATOR_NAME }} --sdk '${{ env.TEST_EMULATOR_IMAGE }}' --force
+    - name: Reduce AVD Data Partition Size
+      if: runner.os == 'Linux'
+      run: |
+        AVD_CONFIG="$HOME/.android/avd/${{ env.TEST_EMULATOR_NAME }}.avd/config.ini"
+        sed -i 's/disk.dataPartition.size=.*/disk.dataPartition.size=4096M/' "$AVD_CONFIG"
     - name: Enable KVM
       if: runner.os == 'Linux'
       run: |
