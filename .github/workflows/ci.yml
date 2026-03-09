@@ -139,6 +139,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-android-linux
 
   tcp-ios:
@@ -146,6 +147,7 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-ios
 
   tcp-macos:
@@ -153,6 +155,7 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-macos
 
   tcp-windows:
@@ -160,6 +163,7 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows
 
   tcp-windows-unpackaged:
@@ -167,6 +171,7 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows-unpackaged
 
   # ── XHarness Device Tests ──────────────────────────────────
@@ -176,6 +181,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-android-linux
 
   xharness-ios:
@@ -183,6 +189,7 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-ios
 
   xharness-maccatalyst:
@@ -190,6 +197,7 @@ jobs:
     runs-on: macos-15-intel
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-maccatalyst
 
   xharness-windows:
@@ -197,4 +205,5 @@ jobs:
     runs-on: windows-2025
     timeout-minutes: 60
     steps:
+    - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-windows
