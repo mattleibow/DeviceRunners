@@ -1,0 +1,70 @@
+name: Validate Runner Architecture
+description: Validates that the runner CPU architecture matches the expected architecture for this job
+
+inputs:
+  expected-arch:
+    description: 'Expected architecture: x64 or arm64. If not provided, derived from runtime-identifier.'
+    required: false
+  runtime-identifier:
+    description: 'A .NET runtime identifier (e.g. android-x64, iossimulator-arm64). Used to derive expected-arch if not explicitly set.'
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Validate architecture
+      shell: bash
+      run: |
+        EXPECTED="${{ inputs.expected-arch }}"
+        RID="${{ inputs.runtime-identifier }}"
+
+        # Derive expected arch from RID if not explicitly provided
+        if [ -z "$EXPECTED" ] && [ -n "$RID" ]; then
+          case "$RID" in
+            *-x64|*-x86_64)  EXPECTED="x64" ;;
+            *-arm64|*-aarch64) EXPECTED="arm64" ;;
+            *)
+              echo "WARNING: Cannot derive architecture from RID '$RID', skipping validation"
+              exit 0
+              ;;
+          esac
+        fi
+
+        if [ -z "$EXPECTED" ]; then
+          echo "WARNING: No expected-arch or runtime-identifier provided, skipping validation"
+          exit 0
+        fi
+
+        ACTUAL=$(uname -m)
+
+        # Normalize: x86_64 → x64, aarch64/arm64 → arm64
+        case "$ACTUAL" in
+          x86_64|amd64)  ACTUAL_NORM="x64" ;;
+          aarch64|arm64) ACTUAL_NORM="arm64" ;;
+          *)             ACTUAL_NORM="$ACTUAL" ;;
+        esac
+
+        echo "Expected architecture: $EXPECTED"
+        echo "Actual architecture:   $ACTUAL ($ACTUAL_NORM)"
+        echo "Runtime identifier:    ${RID:-not provided}"
+        echo "Runner OS:             $RUNNER_OS"
+        echo "Runner name:           ${RUNNER_NAME:-unknown}"
+        echo "Image OS:              ${ImageOS:-unknown}"
+
+        if [ "$ACTUAL_NORM" != "$EXPECTED" ]; then
+          echo ""
+          echo "============================================"
+          echo "ERROR: Architecture mismatch!"
+          echo "  Expected: $EXPECTED"
+          echo "  Got:      $ACTUAL_NORM ($ACTUAL)"
+          echo ""
+          echo "This usually means the wrong runner image was"
+          echo "selected in the CI matrix configuration."
+          echo ""
+          echo "GitHub Actions:  macos-15 = arm64, macos-15-intel = x64"
+          echo "Azure Pipelines: macOS-15 = x64,   macOS-15-arm64 = arm64"
+          echo "============================================"
+          exit 1
+        fi
+
+        echo "Architecture validated ✓"

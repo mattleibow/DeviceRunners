@@ -38,7 +38,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         public int DataTimeout { get; set; } = 30;
     }
 
-    public override int Execute(CommandContext context, TSettings settings)
+    public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
     {
         return ExecuteAsync(context, settings).GetAwaiter().GetResult();
     }
@@ -138,6 +138,24 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         catch (OperationCanceledException)
         {
             WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
+
+            // Check if results were partially received before the timeout
+            if (File.Exists(tcpResultsFile))
+            {
+                var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
+                if (tcpResults.Contains("Failed:"))
+                {
+                    var lines = tcpResults.Split('\n');
+                    foreach (var line in lines)
+                    {
+                        if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
+                        {
+                            return (failedCount, tcpResults);
+                        }
+                    }
+                }
+            }
+
             return (1, null);
         }
 

@@ -1,0 +1,59 @@
+name: 'TCP Windows Test'
+description: 'Run TCP-based device tests on Windows (packaged MSIX)'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-windows10.0.19041.0'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (TCP) - Windows'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      shell: pwsh
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Publish App
+      shell: pwsh
+      run: |
+        $certResult = device-runners windows cert install --project ${{ inputs.test-project }} --output Json
+        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
+        dotnet publish ${{ inputs.test-project }} `
+          -f ${{ inputs.target-framework }} `
+          -c ${{ inputs.configuration }} `
+          -p:TestingMode=NonInteractiveVisual `
+          -p:AppxPackageSigningEnabled=true `
+          -p:PackageCertificateThumbprint=$fingerprint `
+          -p:PackageCertificateKeyFile="" `
+          /bl:./artifacts/logs/msbuild-publish.binlog
+        device-runners windows cert uninstall --fingerprint $fingerprint
+    - name: Run Tests
+      shell: pwsh
+      run: |
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
+        if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
+        device-runners windows test --app $msix --results-directory artifacts/test-results
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

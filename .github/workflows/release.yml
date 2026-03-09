@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  pack:
+    name: Pack
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - name: Package NuGets
+      shell: pwsh
+      run: |
+        $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
+        echo "PACKAGE VERSION: $VERSION"
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Pack Logs - Windows
+        path: ./artifacts/logs
+
+  publish:
+    name: Publish NuGet Packages
+    needs: pack
+    runs-on: windows-2025
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: NuGet
+        path: artifacts
+    - run: dir artifacts
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: nuget-login
+      with:
+        user: ${{ secrets.NUGET_USER }}
+    - name: NuGet push
+      run: dotnet nuget push artifacts\*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

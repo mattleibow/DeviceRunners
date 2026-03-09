@@ -32,7 +32,7 @@ public class PortListenerCommand(IAnsiConsole console) : BaseCommand<PortListene
         public int? DataTimeout { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         return ExecuteAsync(context, settings).GetAwaiter().GetResult();
     }

@@ -19,7 +19,7 @@ public class AndroidAppInstallCommand(IAnsiConsole console) : BaseCommand<Androi
         public string? Device { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

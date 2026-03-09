@@ -1,0 +1,154 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ── Build ──────────────────────────────────────────────────
+
+  build:
+    name: Build - ${{ matrix.os-name }} (${{ matrix.configuration }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+          configuration: debug
+        - runner: windows-2025
+          os-name: Windows
+          configuration: release
+        - runner: macos-15-intel
+          os-name: macOS
+          configuration: debug
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Build ${{ matrix.os-name }} (${{ matrix.configuration }})
+        path: ./artifacts/logs
+
+  # ── Unit Tests ─────────────────────────────────────────────
+
+  test:
+    name: Test - ${{ matrix.os-name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+        - runner: macos-15-intel
+          os-name: macOS
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Test ${{ matrix.os-name }}
+        path: ./artifacts/logs
+
+  # ── Pack ────────────────────────────────────────────────────
+
+  pack:
+    name: Pack
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - name: Package NuGets
+      shell: pwsh
+      run: |
+        $VERSION="0.999-ci.$env:GITHUB_RUN_ID"
+        echo "PACKAGE VERSION: $VERSION"
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Pack Logs
+        path: ./artifacts/logs
+
+  # ── TCP Device Tests ───────────────────────────────────────
+
+  tcp-android:
+    name: TCP Android (Linux)
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-android-linux
+
+  tcp-ios:
+    name: TCP iOS (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-ios
+
+  tcp-macos:
+    name: TCP macOS (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-macos
+
+  tcp-windows:
+    name: TCP Windows
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows
+
+  tcp-windows-unpackaged:
+    name: TCP Windows (Unpackaged)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows-unpackaged
+
+  # ── XHarness Device Tests ──────────────────────────────────
+
+  xharness-android:
+    name: XHarness Android (Linux)
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-android-linux
+
+  xharness-ios:
+    name: XHarness iOS (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-ios
+
+  xharness-maccatalyst:
+    name: XHarness Mac Catalyst (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-maccatalyst
+
+  xharness-windows:
+    name: XHarness Windows
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-windows

@@ -23,7 +23,7 @@ public class WindowsAppUninstallCommand(IAnsiConsole console) : BaseCommand<Wind
         public string? CertificateFingerprint { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

@@ -1,0 +1,135 @@
+name: 'XHarness Android Test (Linux)'
+description: 'Run XHarness-based device tests on Android emulator (Linux)'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-android'
+  runtime-identifier:
+    description: 'Runtime identifier'
+    default: 'android-x64'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  emulator-image:
+    description: 'Android system image'
+    default: 'system-images;android-36;google_apis;x86_64'
+  emulator-name:
+    description: 'Emulator AVD name'
+    default: 'XHarnessEmulator'
+  gpu:
+    description: 'GPU mode'
+    default: 'swiftshader_indirect'
+  cpu-threshold:
+    description: 'CPU threshold for boot detection'
+    default: '3'
+  response-threshold:
+    description: 'Max response time in seconds for stability probes'
+    default: '5'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (XHarness) - Android (Linux)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ inputs.runtime-identifier }}
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
+    - name: Install Android SDK Packages
+      shell: bash
+      run: |
+        mkdir -p ./artifacts/logs
+        dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ inputs.emulator-image }}'
+    - name: Set AVD environment variables
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+    - name: Create Emulator
+      shell: bash
+      run: dotnet android avd create --name ${{ inputs.emulator-name }} --sdk '${{ inputs.emulator-image }}' --force
+    - name: Enable KVM
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Start Emulator
+      shell: bash
+      env:
+        ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH: ./artifacts/logs/android-tool.log
+      run: |
+        dotnet android avd start -p 5554 --name ${{ inputs.emulator-name }} --no-window --gpu ${{ inputs.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ inputs.cpu-threshold }} --response-threshold ${{ inputs.response-threshold }}
+        dotnet android device list
+    - name: Display Android Tool Logs
+      if: always()
+      shell: bash
+      run: cat ./artifacts/logs/android-tool.log
+    - name: Publish App
+      shell: bash
+      run: |
+        dotnet publish ${{ inputs.test-project }} \
+          -f ${{ inputs.target-framework }} \
+          -r ${{ inputs.runtime-identifier }} \
+          -c ${{ inputs.configuration }} \
+          -p:TestingMode=XHarness \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Set ADB_EXE_PATH for XHarness
+      shell: bash
+      run: |
+        # XHarness checks ADB_EXE_PATH before falling back to its bundled adb v32.
+        # Set it to the SDK adb so XHarness uses the same adb server as the emulator.
+        SDK_ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
+        echo "ADB_EXE_PATH=$SDK_ADB" >> "$GITHUB_ENV"
+    - name: Run Tests
+      shell: bash
+      run: |
+        for i in $(seq 1 3)
+        do
+          echo "=== XHarness attempt $i ==="
+          dotnet xharness android test \
+            --timeout="00:10:00" \
+            --launch-timeout=00:10:00 \
+            --package-name com.companyname.devicetestingkitapp.devicetests \
+            --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
+            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+            --output-directory artifacts/test-results \
+            --verbosity=Debug \
+          && code=0 && break || code=$?
+          echo "=== Attempt $i failed with exit code $code ==="
+          sleep 60
+        done
+        exit $code
+    - name: Capture Logcat
+      if: always()
+      shell: bash
+      run: dotnet android device logcat --output ./artifacts/logs/logcat.txt
+    - name: Cleanup Emulator
+      if: always()
+      shell: bash
+      run: dotnet android avd delete --name ${{ inputs.emulator-name }} --force
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

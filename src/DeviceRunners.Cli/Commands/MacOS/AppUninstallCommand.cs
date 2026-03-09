@@ -15,7 +15,7 @@ public class MacOSAppUninstallCommand(IAnsiConsole console) : BaseCommand<MacOSA
         public required string App { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

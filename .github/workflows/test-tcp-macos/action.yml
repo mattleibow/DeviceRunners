@@ -1,0 +1,61 @@
+name: 'TCP macOS Test'
+description: 'Run TCP-based device tests on macOS (Mac Catalyst)'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-maccatalyst'
+  runtime-identifier:
+    description: 'Runtime identifier'
+    default: 'maccatalyst-x64'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (TCP) - macOS (x64)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ inputs.runtime-identifier }}
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      shell: bash
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Publish App
+      shell: bash
+      run: |
+        dotnet publish ${{ inputs.test-project }} \
+          -f ${{ inputs.target-framework }} \
+          -r ${{ inputs.runtime-identifier }} \
+          -c ${{ inputs.configuration }} \
+          -p:TestingMode=NonInteractiveVisual \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      shell: bash
+      run: |
+        app_bundle=$(find artifacts/bin -name "*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found in artifacts/bin"; exit 1; }
+        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

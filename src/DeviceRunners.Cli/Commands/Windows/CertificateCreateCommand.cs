@@ -25,7 +25,7 @@ public class WindowCertificateCreateCommand(IAnsiConsole console) : BaseCommand<
         public string? Project { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {
