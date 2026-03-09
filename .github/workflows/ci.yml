@@ -15,50 +15,45 @@ jobs:
 
   # ── Build ──────────────────────────────────────────────────
 
-  build-windows-debug:
-    name: Build - Windows (debug)
-    runs-on: windows-2025
+  build:
+    name: Build - ${{ matrix.os-name }} (${{ matrix.configuration }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+          configuration: debug
+        - runner: windows-2025
+          os-name: Windows
+          configuration: release
+        - runner: macos-15-intel
+          os-name: macOS
+          configuration: debug
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
-    - run: dotnet build DeviceRunners.sln --configuration debug /bl:./artifacts/logs/msbuild-build.binlog
+    - run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: Logs - Build Windows (debug)
-        path: ./artifacts/logs
-
-  build-windows-release:
-    name: Build - Windows (release)
-    runs-on: windows-2025
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/setup-tools
-    - run: dotnet build DeviceRunners.sln --configuration release /bl:./artifacts/logs/msbuild-build.binlog
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: Logs - Build Windows (release)
-        path: ./artifacts/logs
-
-  build-macos-debug:
-    name: Build - macOS (debug)
-    runs-on: macos-15-intel
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/setup-tools
-    - run: dotnet build DeviceRunners.sln --configuration debug /bl:./artifacts/logs/msbuild-build.binlog
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: Logs - Build macOS (debug)
+        name: Logs - Build ${{ matrix.os-name }} (${{ matrix.configuration }})
         path: ./artifacts/logs
 
   # ── Unit Tests ─────────────────────────────────────────────
 
-  test-windows:
-    name: Test - Windows
-    runs-on: windows-2025
+  test:
+    name: Test - ${{ matrix.os-name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+        - runner: macos-15-intel
+          os-name: macOS
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
@@ -66,20 +61,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: Logs - Test Windows
-        path: ./artifacts/logs
-
-  test-macos:
-    name: Test - macOS
-    runs-on: macos-15-intel
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/setup-tools
-    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
-    - uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: Logs - Test macOS
+        name: Logs - Test ${{ matrix.os-name }}
         path: ./artifacts/logs
 
   # ── Pack & Publish ─────────────────────────────────────────
