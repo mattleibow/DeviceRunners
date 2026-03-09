@@ -62,6 +62,30 @@ jobs:
         name: Logs - Test ${{ matrix.os-name }}
         path: ./artifacts/logs
 
+  # ── Pack ────────────────────────────────────────────────────
+
+  pack:
+    name: Pack
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - name: Package NuGets
+      shell: pwsh
+      run: |
+        $VERSION="0.999-ci.$env:GITHUB_RUN_ID"
+        echo "PACKAGE VERSION: $VERSION"
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Pack Logs
+        path: ./artifacts/logs
+
   # ── TCP Device Tests ───────────────────────────────────────
 
   tcp-android:
