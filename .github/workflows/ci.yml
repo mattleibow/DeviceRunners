@@ -1,0 +1,209 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main, 'releases/**' ]
+  release:
+    types: [ published ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ── Build ──────────────────────────────────────────────────
+
+  build-windows-debug:
+    name: Build - Windows (debug)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet build DeviceRunners.sln --configuration debug /bl:./artifacts/logs/msbuild-build.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Build Windows (debug)
+        path: ./artifacts/logs
+
+  build-windows-release:
+    name: Build - Windows (release)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet build DeviceRunners.sln --configuration release /bl:./artifacts/logs/msbuild-build.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Build Windows (release)
+        path: ./artifacts/logs
+
+  build-macos-debug:
+    name: Build - macOS (debug)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet build DeviceRunners.sln --configuration debug /bl:./artifacts/logs/msbuild-build.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Build macOS (debug)
+        path: ./artifacts/logs
+
+  # ── Unit Tests ─────────────────────────────────────────────
+
+  test-windows:
+    name: Test - Windows
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Test Windows
+        path: ./artifacts/logs
+
+  test-macos:
+    name: Test - macOS
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - Test macOS
+        path: ./artifacts/logs
+
+  # ── Pack & Publish ─────────────────────────────────────────
+
+  pack:
+    name: Pack
+    runs-on: windows-2025
+    env:
+      NUPKG_MAJOR: 0.999
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - name: Package NuGets
+      shell: pwsh
+      run: |
+        $VERSION="$env:NUPKG_MAJOR-ci.$env:GITHUB_RUN_ID"
+        if ($env:GITHUB_EVENT_NAME -eq "release") {
+          $VERSION = $env:GITHUB_REF.Substring($env:GITHUB_REF.LastIndexOf('/') + 1)
+        }
+        echo "PACKAGE VERSION: $VERSION"
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog
+    - uses: actions/upload-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Pack Logs - Windows
+        path: ./artifacts/logs
+
+  publish:
+    name: Publish NuGet Packages
+    needs: pack
+    runs-on: windows-2025
+    if: github.event_name == 'release'
+    env:
+      NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: NuGet
+        path: artifacts
+    - run: dir artifacts
+    - uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        source-url: ${{ env.NUGET_URL }}
+      env:
+        NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }}
+    - run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
+
+  # ── TCP Device Tests ───────────────────────────────────────
+
+  tcp-android:
+    name: TCP Android (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-android-linux
+
+  tcp-ios:
+    name: TCP iOS (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-ios
+
+  tcp-macos:
+    name: TCP macOS (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-macos
+
+  tcp-windows:
+    name: TCP Windows
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows
+
+  tcp-windows-unpackaged:
+    name: TCP Windows (Unpackaged)
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows-unpackaged
+
+  # ── XHarness Device Tests ──────────────────────────────────
+
+  xharness-android:
+    name: XHarness Android (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-android-linux
+
+  xharness-ios:
+    name: XHarness iOS (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-ios
+
+  xharness-maccatalyst:
+    name: XHarness Mac Catalyst (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-maccatalyst
+
+  xharness-windows:
+    name: XHarness Windows
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-xharness-windows
