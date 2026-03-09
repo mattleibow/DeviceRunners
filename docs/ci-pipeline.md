@@ -26,9 +26,11 @@ Tools are restored via `dotnet tool restore` in the shared setup step. Versions 
 **Single workflow / pipeline** with multiple jobs organized as:
 - **Build** — matrix of OS × configuration (Windows debug, Windows release, macOS debug)
 - **Test** — matrix of OS (Windows, macOS) running unit tests
-- **Pack** — NuGet packaging on Windows
-- **Publish** — NuGet publishing (release events only)
 - **Device tests** — individual jobs using composite actions (GH) or templates (AzDO)
+
+A **separate Release workflow** (GitHub Actions) handles pack and publish, triggered only on release events. This isolates secret access from the CI workflow.
+
+**Azure Pipelines** has pack in its single pipeline (no publish — that's handled via GitHub releases).
 
 Each device test is a **self-contained composite action or template** with its own parameters and defaults. Users can copy any single action/template to use as a reference or starting point.
 
@@ -57,7 +59,8 @@ What it does:
 
 | File | Type | Description |
 |---|---|---|
-| `ci.yml` | **Workflow** | Single workflow with build, test, pack, publish, and all device test jobs |
+| `ci.yml` | **Workflow** | CI workflow with build, test, and all device test jobs |
+| `release.yml` | **Workflow** | Release workflow with pack and publish (triggered on release only) |
 | `setup-tools/action.yml` | Composite action | Shared setup (Xcode, .NET, MAUI, tools) |
 | `validate-arch/action.yml` | Composite action | CPU architecture validation |
 | `test-tcp-android-linux/action.yml` | Composite action | TCP Android tests on Linux |
