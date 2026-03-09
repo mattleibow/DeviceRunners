@@ -44,7 +44,8 @@ runs:
     - name: Run Tests
       shell: bash
       run: |
-        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }} -name "*.app" -type d)
+        app_bundle=$(find artifacts/bin -name "*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found in artifacts/bin"; exit 1; }
         device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
     - name: Clean up build artifacts before upload
       if: always()

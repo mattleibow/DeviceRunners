@@ -119,7 +119,6 @@ jobs:
   tcp-android:
     name: TCP Android (Linux)
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-android-linux
@@ -127,7 +126,6 @@ jobs:
   tcp-ios:
     name: TCP iOS (x64)
     runs-on: macos-15-intel
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-ios
@@ -135,7 +133,6 @@ jobs:
   tcp-macos:
     name: TCP macOS (x64)
     runs-on: macos-15-intel
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-macos
@@ -143,7 +140,6 @@ jobs:
   tcp-windows:
     name: TCP Windows
     runs-on: windows-2025
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows
@@ -151,7 +147,6 @@ jobs:
   tcp-windows-unpackaged:
     name: TCP Windows (Unpackaged)
     runs-on: windows-2025
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows-unpackaged
@@ -161,7 +156,6 @@ jobs:
   xharness-android:
     name: XHarness Android (Linux)
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-android-linux
@@ -169,7 +163,6 @@ jobs:
   xharness-ios:
     name: XHarness iOS (x64)
     runs-on: macos-15-intel
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-ios
@@ -177,7 +170,6 @@ jobs:
   xharness-maccatalyst:
     name: XHarness Mac Catalyst (x64)
     runs-on: macos-15-intel
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-maccatalyst
@@ -185,7 +177,6 @@ jobs:
   xharness-windows:
     name: XHarness Windows
     runs-on: windows-2025
-    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-windows

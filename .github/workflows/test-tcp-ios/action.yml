@@ -59,7 +59,8 @@ runs:
     - name: Run Tests
       shell: bash
       run: |
-        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }} -name "*.app" -type d)
+        app_bundle=$(find artifacts/bin -name "*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found in artifacts/bin"; exit 1; }
         device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
     - name: Cleanup Simulator
       if: always()

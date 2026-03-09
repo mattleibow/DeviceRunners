@@ -18,27 +18,20 @@ public sealed class CommandAppTester
 
 	public CommandAppResult Run(params string[] args)
 	{
-		using var console = new TestConsole();
+		var console = new TestConsole();
+		console.Profile.Width = 10000;
 		var app = new CommandApp();
 
 		app.Configure(config =>
 		{
 			config.ConfigureConsole(console);
-			config.PropagateExceptions();
 
 			foreach (var configure in _configurations)
 				configure(config);
 		});
 
-		try
-		{
-			var exitCode = app.Run(args);
-			return new CommandAppResult(exitCode, console.Output);
-		}
-		catch (Exception ex)
-		{
-			return new CommandAppResult(-1, console.Output + ex.Message);
-		}
+		var exitCode = app.Run(args);
+		return new CommandAppResult(exitCode, console.Output);
 	}
 }
 

@@ -42,7 +42,8 @@ runs:
     - name: Run Tests
       shell: pwsh
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1).FullName
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
+        if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
         device-runners windows test --app $msix --results-directory artifacts/test-results
     - name: Clean up build artifacts before upload
       if: always()
