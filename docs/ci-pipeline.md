@@ -1,6 +1,6 @@
 # CI Pipeline Configuration
 
-This document describes the CI setup for DeviceRunners. Each test job has its own workflow file (GitHub Actions) or template file (Azure Pipelines). All device interaction uses the **dotnet CLI tools only** — no native `xcrun`, `simctl`, `adb`, or SDK tools are invoked directly.
+This document describes the CI setup for DeviceRunners. There is a **single CI workflow** (GitHub Actions) and a **single pipeline** (Azure Pipelines), each using composite actions or templates for device test jobs. All device interaction uses the **dotnet CLI tools only** — no native `xcrun`, `simctl`, `adb`, or SDK tools are invoked directly.
 
 ## Tooling
 
@@ -8,30 +8,37 @@ All device and emulator management uses three dotnet CLI tools, configured in `.
 
 | Tool | NuGet Package | Command | Purpose |
 |---|---|---|---|
-| AndroidSdk.Tool | `androidsdk.tool` 0.34.0 | `dotnet android` | Android SDK, AVD, emulator, device management |
-| AppleDev.Tools | `appledev.tools` 0.8.7 | `dotnet apple` | iOS/macOS simulator management |
-| XHarness | `microsoft.dotnet.xharness.cli` 11.0.0-prerelease.26107.1 | `dotnet xharness` | Cross-platform test execution |
+| AndroidSdk.Tool | `androidsdk.tool` | `dotnet android` | Android SDK, AVD, emulator, device management |
+| AppleDev.Tools | `appledev.tools` | `dotnet apple` | iOS/macOS simulator management |
+| XHarness | `microsoft.dotnet.xharness.cli` | `dotnet xharness` | Cross-platform test execution |
 
-Tools are restored via `dotnet tool restore` in the shared setup step.
+Tools are restored via `dotnet tool restore` in the shared setup step. Versions are pinned in `.config/dotnet-tools.json`.
 
 ## CI Services
 
 | Service | Entrypoint | Triggers |
 |---|---|---|
-| GitHub Actions | Individual `.github/workflows/*.yml` files | PRs, pushes to `main`/`releases/**` |
-| Azure Pipelines | `.azure/azure-pipelines.yml` (orchestrator) | PRs, pushes to `main`/`releases/**` |
+| GitHub Actions | `.github/workflows/ci.yml` (single workflow) | PRs, pushes to `main`/`releases/**`, releases |
+| Azure Pipelines | `.azure/azure-pipelines.yml` (single pipeline) | PRs, pushes to `main`/`releases/**` |
 
 ### Architecture
 
-Each test job is a **self-contained file** with its own parameters and defaults. Users can copy any single file to use as a reference or starting point.
+**Single workflow / pipeline** with multiple jobs organized as:
+- **Build** — matrix of OS × configuration (Windows debug, Windows release, macOS debug)
+- **Test** — matrix of OS (Windows, macOS) running unit tests
+- **Pack** — NuGet packaging on Windows
+- **Publish** — NuGet publishing (release events only)
+- **Device tests** — individual jobs using composite actions (GH) or templates (AzDO)
 
-**GitHub Actions**: Each workflow file (e.g., `test-tcp-android.yml`) is completely standalone with its own `on:` triggers, `concurrency:` group, and job definition. Shared setup uses the composite action at `.github/workflows/setup-tools/`.
+Each device test is a **self-contained composite action or template** with its own parameters and defaults. Users can copy any single action/template to use as a reference or starting point.
 
-**Azure Pipelines**: Each template file (e.g., `.azure/templates/test-tcp-android.yml`) defines a reusable job with `parameters:` and defaults. The thin orchestrator at `.azure/azure-pipelines.yml` calls each template.
+**GitHub Actions**: The single `ci.yml` defines all jobs. Device test jobs call composite actions under `.github/workflows/test-*/action.yml`. Shared setup uses the composite action at `.github/workflows/setup-tools/action.yml`.
+
+**Azure Pipelines**: The single `azure-pipelines.yml` defines build/test/pack stages inline and calls templates under `.azure/templates/test-*.yml` for device tests. Shared setup uses `.azure/templates/setup-tools.yml`.
 
 ## Shared Setup
 
-Both CI services share the same setup logic via a reusable action/template:
+Both CI services share equivalent setup logic:
 
 | File | Purpose |
 |---|---|
@@ -44,43 +51,41 @@ What it does:
 3. Installs **MAUI workloads** (`maui` on macOS/Windows, `maui-android` on Linux)
 4. Runs `dotnet tool restore` (installs XHarness, AndroidSdk.Tool, AppleDev.Tools)
 
-## Workflow Files
+## File Reference
 
 ### GitHub Actions (`.github/workflows/`)
 
-| Workflow File | Description |
-|---|---|
-| `build.yml` | Build on Windows (debug + release) and macOS (debug) |
-| `test.yml` | Unit tests on Windows and macOS |
-| `pack.yml` | Pack NuGet packages |
-| `test-tcp-android.yml` | TCP Android tests (Linux + macOS matrix) |
-| `test-tcp-ios.yml` | TCP iOS simulator tests |
-| `test-tcp-macos.yml` | TCP Mac Catalyst tests |
-| `test-tcp-windows.yml` | TCP Windows (MSIX packaged) tests |
-| `test-tcp-windows-unpackaged.yml` | TCP Windows (unpackaged EXE) tests |
-| `test-xharness-android.yml` | XHarness Android tests (Linux + macOS matrix) |
-| `test-xharness-ios.yml` | XHarness iOS simulator tests |
-| `test-xharness-maccatalyst.yml` | XHarness Mac Catalyst tests |
-| `test-xharness-windows.yml` | XHarness Windows tests |
+| File | Type | Description |
+|---|---|---|
+| `ci.yml` | **Workflow** | Single workflow with build, test, pack, publish, and all device test jobs |
+| `setup-tools/action.yml` | Composite action | Shared setup (Xcode, .NET, MAUI, tools) |
+| `validate-arch/action.yml` | Composite action | CPU architecture validation |
+| `test-tcp-android-linux/action.yml` | Composite action | TCP Android tests on Linux |
+| `test-tcp-ios/action.yml` | Composite action | TCP iOS simulator tests |
+| `test-tcp-macos/action.yml` | Composite action | TCP Mac Catalyst tests |
+| `test-tcp-windows/action.yml` | Composite action | TCP Windows (MSIX packaged) tests |
+| `test-tcp-windows-unpackaged/action.yml` | Composite action | TCP Windows (unpackaged EXE) tests |
+| `test-xharness-android-linux/action.yml` | Composite action | XHarness Android tests on Linux |
+| `test-xharness-ios/action.yml` | Composite action | XHarness iOS simulator tests |
+| `test-xharness-maccatalyst/action.yml` | Composite action | XHarness Mac Catalyst tests |
+| `test-xharness-windows/action.yml` | Composite action | XHarness Windows tests |
 
-### Azure Pipelines (`.azure/templates/`)
+### Azure Pipelines (`.azure/`)
 
-| Template File | Description |
-|---|---|
-| `build.yml` | Build on Windows (debug + release) and macOS (debug) |
-| `test.yml` | Unit tests on Windows and macOS |
-| `pack.yml` | Pack NuGet packages |
-| `test-tcp-android.yml` | TCP Android tests (Linux + macOS matrix) |
-| `test-tcp-ios.yml` | TCP iOS simulator tests |
-| `test-tcp-macos.yml` | TCP Mac Catalyst tests |
-| `test-tcp-windows.yml` | TCP Windows (MSIX packaged) tests |
-| `test-tcp-windows-unpackaged.yml` | TCP Windows (unpackaged EXE) tests |
-| `test-xharness-android.yml` | XHarness Android tests (Linux + macOS matrix) |
-| `test-xharness-ios.yml` | XHarness iOS simulator tests |
-| `test-xharness-maccatalyst.yml` | XHarness Mac Catalyst tests |
-| `test-xharness-windows.yml` | XHarness Windows tests |
-| `setup-tools.yml` | Shared setup (Xcode, .NET, MAUI, tools) |
-| `validate-arch.yml` | CPU architecture validation |
+| File | Type | Description |
+|---|---|---|
+| `azure-pipelines.yml` | **Pipeline** | Single pipeline with build, test, pack (inline), and device test stages |
+| `templates/setup-tools.yml` | Step template | Shared setup (Xcode, .NET, MAUI, tools) |
+| `templates/validate-arch.yml` | Step template | CPU architecture validation |
+| `templates/test-tcp-android.yml` | Job template | TCP Android tests (Linux) |
+| `templates/test-tcp-ios.yml` | Job template | TCP iOS simulator tests |
+| `templates/test-tcp-macos.yml` | Job template | TCP Mac Catalyst tests |
+| `templates/test-tcp-windows.yml` | Job template | TCP Windows (MSIX packaged) tests |
+| `templates/test-tcp-windows-unpackaged.yml` | Job template | TCP Windows (unpackaged EXE) tests |
+| `templates/test-xharness-android.yml` | Job template | XHarness Android tests (Linux) |
+| `templates/test-xharness-ios.yml` | Job template | XHarness iOS simulator tests |
+| `templates/test-xharness-maccatalyst.yml` | Job template | XHarness Mac Catalyst tests |
+| `templates/test-xharness-windows.yml` | Job template | XHarness Windows tests |
 
 ## Supported Platform Matrix
 
@@ -89,15 +94,13 @@ What it does:
 | Host OS | Host Arch | API Level | Emulator Arch | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
 |---|---|---|---|---|---|---|---|---|
 | Linux | x64 | 36 | x86_64 | ubuntu-24.04 | ubuntu-24.04 | ✅ | ✅ | **Stable** — KVM hardware accel |
-| macOS | x64 | 36 | x86_64 | macos-15-intel | macOS-15 | ✅ | ✅ | **Stable** — software emulation, slower |
-| macOS | arm64 | any | arm64-v8a | macos-15 | macOS-15-arm64 | ❌ | ❌ | **Blocked** — HVF not available on CI runners |
+| macOS | arm64 | any | arm64-v8a | — | — | ❌ | ❌ | **Blocked** — HVF not available on CI runners |
 
 ### iOS (Simulator)
 
 | Host Arch | RID | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
 |---|---|---|---|---|---|---|
 | x64 | iossimulator-x64 | macos-15-intel | macOS-15 | ✅ | ✅ | **Stable** — Rosetta translation |
-| arm64 | iossimulator-arm64 | macos-15 | macOS-15-arm64 | ✅ | ✅ | **Stable** — native speed |
 
 ### Mac Catalyst
 
@@ -125,11 +128,11 @@ dotnet android sdk install --package 'platform-tools' --package 'emulator' \
 dotnet android avd create --name MyEmulator \
   --sdk 'system-images;android-36;google_apis;x86_64' --force
 
-# Start emulator with stability flags
+# Start emulator (--wait blocks until booted)
 dotnet android avd start -p 5554 --name MyEmulator \
-  --no-window --gpu guest --no-snapshot --no-audio --no-boot-anim \
+  --no-window --gpu swiftshader_indirect --no-snapshot --no-audio --no-boot-anim \
   --wait --no-animations \
-  --cpu-threshold 25 --cores 2 --timeout 1800 --response-threshold 5
+  --cpu-threshold 3 --response-threshold 5
 
 # List connected devices
 dotnet android device list
@@ -142,11 +145,10 @@ dotnet android avd delete --name MyEmulator --force
 ```
 
 Key flags for `avd start`:
-- `--wait`: Block until the emulator is fully booted
+- `--wait`: Block until the emulator is fully booted (default timeout is infinite)
 - `--no-animations`: Disable window and transition animations (improves test reliability)
 - `--cpu-threshold N`: Wait until CPU load drops below N% before returning
-- `--response-threshold N`: Require N consecutive responsive checks under threshold
-- `--timeout N`: Maximum seconds to wait for boot
+- `--response-threshold N`: Require N consecutive responsive checks under the CPU threshold
 
 ### iOS Simulator (via `dotnet apple`)
 
@@ -155,8 +157,8 @@ Key flags for `avd start`:
 RESULT=$(dotnet apple simulator create "MySimulator" --device-type "iPhone 16" --format json)
 UDID=$(echo "$RESULT" | jq -r '.udid')
 
-# Boot simulator (blocks until ready)
-dotnet apple simulator boot "$UDID" --wait --timeout 300
+# Boot simulator (--wait blocks until ready, default timeout is sufficient)
+dotnet apple simulator boot "$UDID" --wait
 
 # Delete simulator
 dotnet apple simulator delete --force "MySimulator"
@@ -204,13 +206,6 @@ The `validate-arch` composite action / template runs as the first step in every 
 
 ## Caveats & Known Issues
 
-### Android macOS x64 Emulator Stability
-
-The Android emulator on macOS x64 uses software emulation (no KVM/HVF), which is significantly slower. Mitigations:
-- The `--response-threshold 5` and `--cpu-threshold` flags on `avd start` ensure the emulator is consistently responsive before proceeding
-- XHarness tests use a 3-attempt retry loop with 60-second sleep between attempts
-- TCP Android macOS uses a 900-second connection timeout (vs 120s on Linux)
-
 ### ARM64 Android Emulation
 
 ARM64 Android emulation requires HVF. Neither GH Actions nor AzDO macOS ARM64 runners provide HVF access:
@@ -238,52 +233,46 @@ testRid: android-x64
 | Host | GPU Mode | Notes |
 |---|---|---|
 | Linux (KVM) | `swiftshader_indirect` | Software rendering, works with headless KVM |
-| macOS (x64) | `guest` | Guest-side rendering, required for software emulation |
 
 ## How to Expand the Matrix
 
 ### Add an API level to Android
 
-Add a matrix entry in `test-tcp-android.yml` or `test-xharness-android.yml`:
+Create a new composite action (GH) or add parameters in the template (AzDO):
 
 ```yaml
-# GitHub Actions
-- name: Linux (API 34)
-  os: ubuntu-24.04
-  emulator-image: system-images;android-34;google_apis;x86_64
-  runtime-identifier: android-x64
-  connection-timeout: 120
-  gpu: swiftshader_indirect
-  cores: 2
-  cpu-threshold: 3
-  timeout-seconds: 1800
-```
+# GitHub Actions — new composite action or override inputs in ci.yml
+# The composite actions accept inputs for emulator-image, gpu, cpu-threshold, etc.
+# Example: create test-tcp-android-linux-api34/action.yml based on test-tcp-android-linux/
 
-```yaml
-# Azure Pipelines
-- name: Linux_API34
-  poolImage: 'ubuntu-24.04'
-  emulatorImage: 'system-images;android-34;google_apis;x86_64'
-  testRid: android-x64
-  connectionTimeout: 120
-  emulatorGpu: swiftshader_indirect
-  emulatorCores: 2
-  cpuThreshold: 3
-  timeoutSeconds: 1800
+# Azure Pipelines — pass parameters to the template
+- template: templates/test-tcp-android.yml
+  parameters:
+    emulatorImage: 'system-images;android-34;google_apis;x86_64'
+    testRid: android-x64
+    connectionTimeout: 120
+    emulatorGpu: swiftshader_indirect
+    cpuThreshold: 3
 ```
 
 ### Switch iOS from x64 to arm64
 
-```yaml
-# Before (x64)
-platform:
-  - name: x64
-    os: macos-15-intel
-    runtime-identifier: iossimulator-x64
+Update the runner and RID in `ci.yml` (GH) or `azure-pipelines.yml` (AzDO):
 
-# After (arm64)
-platform:
-  - name: arm64
-    os: macos-15
-    runtime-identifier: iossimulator-arm64
+```yaml
+# GitHub Actions — change the job's runs-on and composite action inputs
+tcp-ios:
+  name: TCP iOS (arm64)
+  runs-on: macos-15          # ARM64
+  steps:
+  - uses: actions/checkout@v4
+  - uses: ./.github/workflows/test-tcp-ios
+    with:
+      runtime-identifier: iossimulator-arm64
+
+# Azure Pipelines — change pool and parameter
+- template: templates/test-tcp-ios.yml
+  parameters:
+    poolImage: 'macOS-15-arm64'
+    testRid: iossimulator-arm64
 ```
