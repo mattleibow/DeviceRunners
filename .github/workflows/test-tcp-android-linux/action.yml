@@ -23,18 +23,12 @@ inputs:
   gpu:
     description: 'GPU mode'
     default: 'swiftshader_indirect'
-  cores:
-    description: 'Emulator CPU cores'
-    default: '2'
   cpu-threshold:
     description: 'CPU threshold for boot detection'
     default: '3'
-  timeout-seconds:
-    description: 'Emulator boot timeout'
-    default: '1800'
-  partition-size:
-    description: 'Data partition size in MB'
-    default: '2048'
+  response-threshold:
+    description: 'Max response time in seconds for stability probes'
+    default: '5'
   connection-timeout:
     description: 'TCP connection timeout in seconds'
     default: '120'
@@ -85,7 +79,7 @@ runs:
       env:
         ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH: ./artifacts/logs/android-tool.log
       run: |
-        dotnet android avd start -p 5554 --name ${{ inputs.emulator-name }} --no-window --gpu ${{ inputs.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ inputs.cpu-threshold }} --cores ${{ inputs.cores }} --timeout ${{ inputs.timeout-seconds }} --response-threshold 5 --partition-size ${{ inputs.partition-size }}
+        dotnet android avd start -p 5554 --name ${{ inputs.emulator-name }} --no-window --gpu ${{ inputs.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ inputs.cpu-threshold }} --response-threshold ${{ inputs.response-threshold }}
         dotnet android device list
     - name: Display Android Tool Logs
       if: always()

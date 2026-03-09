@@ -40,7 +40,7 @@ runs:
     - name: Boot Simulator
       shell: bash
       run: |
-        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
+        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait
         sleep 30
     - name: Publish App
       shell: bash
@@ -63,7 +63,7 @@ runs:
             --launch-timeout=00:10:00 \
             --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/DeviceTestingKitApp.DeviceTests.app \
             --output-directory artifacts/test-results \
-          && code=0 && break || code=$? && echo "Attempt $i failed (exit $code), rebooting simulator..." && dotnet apple simulator shutdown "${{ steps.simulator.outputs.udid }}" && sleep 5 && dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300 && sleep 30
+          && code=0 && break || code=$? && echo "Attempt $i failed (exit $code), rebooting simulator..." && dotnet apple simulator shutdown "${{ steps.simulator.outputs.udid }}" && sleep 5 && dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait && sleep 30
         done
         exit $code
     - name: Cleanup Simulator

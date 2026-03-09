@@ -45,7 +45,7 @@ runs:
     - name: Boot Simulator
       shell: bash
       run: |
-        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
+        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait
         sleep 10
     - name: Publish App
       shell: bash
