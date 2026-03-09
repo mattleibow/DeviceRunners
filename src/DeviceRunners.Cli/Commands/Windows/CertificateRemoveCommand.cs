@@ -15,7 +15,7 @@ public class WindowCertificateRemoveCommand(IAnsiConsole console) : BaseCommand<
         public required string Fingerprint { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

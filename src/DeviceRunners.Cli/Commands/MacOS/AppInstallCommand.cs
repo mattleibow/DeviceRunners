@@ -15,7 +15,7 @@ public class MacOSAppInstallCommand(IAnsiConsole console) : BaseCommand<MacOSApp
         public required string App { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

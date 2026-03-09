@@ -19,7 +19,7 @@ public class WindowsAppInstallCommand(IAnsiConsole console) : BaseCommand<Window
         public string? Certificate { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings)
+    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {

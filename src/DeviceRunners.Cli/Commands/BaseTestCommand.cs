@@ -38,7 +38,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         public int DataTimeout { get; set; } = 30;
     }
 
-    public override int Execute(CommandContext context, TSettings settings)
+    public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
     {
         return ExecuteAsync(context, settings).GetAwaiter().GetResult();
     }

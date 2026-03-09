@@ -1,6 +1,5 @@
 using DeviceRunners.Cli.Commands;
 using Spectre.Console.Cli;
-using Spectre.Console.Testing;
 
 namespace DeviceRunners.Cli.Tests;
 
