@@ -1,0 +1,79 @@
+name: 'TCP iOS Test'
+description: 'Run TCP-based device tests on iOS simulator'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-ios'
+  runtime-identifier:
+    description: 'Runtime identifier'
+    default: 'iossimulator-x64'
+  configuration:
+    description: 'Build configuration'
+    default: 'debug'
+  simulator-device-type:
+    description: 'Simulator device type'
+    default: 'iPhone 16'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (TCP) - iOS (x64)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ inputs.runtime-identifier }}
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      shell: bash
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Create Simulator
+      id: simulator
+      shell: bash
+      run: |
+        RESULT=$(dotnet apple simulator create "DeviceRunner-${{ github.run_id }}-tcp-ios" --device-type "${{ inputs.simulator-device-type }}" --format json)
+        echo "udid=$(echo "$RESULT" | jq -r '.udid')" >> "$GITHUB_OUTPUT"
+        dotnet apple simulator list
+    - name: Boot Simulator
+      shell: bash
+      run: |
+        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
+        sleep 10
+    - name: Publish App
+      shell: bash
+      run: |
+        dotnet build ${{ inputs.test-project }} \
+          -f ${{ inputs.target-framework }} \
+          -r ${{ inputs.runtime-identifier }} \
+          -c ${{ inputs.configuration }} \
+          -p:TestingMode=NonInteractiveVisual \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      shell: bash
+      run: |
+        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }} -name "*.app" -type d)
+        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
+    - name: Cleanup Simulator
+      if: always()
+      shell: bash
+      run: dotnet apple simulator delete --force "DeviceRunner-${{ github.run_id }}-tcp-ios"
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

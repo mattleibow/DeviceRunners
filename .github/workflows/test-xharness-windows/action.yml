@@ -1,0 +1,55 @@
+name: 'XHarness Windows Test'
+description: 'Run XHarness-based device tests on Windows'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-windows10.0.19041.0'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (XHarness) - Windows'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish App
+      shell: pwsh
+      run: |
+        $fingerprint = ./scripts/New-Certificate.ps1 -Project ${{ inputs.test-project }}
+        dotnet publish ${{ inputs.test-project }} `
+          -f ${{ inputs.target-framework }} `
+          -c ${{ inputs.configuration }} `
+          -p:TestingMode=XHarness `
+          -p:AppxPackageSigningEnabled=true `
+          -p:PackageCertificateThumbprint=$fingerprint `
+          -p:PackageCertificateKeyFile="" `
+          /bl:./artifacts/logs/msbuild-publish.binlog
+        ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
+    - name: Run Tests
+      shell: powershell
+      run: |
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1).FullName
+        ./scripts/Start-Tests.ps1 `
+          -App $msix `
+          -OutputDirectory artifacts/test-results `
+          -TestingMode XHarness
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

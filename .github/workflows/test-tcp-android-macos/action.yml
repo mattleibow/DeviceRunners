@@ -1,0 +1,138 @@
+name: 'TCP Android Test (macOS)'
+description: 'Run TCP-based device tests on Android emulator (macOS Intel)'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-android'
+  runtime-identifier:
+    description: 'Runtime identifier'
+    default: 'android-x64'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  emulator-image:
+    description: 'Android system image'
+    default: 'system-images;android-36;google_apis;x86_64'
+  emulator-name:
+    description: 'Emulator AVD name'
+    default: 'TCPTestEmulator'
+  gpu:
+    description: 'GPU mode'
+    default: 'guest'
+  cores:
+    description: 'Emulator CPU cores'
+    default: '2'
+  cpu-threshold:
+    description: 'CPU threshold for boot detection'
+    default: '25'
+  timeout-seconds:
+    description: 'Emulator boot timeout'
+    default: '1800'
+  partition-size:
+    description: 'Data partition size in MB'
+    default: '2048'
+  connection-timeout:
+    description: 'TCP connection timeout in seconds'
+    default: '900'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (TCP) - Android (macOS x64)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: ${{ inputs.runtime-identifier }}
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
+    - name: Build and Install CLI Tool
+      shell: bash
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Install Android SDK Packages
+      shell: bash
+      run: |
+        mkdir -p ./artifacts/logs
+        dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ inputs.emulator-image }}'
+    - name: Set AVD environment variables
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+    - name: Create Emulator
+      shell: bash
+      run: dotnet android avd create --name ${{ inputs.emulator-name }} --sdk '${{ inputs.emulator-image }}' --force
+    - name: Start Emulator
+      shell: bash
+      env:
+        ANDROID_TOOL_PROCESS_RUNNER_LOG_PATH: ./artifacts/logs/android-tool.log
+      run: |
+        dotnet android avd start -p 5554 --name ${{ inputs.emulator-name }} --no-window --gpu ${{ inputs.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ inputs.cpu-threshold }} --cores ${{ inputs.cores }} --timeout ${{ inputs.timeout-seconds }} --response-threshold 5 --partition-size ${{ inputs.partition-size }}
+        dotnet android device list
+    - name: Display Android Tool Logs
+      if: always()
+      shell: bash
+      run: cat ./artifacts/logs/android-tool.log
+    - name: Publish App
+      shell: bash
+      run: |
+        dotnet publish ${{ inputs.test-project }} \
+          -f ${{ inputs.target-framework }} \
+          -r ${{ inputs.runtime-identifier }} \
+          -c ${{ inputs.configuration }} \
+          -p:TestingMode=NonInteractiveVisual \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+          /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Wait for Emulator Stability
+      shell: bash
+      run: |
+        ADB="$(dotnet android sdk info --format json | jq -r '.SdkInfo.Path')/platform-tools/adb"
+        # Suppress ANR dialogs that crash Mono's Finalizer thread (jit-info.c:918)
+        # on slow x64 emulators. ANR triggers SIGQUIT to all processes.
+        $ADB -s emulator-5554 shell settings put global anr_show_background 0 || true
+        $ADB -s emulator-5554 shell settings put secure anr_show_background 0 || true
+        $ADB -s emulator-5554 shell setprop dalvik.vm.dex2oat-threads 1 || true
+        $ADB -s emulator-5554 shell am force-stop com.android.phone || true
+        $ADB -s emulator-5554 shell pm disable-user --user 0 com.android.phone || true
+        $ADB -s emulator-5554 shell pm disable-user --user 0 com.google.android.apps.wellbeing || true
+        sleep 30
+        dotnet android device list
+    - name: Run Tests
+      shell: bash
+      run: |
+        device-runners android test \
+          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+          --results-directory artifacts/test-results \
+          --connection-timeout ${{ inputs.connection-timeout }}
+    - name: Capture Logcat
+      if: always()
+      shell: bash
+      run: dotnet android device logcat --output ./artifacts/logs/logcat.txt
+    - name: Cleanup Emulator
+      if: always()
+      shell: bash
+      run: dotnet android avd delete --name ${{ inputs.emulator-name }} --force
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

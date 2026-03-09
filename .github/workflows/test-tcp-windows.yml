@@ -16,44 +16,7 @@ jobs:
   windows:
     name: TCP Windows
     runs-on: windows-2025
-    env:
-      TEST_TARGET_FRAMEWORK: net10.0-windows10.0.19041.0
-      TEST_RUNTIME_IDENTIFIER: win10-x64
-      TEST_CONFIGURATION: release
+    timeout-minutes: 60
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Build and Install CLI Tool
-      run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Publish App
-      run: |
-        $certResult = device-runners windows cert install --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj --output Json
-        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
-        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
-          -f ${{ env.TEST_TARGET_FRAMEWORK }} `
-          -c ${{ env.TEST_CONFIGURATION }} `
-          -p:TestingMode=NonInteractiveVisual `
-          -p:AppxPackageSigningEnabled=true `
-          -p:PackageCertificateThumbprint=$fingerprint `
-          -p:PackageCertificateKeyFile="" `
-          /bl:./artifacts/logs/msbuild-publish.binlog
-        device-runners windows cert uninstall --fingerprint $fingerprint
-    - name: Run Tests
-      run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "sample/test/DeviceTestingKitApp.DeviceTests/AppPackages","artifacts" | Select-Object -First 1).FullName
-        device-runners windows test --app $msix --results-directory artifacts/test-results
-    - name: Clean up build artifacts before upload
-      run: |
-        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
-        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
-      if: ${{ always() }}
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Test Results (TCP) - Windows
-        path: ./artifacts
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows

@@ -14,67 +14,9 @@ concurrency:
 jobs:
 
   ios:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - name: x64
-            os: macos-15-intel
-            runtime-identifier: iossimulator-x64
-    name: iOS (${{ matrix.platform.name }})
-    runs-on: ${{ matrix.platform.os }}
-    env:
-      TEST_TARGET_FRAMEWORK: net10.0-ios
-      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
-      TEST_CONFIGURATION: debug
-      TEST_SIMULATOR_DEVICE_TYPE: iPhone 16
-      TEST_SIMULATOR_NAME: DeviceRunner-${{ github.run_id }}-tcp-ios
+    name: iOS (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Validate Architecture
-      uses: ./.github/workflows/validate-arch
-      with:
-        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Build and Install CLI Tool
-      run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Create Simulator
-      id: simulator
-      run: |
-        RESULT=$(dotnet apple simulator create "${{ env.TEST_SIMULATOR_NAME }}" --device-type "${{ env.TEST_SIMULATOR_DEVICE_TYPE }}" --format json)
-        echo "udid=$(echo "$RESULT" | jq -r '.udid')" >> "$GITHUB_OUTPUT"
-        dotnet apple simulator list
-    - name: Boot Simulator
-      run: |
-        dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait --timeout 300
-        sleep 10
-    - name: Publish App
-      run: |
-        dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
-          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
-          -c ${{ env.TEST_CONFIGURATION }} \
-          -p:TestingMode=NonInteractiveVisual \
-          /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Run Tests
-      run: |
-        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
-        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results
-    - name: Cleanup Simulator
-      if: always()
-      run: dotnet apple simulator delete --force "${{ env.TEST_SIMULATOR_NAME }}"
-    - name: Clean up build artifacts before upload
-      run: |
-        rm -rf ./artifacts/bin
-        rm -rf ./artifacts/obj
-      if: ${{ always() }}
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Test Results (TCP) - iOS (${{ matrix.platform.name }})
-        path: ./artifacts
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-ios

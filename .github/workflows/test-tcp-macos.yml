@@ -14,53 +14,9 @@ concurrency:
 jobs:
 
   macos:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - name: x64
-            os: macos-15-intel
-            runtime-identifier: maccatalyst-x64
-            configuration: release
-    name: macOS (${{ matrix.platform.name }})
-    runs-on: ${{ matrix.platform.os }}
-    env:
-      TEST_TARGET_FRAMEWORK: net10.0-maccatalyst
-      TEST_RUNTIME_IDENTIFIER: ${{ matrix.platform.runtime-identifier }}
-      TEST_CONFIGURATION: ${{ matrix.platform.configuration }}
+    name: macOS (x64)
+    runs-on: macos-15-intel
+    timeout-minutes: 60
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Validate Architecture
-      uses: ./.github/workflows/validate-arch
-      with:
-        runtime-identifier: ${{ matrix.platform.runtime-identifier }}
-    - name: Setup Required Tools
-      uses: ./.github/workflows/setup-tools
-    - name: Build and Install CLI Tool
-      run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Publish App
-      run: |
-        dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-          -f ${{ env.TEST_TARGET_FRAMEWORK }} \
-          -r ${{ env.TEST_RUNTIME_IDENTIFIER }} \
-          -c ${{ env.TEST_CONFIGURATION }} \
-          -p:TestingMode=NonInteractiveVisual \
-          /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Run Tests
-      run: |
-        app_bundle=$(find artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ env.TEST_CONFIGURATION }}_${{ env.TEST_TARGET_FRAMEWORK }}_${{ env.TEST_RUNTIME_IDENTIFIER }} -name "*.app" -type d)
-        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results
-    - name: Clean up build artifacts before upload
-      run: |
-        rm -rf ./artifacts/bin
-        rm -rf ./artifacts/obj
-      if: ${{ always() }}
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      if: ${{ always() }}
-      with:
-        name: Test Results (TCP) - macOS (${{ matrix.platform.name }})
-        path: ./artifacts
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-macos
