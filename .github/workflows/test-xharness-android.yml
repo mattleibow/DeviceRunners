@@ -20,11 +20,3 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-xharness-android-linux
-
-  macos:
-    name: Android (macOS x64)
-    runs-on: macos-15-intel
-    timeout-minutes: 60
-    steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/workflows/test-xharness-android-macos
