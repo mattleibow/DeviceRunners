@@ -38,18 +38,18 @@ jobs:
     name: Publish NuGet Packages
     needs: pack
     runs-on: windows-2025
-    env:
-      NUGET_URL: 'https://pkgs.dev.azure.com/mattleibow/OpenSource/_packaging/test-device-runners/nuget/v3/index.json'
+    permissions:
+      id-token: write
     steps:
     - uses: actions/download-artifact@v4
       with:
         name: NuGet
         path: artifacts
     - run: dir artifacts
-    - uses: actions/setup-dotnet@v4
+    - name: NuGet login (OIDC → temp API key)
+      uses: NuGet/login@v1
+      id: nuget-login
       with:
-        dotnet-version: '10.0.x'
-        source-url: ${{ env.NUGET_URL }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.AZURE_DEVOPS_NUGET_TOKEN }}
-    - run: dotnet nuget push artifacts\*.nupkg --source $env:NUGET_URL --api-key AzureArtifacts
+        user: ${{ secrets.NUGET_USER }}
+    - name: NuGet push
+      run: dotnet nuget push artifacts\*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
