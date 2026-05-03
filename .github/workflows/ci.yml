@@ -32,7 +32,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
-    - run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
+    - run: dotnet build DeviceRunners.slnx --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
     - uses: actions/upload-artifact@v4
       if: always()
       with:
