@@ -94,6 +94,9 @@ public class NetworkService
                 int bytesRead;
                 try
                 {
+                    // NOTE: Per-chunk GetString is safe because System.Text.Json's default encoder
+                    // escapes non-ASCII into \uXXXX sequences, so our NDJSON is pure ASCII.
+                    // If future clients send raw UTF-8, replace this with a persistent Decoder.
                     while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(), dataToken)) > 0)
                     {
                         var data = Encoding.UTF8.GetString(buffer, 0, bytesRead);

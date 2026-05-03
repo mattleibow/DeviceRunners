@@ -198,6 +198,8 @@ public class TrxResultChannelFormatter : IResultChannelFormatter
 				break;
 
 			case TestResultStatus.Skipped:
+				// Emit both StdOut and ErrorInfo/Message for skip reason (matches NUnit adapter).
+				// xUnit adapter only emits ErrorInfo/Message — the extra StdOut is harmless and more informative.
 				if (r.SkipReason is not null)
 				{
 					xml.WriteStartElement("Output", XmlNs);
