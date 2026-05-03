@@ -53,4 +53,11 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		builder.AddResultChannel(svc => new TcpResultChannel(options, svc.GetService<ILoggerFactory>()?.CreateLogger<TcpResultChannel>()));
 		return builder;
 	}
+
+	public static TBuilder AddFileResultChannel<TBuilder>(this TBuilder builder, FileResultChannelOptions options)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+	{
+		builder.AddResultChannel(_ => new FileResultChannel(options));
+		return builder;
+	}
 }

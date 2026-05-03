@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="11fd7b9d-3023-4d27-9055-bfa566f15c53" name="maleib@DESKTOP-3NULBB0 2026-05-02 19:21:59" runUser="AFRICA\maleib" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-05-02T19:21:59.2114961+02:00" queuing="2026-05-02T19:21:59.2114967+02:00" start="2026-05-02T19:21:58.2283324+02:00" finish="2026-05-02T19:21:59.2171650+02:00" />
+  <TestSettings name="default" id="1a75cde6-e24f-4399-a3d3-d03728f67b9a">
+    <Deployment runDeploymentRoot="maleib_DESKTOP-3NULBB0_2026-05-02_19_21_59" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5e7122ef-7121-4936-9baa-3c2476f17ad8" testId="9ccb1a3b-3d8a-5620-def5-9d7b502c4002" testName="DeviceRunners.TrxGolden.GoldenTests.Theory_StringWithDots(value: &quot;foo.bar.baz&quot;)" computerName="DESKTOP-3NULBB0" duration="00:00:00.0001839" startTime="2026-05-02T19:21:59.1061612+02:00" endTime="2026-05-02T19:21:59.1062027+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e7122ef-7121-4936-9baa-3c2476f17ad8" />
+    <UnitTestResult executionId="20b504bb-22ca-40b7-ae8b-46b267083be8" testId="1cb9e615-c1f5-a902-ed29-f0cfd44e50e0" testName="DeviceRunners.TrxGolden.GoldenTests.PassTest" computerName="DESKTOP-3NULBB0" duration="00:00:00.0118226" startTime="2026-05-02T19:21:59.0777925+02:00" endTime="2026-05-02T19:21:59.0956121+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="20b504bb-22ca-40b7-ae8b-46b267083be8" />
+    <UnitTestResult executionId="0b35a92e-3074-487a-aba0-1630e447b876" testId="9abe6a20-12b7-6466-ab0b-c962005662cb" testName="DeviceRunners.TrxGolden.GoldenTests.SkipTest" computerName="DESKTOP-3NULBB0" duration="00:00:00.0010000" startTime="2026-05-02T19:21:59.1131814+02:00" endTime="2026-05-02T19:21:59.1134560+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b35a92e-3074-487a-aba0-1630e447b876">
+      <Output>
+        <ErrorInfo>
+          <Message>Intentionally skipped for TRX golden fixture</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="e8612423-c2fa-4c08-b7aa-dfea0e9f5e4c" testId="7c0de1ee-5960-b17f-44db-8b014d790c24" testName="DeviceRunners.TrxGolden.GoldenTests.FailTest" computerName="DESKTOP-3NULBB0" duration="00:00:00.0016006" startTime="2026-05-02T19:21:59.1064587+02:00" endTime="2026-05-02T19:21:59.1076614+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Failed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e8612423-c2fa-4c08-b7aa-dfea0e9f5e4c">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.Equal() Failure: Values differ&#xD;
+Expected: 1&#xD;
+Actual:   2</Message>
+          <StackTrace>   at DeviceRunners.TrxGolden.GoldenTests.FailTest() in D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\test\DeviceRunners.TrxGolden\GoldenTests.cs:line 25&#xD;
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)</StackTrace>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="8b509717-7ae2-468e-b52d-65759f5daeee" testId="ca476578-5561-38cc-f910-695c7ae64f95" testName="DeviceRunners.TrxGolden.GoldenTests.Theory_Int(a: 2, b: 2)" computerName="DESKTOP-3NULBB0" duration="00:00:00.0000930" startTime="2026-05-02T19:21:59.1063096+02:00" endTime="2026-05-02T19:21:59.1063345+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b509717-7ae2-468e-b52d-65759f5daeee" />
+    <UnitTestResult executionId="09be65c9-9a2c-4c09-9ae7-dbdcf8b4b74f" testId="24676775-88b0-294c-96cc-cba7a4a235c4" testName="DeviceRunners.TrxGolden.GoldenTests.Theory_Int(a: 3, b: 3)" computerName="DESKTOP-3NULBB0" duration="00:00:00.0001758" startTime="2026-05-02T19:21:59.1063725+02:00" endTime="2026-05-02T19:21:59.1063978+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09be65c9-9a2c-4c09-9ae7-dbdcf8b4b74f" />
+    <UnitTestResult executionId="0d2ce820-f3bb-427b-a231-adb26e8b7ade" testId="6382f2bc-cefa-ae80-03f4-758b4452fbc4" testName="DeviceRunners.TrxGolden.GoldenTests.Theory_StringWithDots(value: &quot;hello.world&quot;)" computerName="DESKTOP-3NULBB0" duration="00:00:00.0001929" startTime="2026-05-02T19:21:59.1055458+02:00" endTime="2026-05-02T19:21:59.1056092+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d2ce820-f3bb-427b-a231-adb26e8b7ade" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.SkipTest" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="9abe6a20-12b7-6466-ab0b-c962005662cb">
+      <Execution id="0b35a92e-3074-487a-aba0-1630e447b876" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="SkipTest" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.Theory_Int(a: 2, b: 2)" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="ca476578-5561-38cc-f910-695c7ae64f95">
+      <Execution id="8b509717-7ae2-468e-b52d-65759f5daeee" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="Theory_Int" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.Theory_StringWithDots(value: &quot;foo.bar.baz&quot;)" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="9ccb1a3b-3d8a-5620-def5-9d7b502c4002">
+      <Execution id="5e7122ef-7121-4936-9baa-3c2476f17ad8" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="Theory_StringWithDots" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.Theory_StringWithDots(value: &quot;hello.world&quot;)" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="6382f2bc-cefa-ae80-03f4-758b4452fbc4">
+      <Execution id="0d2ce820-f3bb-427b-a231-adb26e8b7ade" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="Theory_StringWithDots" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.Theory_Int(a: 3, b: 3)" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="24676775-88b0-294c-96cc-cba7a4a235c4">
+      <Execution id="09be65c9-9a2c-4c09-9ae7-dbdcf8b4b74f" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="Theory_Int" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.FailTest" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="7c0de1ee-5960-b17f-44db-8b014d790c24">
+      <Execution id="e8612423-c2fa-4c08-b7aa-dfea0e9f5e4c" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="FailTest" />
+    </UnitTest>
+    <UnitTest name="DeviceRunners.TrxGolden.GoldenTests.PassTest" storage="d:\copilot-worktrees\devicerunners\mattleibow-fictional-spork\artifacts\bin\devicerunners.trxgolden\debug\devicerunners.trxgolden.dll" id="1cb9e615-c1f5-a902-ed29-f0cfd44e50e0">
+      <Execution id="20b504bb-22ca-40b7-ae8b-46b267083be8" />
+      <TestMethod codeBase="D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\artifacts\bin\DeviceRunners.TrxGolden\debug\DeviceRunners.TrxGolden.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="DeviceRunners.TrxGolden.GoldenTests" name="PassTest" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="9ccb1a3b-3d8a-5620-def5-9d7b502c4002" executionId="5e7122ef-7121-4936-9baa-3c2476f17ad8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1cb9e615-c1f5-a902-ed29-f0cfd44e50e0" executionId="20b504bb-22ca-40b7-ae8b-46b267083be8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9abe6a20-12b7-6466-ab0b-c962005662cb" executionId="0b35a92e-3074-487a-aba0-1630e447b876" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7c0de1ee-5960-b17f-44db-8b014d790c24" executionId="e8612423-c2fa-4c08-b7aa-dfea0e9f5e4c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ca476578-5561-38cc-f910-695c7ae64f95" executionId="8b509717-7ae2-468e-b52d-65759f5daeee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24676775-88b0-294c-96cc-cba7a4a235c4" executionId="09be65c9-9a2c-4c09-9ae7-dbdcf8b4b74f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6382f2bc-cefa-ae80-03f4-758b4452fbc4" executionId="0d2ce820-f3bb-427b-a231-adb26e8b7ade" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Failed">
+    <Counters total="7" executed="6" passed="5" failed="1" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.7)&#xD;
+[xUnit.net 00:00:00.09]   Discovering: DeviceRunners.TrxGolden&#xD;
+[xUnit.net 00:00:00.13]   Discovered:  DeviceRunners.TrxGolden&#xD;
+[xUnit.net 00:00:00.15]   Starting:    DeviceRunners.TrxGolden&#xD;
+[xUnit.net 00:00:00.20]       Assert.Equal() Failure: Values differ&#xD;
+[xUnit.net 00:00:00.20]       Expected: 1&#xD;
+[xUnit.net 00:00:00.20]       Actual:   2&#xD;
+[xUnit.net 00:00:00.20]       Stack Trace:&#xD;
+[xUnit.net 00:00:00.21]         D:\copilot-worktrees\DeviceRunners\mattleibow-fictional-spork\test\DeviceRunners.TrxGolden\GoldenTests.cs(25,0): at DeviceRunners.TrxGolden.GoldenTests.FailTest()&#xD;
+[xUnit.net 00:00:00.21]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)&#xD;
+[xUnit.net 00:00:00.21]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)&#xD;
+[xUnit.net 00:00:00.21]       Intentionally skipped for TRX golden fixture&#xD;
+[xUnit.net 00:00:00.21]   Finished:    DeviceRunners.TrxGolden&#xD;
+Test 'DeviceRunners.TrxGolden.GoldenTests.SkipTest' was skipped in the test run.&#xD;
+</StdOut>
+    </Output>
+    <RunInfos>
+      <RunInfo computerName="DESKTOP-3NULBB0" outcome="Error" timestamp="2026-05-02T19:21:59.1104901+02:00">
+        <Text>[xUnit.net 00:00:00.20]     DeviceRunners.TrxGolden.GoldenTests.FailTest [FAIL]</Text>
+      </RunInfo>
+      <RunInfo computerName="DESKTOP-3NULBB0" outcome="Warning" timestamp="2026-05-02T19:21:59.1141333+02:00">
+        <Text>[xUnit.net 00:00:00.21]     DeviceRunners.TrxGolden.GoldenTests.SkipTest [SKIP]</Text>
+      </RunInfo>
+    </RunInfos>
+  </ResultSummary>
+</TestRun>
