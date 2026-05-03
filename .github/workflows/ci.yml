@@ -69,6 +69,36 @@ jobs:
         name: Logs - Test ${{ matrix.os-name }}
         path: ./artifacts/logs
 
+  test-cli:
+    name: Test CLI - ${{ matrix.os-name }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+        - runner: macos-15-intel
+          os-name: macOS
+        - runner: ubuntu-24.04
+          os-name: Linux
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/setup-tools
+    - run: dotnet test test/DeviceRunners.Cli.Tests --configuration release --logger "trx;LogFileName=cli-test-results.trx" --results-directory ./artifacts/test-results /bl:./artifacts/logs/msbuild-cli-test.binlog
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: CLI Test Results (${{ matrix.os-name }})
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: Logs - CLI Test ${{ matrix.os-name }}
+        path: ./artifacts/logs
+
   # ── Pack ────────────────────────────────────────────────────
 
   pack:
