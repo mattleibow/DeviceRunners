@@ -5,6 +5,12 @@ using System.Text.Json.Serialization;
 namespace DeviceRunners.VisualRunners;
 
 /// <summary>
+/// AOT-friendly JSON serialization context for <see cref="TestResultEvent"/>.
+/// </summary>
+[JsonSerializable(typeof(TestResultEvent))]
+public partial class TestResultEventJsonContext : JsonSerializerContext;
+
+/// <summary>
 /// Represents a structured test event for the NDJSON event-streaming protocol.
 /// Each event is serialized as a single JSON line over TCP.
 /// </summary>
@@ -98,7 +104,13 @@ public record TestResultEvent
 			Timestamp = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture),
 		};
 
-	// ── Parse / Convert ──────────────────────────────────────
+	// ── Serialize / Parse ────────────────────────────────────
+
+	/// <summary>
+	/// Serializes this event to a JSON string using the AOT-friendly context.
+	/// </summary>
+	public override string ToString() =>
+		JsonSerializer.Serialize(this, TestResultEventJsonContext.Default.TestResultEvent);
 
 	/// <summary>
 	/// Parses a single NDJSON line into a <see cref="TestResultEvent"/>.
@@ -111,7 +123,7 @@ public record TestResultEvent
 
 		try
 		{
-			return JsonSerializer.Deserialize<TestResultEvent>(line);
+			return JsonSerializer.Deserialize(line, TestResultEventJsonContext.Default.TestResultEvent);
 		}
 		catch (JsonException)
 		{

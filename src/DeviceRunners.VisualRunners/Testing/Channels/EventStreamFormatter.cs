@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace DeviceRunners.VisualRunners;
 
 /// <summary>
@@ -14,16 +12,16 @@ public class EventStreamFormatter : IResultChannelFormatter
 	public void BeginTestRun(TextWriter writer, string? message = null)
 	{
 		_writer = writer;
-		_writer.WriteLine(JsonSerializer.Serialize(TestResultEvent.Begin(message)));
+		_writer.WriteLine(TestResultEvent.Begin(message).ToString());
 	}
 
 	public void RecordResult(ITestResultInfo result)
 	{
-		_writer?.WriteLine(JsonSerializer.Serialize(TestResultEvent.FromInfo(result)));
+		_writer?.WriteLine(TestResultEvent.FromInfo(result).ToString());
 	}
 
 	public void EndTestRun()
 	{
-		_writer?.WriteLine(JsonSerializer.Serialize(TestResultEvent.End()));
+		_writer?.WriteLine(TestResultEvent.End().ToString());
 	}
 }
