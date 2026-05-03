@@ -1,9 +1,0 @@
-{
-  "solution": {
-    "path": "../DeviceRunners.sln",
-    "projects": [
-      "test\\DeviceRunners.TrxGolden\\DeviceRunners.TrxGolden.csproj",
-      "test\\DeviceRunners.TrxGolden.NUnit\\DeviceRunners.TrxGolden.NUnit.csproj"
-    ]
-  }
-}
