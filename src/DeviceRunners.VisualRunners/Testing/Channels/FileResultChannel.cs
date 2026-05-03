@@ -1,14 +1,9 @@
 namespace DeviceRunners.VisualRunners;
 
-class FileResultChannel : TextWriterResultChannel
+class FileResultChannel(FileResultChannelOptions options)
+	: TextWriterResultChannel(options.Formatter ?? throw new ArgumentNullException(nameof(options), "Formatter is required."))
 {
-	readonly string _filePath;
-
-	public FileResultChannel(FileResultChannelOptions options)
-		: base(options.Formatter ?? throw new ArgumentNullException(nameof(options), "Formatter is required."))
-	{
-		_filePath = options.FilePath ?? throw new ArgumentNullException(nameof(options), "FilePath is required.");
-	}
+	readonly string _filePath = options.FilePath ?? throw new ArgumentNullException(nameof(options), "FilePath is required.");
 
 	protected override TextWriter CreateWriter()
 	{

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 
 using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
@@ -66,8 +67,8 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         var networkService = new NetworkService();
 
         // Collect all events for processing
-        var eventLines = new List<string>();
-        var testResults = new List<ITestResultInfo>();
+        List<string> eventLines = [];
+        List<ITestResultInfo> testResults = [];
         int failedCount = 0;
 
         // CLI-side text formatter for live console output
@@ -75,7 +76,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         var consoleWriter = new StringWriter();
 
         // Line buffer for reassembling NDJSON lines split across TCP chunks
-        var lineBuffer = new System.Text.StringBuilder();
+        var lineBuffer = new StringBuilder();
 
         networkService.ConnectionEstablished += (sender, e) =>
         {
@@ -108,9 +109,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             if (lastNewline >= 0)
             {
                 // Process all complete lines
-                var completeData = buffered.Substring(0, lastNewline);
+                var completeData = buffered[..lastNewline];
                 lineBuffer.Clear();
-                lineBuffer.Append(buffered.Substring(lastNewline + 1));
+                lineBuffer.Append(buffered[(lastNewline + 1)..]);
 
                 foreach (var line in completeData.Split('\n'))
                 {

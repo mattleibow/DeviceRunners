@@ -94,7 +94,7 @@ public class NetworkService
                 int bytesRead;
                 try
                 {
-                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
+                    while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(), dataToken)) > 0)
                     {
                         var data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         connectionData.Append(data);
