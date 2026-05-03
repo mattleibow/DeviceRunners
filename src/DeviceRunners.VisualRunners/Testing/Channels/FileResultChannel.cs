@@ -1,6 +1,6 @@
 namespace DeviceRunners.VisualRunners;
 
-public class FileResultChannel : TextWriterResultChannel
+class FileResultChannel : TextWriterResultChannel
 {
 	readonly string _filePath;
 

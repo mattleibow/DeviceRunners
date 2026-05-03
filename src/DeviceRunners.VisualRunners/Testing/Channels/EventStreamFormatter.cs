@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Text.Json;
 
 namespace DeviceRunners.VisualRunners;
@@ -15,56 +14,16 @@ public class EventStreamFormatter : IResultChannelFormatter
 	public void BeginTestRun(TextWriter writer, string? message = null)
 	{
 		_writer = writer;
-
-		var evt = new TestResultEvent
-		{
-			Type = TestResultEvent.TypeBegin,
-			Message = message,
-			Timestamp = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture),
-		};
-
-		_writer.WriteLine(JsonSerializer.Serialize(evt));
+		_writer.WriteLine(JsonSerializer.Serialize(TestResultEvent.Begin(message)));
 	}
 
 	public void RecordResult(ITestResultInfo result)
 	{
-		if (_writer is null)
-			return;
-
-		var evt = new TestResultEvent
-		{
-			Type = TestResultEvent.TypeResult,
-			DisplayName = result.TestCase.DisplayName,
-			Assembly = result.TestCase.TestAssembly.AssemblyFileName,
-			Status = result.Status switch
-			{
-				TestResultStatus.Passed => "Passed",
-				TestResultStatus.Failed => "Failed",
-				TestResultStatus.Skipped => "Skipped",
-				_ => result.Status.ToString(),
-			},
-			Duration = result.Duration.ToString("c", CultureInfo.InvariantCulture),
-			Output = result.Output,
-			ErrorMessage = result.ErrorMessage,
-			ErrorStackTrace = result.ErrorStackTrace,
-			SkipReason = result.SkipReason,
-			Timestamp = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture),
-		};
-
-		_writer.WriteLine(JsonSerializer.Serialize(evt));
+		_writer?.WriteLine(JsonSerializer.Serialize(TestResultEvent.FromInfo(result)));
 	}
 
 	public void EndTestRun()
 	{
-		if (_writer is null)
-			return;
-
-		var evt = new TestResultEvent
-		{
-			Type = TestResultEvent.TypeEnd,
-			Timestamp = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture),
-		};
-
-		_writer.WriteLine(JsonSerializer.Serialize(evt));
+		_writer?.WriteLine(JsonSerializer.Serialize(TestResultEvent.End()));
 	}
 }

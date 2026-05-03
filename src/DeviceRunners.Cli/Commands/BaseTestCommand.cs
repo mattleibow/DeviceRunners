@@ -190,7 +190,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         if (trimmedLine == "ping")
             return;
 
-        var evt = EventStreamParser.Parse(trimmedLine);
+        var evt = TestResultEvent.Parse(trimmedLine);
         if (evt is null)
         {
             WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(trimmedLine)}[/]", settings);
@@ -208,7 +208,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
                 break;
 
             case TestResultEvent.TypeResult:
-                var resultInfo = EventStreamParser.ToTestResultInfo(evt);
+                var resultInfo = evt.ToInfo();
                 testResults.Add(resultInfo);
                 textFormatter.RecordResult(resultInfo);
 

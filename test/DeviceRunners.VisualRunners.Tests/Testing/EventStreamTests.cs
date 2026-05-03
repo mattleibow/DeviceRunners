@@ -180,27 +180,27 @@ public class EventStreamFormatterTests
 	}
 }
 
-public class EventStreamParserTests
+public class TestResultEventParseTests
 {
 	[Fact]
 	public void Parse_NullOrEmpty_ReturnsNull()
 	{
-		Assert.Null(EventStreamParser.Parse(null!));
-		Assert.Null(EventStreamParser.Parse(""));
-		Assert.Null(EventStreamParser.Parse("   "));
+		Assert.Null(TestResultEvent.Parse(null!));
+		Assert.Null(TestResultEvent.Parse(""));
+		Assert.Null(TestResultEvent.Parse("   "));
 	}
 
 	[Fact]
 	public void Parse_InvalidJson_ReturnsNull()
 	{
-		Assert.Null(EventStreamParser.Parse("not json at all"));
+		Assert.Null(TestResultEvent.Parse("not json at all"));
 	}
 
 	[Fact]
 	public void Parse_ValidBeginEvent_ReturnsEvent()
 	{
 		var json = """{"type":"begin","message":"Starting","timestamp":"2026-01-01T00:00:00Z"}""";
-		var evt = EventStreamParser.Parse(json);
+		var evt = TestResultEvent.Parse(json);
 
 		Assert.NotNull(evt);
 		Assert.Equal("begin", evt.Type);
@@ -212,7 +212,7 @@ public class EventStreamParserTests
 	public void Parse_ValidResultEvent_ReturnsEvent()
 	{
 		var json = """{"type":"result","displayName":"MyTest","assembly":"test.dll","status":"Passed","duration":"00:00:01.5000000"}""";
-		var evt = EventStreamParser.Parse(json);
+		var evt = TestResultEvent.Parse(json);
 
 		Assert.NotNull(evt);
 		Assert.Equal("result", evt.Type);
@@ -226,14 +226,14 @@ public class EventStreamParserTests
 	public void Parse_ValidEndEvent_ReturnsEvent()
 	{
 		var json = """{"type":"end","timestamp":"2026-01-01T00:01:00Z"}""";
-		var evt = EventStreamParser.Parse(json);
+		var evt = TestResultEvent.Parse(json);
 
 		Assert.NotNull(evt);
 		Assert.Equal("end", evt.Type);
 	}
 
 	[Fact]
-	public void ToTestResultInfo_PassedTest_ReconstructsCorrectly()
+	public void ToInfo_PassedTest_ReconstructsCorrectly()
 	{
 		var evt = new TestResultEvent
 		{
@@ -244,7 +244,7 @@ public class EventStreamParserTests
 			Duration = "00:00:00.2500000",
 		};
 
-		var result = EventStreamParser.ToTestResultInfo(evt);
+		var result = evt.ToInfo();
 
 		Assert.Equal("Ns.Class.TestMethod", result.TestCase.DisplayName);
 		Assert.Equal("MyAssembly.dll", result.TestCase.TestAssembly.AssemblyFileName);
@@ -257,7 +257,7 @@ public class EventStreamParserTests
 	}
 
 	[Fact]
-	public void ToTestResultInfo_FailedTest_ReconstructsCorrectly()
+	public void ToInfo_FailedTest_ReconstructsCorrectly()
 	{
 		var evt = new TestResultEvent
 		{
@@ -271,7 +271,7 @@ public class EventStreamParserTests
 			ErrorStackTrace = "at Ns.Class.FailTest()",
 		};
 
-		var result = EventStreamParser.ToTestResultInfo(evt);
+		var result = evt.ToInfo();
 
 		Assert.Equal(TestResultStatus.Failed, result.Status);
 		Assert.Equal("console output", result.Output);
@@ -280,7 +280,7 @@ public class EventStreamParserTests
 	}
 
 	[Fact]
-	public void ToTestResultInfo_SkippedTest_ReconstructsCorrectly()
+	public void ToInfo_SkippedTest_ReconstructsCorrectly()
 	{
 		var evt = new TestResultEvent
 		{
@@ -292,14 +292,14 @@ public class EventStreamParserTests
 			SkipReason = "Not implemented yet",
 		};
 
-		var result = EventStreamParser.ToTestResultInfo(evt);
+		var result = evt.ToInfo();
 
 		Assert.Equal(TestResultStatus.Skipped, result.Status);
 		Assert.Equal("Not implemented yet", result.SkipReason);
 	}
 
 	[Fact]
-	public void ToTestResultInfo_UnknownStatus_DefaultsToNotRun()
+	public void ToInfo_UnknownStatus_DefaultsToNotRun()
 	{
 		var evt = new TestResultEvent
 		{
@@ -310,12 +310,12 @@ public class EventStreamParserTests
 			Duration = "00:00:00",
 		};
 
-		var result = EventStreamParser.ToTestResultInfo(evt);
+		var result = evt.ToInfo();
 		Assert.Equal(TestResultStatus.NotRun, result.Status);
 	}
 
 	[Fact]
-	public void RoundTrip_FormatterThenParser_PreservesData()
+	public void RoundTrip_FormatterThenParse_PreservesData()
 	{
 		var writer = new StringWriter();
 		var formatter = new EventStreamFormatter();
@@ -343,11 +343,11 @@ public class EventStreamParserTests
 		var lines = writer.ToString().Split('\n', StringSplitOptions.RemoveEmptyEntries);
 		Assert.Equal(3, lines.Length);
 
-		// Parse the result event
-		var evt = EventStreamParser.Parse(lines[1]);
+		// Parse the result event and convert back
+		var evt = TestResultEvent.Parse(lines[1]);
 		Assert.NotNull(evt);
 
-		var reconstructed = EventStreamParser.ToTestResultInfo(evt);
+		var reconstructed = evt.ToInfo();
 
 		Assert.Equal("Ns.RoundTrip.Test(x: 42)", reconstructed.TestCase.DisplayName);
 		Assert.Equal("roundtrip.dll", reconstructed.TestCase.TestAssembly.AssemblyFileName);
@@ -357,5 +357,51 @@ public class EventStreamParserTests
 		Assert.Equal("Expected 42 but got 0", reconstructed.ErrorMessage);
 		Assert.Equal("at Ns.RoundTrip.Test()", reconstructed.ErrorStackTrace);
 		Assert.Null(reconstructed.SkipReason);
+	}
+
+	[Fact]
+	public void FromInfo_CreatesResultEvent()
+	{
+		var testAssembly = Substitute.For<ITestAssemblyInfo>();
+		testAssembly.AssemblyFileName.Returns("my.dll");
+
+		var testCase = Substitute.For<ITestCaseInfo>();
+		testCase.DisplayName.Returns("Ns.MyTest");
+		testCase.TestAssembly.Returns(testAssembly);
+
+		var info = Substitute.For<ITestResultInfo>();
+		info.TestCase.Returns(testCase);
+		info.Status.Returns(TestResultStatus.Passed);
+		info.Duration.Returns(TimeSpan.FromSeconds(1));
+		info.Output.Returns("hello");
+
+		var evt = TestResultEvent.FromInfo(info);
+
+		Assert.Equal(TestResultEvent.TypeResult, evt.Type);
+		Assert.Equal("Ns.MyTest", evt.DisplayName);
+		Assert.Equal("my.dll", evt.Assembly);
+		Assert.Equal("Passed", evt.Status);
+		Assert.Equal("00:00:01", evt.Duration);
+		Assert.Equal("hello", evt.Output);
+		Assert.NotNull(evt.Timestamp);
+	}
+
+	[Fact]
+	public void Begin_CreatesBeginEvent()
+	{
+		var evt = TestResultEvent.Begin("starting");
+
+		Assert.Equal(TestResultEvent.TypeBegin, evt.Type);
+		Assert.Equal("starting", evt.Message);
+		Assert.NotNull(evt.Timestamp);
+	}
+
+	[Fact]
+	public void End_CreatesEndEvent()
+	{
+		var evt = TestResultEvent.End();
+
+		Assert.Equal(TestResultEvent.TypeEnd, evt.Type);
+		Assert.NotNull(evt.Timestamp);
 	}
 }
