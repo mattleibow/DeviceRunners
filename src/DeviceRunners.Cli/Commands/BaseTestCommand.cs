@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Text;
 
 using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
@@ -75,71 +74,58 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         WriteConsoleOutput($"  - Waiting for test events via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-        var lastConnectTime = DateTimeOffset.UtcNow;
-        var networkService = new NetworkService();
-
-        // Use a FileResultChannel for the output file — it handles open/close, locking, flushing
+        // Set up the result channel and event stream service
         var resultChannel = new FileResultChannel(new FileResultChannelOptions
         {
             FilePath = resultsFile,
             Formatter = formatter,
         });
+        var eventStream = new EventStreamService(resultChannel);
+        var networkService = new NetworkService();
 
-        int failedCount = 0;
-        int totalCount = 0;
+        // Wire up event stream events for console output
+        var lastConnectTime = DateTimeOffset.UtcNow;
 
-        // Line buffer for reassembling NDJSON lines split across TCP chunks
-        var lineBuffer = new StringBuilder();
+        eventStream.TestRunStarted += (_, e) =>
+            WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(e.Message ?? "")}[/]", settings);
 
-        networkService.ConnectionEstablished += (sender, e) =>
+        eventStream.TestResultRecorded += (_, e) =>
+        {
+            var statusColor = e.Result.Status switch
+            {
+                TestResultStatus.Passed => "green",
+                TestResultStatus.Failed => "red",
+                TestResultStatus.Skipped => "yellow",
+                _ => "white",
+            };
+            WriteConsoleOutput($"    [{statusColor}]{Markup.Escape(e.Event.DisplayName ?? "?")} - {e.Event.Status}[/]", settings);
+        };
+
+        eventStream.TestRunEnded += (_, _) =>
+            WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
+
+        eventStream.UnparseableLine += (_, e) =>
+            WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(e.Line)}[/]", settings);
+
+        // Wire up network events
+        networkService.ConnectionEstablished += (_, e) =>
         {
             var delta = e.Timestamp - lastConnectTime;
             lastConnectTime = DateTimeOffset.UtcNow;
             WriteConsoleOutput($"    [yellow]TCP connection established with {e.RemoteEndPoint} after {delta}[/]", settings);
         };
 
-        networkService.ConnectionClosed += (sender, e) =>
+        networkService.ConnectionClosed += (_, e) =>
         {
-            // Flush any remaining buffered data as a final line
-            if (lineBuffer.Length > 0)
-            {
-                ProcessLine(lineBuffer.ToString(), resultChannel, ref failedCount, ref totalCount, settings);
-                lineBuffer.Clear();
-            }
-
+            eventStream.Flush();
             lastConnectTime = DateTimeOffset.UtcNow;
             WriteConsoleOutput($"    [yellow]TCP connection closed with {e.RemoteEndPoint}[/]", settings);
         };
 
-        networkService.DataReceived += (sender, e) =>
-        {
-            // Accumulate data and process only complete lines
-            lineBuffer.Append(e.Data);
-
-            // Extract complete lines (terminated by '\n')
-            var buffered = lineBuffer.ToString();
-            var lastNewline = buffered.LastIndexOf('\n');
-            if (lastNewline >= 0)
-            {
-                // Process all complete lines
-                var completeData = buffered[..lastNewline];
-                lineBuffer.Clear();
-                lineBuffer.Append(buffered[(lastNewline + 1)..]);
-
-                foreach (var line in completeData.Split('\n'))
-                {
-                    var trimmedLine = line.TrimEnd('\r');
-                    if (!string.IsNullOrWhiteSpace(trimmedLine))
-                    {
-                        ProcessLine(trimmedLine, resultChannel, ref failedCount, ref totalCount, settings);
-                    }
-                }
-            }
-        };
+        networkService.DataReceived += (_, e) => eventStream.ReceiveData(e.Data);
 
         try
         {
-            // Open the result channel before listening
             await resultChannel.OpenChannel();
 
             await networkService.StartTcpListener(
@@ -151,77 +137,29 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-            // Close the channel — this flushes and finalizes the output file
             await resultChannel.CloseChannel();
 
             WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+            WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
-            // Report summary
-            var passedCount = totalCount - failedCount;
-            WriteConsoleOutput($"  - Results: Total={totalCount}, Passed={passedCount}, Failed={failedCount}", settings);
-
-            if (totalCount == 0)
+            if (eventStream.TotalCount == 0)
             {
                 WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
                 return (1, null);
             }
 
-            return (failedCount, null);
+            return (eventStream.FailedCount, null);
         }
         catch (OperationCanceledException)
         {
             WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
 
-            // Close the channel to flush partial results
             await resultChannel.CloseChannel();
 
-            if (totalCount > 0)
-                return (failedCount > 0 ? failedCount : 1, null);
+            if (eventStream.TotalCount > 0)
+                return (eventStream.FailedCount > 0 ? eventStream.FailedCount : 1, null);
 
             return (1, null);
-        }
-    }
-
-    void ProcessLine(string trimmedLine, IResultChannel resultChannel, ref int failedCount, ref int totalCount, TSettings settings)
-    {
-        // Skip ping/probe messages from TcpResultChannel host selection
-        if (trimmedLine == "ping")
-            return;
-
-        var evt = TestResultEvent.Parse(trimmedLine);
-        if (evt is null)
-        {
-            WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(trimmedLine)}[/]", settings);
-            return;
-        }
-
-        switch (evt.Type)
-        {
-            case TestResultEvent.TypeBegin:
-                WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(evt.Message ?? "")}[/]", settings);
-                break;
-
-            case TestResultEvent.TypeResult:
-                var resultInfo = evt.ToInfo();
-                resultChannel.RecordResult(resultInfo);
-                totalCount++;
-
-                var statusColor = resultInfo.Status switch
-                {
-                    TestResultStatus.Passed => "green",
-                    TestResultStatus.Failed => "red",
-                    TestResultStatus.Skipped => "yellow",
-                    _ => "white",
-                };
-                WriteConsoleOutput($"    [{statusColor}]{Markup.Escape(evt.DisplayName ?? "?")} - {evt.Status}[/]", settings);
-
-                if (resultInfo.Status == TestResultStatus.Failed)
-                    failedCount++;
-                break;
-
-            case TestResultEvent.TypeEnd:
-                WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
-                break;
         }
     }
 }
