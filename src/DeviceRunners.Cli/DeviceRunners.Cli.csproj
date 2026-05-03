@@ -18,4 +18,8 @@
     <PackageReference Include="AppleDev" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+  </ItemGroup>
+
 </Project>

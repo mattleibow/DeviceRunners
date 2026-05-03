@@ -2,6 +2,7 @@ using System.ComponentModel;
 
 using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
+using DeviceRunners.VisualRunners;
 
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -47,134 +48,166 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
     protected async Task<(int testFailures, string? testResults)> StartTestListener(TSettings settings)
     {
-        // Ensure artifacts directory exists for TCP results
+        // Ensure artifacts directory exists
         Directory.CreateDirectory(settings.ResultsDirectory);
 
         WriteConsoleOutput($"  - Starting TCP listener on port {settings.Port}...", settings);
-        var tcpResultsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-results.txt");
-        WriteConsoleOutput($"    Saving results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
 
-        WriteConsoleOutput($"  - Waiting for test results via TCP...", settings);
+        var eventsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-events.jsonl");
+        var trxFile = Path.Combine(settings.ResultsDirectory, "test-results.trx");
+
+        WriteConsoleOutput($"    Events file: [green]{Markup.Escape(eventsFile)}[/]", settings);
+        WriteConsoleOutput($"    TRX file:    [green]{Markup.Escape(trxFile)}[/]", settings);
+
+        WriteConsoleOutput($"  - Waiting for test events via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
         var lastConnectTime = DateTimeOffset.UtcNow;
-
         var networkService = new NetworkService();
+
+        // Collect all events for processing
+        var eventLines = new List<string>();
+        var testResults = new List<ITestResultInfo>();
+        int failedCount = 0;
+
+        // CLI-side text formatter for live console output
+        var textFormatter = new TextResultChannelFormatter();
+        var consoleWriter = new StringWriter();
 
         networkService.ConnectionEstablished += (sender, e) =>
         {
             var delta = e.Timestamp - lastConnectTime;
             lastConnectTime = DateTimeOffset.UtcNow;
-
             WriteConsoleOutput($"    [yellow]TCP connection established with {e.RemoteEndPoint} after {delta}[/]", settings);
         };
+
         networkService.ConnectionClosed += (sender, e) =>
         {
             lastConnectTime = DateTimeOffset.UtcNow;
-
             WriteConsoleOutput($"    [yellow]TCP connection closed with {e.RemoteEndPoint}[/]", settings);
         };
+
         networkService.DataReceived += (sender, e) =>
         {
+            // Process each NDJSON line as it arrives
             foreach (var line in e.Data.Split('\n'))
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                var trimmedLine = line.TrimEnd('\r');
+                eventLines.Add(trimmedLine);
+
+                var evt = EventStreamParser.Parse(trimmedLine);
+                if (evt is null)
                 {
-                    WriteConsoleOutput($"    [green]Received data: {Markup.Escape(line)}[/]", settings);
+                    WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(trimmedLine)}[/]", settings);
+                    continue;
+                }
+
+                switch (evt.Type)
+                {
+                    case TestResultEvent.TypeBegin:
+                        WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(evt.Message ?? "")}[/]", settings);
+                        textFormatter.BeginTestRun(consoleWriter, evt.Message);
+                        break;
+
+                    case TestResultEvent.TypeResult:
+                        var resultInfo = EventStreamParser.ToTestResultInfo(evt);
+                        testResults.Add(resultInfo);
+                        textFormatter.RecordResult(resultInfo);
+
+                        var statusColor = resultInfo.Status switch
+                        {
+                            TestResultStatus.Passed => "green",
+                            TestResultStatus.Failed => "red",
+                            TestResultStatus.Skipped => "yellow",
+                            _ => "white",
+                        };
+                        WriteConsoleOutput($"    [{statusColor}]{Markup.Escape(evt.DisplayName ?? "?")} - {evt.Status}[/]", settings);
+
+                        if (resultInfo.Status == TestResultStatus.Failed)
+                            failedCount++;
+                        break;
+
+                    case TestResultEvent.TypeEnd:
+                        WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
+                        textFormatter.EndTestRun();
+                        break;
                 }
             }
         };
 
         try
         {
-            var results = await networkService.StartTcpListener(
+            await networkService.StartTcpListener(
                 settings.Port,
-                tcpResultsFile,
+                null, // We handle file output ourselves
                 true,
                 settings.ConnectionTimeout,
                 settings.DataTimeout);
 
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-            if (File.Exists(tcpResultsFile))
+            // Save raw NDJSON events
+            if (eventLines.Count > 0)
             {
-                var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
-                WriteConsoleOutput($"  - Analyzing test results...", settings);
-                WriteConsoleMarkup($"    Saved test results to: [green]{Markup.Escape(tcpResultsFile)}[/].", settings);
-
-                // Look for test failure indicators in the TCP results
-                if (tcpResults.Contains("Failed:"))
-                {
-                    var lines = tcpResults.Split('\n');
-                    foreach (var line in lines)
-                    {
-                        if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
-                        {
-                            if (failedCount > 0)
-                            {
-                                WriteConsoleOutput($"    TCP results indicate {failedCount} test failures.", settings);
-                                return (failedCount, tcpResults);
-                            }
-                            else
-                            {
-                                WriteConsoleOutput($"    TCP results indicate no test failures.", settings);
-                                return (0, tcpResults);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    WriteConsoleOutput($"    [yellow]Could not parse test results format.[/]", settings);
-                    return (1, tcpResults);
-                }
+                await File.WriteAllLinesAsync(eventsFile, eventLines);
+                WriteConsoleOutput($"  - Saved {eventLines.Count} events to: [green]{Markup.Escape(eventsFile)}[/]", settings);
             }
-            else
+
+            // Generate TRX file from collected results
+            if (testResults.Count > 0)
             {
-                WriteConsoleOutput($"    [yellow]No TCP results received.[/]", settings);
+                using var trxWriter = new StreamWriter(trxFile);
+                var trxFormatter = new TrxResultChannelFormatter();
+                trxFormatter.BeginTestRun(trxWriter);
+                foreach (var result in testResults)
+                    trxFormatter.RecordResult(result);
+                trxFormatter.EndTestRun();
+                WriteConsoleOutput($"  - Generated TRX file: [green]{Markup.Escape(trxFile)}[/]", settings);
+            }
+
+            // Report summary
+            var totalTests = testResults.Count;
+            var passedCount = testResults.Count(r => r.Status == TestResultStatus.Passed);
+            var skippedCount = testResults.Count(r => r.Status == TestResultStatus.Skipped);
+
+            WriteConsoleOutput($"  - Results: Total={totalTests}, Passed={passedCount}, Failed={failedCount}, Skipped={skippedCount}", settings);
+
+            if (totalTests == 0)
+            {
+                WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
                 return (1, null);
             }
+
+            var allText = consoleWriter.ToString();
+            return (failedCount, allText);
         }
         catch (OperationCanceledException)
         {
             WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
 
-            // Check if results were partially received before the timeout
-            if (File.Exists(tcpResultsFile))
+            // Still save what we got
+            if (eventLines.Count > 0)
             {
-                var tcpResults = await File.ReadAllTextAsync(tcpResultsFile);
-                if (tcpResults.Contains("Failed:"))
+                await File.WriteAllLinesAsync(eventsFile, eventLines);
+
+                // Generate TRX from partial results
+                if (testResults.Count > 0)
                 {
-                    var lines = tcpResults.Split('\n');
-                    foreach (var line in lines)
-                    {
-                        if (line.Contains("Failed:") && int.TryParse(ExtractNumber(line, "Failed:"), out int failedCount))
-                        {
-                            return (failedCount, tcpResults);
-                        }
-                    }
+                    using var trxWriter = new StreamWriter(trxFile);
+                    var trxFormatter = new TrxResultChannelFormatter();
+                    trxFormatter.BeginTestRun(trxWriter);
+                    foreach (var result in testResults)
+                        trxFormatter.RecordResult(result);
+                    trxFormatter.EndTestRun();
                 }
+
+                return (failedCount > 0 ? failedCount : 1, consoleWriter.ToString());
             }
 
             return (1, null);
         }
-
-        return (1, null);
-    }
-
-    protected string ExtractNumber(string text, string prefix)
-    {
-        var index = text.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
-        if (index >= 0)
-        {
-            var start = index + prefix.Length;
-            var end = start;
-            while (end < text.Length && (char.IsDigit(text[end]) || char.IsWhiteSpace(text[end])))
-            {
-                end++;
-            }
-            return text.Substring(start, end - start).Trim();
-        }
-        return "0";
     }
 }
