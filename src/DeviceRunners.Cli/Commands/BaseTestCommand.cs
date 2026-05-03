@@ -136,30 +136,25 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
                 settings.DataTimeout);
 
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
-
-            await resultChannel.CloseChannel();
-
-            WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
-            WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
-
-            if (eventStream.TotalCount == 0)
-            {
-                WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
-                return (1, null);
-            }
-
-            return (eventStream.FailedCount, null);
         }
         catch (OperationCanceledException)
         {
             WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
-
+        }
+        finally
+        {
             await resultChannel.CloseChannel();
+        }
 
-            if (eventStream.TotalCount > 0)
-                return (eventStream.FailedCount > 0 ? eventStream.FailedCount : 1, null);
+        WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+        WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
+        if (eventStream.TotalCount == 0)
+        {
+            WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
             return (1, null);
         }
+
+        return (eventStream.FailedCount, null);
     }
 }
