@@ -144,12 +144,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             // Generate TRX file from collected results
             if (testResults.Count > 0)
             {
-                using var trxWriter = new StreamWriter(trxFile);
-                var trxFormatter = new TrxResultChannelFormatter();
-                trxFormatter.BeginTestRun(trxWriter);
-                foreach (var result in testResults)
-                    trxFormatter.RecordResult(result);
-                trxFormatter.EndTestRun();
+                WriteTrxFile(trxFile, testResults);
                 WriteConsoleOutput($"  - Generated TRX file: [green]{Markup.Escape(trxFile)}[/]", settings);
             }
 
@@ -180,14 +175,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
                 // Generate TRX from partial results
                 if (testResults.Count > 0)
-                {
-                    using var trxWriter = new StreamWriter(trxFile);
-                    var trxFormatter = new TrxResultChannelFormatter();
-                    trxFormatter.BeginTestRun(trxWriter);
-                    foreach (var result in testResults)
-                        trxFormatter.RecordResult(result);
-                    trxFormatter.EndTestRun();
-                }
+                    WriteTrxFile(trxFile, testResults);
 
                 return (failedCount > 0 ? failedCount : 1, consoleWriter.ToString());
             }
@@ -242,5 +230,15 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
                 textFormatter.EndTestRun();
                 break;
         }
+    }
+
+    static void WriteTrxFile(string trxFile, List<ITestResultInfo> testResults)
+    {
+        using var trxWriter = new StreamWriter(trxFile);
+        var trxFormatter = new TrxResultChannelFormatter();
+        trxFormatter.BeginTestRun(trxWriter);
+        foreach (var result in testResults)
+            trxFormatter.RecordResult(result);
+        trxFormatter.EndTestRun();
     }
 }

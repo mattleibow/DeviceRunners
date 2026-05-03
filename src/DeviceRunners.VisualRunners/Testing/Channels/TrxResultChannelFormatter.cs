@@ -1,30 +1,19 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Xml;
 
 namespace DeviceRunners.VisualRunners;
 
 public class TrxResultChannelFormatter : IResultChannelFormatter
 {
-	const string xmlNamespace = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
-	const string testListId = "8c84fa94-04c1-424b-9868-57a2d4851a1d";
+	const string XmlNs = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+	const string TestListId = "8c84fa94-04c1-424b-9868-57a2d4851a1d";
+	const string AllLoadedTestListId = "19431567-8539-422a-85d7-44ee4e166bda";
+	const string TestTypeId = "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b";
 
 	TextWriter? _writer;
-
-	XmlDocument doc;
-	int testCount;
-	int testFailed;
-	int testSucceeded;
-	int testSkipped;
-	XmlElement rootNode;
-	XmlElement resultsNode;
-	XmlElement testDefinitions;
-	XmlElement header;
-	XmlElement testEntries;
-
-	/// <summary>
-	/// The key name of the trait that is used for writing the Category field to the report.
-	/// </summary>
-	public string CategoryTraitName { get; set; } = "Category";
+	DateTimeOffset _runStartTime;
+	readonly List<ResultEntry> _results = [];
+	int _passed, _failed, _skipped;
 
 	/// <summary>
 	/// The name of the test run to include in the report header.
@@ -39,44 +28,9 @@ public class TrxResultChannelFormatter : IResultChannelFormatter
 	public void BeginTestRun(TextWriter writer, string? message = null)
 	{
 		_writer = writer;
-
-		testCount = testFailed = testSucceeded = testSkipped = 0;
-
-		doc = new XmlDocument();
-
-		rootNode = doc.CreateElement("TestRun", xmlNamespace);
-		rootNode.SetAttribute("id", Guid.NewGuid().ToString());
-		rootNode.SetAttribute("name", TestRunName);
-		rootNode.SetAttribute("runUser", TestRunUser);
-		doc.AppendChild(rootNode);
-
-		var now = DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture);
-		header = doc.CreateElement("Times", xmlNamespace);
-		header.SetAttribute("creation", now);
-		header.SetAttribute("queuing", now);
-		header.SetAttribute("start", now);
-		header.SetAttribute("finish", now);
-		rootNode.AppendChild(header);
-
-		resultsNode = doc.CreateElement("Results", xmlNamespace);
-		rootNode.AppendChild(resultsNode);
-
-		testDefinitions = doc.CreateElement("TestDefinitions", xmlNamespace);
-		rootNode.AppendChild(testDefinitions);
-
-		testEntries = doc.CreateElement("TestEntries", xmlNamespace);
-		rootNode.AppendChild(testEntries);
-
-		var testLists = doc.CreateElement("TestLists", xmlNamespace);
-		var testList = doc.CreateElement("TestList", xmlNamespace);
-		testList.SetAttribute("name", "Results Not in a List");
-		testList.SetAttribute("id", testListId);
-		testLists.AppendChild(testList);
-		var allTestList = doc.CreateElement("TestList", xmlNamespace);
-		allTestList.SetAttribute("name", "All Loaded Results");
-		allTestList.SetAttribute("id", "19431567-8539-422a-85d7-44ee4e166bda");
-		testLists.AppendChild(allTestList);
-		rootNode.AppendChild(testLists);
+		_runStartTime = DateTimeOffset.Now;
+		_results.Clear();
+		_passed = _failed = _skipped = 0;
 	}
 
 	public void RecordResult(ITestResultInfo result)
@@ -84,11 +38,8 @@ public class TrxResultChannelFormatter : IResultChannelFormatter
 		var id = Guid.NewGuid().ToString();
 		var executionId = Guid.NewGuid().ToString();
 
-		var resultNode = doc.CreateElement("UnitTestResult", xmlNamespace);
-		resultNode.SetAttribute("outcome", ToTrxStatus(result.Status));
-		resultNode.SetAttribute("testType", "13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b");
-		resultNode.SetAttribute("testListId", testListId);
-		resultNode.SetAttribute("executionId", executionId);
+		var endTime = DateTimeOffset.Now;
+		var startTime = endTime - result.Duration;
 
 		// Split "Namespace.ClassName.MethodName" or "Namespace.ClassName.Method(params)"
 		// → TestMethod.name = method name only (no params, matching dotnet test behaviour)
@@ -102,168 +53,184 @@ public class TrxResultChannelFormatter : IResultChannelFormatter
 		var testName = dotIdx >= 0 ? nameForSplit[(dotIdx + 1)..] : nameForSplit;
 		var className = dotIdx >= 0 ? nameForSplit[..dotIdx] : nameForSplit;
 
-		var endTime = DateTimeOffset.Now;
-		var startTime = endTime - result.Duration;
+		_results.Add(new ResultEntry(
+			id, executionId, displayName, testName, className,
+			result.TestCase.TestAssembly.AssemblyFileName,
+			result.Status, result.Duration, startTime, endTime,
+			result.Output, result.ErrorMessage, result.ErrorStackTrace, result.SkipReason));
 
-		resultNode.SetAttribute("testName", displayName);
-		resultNode.SetAttribute("testId", id);
-		resultNode.SetAttribute("duration", result.Duration.ToString("c", CultureInfo.InvariantCulture));
-		resultNode.SetAttribute("computerName", "");
-		resultNode.SetAttribute("startTime", startTime.ToString("O", CultureInfo.InvariantCulture));
-		resultNode.SetAttribute("endTime", endTime.ToString("O", CultureInfo.InvariantCulture));
-		resultNode.SetAttribute("relativeResultsDirectory", executionId);
-
-		if (result.Status == TestResultStatus.Failed)
+		switch (result.Status)
 		{
-			testFailed++;
-			var output = doc.CreateElement("Output", xmlNamespace);
-			var errorInfo = doc.CreateElement("ErrorInfo", xmlNamespace);
-			var message = doc.CreateElement("Message", xmlNamespace);
-			message.InnerText = result.ErrorMessage ?? string.Empty;
-			var stackTrace = doc.CreateElement("StackTrace", xmlNamespace);
-			stackTrace.InnerText = result.ErrorStackTrace ?? string.Empty;
-			errorInfo.AppendChild(message);
-			errorInfo.AppendChild(stackTrace);
-			output.AppendChild(errorInfo);
-			if (result.Output is not null)
-			{
-				var stdOut = doc.CreateElement("StdOut", xmlNamespace);
-				stdOut.InnerText = result.Output;
-				output.InsertBefore(stdOut, errorInfo);
-			}
-			resultNode.AppendChild(output);
+			case TestResultStatus.Passed: _passed++; break;
+			case TestResultStatus.Failed: _failed++; break;
+			case TestResultStatus.Skipped: _skipped++; break;
 		}
-		else if (result.Status == TestResultStatus.Passed)
-		{
-			testSucceeded++;
-			if (result.Output is not null)
-			{
-				var output = doc.CreateElement("Output", xmlNamespace);
-				var stdOut = doc.CreateElement("StdOut", xmlNamespace);
-				stdOut.InnerText = result.Output;
-				output.AppendChild(stdOut);
-				resultNode.AppendChild(output);
-			}
-		}
-		else if (result.Status == TestResultStatus.Skipped)
-		{
-			testSkipped++;
-			if (result.SkipReason is not null)
-			{
-				var output = doc.CreateElement("Output", xmlNamespace);
-				var stdOut = doc.CreateElement("StdOut", xmlNamespace);
-				stdOut.InnerText = result.SkipReason;
-				output.AppendChild(stdOut);
-				var errorInfo = doc.CreateElement("ErrorInfo", xmlNamespace);
-				var message = doc.CreateElement("Message", xmlNamespace);
-				message.InnerText = result.SkipReason;
-				errorInfo.AppendChild(message);
-				output.AppendChild(errorInfo);
-				resultNode.AppendChild(output);
-			}
-		}
-		testCount++;
-
-		resultsNode.AppendChild(resultNode);
-
-		var testNode = doc.CreateElement("UnitTest", xmlNamespace);
-		testNode.SetAttribute("name", displayName);
-		testNode.SetAttribute("id", id);
-		testNode.SetAttribute("storage", result.TestCase.TestAssembly.AssemblyFileName);
-
-		XmlElement? properties = null;
-		List<string>? categories = null;
-
-		/*
-		foreach (var prop in result.TestCase.TestCase.Traits)
-		{
-			if (prop.Key == CategoryTraitName)
-			{
-				categories = prop.Value;
-				continue;
-			}
-			foreach (var v in prop.Value)
-			{
-				if (properties == null)
-				{
-					properties = doc.CreateElement("Properties", xmlNamespace);
-					testNode.AppendChild(properties);
-				}
-
-				var property = doc.CreateElement("Property", xmlNamespace);
-				var key = doc.CreateElement("Key", xmlNamespace);
-				key.InnerText = prop.Key;
-				property.AppendChild(key);
-				var value = doc.CreateElement("Value", xmlNamespace);
-				value.InnerText = v;
-				property.AppendChild(value);
-				properties.AppendChild(property);
-			}
-		}
-		*/
-
-		if (categories != null && categories.Any())
-		{
-			var testCategory = doc.CreateElement("TestCategory", xmlNamespace);
-			foreach (var category in categories)
-			{
-				var item = doc.CreateElement("TestCategoryItem", xmlNamespace);
-				item.SetAttribute("TestCategory", category);
-				testCategory.AppendChild(item);
-			}
-			testNode.AppendChild(testCategory);
-		}
-		var execution = doc.CreateElement("Execution", xmlNamespace);
-		execution.SetAttribute("id", executionId);
-		testNode.AppendChild(execution);
-		var testMethodNode = doc.CreateElement("TestMethod", xmlNamespace);
-		testMethodNode.SetAttribute("name", testName);
-		testMethodNode.SetAttribute("className", className);
-		testMethodNode.SetAttribute("codeBase", result.TestCase.TestAssembly.AssemblyFileName);
-		testNode.AppendChild(testMethodNode);
-
-		testDefinitions.AppendChild(testNode);
-
-		var testEntry = doc.CreateElement("TestEntry", xmlNamespace);
-		testEntry.SetAttribute("testListId", testListId);
-		testEntry.SetAttribute("testId", id);
-		testEntry.SetAttribute("executionId", executionId);
-		testEntries.AppendChild(testEntry);
 	}
 
 	public void EndTestRun()
 	{
-		header.SetAttribute("finish", DateTimeOffset.Now.ToString("O", CultureInfo.InvariantCulture));
+		if (_writer is null)
+			return;
 
-		var resultSummary = doc.CreateElement("ResultSummary", xmlNamespace);
-		resultSummary.SetAttribute("outcome", testFailed > 0 ? "Failed" : "Passed");
+		var finishTime = DateTimeOffset.Now;
+		var startIso = _runStartTime.ToString("O", CultureInfo.InvariantCulture);
+		var finishIso = finishTime.ToString("O", CultureInfo.InvariantCulture);
 
-		var counters = doc.CreateElement("Counters", xmlNamespace);
-		var executed = testSucceeded + testFailed;
-		counters.SetAttribute("total", testCount.ToString(CultureInfo.InvariantCulture));
-		counters.SetAttribute("executed", executed.ToString(CultureInfo.InvariantCulture));
-		counters.SetAttribute("passed", testSucceeded.ToString(CultureInfo.InvariantCulture));
-		counters.SetAttribute("failed", testFailed.ToString(CultureInfo.InvariantCulture));
-		counters.SetAttribute("error", "0");
-		counters.SetAttribute("timeout", "0");
-		counters.SetAttribute("aborted", "0");
-		counters.SetAttribute("inconclusive", "0");
-		counters.SetAttribute("passedButRunAborted", "0");
-		counters.SetAttribute("notRunnable", "0");
+		using var xml = XmlWriter.Create(_writer, new XmlWriterSettings { Indent = true });
+
+		xml.WriteStartElement("TestRun", XmlNs);
+		xml.WriteAttributeString("id", Guid.NewGuid().ToString());
+		xml.WriteAttributeString("name", TestRunName);
+		xml.WriteAttributeString("runUser", TestRunUser);
+
+		// Times
+		xml.WriteStartElement("Times", XmlNs);
+		xml.WriteAttributeString("creation", startIso);
+		xml.WriteAttributeString("queuing", startIso);
+		xml.WriteAttributeString("start", startIso);
+		xml.WriteAttributeString("finish", finishIso);
+		xml.WriteEndElement();
+
+		// Results
+		xml.WriteStartElement("Results", XmlNs);
+		foreach (var r in _results)
+			WriteUnitTestResult(xml, r);
+		xml.WriteEndElement();
+
+		// TestDefinitions
+		xml.WriteStartElement("TestDefinitions", XmlNs);
+		foreach (var r in _results)
+			WriteUnitTest(xml, r);
+		xml.WriteEndElement();
+
+		// TestEntries
+		xml.WriteStartElement("TestEntries", XmlNs);
+		foreach (var r in _results)
+		{
+			xml.WriteStartElement("TestEntry", XmlNs);
+			xml.WriteAttributeString("testListId", TestListId);
+			xml.WriteAttributeString("testId", r.Id);
+			xml.WriteAttributeString("executionId", r.ExecutionId);
+			xml.WriteEndElement();
+		}
+		xml.WriteEndElement();
+
+		// TestLists
+		xml.WriteStartElement("TestLists", XmlNs);
+		xml.WriteStartElement("TestList", XmlNs);
+		xml.WriteAttributeString("name", "Results Not in a List");
+		xml.WriteAttributeString("id", TestListId);
+		xml.WriteEndElement();
+		xml.WriteStartElement("TestList", XmlNs);
+		xml.WriteAttributeString("name", "All Loaded Results");
+		xml.WriteAttributeString("id", AllLoadedTestListId);
+		xml.WriteEndElement();
+		xml.WriteEndElement();
+
+		// ResultSummary
+		var total = _results.Count;
+		var executed = _passed + _failed;
+
+		xml.WriteStartElement("ResultSummary", XmlNs);
+		xml.WriteAttributeString("outcome", _failed > 0 ? "Failed" : "Passed");
+
+		xml.WriteStartElement("Counters", XmlNs);
+		xml.WriteAttributeString("total", total.ToString(CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("executed", executed.ToString(CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("passed", _passed.ToString(CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("failed", _failed.ToString(CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("error", "0");
+		xml.WriteAttributeString("timeout", "0");
+		xml.WriteAttributeString("aborted", "0");
+		xml.WriteAttributeString("inconclusive", "0");
+		xml.WriteAttributeString("passedButRunAborted", "0");
+		xml.WriteAttributeString("notRunnable", "0");
 		// Explicitly skipped tests are NOT "notExecuted" in the TRX schema — that counter
 		// means tests that could not be run due to infrastructure issues. Both the xUnit
 		// and NUnit TRX adapters confirm: notExecuted="0" even when Skip/Ignore tests exist.
-		counters.SetAttribute("notExecuted", "0");
-		counters.SetAttribute("disconnected", "0");
-		counters.SetAttribute("warning", "0");
-		counters.SetAttribute("completed", "0");
-		counters.SetAttribute("inProgress", "0");
-		counters.SetAttribute("pending", "0");
+		xml.WriteAttributeString("notExecuted", "0");
+		xml.WriteAttributeString("disconnected", "0");
+		xml.WriteAttributeString("warning", "0");
+		xml.WriteAttributeString("completed", "0");
+		xml.WriteAttributeString("inProgress", "0");
+		xml.WriteAttributeString("pending", "0");
+		xml.WriteEndElement(); // Counters
 
-		resultSummary.AppendChild(counters);
-		rootNode.AppendChild(resultSummary);
+		xml.WriteEndElement(); // ResultSummary
+		xml.WriteEndElement(); // TestRun
+	}
 
-		doc.Save(_writer);
+	static void WriteUnitTestResult(XmlWriter xml, ResultEntry r)
+	{
+		xml.WriteStartElement("UnitTestResult", XmlNs);
+		xml.WriteAttributeString("outcome", ToTrxStatus(r.Status));
+		xml.WriteAttributeString("testType", TestTypeId);
+		xml.WriteAttributeString("testListId", TestListId);
+		xml.WriteAttributeString("executionId", r.ExecutionId);
+		xml.WriteAttributeString("testName", r.DisplayName);
+		xml.WriteAttributeString("testId", r.Id);
+		xml.WriteAttributeString("duration", r.Duration.ToString("c", CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("computerName", "");
+		xml.WriteAttributeString("startTime", r.StartTime.ToString("O", CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("endTime", r.EndTime.ToString("O", CultureInfo.InvariantCulture));
+		xml.WriteAttributeString("relativeResultsDirectory", r.ExecutionId);
+
+		switch (r.Status)
+		{
+			case TestResultStatus.Failed:
+				xml.WriteStartElement("Output", XmlNs);
+				if (r.Output is not null)
+					xml.WriteElementString("StdOut", XmlNs, r.Output);
+				xml.WriteStartElement("ErrorInfo", XmlNs);
+				xml.WriteElementString("Message", XmlNs, r.ErrorMessage ?? "");
+				xml.WriteElementString("StackTrace", XmlNs, r.ErrorStackTrace ?? "");
+				xml.WriteEndElement(); // ErrorInfo
+				xml.WriteEndElement(); // Output
+				break;
+
+			case TestResultStatus.Passed:
+				if (r.Output is not null)
+				{
+					xml.WriteStartElement("Output", XmlNs);
+					xml.WriteElementString("StdOut", XmlNs, r.Output);
+					xml.WriteEndElement();
+				}
+				break;
+
+			case TestResultStatus.Skipped:
+				if (r.SkipReason is not null)
+				{
+					xml.WriteStartElement("Output", XmlNs);
+					xml.WriteElementString("StdOut", XmlNs, r.SkipReason);
+					xml.WriteStartElement("ErrorInfo", XmlNs);
+					xml.WriteElementString("Message", XmlNs, r.SkipReason);
+					xml.WriteEndElement(); // ErrorInfo
+					xml.WriteEndElement(); // Output
+				}
+				break;
+		}
+
+		xml.WriteEndElement(); // UnitTestResult
+	}
+
+	static void WriteUnitTest(XmlWriter xml, ResultEntry r)
+	{
+		xml.WriteStartElement("UnitTest", XmlNs);
+		xml.WriteAttributeString("name", r.DisplayName);
+		xml.WriteAttributeString("id", r.Id);
+		xml.WriteAttributeString("storage", r.AssemblyFileName);
+
+		xml.WriteStartElement("Execution", XmlNs);
+		xml.WriteAttributeString("id", r.ExecutionId);
+		xml.WriteEndElement();
+
+		xml.WriteStartElement("TestMethod", XmlNs);
+		xml.WriteAttributeString("name", r.TestName);
+		xml.WriteAttributeString("className", r.ClassName);
+		xml.WriteAttributeString("codeBase", r.AssemblyFileName);
+		xml.WriteEndElement();
+
+		xml.WriteEndElement(); // UnitTest
 	}
 
 	static string ToTrxStatus(TestResultStatus result) =>
@@ -273,4 +240,10 @@ public class TrxResultChannelFormatter : IResultChannelFormatter
 			TestResultStatus.Skipped => "NotExecuted",
 			_ => result.ToString(),
 		};
+
+	sealed record ResultEntry(
+		string Id, string ExecutionId, string DisplayName, string TestName, string ClassName,
+		string AssemblyFileName, TestResultStatus Status, TimeSpan Duration,
+		DateTimeOffset StartTime, DateTimeOffset EndTime,
+		string? Output, string? ErrorMessage, string? ErrorStackTrace, string? SkipReason);
 }
