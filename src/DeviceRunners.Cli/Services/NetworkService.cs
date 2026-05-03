@@ -96,7 +96,7 @@ public class NetworkService
                 {
                     while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
                     {
-                        var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                        var data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         connectionData.Append(data);
 
                         // Emit data received event for each chunk

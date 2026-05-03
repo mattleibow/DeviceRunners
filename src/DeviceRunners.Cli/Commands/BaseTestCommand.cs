@@ -74,6 +74,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         var textFormatter = new TextResultChannelFormatter();
         var consoleWriter = new StringWriter();
 
+        // Line buffer for reassembling NDJSON lines split across TCP chunks
+        var lineBuffer = new System.Text.StringBuilder();
+
         networkService.ConnectionEstablished += (sender, e) =>
         {
             var delta = e.Timestamp - lastConnectTime;
@@ -83,57 +86,39 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         networkService.ConnectionClosed += (sender, e) =>
         {
+            // Flush any remaining buffered data as a final line
+            if (lineBuffer.Length > 0)
+            {
+                ProcessLine(lineBuffer.ToString(), eventLines, testResults, ref failedCount, textFormatter, consoleWriter, settings);
+                lineBuffer.Clear();
+            }
+
             lastConnectTime = DateTimeOffset.UtcNow;
             WriteConsoleOutput($"    [yellow]TCP connection closed with {e.RemoteEndPoint}[/]", settings);
         };
 
         networkService.DataReceived += (sender, e) =>
         {
-            // Process each NDJSON line as it arrives
-            foreach (var line in e.Data.Split('\n'))
+            // Accumulate data and process only complete lines
+            lineBuffer.Append(e.Data);
+
+            // Extract complete lines (terminated by '\n')
+            var buffered = lineBuffer.ToString();
+            var lastNewline = buffered.LastIndexOf('\n');
+            if (lastNewline >= 0)
             {
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
+                // Process all complete lines
+                var completeData = buffered.Substring(0, lastNewline);
+                lineBuffer.Clear();
+                lineBuffer.Append(buffered.Substring(lastNewline + 1));
 
-                var trimmedLine = line.TrimEnd('\r');
-                eventLines.Add(trimmedLine);
-
-                var evt = EventStreamParser.Parse(trimmedLine);
-                if (evt is null)
+                foreach (var line in completeData.Split('\n'))
                 {
-                    WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(trimmedLine)}[/]", settings);
-                    continue;
-                }
-
-                switch (evt.Type)
-                {
-                    case TestResultEvent.TypeBegin:
-                        WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(evt.Message ?? "")}[/]", settings);
-                        textFormatter.BeginTestRun(consoleWriter, evt.Message);
-                        break;
-
-                    case TestResultEvent.TypeResult:
-                        var resultInfo = EventStreamParser.ToTestResultInfo(evt);
-                        testResults.Add(resultInfo);
-                        textFormatter.RecordResult(resultInfo);
-
-                        var statusColor = resultInfo.Status switch
-                        {
-                            TestResultStatus.Passed => "green",
-                            TestResultStatus.Failed => "red",
-                            TestResultStatus.Skipped => "yellow",
-                            _ => "white",
-                        };
-                        WriteConsoleOutput($"    [{statusColor}]{Markup.Escape(evt.DisplayName ?? "?")} - {evt.Status}[/]", settings);
-
-                        if (resultInfo.Status == TestResultStatus.Failed)
-                            failedCount++;
-                        break;
-
-                    case TestResultEvent.TypeEnd:
-                        WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
-                        textFormatter.EndTestRun();
-                        break;
+                    var trimmedLine = line.TrimEnd('\r');
+                    if (!string.IsNullOrWhiteSpace(trimmedLine))
+                    {
+                        ProcessLine(trimmedLine, eventLines, testResults, ref failedCount, textFormatter, consoleWriter, settings);
+                    }
                 }
             }
         };
@@ -208,6 +193,54 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             }
 
             return (1, null);
+        }
+    }
+
+    void ProcessLine(string trimmedLine, List<string> eventLines, List<ITestResultInfo> testResults, ref int failedCount, TextResultChannelFormatter textFormatter, StringWriter consoleWriter, TSettings settings)
+    {
+        // Skip ping/probe messages from TcpResultChannel host selection
+        if (trimmedLine == "ping")
+            return;
+
+        var evt = EventStreamParser.Parse(trimmedLine);
+        if (evt is null)
+        {
+            WriteConsoleOutput($"    [yellow]Unparseable: {Markup.Escape(trimmedLine)}[/]", settings);
+            return;
+        }
+
+        // Only add successfully parsed events to the events file
+        eventLines.Add(trimmedLine);
+
+        switch (evt.Type)
+        {
+            case TestResultEvent.TypeBegin:
+                WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(evt.Message ?? "")}[/]", settings);
+                textFormatter.BeginTestRun(consoleWriter, evt.Message);
+                break;
+
+            case TestResultEvent.TypeResult:
+                var resultInfo = EventStreamParser.ToTestResultInfo(evt);
+                testResults.Add(resultInfo);
+                textFormatter.RecordResult(resultInfo);
+
+                var statusColor = resultInfo.Status switch
+                {
+                    TestResultStatus.Passed => "green",
+                    TestResultStatus.Failed => "red",
+                    TestResultStatus.Skipped => "yellow",
+                    _ => "white",
+                };
+                WriteConsoleOutput($"    [{statusColor}]{Markup.Escape(evt.DisplayName ?? "?")} - {evt.Status}[/]", settings);
+
+                if (resultInfo.Status == TestResultStatus.Failed)
+                    failedCount++;
+                break;
+
+            case TestResultEvent.TypeEnd:
+                WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
+                textFormatter.EndTestRun();
+                break;
         }
     }
 }
