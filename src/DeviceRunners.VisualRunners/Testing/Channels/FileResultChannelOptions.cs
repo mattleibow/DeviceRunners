@@ -2,7 +2,7 @@ namespace DeviceRunners.VisualRunners;
 
 public record FileResultChannelOptions
 {
-	public string? FilePath { get; init; }
+	public required string FilePath { get; init; }
 
-	public IResultChannelFormatter? Formatter { get; init; }
+	public required IResultChannelFormatter Formatter { get; init; }
 }
