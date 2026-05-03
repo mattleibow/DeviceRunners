@@ -1,6 +1,6 @@
 namespace DeviceRunners.VisualRunners;
 
-class FileResultChannel(FileResultChannelOptions options)
+public class FileResultChannel(FileResultChannelOptions options)
 	: TextWriterResultChannel(options.Formatter)
 {
 	protected override TextWriter CreateWriter()

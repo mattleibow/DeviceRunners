@@ -24,6 +24,11 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         [DefaultValue("artifacts")]
         public string ResultsDirectory { get; set; } = "artifacts";
 
+        [Description("Output format for test results (trx or txt)")]
+        [CommandOption("--format")]
+        [DefaultValue("trx")]
+        public string Format { get; set; } = "trx";
+
         [Description("TCP port to listen on")]
         [CommandOption("--port")]
         [DefaultValue(16384)]
@@ -55,10 +60,17 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         WriteConsoleOutput($"  - Starting TCP listener on port {settings.Port}...", settings);
 
         var eventsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-events.jsonl");
-        var trxFile = Path.Combine(settings.ResultsDirectory, "test-results.trx");
 
-        WriteConsoleOutput($"    Events file: [green]{Markup.Escape(eventsFile)}[/]", settings);
-        WriteConsoleOutput($"    TRX file:    [green]{Markup.Escape(trxFile)}[/]", settings);
+        // Choose formatter and file extension based on --format
+        var (formatter, extension) = settings.Format.ToLowerInvariant() switch
+        {
+            "txt" => ((IResultChannelFormatter)new TextResultChannelFormatter(), ".txt"),
+            _ => (new TrxResultChannelFormatter(), ".trx"),
+        };
+        var resultsFile = Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
+
+        WriteConsoleOutput($"    Events file:  [green]{Markup.Escape(eventsFile)}[/]", settings);
+        WriteConsoleOutput($"    Results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
 
         WriteConsoleOutput($"  - Waiting for test events via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
@@ -66,14 +78,15 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         var lastConnectTime = DateTimeOffset.UtcNow;
         var networkService = new NetworkService();
 
-        // Collect all events for processing
-        List<string> eventLines = [];
-        List<ITestResultInfo> testResults = [];
-        int failedCount = 0;
+        // Use a FileResultChannel for the output file — it handles open/close, locking, flushing
+        var resultChannel = new FileResultChannel(new FileResultChannelOptions
+        {
+            FilePath = resultsFile,
+            Formatter = formatter,
+        });
 
-        // CLI-side text formatter for live console output
-        var textFormatter = new TextResultChannelFormatter();
-        var consoleWriter = new StringWriter();
+        int failedCount = 0;
+        int totalCount = 0;
 
         // Line buffer for reassembling NDJSON lines split across TCP chunks
         var lineBuffer = new StringBuilder();
@@ -90,7 +103,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             // Flush any remaining buffered data as a final line
             if (lineBuffer.Length > 0)
             {
-                ProcessLine(lineBuffer.ToString(), eventLines, testResults, ref failedCount, textFormatter, consoleWriter, settings);
+                ProcessLine(lineBuffer.ToString(), resultChannel, ref failedCount, ref totalCount, settings);
                 lineBuffer.Clear();
             }
 
@@ -118,7 +131,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
                     var trimmedLine = line.TrimEnd('\r');
                     if (!string.IsNullOrWhiteSpace(trimmedLine))
                     {
-                        ProcessLine(trimmedLine, eventLines, testResults, ref failedCount, textFormatter, consoleWriter, settings);
+                        ProcessLine(trimmedLine, resultChannel, ref failedCount, ref totalCount, settings);
                     }
                 }
             }
@@ -126,66 +139,50 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         try
         {
+            // Open the result channel before listening
+            await resultChannel.OpenChannel();
+
             await networkService.StartTcpListener(
                 settings.Port,
-                null, // We handle file output ourselves
+                eventsFile,
                 true,
                 settings.ConnectionTimeout,
                 settings.DataTimeout);
 
             WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-            // Save raw NDJSON events
-            if (eventLines.Count > 0)
-            {
-                await File.WriteAllLinesAsync(eventsFile, eventLines);
-                WriteConsoleOutput($"  - Saved {eventLines.Count} events to: [green]{Markup.Escape(eventsFile)}[/]", settings);
-            }
+            // Close the channel — this flushes and finalizes the output file
+            await resultChannel.CloseChannel();
 
-            // Generate TRX file from collected results
-            if (testResults.Count > 0)
-            {
-                WriteTrxFile(trxFile, testResults);
-                WriteConsoleOutput($"  - Generated TRX file: [green]{Markup.Escape(trxFile)}[/]", settings);
-            }
+            WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
 
             // Report summary
-            var totalTests = testResults.Count;
-            var passedCount = testResults.Count(r => r.Status == TestResultStatus.Passed);
-            var skippedCount = testResults.Count(r => r.Status == TestResultStatus.Skipped);
+            var passedCount = totalCount - failedCount;
+            WriteConsoleOutput($"  - Results: Total={totalCount}, Passed={passedCount}, Failed={failedCount}", settings);
 
-            WriteConsoleOutput($"  - Results: Total={totalTests}, Passed={passedCount}, Failed={failedCount}, Skipped={skippedCount}", settings);
-
-            if (totalTests == 0)
+            if (totalCount == 0)
             {
                 WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
                 return (1, null);
             }
 
-            var allText = consoleWriter.ToString();
-            return (failedCount, allText);
+            return (failedCount, null);
         }
         catch (OperationCanceledException)
         {
             WriteConsoleOutput($"    [yellow]TCP listener timed out waiting for results.[/]", settings);
 
-            // Still save what we got
-            if (eventLines.Count > 0)
-            {
-                await File.WriteAllLinesAsync(eventsFile, eventLines);
+            // Close the channel to flush partial results
+            await resultChannel.CloseChannel();
 
-                // Generate TRX from partial results
-                if (testResults.Count > 0)
-                    WriteTrxFile(trxFile, testResults);
-
-                return (failedCount > 0 ? failedCount : 1, consoleWriter.ToString());
-            }
+            if (totalCount > 0)
+                return (failedCount > 0 ? failedCount : 1, null);
 
             return (1, null);
         }
     }
 
-    void ProcessLine(string trimmedLine, List<string> eventLines, List<ITestResultInfo> testResults, ref int failedCount, TextResultChannelFormatter textFormatter, StringWriter consoleWriter, TSettings settings)
+    void ProcessLine(string trimmedLine, IResultChannel resultChannel, ref int failedCount, ref int totalCount, TSettings settings)
     {
         // Skip ping/probe messages from TcpResultChannel host selection
         if (trimmedLine == "ping")
@@ -198,20 +195,16 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             return;
         }
 
-        // Only add successfully parsed events to the events file
-        eventLines.Add(trimmedLine);
-
         switch (evt.Type)
         {
             case TestResultEvent.TypeBegin:
                 WriteConsoleOutput($"    [blue]Test run started: {Markup.Escape(evt.Message ?? "")}[/]", settings);
-                textFormatter.BeginTestRun(consoleWriter, evt.Message);
                 break;
 
             case TestResultEvent.TypeResult:
                 var resultInfo = evt.ToInfo();
-                testResults.Add(resultInfo);
-                textFormatter.RecordResult(resultInfo);
+                resultChannel.RecordResult(resultInfo);
+                totalCount++;
 
                 var statusColor = resultInfo.Status switch
                 {
@@ -228,18 +221,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
             case TestResultEvent.TypeEnd:
                 WriteConsoleOutput($"    [blue]Test run ended[/]", settings);
-                textFormatter.EndTestRun();
                 break;
         }
-    }
-
-    static void WriteTrxFile(string trxFile, List<ITestResultInfo> testResults)
-    {
-        using var trxWriter = new StreamWriter(trxFile);
-        var trxFormatter = new TrxResultChannelFormatter();
-        trxFormatter.BeginTestRun(trxWriter);
-        foreach (var result in testResults)
-            trxFormatter.RecordResult(result);
-        trxFormatter.EndTestRun();
     }
 }
