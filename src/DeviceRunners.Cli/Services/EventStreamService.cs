@@ -10,7 +10,7 @@ namespace DeviceRunners.Cli.Services;
 /// Exposes counters and events so the command layer can render console output without
 /// owning any parsing or buffering logic.
 /// </summary>
-public class EventStreamService(IResultChannel resultChannel)
+public class EventStreamService(IResultChannel? resultChannel)
 {
     readonly StringBuilder _lineBuffer = new();
 
@@ -97,7 +97,7 @@ public class EventStreamService(IResultChannel resultChannel)
 
             case TestResultEvent.TypeResult:
                 var resultInfo = evt.ToInfo();
-                resultChannel.RecordResult(resultInfo);
+                resultChannel?.RecordResult(resultInfo);
                 TotalCount++;
 
                 if (resultInfo.Status == TestResultStatus.Failed)

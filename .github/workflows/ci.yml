@@ -57,8 +57,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
-    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release --logger "trx;LogFileName=test-results.trx" --results-directory ./artifacts/test-results /bl:./artifacts/logs/msbuild-test-vr.binlog
-    - run: dotnet test test/DeviceRunners.Cli.Tests --configuration release --logger "trx;LogFileName=test-results.trx" --results-directory ./artifacts/test-results /bl:./artifacts/logs/msbuild-test-cli.binlog
+    - run: dotnet test test/Tests.slnx --configuration release --logger "trx;LogFileName=test-results.trx" --results-directory ./artifacts/test-results /bl:./artifacts/logs/msbuild-test.binlog
     - name: Test Report
       uses: dorny/test-reporter@v2
       if: (always() && !cancelled())

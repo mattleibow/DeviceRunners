@@ -23,10 +23,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         [DefaultValue("artifacts")]
         public string ResultsDirectory { get; set; } = "artifacts";
 
-        [Description("Output format for test results (trx or txt)")]
-        [CommandOption("--format")]
-        [DefaultValue("trx")]
-        public string Format { get; set; } = "trx";
+        [Description("Logger for test results (trx or txt). If not specified, no results file is produced.")]
+        [CommandOption("--logger")]
+        public string? Logger { get; set; }
 
         [Description("TCP port to listen on")]
         [CommandOption("--port")]
@@ -60,26 +59,34 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         var eventsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-events.jsonl");
 
-        // Choose formatter and file extension based on --format
-        var (formatter, extension) = settings.Format.ToLowerInvariant() switch
+        // Set up result channel only if --logger is specified
+        FileResultChannel? resultChannel = null;
+        string? resultsFile = null;
+
+        if (settings.Logger is not null)
         {
-            "txt" => ((IResultChannelFormatter)new TextResultChannelFormatter(), ".txt"),
-            _ => (new TrxResultChannelFormatter(), ".trx"),
-        };
-        var resultsFile = Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
+            var (formatter, extension) = settings.Logger.ToLowerInvariant() switch
+            {
+                "txt" => ((IResultChannelFormatter)new TextResultChannelFormatter(), ".txt"),
+                "trx" => (new TrxResultChannelFormatter(), ".trx"),
+                _ => (new TrxResultChannelFormatter(), ".trx"),
+            };
+            resultsFile = Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
+
+            resultChannel = new FileResultChannel(new FileResultChannelOptions
+            {
+                FilePath = resultsFile,
+                Formatter = formatter,
+            });
+
+            WriteConsoleOutput($"    Results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+        }
 
         WriteConsoleOutput($"    Events file:  [green]{Markup.Escape(eventsFile)}[/]", settings);
-        WriteConsoleOutput($"    Results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
-
         WriteConsoleOutput($"  - Waiting for test events via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-        // Set up the result channel and event stream service
-        var resultChannel = new FileResultChannel(new FileResultChannelOptions
-        {
-            FilePath = resultsFile,
-            Formatter = formatter,
-        });
+        // Set up event stream service (with or without result channel)
         var eventStream = new EventStreamService(resultChannel);
         var networkService = new NetworkService();
 
@@ -126,7 +133,8 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         try
         {
-            await resultChannel.OpenChannel();
+            if (resultChannel is not null)
+                await resultChannel.OpenChannel();
 
             await networkService.StartTcpListener(
                 settings.Port,
@@ -143,10 +151,13 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         }
         finally
         {
-            await resultChannel.CloseChannel();
+            if (resultChannel is not null)
+                await resultChannel.CloseChannel();
         }
 
-        WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+        if (resultsFile is not null)
+            WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+
         WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
         if (eventStream.TotalCount == 0)
@@ -155,6 +166,6 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             return (1, null);
         }
 
-        return (eventStream.FailedCount, null);
+        return (eventStream.FailedCount, resultsFile);
     }
 }
