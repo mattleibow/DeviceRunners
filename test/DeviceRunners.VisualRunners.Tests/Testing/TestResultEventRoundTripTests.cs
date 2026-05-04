@@ -76,4 +76,33 @@ public class TestResultEventRoundTripTests
 		Assert.Equal(original.ErrorMessage, parsed.ErrorMessage);
 		Assert.Equal(original.ErrorStackTrace, parsed.ErrorStackTrace);
 	}
+
+	[Fact]
+	public void RoundTrip_NonAsciiTestName_PreservesUnicodeCharacters()
+	{
+		// Verifies that System.Text.Json escapes non-ASCII to \uXXXX sequences
+		// (producing pure-ASCII JSON lines), and that Parse correctly reconstructs them.
+		var original = TestResultEvent.FromInfo(
+			TestHelpers.CreateTestResult(
+				"Ns.\u30c6\u30b9\u30c8.Method_\u00e9\U0001f389(x: \"\u4e16\u754c\")", "test-\u00fc.dll",
+				TestResultStatus.Passed, TimeSpan.FromMilliseconds(100),
+				output: "Output with \u2603 snowman"));
+
+		var json = original.ToString();
+
+		// The serialized JSON line must be pure ASCII (all non-ASCII escaped)
+		Assert.All(json, c => Assert.True(c < 128, $"Non-ASCII char U+{(int)c:X4} found in JSON line"));
+
+		// Round-trip must reconstruct the original Unicode strings
+		var parsed = TestResultEvent.Parse(json);
+		Assert.NotNull(parsed);
+		Assert.Equal(original.DisplayName, parsed.DisplayName);
+		Assert.Equal(original.Assembly, parsed.Assembly);
+		Assert.Equal(original.Output, parsed.Output);
+
+		// Full ToInfo round-trip
+		var info = parsed.ToInfo();
+		Assert.Equal("Ns.\u30c6\u30b9\u30c8.Method_\u00e9\U0001f389(x: \"\u4e16\u754c\")", info.TestCase.DisplayName);
+		Assert.Equal("Output with \u2603 snowman", info.Output);
+	}
 }
