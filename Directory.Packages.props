@@ -4,7 +4,7 @@
     <PackageVersion Include="AppleDev" Version="0.8.7" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26107.1" />
-    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26107.1" />
+    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26230.4" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26107.1" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
