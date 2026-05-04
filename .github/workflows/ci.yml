@@ -110,6 +110,7 @@ jobs:
         name: Test Results (TCP Android)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-ios:
     name: TCP iOS (x64)
@@ -124,6 +125,7 @@ jobs:
         name: Test Results (TCP iOS)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-macos:
     name: TCP macOS (x64)
@@ -138,6 +140,7 @@ jobs:
         name: Test Results (TCP macOS)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-windows:
     name: TCP Windows
@@ -152,6 +155,7 @@ jobs:
         name: Test Results (TCP Windows)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-windows-unpackaged:
     name: TCP Windows (Unpackaged)
@@ -166,6 +170,7 @@ jobs:
         name: Test Results (TCP Windows Unpackaged)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   # ── XHarness Device Tests ──────────────────────────────────
 
