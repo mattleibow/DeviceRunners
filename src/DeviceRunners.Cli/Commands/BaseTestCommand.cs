@@ -65,13 +65,18 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         if (settings.Logger is not null)
         {
-            var (formatter, extension) = settings.Logger.ToLowerInvariant() switch
+            var (loggerName, logFileName) = ParseLogger(settings.Logger);
+
+            var (formatter, extension) = loggerName switch
             {
                 "txt" => ((IResultChannelFormatter)new TextResultChannelFormatter(), ".txt"),
                 "trx" => (new TrxResultChannelFormatter(), ".trx"),
-                _ => throw new InvalidOperationException($"Unknown logger '{settings.Logger}'. Supported values: trx, txt"),
+                _ => throw new InvalidOperationException($"Unknown logger '{loggerName}'. Supported values: trx, txt"),
             };
-            resultsFile = Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
+
+            resultsFile = logFileName is not null
+                ? Path.Combine(settings.ResultsDirectory, logFileName)
+                : Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
 
             resultChannel = new FileResultChannel(new FileResultChannelOptions
             {
@@ -170,5 +175,35 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         }
 
         return (eventStream.FailedCount, resultsFile);
+    }
+
+    /// <summary>
+    /// Parses a logger string in the format "name" or "name;LogFileName=file.ext"
+    /// matching dotnet test --logger conventions.
+    /// </summary>
+    internal static (string name, string? logFileName) ParseLogger(string logger)
+    {
+        var semicolonIndex = logger.IndexOf(';');
+        if (semicolonIndex < 0)
+            return (logger.ToLowerInvariant(), null);
+
+        var name = logger[..semicolonIndex].ToLowerInvariant();
+        var parameters = logger[(semicolonIndex + 1)..];
+
+        string? logFileName = null;
+        foreach (var param in parameters.Split(';'))
+        {
+            var eqIndex = param.IndexOf('=');
+            if (eqIndex < 0)
+                continue;
+
+            var key = param[..eqIndex].Trim();
+            var value = param[(eqIndex + 1)..].Trim();
+
+            if (key.Equals("LogFileName", StringComparison.OrdinalIgnoreCase))
+                logFileName = value;
+        }
+
+        return (name, logFileName);
     }
 }

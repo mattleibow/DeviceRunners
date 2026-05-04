@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="DeviceRunners.Cli.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" />
     <PackageReference Include="AndroidSdk" />
