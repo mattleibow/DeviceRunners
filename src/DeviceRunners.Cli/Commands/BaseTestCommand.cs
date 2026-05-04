@@ -69,7 +69,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             {
                 "txt" => ((IResultChannelFormatter)new TextResultChannelFormatter(), ".txt"),
                 "trx" => (new TrxResultChannelFormatter(), ".trx"),
-                _ => (new TrxResultChannelFormatter(), ".trx"),
+                _ => throw new InvalidOperationException($"Unknown logger '{settings.Logger}'. Supported values: trx, txt"),
             };
             resultsFile = Path.Combine(settings.ResultsDirectory, $"test-results{extension}");
 
