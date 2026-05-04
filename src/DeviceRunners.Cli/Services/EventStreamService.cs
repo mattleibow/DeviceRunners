@@ -71,8 +71,10 @@ public class EventStreamService
     {
         if (_lineBuffer.Length > 0)
         {
-            ProcessLine(_lineBuffer.ToString());
+            var remaining = _lineBuffer.ToString().TrimEnd('\r');
             _lineBuffer.Clear();
+            if (!string.IsNullOrWhiteSpace(remaining))
+                ProcessLine(remaining);
         }
     }
 

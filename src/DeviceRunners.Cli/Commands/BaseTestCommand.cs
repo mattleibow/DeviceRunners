@@ -201,7 +201,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             var value = param[(eqIndex + 1)..].Trim();
 
             if (key.Equals("LogFileName", StringComparison.OrdinalIgnoreCase))
-                logFileName = value;
+                logFileName = string.IsNullOrWhiteSpace(value) ? null : value;
         }
 
         return (name, logFileName);

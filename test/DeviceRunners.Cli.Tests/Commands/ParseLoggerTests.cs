@@ -57,11 +57,19 @@ public class ParseLoggerTests
     }
 
     [Fact]
-    public void EmptyLogFileName_ReturnsEmptyString()
+    public void EmptyLogFileName_ReturnsNull()
     {
         var (_, logFileName) = BaseTestCommand<WindowsTestCommand.Settings>.ParseLogger("trx;LogFileName=");
 
-        Assert.Equal("", logFileName);
+        Assert.Null(logFileName);
+    }
+
+    [Fact]
+    public void WhitespaceLogFileName_ReturnsNull()
+    {
+        var (_, logFileName) = BaseTestCommand<WindowsTestCommand.Settings>.ParseLogger("trx;LogFileName=  ");
+
+        Assert.Null(logFileName);
     }
 
     [Fact]
