@@ -5,34 +5,28 @@ namespace DeviceRunners.Cli.Tests;
 
 public class EventStreamServiceTests
 {
-    /// <summary>
-    /// Creates a mock IResultChannel that records calls for assertions.
-    /// </summary>
-    static (EventStreamService service, MockResultChannel channel) CreateService()
-    {
-        var channel = new MockResultChannel();
-        var service = new EventStreamService(channel);
-        return (service, channel);
-    }
+    static EventStreamService CreateService() => new();
 
     [Fact]
     public void ReceiveData_SingleCompleteLine_ParsesAndForwardsResult()
     {
-        var (service, channel) = CreateService();
-        var json = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
+        var service = CreateService();
+        var results = new List<ITestResultInfo>();
+        service.TestResultRecorded += (_, e) => results.Add(e.Result);
 
+        var json = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
         service.ReceiveData(json + "\n");
 
         Assert.Equal(1, service.TotalCount);
         Assert.Equal(1, service.PassedCount);
         Assert.Equal(0, service.FailedCount);
-        Assert.Single(channel.RecordedResults);
+        Assert.Single(results);
     }
 
     [Fact]
     public void ReceiveData_MultipleLines_ParsesAll()
     {
-        var (service, channel) = CreateService();
+        var service = CreateService();
         var line1 = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
         var line2 = TestResultEvent.FromInfo(CreateFailedResult("Test2")).ToString();
 
@@ -46,7 +40,7 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_ChunkedLine_BuffersUntilNewline()
     {
-        var (service, channel) = CreateService();
+        var service = CreateService();
         var json = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
 
         // Send in two chunks — no newline yet
@@ -61,7 +55,7 @@ public class EventStreamServiceTests
     [Fact]
     public void Flush_ProcessesRemainingBuffer()
     {
-        var (service, channel) = CreateService();
+        var service = CreateService();
         var json = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
 
         // Send without newline
@@ -75,7 +69,7 @@ public class EventStreamServiceTests
     [Fact]
     public void Flush_EmptyBuffer_DoesNothing()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
 
         service.Flush();
 
@@ -85,18 +79,20 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_PingMessage_IsIgnored()
     {
-        var (service, channel) = CreateService();
+        var service = CreateService();
+        var results = new List<ITestResultInfo>();
+        service.TestResultRecorded += (_, e) => results.Add(e.Result);
 
         service.ReceiveData("ping\n");
 
         Assert.Equal(0, service.TotalCount);
-        Assert.Empty(channel.RecordedResults);
+        Assert.Empty(results);
     }
 
     [Fact]
     public void ReceiveData_InvalidJson_RaisesUnparseableLine()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
         string? unparsedLine = null;
         service.UnparseableLine += (_, e) => unparsedLine = e.Line;
 
@@ -109,7 +105,7 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_BeginEvent_RaisesTestRunStarted()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
         string? message = null;
         service.TestRunStarted += (_, e) => message = e.Message;
 
@@ -123,7 +119,7 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_EndEvent_RaisesTestRunEnded()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
         var ended = false;
         service.TestRunEnded += (_, _) => ended = true;
 
@@ -136,7 +132,7 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_ResultEvent_RaisesTestResultRecorded()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
         TestResultRecordedEventArgs? recorded = null;
         service.TestResultRecorded += (_, e) => recorded = e;
 
@@ -151,7 +147,7 @@ public class EventStreamServiceTests
     [Fact]
     public void Counters_TrackAllStatuses()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
 
         service.ReceiveData(TestResultEvent.FromInfo(CreatePassedResult("P1")).ToString() + "\n");
         service.ReceiveData(TestResultEvent.FromInfo(CreatePassedResult("P2")).ToString() + "\n");
@@ -167,7 +163,7 @@ public class EventStreamServiceTests
     [Fact]
     public void ReceiveData_CrLfLineEndings_ParsesCorrectly()
     {
-        var (service, _) = CreateService();
+        var service = CreateService();
         var json = TestResultEvent.FromInfo(CreatePassedResult("Test1")).ToString();
 
         service.ReceiveData(json + "\r\n");
@@ -215,31 +211,5 @@ public class EventStreamServiceTests
         public string AssemblyFileName => "test.dll";
         public ITestAssemblyConfiguration? Configuration => null;
         public IReadOnlyList<ITestCaseInfo> TestCases => [];
-    }
-
-    /// <summary>
-    /// Minimal IResultChannel that just records RecordResult calls.
-    /// </summary>
-    sealed class MockResultChannel : IResultChannel
-    {
-        public List<ITestResultInfo> RecordedResults { get; } = [];
-        public bool IsOpen { get; private set; }
-
-        public Task<bool> OpenChannel(string? message = null)
-        {
-            IsOpen = true;
-            return Task.FromResult(true);
-        }
-
-        public void RecordResult(ITestResultInfo testResult)
-        {
-            RecordedResults.Add(testResult);
-        }
-
-        public Task CloseChannel()
-        {
-            IsOpen = false;
-            return Task.CompletedTask;
-        }
     }
 }

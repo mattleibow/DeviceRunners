@@ -6,11 +6,11 @@ namespace DeviceRunners.Cli.Services;
 
 /// <summary>
 /// Processes an NDJSON event stream, reassembling TCP chunks into complete lines,
-/// parsing <see cref="TestResultEvent"/>s, and forwarding results to an <see cref="IResultChannel"/>.
-/// Exposes counters and events so the command layer can render console output without
-/// owning any parsing or buffering logic.
+/// parsing <see cref="TestResultEvent"/>s, and raising events for each.
+/// Owns no I/O — the command layer subscribes to events and decides what to do
+/// (console output, file output via result channel, etc.).
 /// </summary>
-public class EventStreamService(IResultChannel? resultChannel)
+public class EventStreamService
 {
     readonly StringBuilder _lineBuffer = new();
 
@@ -97,7 +97,6 @@ public class EventStreamService(IResultChannel? resultChannel)
 
             case TestResultEvent.TypeResult:
                 var resultInfo = evt.ToInfo();
-                resultChannel?.RecordResult(resultInfo);
                 TotalCount++;
 
                 if (resultInfo.Status == TestResultStatus.Failed)

@@ -60,7 +60,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         var eventsFile = Path.Combine(settings.ResultsDirectory, "tcp-test-events.jsonl");
 
         // Set up result channel only if --logger is specified
-        FileResultChannel? resultChannel = null;
+        IResultChannel? resultChannel = null;
         string? resultsFile = null;
 
         if (settings.Logger is not null)
@@ -86,8 +86,8 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         WriteConsoleOutput($"  - Waiting for test events via TCP...", settings);
         WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
-        // Set up event stream service (with or without result channel)
-        var eventStream = new EventStreamService(resultChannel);
+        // Set up event stream service (pure parser + event emitter)
+        var eventStream = new EventStreamService();
         var networkService = new NetworkService();
 
         // Wire up event stream events for console output
@@ -98,6 +98,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         eventStream.TestResultRecorded += (_, e) =>
         {
+            // Forward to result channel if configured
+            resultChannel?.RecordResult(e.Result);
+
             var statusColor = e.Result.Status switch
             {
                 TestResultStatus.Passed => "green",
