@@ -32,10 +32,7 @@ runs:
       uses: ./.github/workflows/setup-tools
     - name: Publish CLI Tool Binaries
       shell: bash
-      run: |
-        dotnet msbuild src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj \
-          -t:PublishCliTools \
-          -c ${{ inputs.configuration }}
+      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c ${{ inputs.configuration }}
     - name: Create Simulator
       id: simulator
       shell: bash

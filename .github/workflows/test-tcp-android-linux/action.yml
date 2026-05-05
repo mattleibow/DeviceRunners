@@ -51,10 +51,7 @@ runs:
         java-version: '21'
     - name: Publish CLI Tool Binaries
       shell: bash
-      run: |
-        dotnet msbuild src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj \
-          -t:PublishCliTools \
-          -c ${{ inputs.configuration }}
+      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c ${{ inputs.configuration }}
     - name: Install Android SDK Packages
       shell: bash
       run: |
