@@ -94,9 +94,12 @@ public class NetworkService
                 int bytesRead;
                 try
                 {
-                    while ((bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length, dataToken)) > 0)
+                    // NOTE: Per-chunk GetString is safe because System.Text.Json's default encoder
+                    // escapes non-ASCII into \uXXXX sequences, so our NDJSON is pure ASCII.
+                    // If future clients send raw UTF-8, replace this with a persistent Decoder.
+                    while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(), dataToken)) > 0)
                     {
-                        var data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
+                        var data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         connectionData.Append(data);
 
                         // Emit data received event for each chunk

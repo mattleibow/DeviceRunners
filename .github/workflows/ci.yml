@@ -32,7 +32,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
-    - run: dotnet build DeviceRunners.sln --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
+    - run: dotnet build DeviceRunners.slnx --configuration ${{ matrix.configuration }} /bl:./artifacts/logs/msbuild-build.binlog
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -52,10 +52,19 @@ jobs:
           os-name: Windows
         - runner: macos-15-intel
           os-name: macOS
+        - runner: ubuntu-24.04
+          os-name: Linux
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/setup-tools
-    - run: dotnet test test/DeviceRunners.VisualRunners.Tests --configuration release /bl:./artifacts/logs/msbuild-test.binlog
+    - run: dotnet test test/Tests.slnx --configuration release --logger "trx;LogFileName=test-results.trx" --results-directory ./artifacts/test-results /bl:./artifacts/logs/msbuild-test.binlog
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (${{ matrix.os-name }})
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -94,6 +103,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-android-linux
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP Android)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-ios:
     name: TCP iOS (x64)
@@ -101,6 +118,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-ios
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP iOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-macos:
     name: TCP macOS (x64)
@@ -108,6 +133,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-macos
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP macOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-windows:
     name: TCP Windows
@@ -115,6 +148,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP Windows)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   tcp-windows-unpackaged:
     name: TCP Windows (Unpackaged)
@@ -122,6 +163,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-tcp-windows-unpackaged
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP Windows Unpackaged)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   # ── XHarness Device Tests ──────────────────────────────────
 

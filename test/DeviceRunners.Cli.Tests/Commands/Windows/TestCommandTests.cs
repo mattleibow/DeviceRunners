@@ -109,4 +109,50 @@ public class WindowsTestCommandTests
         // Should not show unpackaged validation message
         Assert.DoesNotContain("Validating unpackaged application", result.Output);
     }
+
+    [Fact]
+    public void WithInvalidLogger_Fails()
+    {
+        // Arrange - Create a temporary exe file
+        var tempExe = Path.GetTempFileName();
+        File.Move(tempExe, tempExe + ".exe");
+        tempExe += ".exe";
+
+        try
+        {
+            // Act - Use an invalid --logger value
+            var result = _app.Run("windows", "test", "--app", tempExe, "--logger", "xml", "--connection-timeout", "1", "--data-timeout", "1");
+
+            // Assert - Should fail (Spectre wraps the exception)
+            Assert.NotEqual(0, result.ExitCode);
+        }
+        finally
+        {
+            if (File.Exists(tempExe))
+                File.Delete(tempExe);
+        }
+    }
+
+    [Fact]
+    public void WithNoLogger_ProducesNoResultsFile()
+    {
+        // Arrange - Create a temporary exe file
+        var tempExe = Path.GetTempFileName();
+        File.Move(tempExe, tempExe + ".exe");
+        tempExe += ".exe";
+
+        try
+        {
+            // Act - Run without --logger
+            var result = _app.Run("windows", "test", "--app", tempExe, "--connection-timeout", "1", "--data-timeout", "1");
+
+            // Assert - Should not mention a results file
+            Assert.DoesNotContain("Results file:", result.Output);
+        }
+        finally
+        {
+            if (File.Exists(tempExe))
+                File.Delete(tempExe);
+        }
+    }
 }

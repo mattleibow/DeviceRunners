@@ -37,7 +37,7 @@ public static class MauiProgram
 				{
 					HostNames = ["localhost", "10.0.2.2"],
 					Port = 16384,
-					Formatter = new TextResultChannelFormatter(),
+					Formatter = new EventStreamFormatter(),
 					Required = false,
 					Retries = 3,
 					RetryTimeout = TimeSpan.FromSeconds(5),

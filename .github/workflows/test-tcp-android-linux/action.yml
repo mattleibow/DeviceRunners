@@ -101,7 +101,8 @@ runs:
         device-runners android test \
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
           --results-directory artifacts/test-results \
-          --connection-timeout ${{ inputs.connection-timeout }}
+          --connection-timeout ${{ inputs.connection-timeout }} \
+          --logger trx
     - name: Capture Logcat
       if: always()
       shell: bash
