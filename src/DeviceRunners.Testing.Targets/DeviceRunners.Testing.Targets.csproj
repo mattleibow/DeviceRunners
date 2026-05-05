@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <PackageId>DeviceRunners.Testing.Targets</PackageId>
+    <Description>MSBuild targets that enable `dotnet test` support for Android and iOS MAUI test apps via the DeviceRunners CLI tool.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Path to the CLI tool project, relative to this file. -->
+    <_CliProjectPath>$(MSBuildThisFileDirectory)..\DeviceRunners.Cli\DeviceRunners.Cli.csproj</_CliProjectPath>
+    <_CliToolsDir>$(MSBuildThisFileDirectory)tools\</_CliToolsDir>
+  </PropertyGroup>
+
+  <!--
+    Publish DeviceRunners.Cli as self-contained + trimmed native binaries for all
+    host RIDs. Cross-RID publishing is supported for non-AOT self-contained apps
+    and works from any host platform.
+
+    Run explicitly before dotnet test in the same repo:
+      dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools -c release
+
+    When packing the NuGet package, this target runs automatically before GenerateNuspec.
+  -->
+  <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
+    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for all host RIDs..." />
+
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r win-x64   --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)win-x64\&quot;   -c $(Configuration)" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r linux-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)linux-x64\&quot; -c $(Configuration)" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-x64   --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)osx-x64\&quot;   -c $(Configuration)" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-arm64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)osx-arm64\&quot; -c $(Configuration)" />
+  </Target>
+
+  <!--
+    Include all files from build/ and tools/ in the NuGet package.
+    The tools/<rid>/ binaries are populated by PublishCliTools above.
+  -->
+  <ItemGroup>
+    <None Include="build\**" Pack="true" PackagePath="build\" />
+    <None Include="tools\**" Pack="true" PackagePath="tools\" />
+  </ItemGroup>
+
+</Project>

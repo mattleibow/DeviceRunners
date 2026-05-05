@@ -49,11 +49,12 @@ runs:
       with:
         distribution: 'microsoft'
         java-version: '21'
-    - name: Build and Install CLI Tool
+    - name: Publish CLI Tool Binaries
       shell: bash
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+        dotnet msbuild src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj \
+          -t:PublishCliTools \
+          -c ${{ inputs.configuration }}
     - name: Install Android SDK Packages
       shell: bash
       run: |
@@ -85,24 +86,15 @@ runs:
       if: always()
       shell: bash
       run: cat ./artifacts/logs/android-tool.log
-    - name: Publish App
+    - name: Build and Test
       shell: bash
       run: |
-        dotnet publish ${{ inputs.test-project }} \
+        dotnet test ${{ inputs.test-project }} \
           -f ${{ inputs.target-framework }} \
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
-          -p:TestingMode=NonInteractiveVisual \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
-    - name: Run Tests
-      shell: bash
-      run: |
-        device-runners android test \
-          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
-          --results-directory artifacts/test-results \
-          --connection-timeout ${{ inputs.connection-timeout }} \
-          --logger trx
     - name: Capture Logcat
       if: always()
       shell: bash

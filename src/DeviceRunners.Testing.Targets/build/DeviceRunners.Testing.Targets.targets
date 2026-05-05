@@ -1,0 +1,163 @@
+<Project>
+
+  <!--
+    Resolve the DeviceRunners CLI tool binary that is bundled inside this NuGet package.
+    The tools/ folder contains a self-contained, trimmed binary per host RID:
+      tools/win-x64/device-runners.exe
+      tools/linux-x64/device-runners
+      tools/osx-x64/device-runners
+      tools/osx-arm64/device-runners
+
+    Override by setting $(DeviceRunnersBin) in your project:
+      <PropertyGroup>
+        <DeviceRunnersBin>device-runners</DeviceRunnersBin>
+      </PropertyGroup>
+  -->
+  <PropertyGroup>
+    <_DeviceRunnersToolsDir>$(MSBuildThisFileDirectory)..\tools\</_DeviceRunnersToolsDir>
+
+    <!-- Detect host architecture for macOS (x64 vs arm64) -->
+    <_DeviceRunnersHostArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'">arm64</_DeviceRunnersHostArch>
+    <_DeviceRunnersHostArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' != 'Arm64'">x64</_DeviceRunnersHostArch>
+
+    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(_DeviceRunnersToolsDir)win-x64\device-runners.exe</_DeviceRunnersBundledBin>
+    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(_DeviceRunnersToolsDir)linux-x64\device-runners</_DeviceRunnersBundledBin>
+    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(_DeviceRunnersToolsDir)osx-$(_DeviceRunnersHostArch)\device-runners</_DeviceRunnersBundledBin>
+
+    <!--
+      Use the user-supplied path if set; otherwise use the bundled binary.
+      If neither exists, the VSTest target will emit a clear error.
+    -->
+    <_DeviceRunnersBin Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersBin>
+    <_DeviceRunnersBin Condition="'$(DeviceRunnersBin)' == ''">$(_DeviceRunnersBundledBin)</_DeviceRunnersBin>
+  </PropertyGroup>
+
+  <!--
+    VSTest target — invoked by `dotnet test`.
+
+    For Android and iOS this completely replaces the default VSTest behaviour:
+      1. Builds the app (APK / .app bundle) with env vars already baked in by the .props file.
+      2. Runs the bundled CLI tool which deploys, launches, and collects TCP results.
+      3. Writes a TRX file that dotnet test / VS Test Explorer can consume.
+      4. Returns a non-zero exit code when there are test failures.
+
+    For other platforms (Windows, macOS host, etc.) the target is a no-op so that
+    standard VSTest handling can continue without interference.
+  -->
+  <Target Name="VSTest"
+          DependsOnTargets="Build"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
+                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+
+    <Error Condition="!Exists('$(_DeviceRunnersBin)') And '$(DeviceRunnersBin)' == ''"
+           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersBin)'. Either: (a) run 'dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools' to build the bundled binaries, or (b) set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; in your project and ensure 'device-runners' is on PATH." />
+
+    <MakeDir Directories="$(TestResultsDirectory)" />
+
+    <CallTarget Targets="_DeviceRunnersAndroidTest"
+                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
+    <CallTarget Targets="_DeviceRunnersiOSTest"
+                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+
+  </Target>
+
+  <!-- ─────────────────────────────────────────────────────────── Android ── -->
+
+  <Target Name="_DeviceRunnersAndroidTest">
+
+    <PropertyGroup>
+      <!-- Signed APK produced by dotnet build/publish for Android. -->
+      <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
+      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+    </PropertyGroup>
+
+    <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
+           Condition="!Exists('$(_DeviceRunnersApkPath)')" />
+
+    <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
+
+    <!--
+      The CLI tool installs the APK, launches the app, listens for TCP results,
+      and writes the TRX file. A non-zero exit code means test failures.
+    -->
+    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; android test \
+      --app &quot;$(_DeviceRunnersApkPath)&quot; \
+      --results-directory &quot;$(TestResultsDirectory)&quot; \
+      --port $(DeviceRunnersPort) \
+      --connection-timeout $(DeviceRunnersConnectionTimeout) \
+      --data-timeout $(DeviceRunnersDataTimeout) \
+      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false"
+          Condition="'$(DeviceRunnersDevice)' == ''" />
+
+    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; android test \
+      --app &quot;$(_DeviceRunnersApkPath)&quot; \
+      --device &quot;$(DeviceRunnersDevice)&quot; \
+      --results-directory &quot;$(TestResultsDirectory)&quot; \
+      --port $(DeviceRunnersPort) \
+      --connection-timeout $(DeviceRunnersConnectionTimeout) \
+      --data-timeout $(DeviceRunnersDataTimeout) \
+      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false"
+          Condition="'$(DeviceRunnersDevice)' != ''" />
+
+    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+
+  </Target>
+
+  <!-- ──────────────────────────────────────────────────────────── iOS ──── -->
+
+  <Target Name="_DeviceRunnersiOSTest">
+
+    <!--
+      Locate the .app bundle produced under $(OutputPath).
+      For simulator builds the directory name ends in .app and sits directly
+      inside the output path (e.g. MyApp.app/).
+    -->
+    <ItemGroup>
+      <_DeviceRunnersAppBundle Include="$(OutputPath)*.app/" />
+    </ItemGroup>
+
+    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
+           Condition="'@(_DeviceRunnersAppBundle)' == ''" />
+
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>@(_DeviceRunnersAppBundle->'%(FullPath)', ';')</_DeviceRunnersAppPath>
+      <!-- Trim trailing separator so the CLI receives a clean path -->
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
+
+    <!--
+      The CLI tool installs the .app on the booted simulator, launches it,
+      listens for TCP results, and writes the TRX file.
+      Omitting --device causes the CLI to use the currently booted simulator.
+    -->
+    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; ios test \
+      --app &quot;$(_DeviceRunnersAppPath)&quot; \
+      --results-directory &quot;$(TestResultsDirectory)&quot; \
+      --port $(DeviceRunnersPort) \
+      --connection-timeout $(DeviceRunnersConnectionTimeout) \
+      --data-timeout $(DeviceRunnersDataTimeout) \
+      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false"
+          Condition="'$(DeviceRunnersDevice)' == ''" />
+
+    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; ios test \
+      --app &quot;$(_DeviceRunnersAppPath)&quot; \
+      --device &quot;$(DeviceRunnersDevice)&quot; \
+      --results-directory &quot;$(TestResultsDirectory)&quot; \
+      --port $(DeviceRunnersPort) \
+      --connection-timeout $(DeviceRunnersConnectionTimeout) \
+      --data-timeout $(DeviceRunnersDataTimeout) \
+      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false"
+          Condition="'$(DeviceRunnersDevice)' != ''" />
+
+    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+
+  </Target>
+
+</Project>

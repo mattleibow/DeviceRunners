@@ -1,0 +1,59 @@
+<Project>
+
+  <!--
+    Default properties injected before the project builds.
+    Users can override any of these in their own .csproj.
+  -->
+  <PropertyGroup>
+    <!-- TCP port the CLI tool listens on (and the app connects to). -->
+    <DeviceRunnersPort Condition="'$(DeviceRunnersPort)' == ''">16384</DeviceRunnersPort>
+
+    <!-- How long (seconds) the CLI waits for the first TCP connection from the device. -->
+    <DeviceRunnersConnectionTimeout Condition="'$(DeviceRunnersConnectionTimeout)' == ''">120</DeviceRunnersConnectionTimeout>
+
+    <!-- How long (seconds) the CLI waits for more data after the last received packet. -->
+    <DeviceRunnersDataTimeout Condition="'$(DeviceRunnersDataTimeout)' == ''">30</DeviceRunnersDataTimeout>
+
+    <!--
+      Target device/emulator to use. Leave empty to use the booted/default device.
+      For iOS: the simulator UDID (e.g. from `xcrun simctl list` or dotnet apple simulator create).
+      For Android: the device serial number (e.g. emulator-5554).
+    -->
+    <DeviceRunnersDevice Condition="'$(DeviceRunnersDevice)' == ''" />
+
+    <!-- Where TRX / raw event files are written. Defaults to $(ArtifactsPath)\test-results when
+         UseArtifactsOutput=true, otherwise to $(MSBuildProjectDirectory)\test-results. -->
+    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$(ArtifactsPath)test-results\</TestResultsDirectory>
+    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
+  </PropertyGroup>
+
+  <!--
+    Bake environment variables into the app bundle at build time so that at runtime
+    the app auto-configures headless mode (no #if compile-time flags needed).
+
+    The DeviceRunners.VisualRunners UseTestRunnerEnvironment() extension method reads:
+      DEVICE_RUNNERS_AUTORUN       - any non-empty value enables headless mode
+      DEVICE_RUNNERS_PORT          - TCP port to connect to
+      DEVICE_RUNNERS_HOST_NAMES    - semicolon-separated list of host IPs/names to try
+  -->
+
+  <!-- Android: embedded via Mono's environment.env file inside the APK -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_AUTORUN" Value="1" />
+    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_PORT" Value="$(DeviceRunnersPort)" />
+    <!--
+      10.0.2.2 is the gateway to the host machine from Android emulators.
+      localhost covers Windows/macOS host and iOS simulator (shared network).
+    -->
+    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_HOST_NAMES" Value="localhost;10.0.2.2" />
+  </ItemGroup>
+
+  <!-- iOS / Mac Catalyst: embedded via the iOS runtime environment mechanism -->
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
+                     Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_AUTORUN" Value="1" />
+    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_PORT" Value="$(DeviceRunnersPort)" />
+    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_HOST_NAMES" Value="localhost" />
+  </ItemGroup>
+
+</Project>
