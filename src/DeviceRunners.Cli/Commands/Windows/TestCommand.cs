@@ -74,15 +74,20 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
         WriteConsoleOutput($"[blue]EXECUTION[/]", settings);
         WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
-        // Start the unpackaged application directly
+        // Start the unpackaged application directly, injecting env vars so the app
+        // auto-configures headless mode (no compile-time flags needed).
         WriteConsoleOutput($"  - Starting the unpackaged application...", settings);
         
         var startInfo = new ProcessStartInfo
         {
             FileName = settings.App,
-            UseShellExecute = true,
+            UseShellExecute = false,
             WorkingDirectory = Path.GetDirectoryName(settings.App)
         };
+
+        startInfo.EnvironmentVariables["DEVICE_RUNNERS_AUTORUN"] = "1";
+        startInfo.EnvironmentVariables["DEVICE_RUNNERS_PORT"] = settings.Port.ToString();
+        startInfo.EnvironmentVariables["DEVICE_RUNNERS_HOST_NAMES"] = "localhost";
 
         var process = Process.Start(startInfo);
         if (process == null)

@@ -1,56 +1,45 @@
 <Project>
 
   <!--
-    Resolve the DeviceRunners CLI tool binary that is bundled inside this NuGet package.
-    The tools/ folder contains a self-contained, trimmed binary per host RID:
-      tools/win-x64/device-runners.exe
-      tools/linux-x64/device-runners
-      tools/osx-x64/device-runners
-      tools/osx-arm64/device-runners
+    Build the command used to invoke the DeviceRunners CLI tool.
 
-    Override by setting $(DeviceRunnersBin) in your project:
+    The NuGet package ships a framework-dependent DeviceRunners.Cli.dll in tools/.
+    We invoke it via `dotnet <dll>` — dotnet is always available on any machine
+    running `dotnet test`, so no per-OS or per-architecture binary detection is needed.
+
+    Override by setting $(DeviceRunnersBin) to an alternate command in your project:
       <PropertyGroup>
         <DeviceRunnersBin>device-runners</DeviceRunnersBin>
       </PropertyGroup>
   -->
   <PropertyGroup>
-    <_DeviceRunnersToolsDir>$(MSBuildThisFileDirectory)..\tools\</_DeviceRunnersToolsDir>
+    <_DeviceRunnersDllPath>$(MSBuildThisFileDirectory)..\tools\DeviceRunners.Cli.dll</_DeviceRunnersDllPath>
 
-    <!-- Detect host architecture for macOS (x64 vs arm64) -->
-    <_DeviceRunnersHostArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' == 'Arm64'">arm64</_DeviceRunnersHostArch>
-    <_DeviceRunnersHostArch Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)' != 'Arm64'">x64</_DeviceRunnersHostArch>
-
-    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(_DeviceRunnersToolsDir)win-x64\device-runners.exe</_DeviceRunnersBundledBin>
-    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('Linux'))">$(_DeviceRunnersToolsDir)linux-x64\device-runners</_DeviceRunnersBundledBin>
-    <_DeviceRunnersBundledBin Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(_DeviceRunnersToolsDir)osx-$(_DeviceRunnersHostArch)\device-runners</_DeviceRunnersBundledBin>
-
-    <!--
-      Use the user-supplied path if set; otherwise use the bundled binary.
-      If neither exists, the VSTest target will emit a clear error.
-    -->
-    <_DeviceRunnersBin Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersBin>
-    <_DeviceRunnersBin Condition="'$(DeviceRunnersBin)' == ''">$(_DeviceRunnersBundledBin)</_DeviceRunnersBin>
+    <!-- Prefer a user-supplied command; otherwise invoke the bundled DLL via dotnet. -->
+    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersCommand>
+    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == ''">dotnet &quot;$(_DeviceRunnersDllPath)&quot;</_DeviceRunnersCommand>
   </PropertyGroup>
 
   <!--
     VSTest target — invoked by `dotnet test`.
 
-    For Android and iOS this completely replaces the default VSTest behaviour:
-      1. Builds the app (APK / .app bundle) with env vars already baked in by the .props file.
+    For Android, iOS, macOS Catalyst, and Windows (unpackaged) this completely
+    replaces the default VSTest behaviour:
+      1. Builds the app (APK / .app bundle / .exe) with env vars already baked in
+         (Android, iOS) or injected at launch time (macOS, Windows) by the CLI.
       2. Runs the bundled CLI tool which deploys, launches, and collects TCP results.
       3. Writes a TRX file that dotnet test / VS Test Explorer can consume.
       4. Returns a non-zero exit code when there are test failures.
-
-    For other platforms (Windows, macOS host, etc.) the target is a no-op so that
-    standard VSTest handling can continue without interference.
   -->
   <Target Name="VSTest"
           DependsOnTargets="Build"
           Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
-                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
+                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
+                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
 
-    <Error Condition="!Exists('$(_DeviceRunnersBin)') And '$(DeviceRunnersBin)' == ''"
-           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersBin)'. Either: (a) run 'dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools' to build the bundled binaries, or (b) set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; in your project and ensure 'device-runners' is on PATH." />
+    <Error Condition="!Exists('$(_DeviceRunnersDllPath)') And '$(DeviceRunnersBin)' == ''"
+           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersDllPath)'. Run 'dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a tool already on PATH." />
 
     <MakeDir Directories="$(TestResultsDirectory)" />
 
@@ -58,7 +47,31 @@
                 Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
     <CallTarget Targets="_DeviceRunnersiOSTest"
                 Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+    <CallTarget Targets="_DeviceRunnersMacOSTest"
+                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
+    <CallTarget Targets="_DeviceRunnersWindowsTest"
+                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'" />
 
+  </Target>
+
+  <!--
+    Bake DeviceRunners environment variables into the Android APK at build time.
+
+    The Android SDK's _GenerateEnvironmentFiles target writes a KEY=VALUE file
+    (__environment__.txt) that the Mono runtime reads at app startup, making these
+    available via Environment.GetEnvironmentVariable().
+
+    10.0.2.2 is the Android emulator's gateway address to reach the host machine.
+    localhost covers physical devices when port-forwarded or on the same network.
+  -->
+  <Target Name="_DeviceRunnersAndroidEnvironment"
+          BeforeTargets="_GenerateEnvironmentFiles"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <ItemGroup>
+      <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
+      <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
+      <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_HOST_NAMES=localhost%3B10.0.2.2" />
+    </ItemGroup>
   </Target>
 
   <!-- ─────────────────────────────────────────────────────────── Android ── -->
@@ -66,9 +79,10 @@
   <Target Name="_DeviceRunnersAndroidTest">
 
     <PropertyGroup>
-      <!-- Signed APK produced by dotnet build/publish for Android. -->
+      <!-- Signed APK produced by dotnet build for Android. -->
       <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
       <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
     </PropertyGroup>
 
     <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
@@ -76,28 +90,11 @@
 
     <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
 
-    <!--
-      The CLI tool installs the APK, launches the app, listens for TCP results,
-      and writes the TRX file. A non-zero exit code means test failures.
-    -->
-    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; android test \
-      --app &quot;$(_DeviceRunnersApkPath)&quot; \
-      --results-directory &quot;$(TestResultsDirectory)&quot; \
-      --port $(DeviceRunnersPort) \
-      --connection-timeout $(DeviceRunnersConnectionTimeout) \
-      --data-timeout $(DeviceRunnersDataTimeout) \
-      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+    <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
           IgnoreExitCode="false"
           Condition="'$(DeviceRunnersDevice)' == ''" />
 
-    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; android test \
-      --app &quot;$(_DeviceRunnersApkPath)&quot; \
-      --device &quot;$(DeviceRunnersDevice)&quot; \
-      --results-directory &quot;$(TestResultsDirectory)&quot; \
-      --port $(DeviceRunnersPort) \
-      --connection-timeout $(DeviceRunnersConnectionTimeout) \
-      --data-timeout $(DeviceRunnersDataTimeout) \
-      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+    <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
           IgnoreExitCode="false"
           Condition="'$(DeviceRunnersDevice)' != ''" />
 
@@ -111,7 +108,7 @@
 
     <!--
       Locate the .app bundle produced under $(OutputPath).
-      For simulator builds the directory name ends in .app and sits directly
+      For simulator builds the directory ends in .app and sits directly
       inside the output path (e.g. MyApp.app/).
     -->
     <ItemGroup>
@@ -123,38 +120,84 @@
 
     <PropertyGroup>
       <_DeviceRunnersAppPath>@(_DeviceRunnersAppBundle->'%(FullPath)', ';')</_DeviceRunnersAppPath>
-      <!-- Trim trailing separator so the CLI receives a clean path -->
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
       <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
     </PropertyGroup>
 
     <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
 
-    <!--
-      The CLI tool installs the .app on the booted simulator, launches it,
-      listens for TCP results, and writes the TRX file.
-      Omitting --device causes the CLI to use the currently booted simulator.
-    -->
-    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; ios test \
-      --app &quot;$(_DeviceRunnersAppPath)&quot; \
-      --results-directory &quot;$(TestResultsDirectory)&quot; \
-      --port $(DeviceRunnersPort) \
-      --connection-timeout $(DeviceRunnersConnectionTimeout) \
-      --data-timeout $(DeviceRunnersDataTimeout) \
-      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+    <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
           IgnoreExitCode="false"
           Condition="'$(DeviceRunnersDevice)' == ''" />
 
-    <Exec Command="&quot;$(_DeviceRunnersBin)&quot; ios test \
-      --app &quot;$(_DeviceRunnersAppPath)&quot; \
-      --device &quot;$(DeviceRunnersDevice)&quot; \
-      --results-directory &quot;$(TestResultsDirectory)&quot; \
-      --port $(DeviceRunnersPort) \
-      --connection-timeout $(DeviceRunnersConnectionTimeout) \
-      --data-timeout $(DeviceRunnersDataTimeout) \
-      --logger &quot;trx;LogFileName=test-results.trx&quot;"
+    <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
           IgnoreExitCode="false"
           Condition="'$(DeviceRunnersDevice)' != ''" />
+
+    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+
+  </Target>
+
+  <!-- ──────────────────────────────────────────────────── macOS Catalyst ── -->
+
+  <Target Name="_DeviceRunnersMacOSTest">
+
+    <!--
+      Locate the .app bundle produced under $(OutputPath).
+      For macOS Catalyst the directory ends in .app and sits directly
+      inside the output path (e.g. MyApp.app/).
+    -->
+    <ItemGroup>
+      <_DeviceRunnersAppBundle Include="$(OutputPath)*.app/" />
+    </ItemGroup>
+
+    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
+           Condition="'@(_DeviceRunnersAppBundle)' == ''" />
+
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>@(_DeviceRunnersAppBundle->'%(FullPath)', ';')</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
+    </PropertyGroup>
+
+    <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
+
+    <!--
+      The CLI installs the .app bundle, launches the executable directly with env vars
+      injected at process start, listens for TCP results, and writes the TRX file.
+    -->
+    <Exec Command="$(_DeviceRunnersCommand) macos test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false" />
+
+    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+
+  </Target>
+
+  <!-- ─────────────────────────────────────────────────── Windows (unpackaged) ── -->
+
+  <Target Name="_DeviceRunnersWindowsTest">
+
+    <PropertyGroup>
+      <!-- Unpackaged Windows exe produced by dotnet build with WindowsPackageType=None. -->
+      <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
+      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
+    </PropertyGroup>
+
+    <Error Text="Executable not found at '$(_DeviceRunnersExePath)'. Make sure the project builds successfully."
+           Condition="!Exists('$(_DeviceRunnersExePath)')" />
+
+    <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersExePath)" />
+
+    <!--
+      The CLI launches the exe with env vars injected at process start, listens for
+      TCP results, and writes the TRX file.
+      Note: written as a single line because cmd.exe does not support \ continuation.
+    -->
+    <Exec Command="$(_DeviceRunnersCommand) windows test --app &quot;$(_DeviceRunnersExePath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
+          IgnoreExitCode="false" />
 
     <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
 

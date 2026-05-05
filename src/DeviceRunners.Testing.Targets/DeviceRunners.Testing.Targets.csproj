@@ -5,7 +5,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoDefaultExcludes>true</NoDefaultExcludes>
     <PackageId>DeviceRunners.Testing.Targets</PackageId>
-    <Description>MSBuild targets that enable `dotnet test` support for Android and iOS MAUI test apps via the DeviceRunners CLI tool.</Description>
+    <Description>MSBuild targets that enable `dotnet test` support for .NET device test apps (Android, iOS, macOS, Windows) via the DeviceRunners CLI tool.</Description>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,22 +15,20 @@
   </PropertyGroup>
 
   <!--
-    Publish DeviceRunners.Cli as self-contained + trimmed native binaries for all
-    host RIDs. Cross-RID publishing is supported for non-AOT self-contained apps
-    and works from any host platform.
-
-    Run explicitly before dotnet test in the same repo:
-      dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools -c release
+    Publish DeviceRunners.Cli as a framework-dependent binary into tools/.
+    We do NOT use a RID (-r) because cross-RID restore fails when the project graph
+    contains Android/iOS TFMs (NuGet tries to resolve Mono runtime packs for the
+    host RID, which don't exist in public feeds).  Framework-dependent is fine: any
+    machine running `dotnet test` already has the .NET runtime available, so we can
+    invoke the tool via `dotnet tools/DeviceRunners.Cli.dll`.
 
     When packing the NuGet package, this target runs automatically before GenerateNuspec.
+    To populate the tools/ folder for in-repo use without packing:
+      dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools -c release
   -->
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
-    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for all host RIDs..." />
-
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r win-x64   --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)win-x64\&quot;   -c $(Configuration)" />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r linux-x64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)linux-x64\&quot; -c $(Configuration)" />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-x64   --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)osx-x64\&quot;   -c $(Configuration)" />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-arm64 --self-contained true -p:PublishTrimmed=true -p:PublishSingleFile=true -o &quot;$(_CliToolsDir)osx-arm64\&quot; -c $(Configuration)" />
+    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool..." />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net9.0 -c $(Configuration) -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)&quot;" />
   </Target>
 
   <!--

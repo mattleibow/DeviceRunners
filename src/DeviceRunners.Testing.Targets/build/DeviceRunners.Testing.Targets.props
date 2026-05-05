@@ -1,6 +1,40 @@
 <Project>
 
   <!--
+    This project is NOT a Microsoft.Testing.Platform application.
+    Device test apps are MAUI apps that communicate over TCP — they don't implement
+    the MTP protocol. Setting this prevents MTP's MSBuild targets from blocking our
+    custom VSTest override on .NET 10+ SDKs.
+  -->
+  <PropertyGroup>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+  </PropertyGroup>
+
+  <!--
+    Prevent the SDK's Microsoft.TestPlatform.targets from being imported for device
+    platforms. The SDK does:
+      <VSTestTargets ...>$(MSBuildExtensionsPath)\Microsoft.TestPlatform.targets</VSTestTargets>
+      <Import Project="$(VSTestTargets)" Condition="Exists('$(VSTestTargets)')" />
+    By pre-setting VSTestTargets to a non-existent path (only when empty), the
+    Exists() check fails and the SDK's VSTest target definition is never imported.
+    Our custom VSTest target in DeviceRunners.Testing.Targets.targets then becomes
+    the only VSTest definition and handles device deployment + test execution.
+  -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <VSTestTargets Condition="'$(VSTestTargets)' == ''">$(MSBuildThisFileDirectory)DeviceRunners.Testing.Targets.VSTest.targets.disabled</VSTestTargets>
+    <!--
+      Skip the default VSTest build step — our custom VSTest target already has
+      DependsOnTargets="Build" so the app is built before tests run.
+      This also prevents MTP's _MTPBeforeVSTest from calling BuildProject
+      (a target defined only in Microsoft.TestPlatform.targets which we've skipped).
+    -->
+    <VSTestNoBuild Condition="'$(VSTestNoBuild)' == ''">true</VSTestNoBuild>
+  </PropertyGroup>
+
+  <!--
     Default properties injected before the project builds.
     Users can override any of these in their own .csproj.
   -->
@@ -23,37 +57,30 @@
 
     <!-- Where TRX / raw event files are written. Defaults to $(ArtifactsPath)\test-results when
          UseArtifactsOutput=true, otherwise to $(MSBuildProjectDirectory)\test-results. -->
-    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$(ArtifactsPath)test-results\</TestResultsDirectory>
+    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ArtifactsPath)'))test-results\</TestResultsDirectory>
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
   </PropertyGroup>
 
   <!--
-    Bake environment variables into the app bundle at build time so that at runtime
-    the app auto-configures headless mode (no #if compile-time flags needed).
+    Force assemblies to be embedded directly in the APK for Android.
 
-    The DeviceRunners.VisualRunners UseTestRunnerEnvironment() extension method reads:
-      DEVICE_RUNNERS_AUTORUN       - any non-empty value enables headless mode
-      DEVICE_RUNNERS_PORT          - TCP port to connect to
-      DEVICE_RUNNERS_HOST_NAMES    - semicolon-separated list of host IPs/names to try
+    In Debug builds, .NET Android uses "Fast Deployment" by default: assemblies are
+    NOT embedded in the APK; instead they are pushed to the device separately via adb.
+    The DeviceRunners CLI installs the APK via `adb install` but does NOT handle the
+    separate Fast Deployment push, so the app would crash at startup with
+    "No assemblies found ... Assuming this is part of Fast Deployment."
+
+    Setting EmbedAssembliesIntoApk=true makes the build produce a self-contained APK
+    (same as Release builds and `dotnet publish`) that the CLI can simply install and run.
   -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <EmbedAssembliesIntoApk Condition="'$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
+  </PropertyGroup>
 
-  <!-- Android: embedded via Mono's environment.env file inside the APK -->
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_AUTORUN" Value="1" />
-    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_PORT" Value="$(DeviceRunnersPort)" />
-    <!--
-      10.0.2.2 is the gateway to the host machine from Android emulators.
-      localhost covers Windows/macOS host and iOS simulator (shared network).
-    -->
-    <AndroidEnvironmentVariables Include="DEVICE_RUNNERS_HOST_NAMES" Value="localhost;10.0.2.2" />
-  </ItemGroup>
-
-  <!-- iOS / Mac Catalyst: embedded via the iOS runtime environment mechanism -->
-  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
-                     Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
-    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_AUTORUN" Value="1" />
-    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_PORT" Value="$(DeviceRunnersPort)" />
-    <iOSEnvironmentVariables Include="DEVICE_RUNNERS_HOST_NAMES" Value="localhost" />
-  </ItemGroup>
+  <!-- Windows (unpackaged): force unpackaged mode so dotnet test produces a plain .exe.
+       The CLI launches it with env vars injected at process start time. -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
+  </PropertyGroup>
 
 </Project>

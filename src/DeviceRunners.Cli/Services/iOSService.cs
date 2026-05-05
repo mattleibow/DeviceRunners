@@ -91,7 +91,7 @@ public class iOSService
         }
     }
 
-    public async Task LaunchAppAsync(string bundleIdentifier, string? deviceId = null)
+    public async Task LaunchAppAsync(string bundleIdentifier, string? deviceId = null, IDictionary<string, string>? environmentVariables = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -104,7 +104,30 @@ public class iOSService
             throw new InvalidOperationException("No booted iOS simulator found and no device ID specified.");
         }
 
-        var success = await _simCtl.LaunchAppAsync(targetDevice, bundleIdentifier);
+        bool success;
+        if (environmentVariables is { Count: > 0 })
+        {
+            // xcrun simctl honours SIMCTL_CHILD_<KEY>=<VALUE> environment variables on
+            // the xcrun process itself and passes them as <KEY>=<VALUE> to the launched app.
+            var psi = new ProcessStartInfo("xcrun")
+            {
+                ArgumentList = { "simctl", "launch", "--terminate-running-process", targetDevice, bundleIdentifier },
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            foreach (var (key, value) in environmentVariables)
+                psi.EnvironmentVariables[$"SIMCTL_CHILD_{key}"] = value;
+
+            var process = Process.Start(psi)
+                ?? throw new InvalidOperationException("Failed to start xcrun simctl launch.");
+            await process.WaitForExitAsync();
+            success = process.ExitCode == 0;
+        }
+        else
+        {
+            success = await _simCtl.LaunchAppAsync(targetDevice, bundleIdentifier);
+        }
 
         if (!success)
         {

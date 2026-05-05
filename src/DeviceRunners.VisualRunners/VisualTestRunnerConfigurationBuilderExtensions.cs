@@ -62,12 +62,17 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	}
 
 	/// <summary>
-	/// Configures the test runner based on environment variables injected at build time
-	/// (e.g. by the DeviceRunners.Testing.Targets NuGet package). When
-	/// <c>DEVICE_RUNNERS_AUTORUN=1</c> is set the runner enables auto-start and
-	/// connects back to the host via TCP so results can be collected by the CLI tool.
+	/// Configures the test runner based on environment variables set by the
+	/// DeviceRunners.Testing.Targets NuGet package. When <c>DEVICE_RUNNERS_AUTORUN=1</c>
+	/// is set the runner enables auto-start and connects back to the host via TCP so
+	/// results can be collected by the CLI tool.
 	/// </summary>
 	/// <remarks>
+	/// Supported platforms: Android, iOS, macOS (Catalyst), Windows.
+	/// <para>
+	/// On Android and iOS the variables are baked into the app bundle at build time.
+	/// On macOS and Windows the CLI injects them when launching the app process.
+	/// </para>
 	/// Environment variables read:
 	/// <list type="bullet">
 	/// <item><term>DEVICE_RUNNERS_AUTORUN</term><description>Set to any non-empty value to enable headless mode.</description></item>

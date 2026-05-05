@@ -76,7 +76,7 @@ public class MacOSService
         return Directory.Exists(targetPath);
     }
 
-    public void LaunchApp(string appPath, string? arguments = null)
+    public void LaunchApp(string appPath, string? arguments = null, IDictionary<string, string>? environmentVariables = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -92,48 +92,62 @@ public class MacOSService
             throw new DirectoryNotFoundException($"App is not installed: {appName}");
         }
 
-        // Use 'open' command to launch the app
-        var process = new Process
+        // Launch the executable inside the bundle directly so we can inject environment
+        // variables. Using 'open' does not support env var injection.
+        var executableName = GetBundleExecutableName(targetPath);
+        var executablePath = Path.Combine(targetPath, "Contents", "MacOS", executableName);
+
+        if (!File.Exists(executablePath))
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "open",
-                Arguments = $"\"{targetPath}\"",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            }
+            throw new FileNotFoundException($"Executable not found inside app bundle: {executablePath}");
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = executablePath,
+            UseShellExecute = false,
+            WorkingDirectory = Path.GetDirectoryName(executablePath)
         };
+
+        if (environmentVariables is not null)
+        {
+            foreach (var (key, value) in environmentVariables)
+                startInfo.EnvironmentVariables[key] = value;
+        }
 
         if (!string.IsNullOrEmpty(arguments))
         {
-            process.StartInfo.Arguments += $" --args {arguments}";
+            startInfo.Arguments = arguments;
         }
 
+        var process = new Process { StartInfo = startInfo };
         process.Start();
-        process.WaitForExit();
-
-        if (process.ExitCode != 0)
-        {
-            var error = process.StandardError.ReadToEnd();
-            throw new InvalidOperationException($"Failed to launch app: {error}");
-        }
     }
 
     public string GetAppIdentifier(string appPath)
     {
-        if (!Directory.Exists(appPath))
-        {
-            throw new FileNotFoundException($"App bundle not found: {appPath}");
-        }
+        return GetPlistValue(appPath, "CFBundleIdentifier")
+            ?? throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
+    }
+
+    public string GetBundleExecutableName(string appPath)
+    {
+        // Prefer the explicit bundle executable name from Info.plist; fall back to
+        // stripping the .app extension if the plist isn't available.
+        return GetPlistValue(appPath, "CFBundleExecutable")
+            ?? Path.GetFileNameWithoutExtension(Path.GetFileName(appPath));
+    }
+
+    private string? GetPlistValue(string appPath, string key)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return null;
 
         var plistPath = Path.Combine(appPath, "Contents", "Info.plist");
         if (!File.Exists(plistPath))
-        {
             throw new FileNotFoundException($"Info.plist not found in app bundle: {plistPath}");
-        }
 
-        // Use plutil to convert plist to JSON and extract bundle identifier
+        // Use plutil to convert plist to JSON so we can read it without a native plist library.
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
@@ -159,17 +173,15 @@ public class MacOSService
         try
         {
             var plistData = JsonSerializer.Deserialize<Dictionary<string, object>>(output);
-            if (plistData != null && plistData.TryGetValue("CFBundleIdentifier", out var identifier))
-            {
-                return identifier.ToString()!;
-            }
+            if (plistData != null && plistData.TryGetValue(key, out var value))
+                return value.ToString();
         }
         catch (JsonException ex)
         {
             throw new InvalidOperationException($"Failed to parse Info.plist as JSON: {ex.Message}");
         }
 
-        throw new InvalidOperationException("CFBundleIdentifier not found in Info.plist");
+        return null;
     }
 
     private static void CopyDirectory(string sourceDir, string destDir)
