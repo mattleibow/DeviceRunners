@@ -122,7 +122,12 @@ public class iOSService
             var process = Process.Start(psi)
                 ?? throw new InvalidOperationException("Failed to start xcrun simctl launch.");
             await process.WaitForExitAsync();
-            success = process.ExitCode == 0;
+            if (process.ExitCode != 0)
+            {
+                var stderr = await process.StandardError.ReadToEndAsync();
+                throw new InvalidOperationException($"Failed to launch app '{bundleIdentifier}' on device '{targetDevice}': {stderr}");
+            }
+            success = true;
         }
         else
         {

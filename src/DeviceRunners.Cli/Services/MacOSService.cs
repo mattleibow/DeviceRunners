@@ -92,8 +92,10 @@ public class MacOSService
             throw new DirectoryNotFoundException($"App is not installed: {appName}");
         }
 
-        // Launch the executable inside the bundle directly so we can inject environment
-        // variables. Using 'open' does not support env var injection.
+        // Launch the executable inside the bundle directly so we retain the process
+        // handle (useful for future crash detection) and avoid LaunchServices overhead.
+        // Note: 'open --env KEY=VALUE' also supports env var injection, but direct
+        // launch is simpler and gives us more control for headless test scenarios.
         var executableName = GetBundleExecutableName(targetPath);
         var executablePath = Path.Combine(targetPath, "Contents", "MacOS", executableName);
 

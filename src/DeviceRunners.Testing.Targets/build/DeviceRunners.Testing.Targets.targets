@@ -110,17 +110,19 @@
       Locate the .app bundle produced under $(OutputPath).
       For simulator builds the directory ends in .app and sits directly
       inside the output path (e.g. MyApp.app/).
+
+      MSBuild's Include glob does not reliably match directories by name
+      (*.app/ fails on macOS), so we use Directory.GetDirectories instead.
     -->
-    <ItemGroup>
-      <_DeviceRunnersAppBundle Include="$(OutputPath)*.app/" />
-    </ItemGroup>
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+    </PropertyGroup>
 
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
-           Condition="'@(_DeviceRunnersAppBundle)' == ''" />
+           Condition="'$(_DeviceRunnersAppPath)' == ''" />
 
     <PropertyGroup>
-      <_DeviceRunnersAppPath>@(_DeviceRunnersAppBundle->'%(FullPath)', ';')</_DeviceRunnersAppPath>
-      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
       <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
       <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
     </PropertyGroup>
@@ -147,17 +149,19 @@
       Locate the .app bundle produced under $(OutputPath).
       For macOS Catalyst the directory ends in .app and sits directly
       inside the output path (e.g. MyApp.app/).
+
+      MSBuild's Include glob does not reliably match directories by name
+      (*.app/ fails on macOS), so we use Directory.GetDirectories instead.
     -->
-    <ItemGroup>
-      <_DeviceRunnersAppBundle Include="$(OutputPath)*.app/" />
-    </ItemGroup>
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+    </PropertyGroup>
 
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
-           Condition="'@(_DeviceRunnersAppBundle)' == ''" />
+           Condition="'$(_DeviceRunnersAppPath)' == ''" />
 
     <PropertyGroup>
-      <_DeviceRunnersAppPath>@(_DeviceRunnersAppBundle->'%(FullPath)', ';')</_DeviceRunnersAppPath>
-      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
       <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
       <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
     </PropertyGroup>
