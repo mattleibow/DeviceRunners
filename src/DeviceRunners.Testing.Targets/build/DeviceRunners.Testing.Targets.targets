@@ -1,65 +1,250 @@
 <Project>
 
   <!--
-    Build the command used to invoke the DeviceRunners CLI tool.
+    CLI tool resolution.
 
     The NuGet package ships a framework-dependent DeviceRunners.Cli.dll in tools/.
-    We invoke it via `dotnet <dll>` — dotnet is always available on any machine
-    running `dotnet test`, so no per-OS or per-architecture binary detection is needed.
+    Invoke it via `dotnet <dll>` — dotnet is always available on any machine
+    running `dotnet test`, so no per-OS or per-architecture binary is needed.
 
-    Override by setting $(DeviceRunnersBin) to an alternate command in your project:
+    Override by setting $(DeviceRunnersBin) in your project file:
       <PropertyGroup>
         <DeviceRunnersBin>device-runners</DeviceRunnersBin>
       </PropertyGroup>
   -->
   <PropertyGroup>
     <_DeviceRunnersDllPath>$(MSBuildThisFileDirectory)..\tools\DeviceRunners.Cli.dll</_DeviceRunnersDllPath>
-
-    <!-- Prefer a user-supplied command; otherwise invoke the bundled DLL via dotnet. -->
     <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersCommand>
     <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == ''">dotnet &quot;$(_DeviceRunnersDllPath)&quot;</_DeviceRunnersCommand>
   </PropertyGroup>
 
   <!--
-    VSTest target — invoked by `dotnet test`.
+    Platform condition shorthand used by every target that is platform-scoped.
+    Each target repeats only the relevant platform identifier from this set.
+  -->
+  <PropertyGroup>
+    <_DeviceRunnersPlatformCondition>
+      $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
+      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
+      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
+      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
+    </_DeviceRunnersPlatformCondition>
+  </PropertyGroup>
 
-    For Android, iOS, macOS Catalyst, and Windows (unpackaged) this completely
-    replaces the default VSTest behaviour:
-      1. Builds the app (APK / .app bundle / .exe) with env vars already baked in
-         (Android, iOS) or injected at launch time (macOS, Windows) by the CLI.
-      2. Runs the bundled CLI tool which deploys, launches, and collects TCP results.
-      3. Writes a TRX file that dotnet test / VS Test Explorer can consume.
-      4. Returns a non-zero exit code when there are test failures.
+  <!-- ═══════════════════════════════════════════════════ Entry point ══════ -->
+
+  <!--
+    VSTest — invoked by `dotnet test`.
+
+    Replaces the default VSTest behaviour for device platforms:
+      1. _DeviceRunnersCheckCli  — fail fast if CLI tool is missing.
+      2. Build                   — compile the app (APK / .app / .exe).
+      3. _DeviceRunnersRunTests  — prepare args → exec CLI → report results.
   -->
   <Target Name="VSTest"
-          DependsOnTargets="Build"
+          DependsOnTargets="_DeviceRunnersCheckCli;Build;_DeviceRunnersRunTests"
           Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
                   Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
                   Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
-                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'" />
 
+  <!-- Validate CLI availability before spending time building the app. -->
+  <Target Name="_DeviceRunnersCheckCli">
     <Error Condition="!Exists('$(_DeviceRunnersDllPath)') And '$(DeviceRunnersBin)' == ''"
-           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersDllPath)'. Run 'dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a tool already on PATH." />
+           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersDllPath)'. Run 'dotnet pack DeviceRunners.Testing.Targets.csproj' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
+  </Target>
 
-    <MakeDir Directories="$(TestResultsDirectory)" />
+  <!-- ═══════════════════════════════════════════════════ Orchestrator ════ -->
 
-    <CallTarget Targets="_DeviceRunnersAndroidTest"
-                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" />
-    <CallTarget Targets="_DeviceRunnersiOSTest"
-                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
-    <CallTarget Targets="_DeviceRunnersMacOSTest"
-                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" />
-    <CallTarget Targets="_DeviceRunnersWindowsTest"
-                Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'" />
+  <!--
+    Chains the three test-execution phases in order.
+    Each phase is a separate target so MSBuild tracks them individually and
+    errors in one phase halt execution before the next phase starts.
+  -->
+  <Target Name="_DeviceRunnersRunTests"
+          DependsOnTargets="_DeviceRunnersPrepareArgs;_DeviceRunnersExecTests;_DeviceRunnersReportResults" />
+
+  <!-- ═══════════════════════════════════════ Phase 1 — Prepare args ══════ -->
+
+  <!--
+    Chains common arg setup then the single platform-specific arg target whose
+    Condition matches. All four platform targets are listed; only one runs.
+    Properties set here flow into _DeviceRunnersExecTests and _DeviceRunnersReportResults.
+  -->
+  <Target Name="_DeviceRunnersPrepareArgs"
+          DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs" />
+
+  <!--
+    Shared setup: TRX output path, results directory, optional --device flag,
+    and the common CLI flags shared by all platforms.
+  -->
+  <Target Name="_DeviceRunnersCommonArgs">
+    <PropertyGroup>
+      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
+      <!-- GetDirectoryName strips the trailing separator that $(TestResultsDirectory) always carries. -->
+      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersTrxFile)'))</_DeviceRunnersResultsDir>
+
+      <!-- Optional --device flag; expands to empty string when DeviceRunnersDevice is unset. -->
+      <_DeviceRunnersDeviceArg />
+      <_DeviceRunnersDeviceArg Condition="'$(DeviceRunnersDevice)' != ''"> --device &quot;$(DeviceRunnersDevice)&quot;</_DeviceRunnersDeviceArg>
+
+      <!-- Flags shared by every platform sub-command. -->
+      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;</_DeviceRunnersCommonCliArgs>
+    </PropertyGroup>
+    <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
+  </Target>
+
+  <!-- ─────────────────────────────────────────────────────── Android args ── -->
+
+  <Target Name="_DeviceRunnersAndroidArgs"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <PropertyGroup>
+      <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
+    </PropertyGroup>
+    <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
+           Condition="!Exists('$(_DeviceRunnersApkPath)')" />
+    <PropertyGroup>
+      <_DeviceRunnersCliArgs>android test --app &quot;$(_DeviceRunnersApkPath)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
+  </Target>
+
+  <!-- ──────────────────────────────────────────────────────────── iOS args ── -->
+
+  <!--
+    MSBuild's Include glob does not reliably match directories by name on macOS
+    (*.app/ fails), so we use Directory.GetDirectories to locate the .app bundle.
+  -->
+  <Target Name="_DeviceRunnersiOSArgs"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+    </PropertyGroup>
+    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
+           Condition="'$(_DeviceRunnersAppPath)' == ''" />
+    <PropertyGroup>
+      <_DeviceRunnersCliArgs>ios test --app &quot;$(_DeviceRunnersAppPath)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
+  </Target>
+
+  <!-- ─────────────────────────────────────────────────── macOS Catalyst args ── -->
+
+  <Target Name="_DeviceRunnersMacOSArgs"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+    <PropertyGroup>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
+    </PropertyGroup>
+    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
+           Condition="'$(_DeviceRunnersAppPath)' == ''" />
+    <PropertyGroup>
+      <!-- macOS always runs on the local machine; --device is not applicable. -->
+      <_DeviceRunnersCliArgs>macos test --app &quot;$(_DeviceRunnersAppPath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
+  </Target>
+
+  <!-- ──────────────────────────────────────────────── Windows (unpackaged) args ── -->
+
+  <Target Name="_DeviceRunnersWindowsArgs"
+          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <PropertyGroup>
+      <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
+    </PropertyGroup>
+    <Error Text="Executable not found at '$(_DeviceRunnersExePath)'. Make sure the project builds successfully."
+           Condition="!Exists('$(_DeviceRunnersExePath)')" />
+    <PropertyGroup>
+      <!-- Windows always runs on the local machine; --device is not applicable. -->
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersExePath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersExePath)" />
+  </Target>
+
+  <!-- ══════════════════════════════════════ Phase 2 — Execute tests ══════ -->
+
+  <!--
+    Single Exec that runs the CLI with the fully assembled $(_DeviceRunnersCliArgs).
+    IgnoreExitCode="true" prevents MSBuild from emitting a raw MSB3073 error;
+    the exit code is forwarded to _DeviceRunnersReportResults for clean reporting.
+  -->
+  <Target Name="_DeviceRunnersExecTests">
+    <Exec Command="$(_DeviceRunnersCommand) $(_DeviceRunnersCliArgs)"
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
+  </Target>
+
+  <!-- ══════════════════════════════════════ Phase 3 — Report results ═════ -->
+
+  <!--
+    Parse the TRX written by the CLI and emit a dotnet-test-style summary line.
+
+    On success:  Passed! - Failed: 0, Passed: 44, Skipped: 3, Total: 47
+    On failure:  Failed! - Failed: 5, Passed: 36, Skipped: 3, Total: 44
+                 error: Test run failed: 5 of 44 tests failed. TRX: <path>
+
+    The TRX uses the http://microsoft.com/schemas/VisualStudio/TeamTest/2010
+    namespace, so XmlPeek queries must be namespace-qualified.
+
+    Skipped count: Counters/@notExecuted stays 0 for intentional xunit/nunit
+    skips (by design — that counter is for infrastructure failures). We count
+    UnitTestResult[@outcome='NotExecuted'] elements directly instead.
+
+    Fallback: if the CLI crashed before writing the TRX, emit a plain error
+    with the exit code so the cause is still visible.
+  -->
+  <Target Name="_DeviceRunnersReportResults">
+
+    <PropertyGroup>
+      <_DeviceRunnersTrxExists Condition="Exists('$(_DeviceRunnersTrxFile)')">true</_DeviceRunnersTrxExists>
+      <_DeviceRunnersTrxExists Condition="'$(_DeviceRunnersTrxExists)' == ''">false</_DeviceRunnersTrxExists>
+      <_DeviceRunnersNs>&lt;Namespace Prefix='t' Uri='http://microsoft.com/schemas/VisualStudio/TeamTest/2010'/&gt;</_DeviceRunnersNs>
+    </PropertyGroup>
+
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@total"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxTotal" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@passed"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxPassed" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@failed"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxFailed" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:UnitTestResult/@testId[../@outcome='NotExecuted']"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxSkipped" />
+    </XmlPeek>
+
+    <Message Importance="high"
+             Text="Passed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '0'" />
+
+    <Message Importance="high"
+             Text="Failed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
+    <Error Text="Test run failed: @(_TrxFailed) of @(_TrxTotal) tests failed. See TRX for details: $(_DeviceRunnersTrxFile)"
+           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
+
+    <Error Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
+           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0'" />
 
   </Target>
 
-  <!--
-    Bake DeviceRunners environment variables into the Android APK at build time.
+  <!-- ══════════════════════════ Android env vars baked into APK at build ═ -->
 
-    The Android SDK's _GenerateEnvironmentFiles target writes a KEY=VALUE file
-    (__environment__.txt) that the Mono runtime reads at app startup, making these
-    available via Environment.GetEnvironmentVariable().
+  <!--
+    Injects DeviceRunners configuration into the APK via the Android SDK's
+    _GenerateEnvironmentFiles mechanism. The Mono runtime reads the resulting
+    KEY=VALUE file (__environment__.txt) at startup via Environment.GetEnvironmentVariable().
 
     10.0.2.2 is the Android emulator's gateway address to reach the host machine.
     localhost covers physical devices when port-forwarded or on the same network.
@@ -72,224 +257,6 @@
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_HOST_NAMES=localhost%3B10.0.2.2" />
     </ItemGroup>
-  </Target>
-
-  <!-- ─────────────────────────────────────────────────────────── Android ── -->
-
-  <Target Name="_DeviceRunnersAndroidTest">
-
-    <PropertyGroup>
-      <!-- Signed APK produced by dotnet build for Android. -->
-      <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
-    </PropertyGroup>
-
-    <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
-           Condition="!Exists('$(_DeviceRunnersApkPath)')" />
-
-    <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
-
-    <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true"
-          Condition="'$(DeviceRunnersDevice)' == ''">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true"
-          Condition="'$(DeviceRunnersDevice)' != ''">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <CallTarget Targets="_DeviceRunnersReportResults" />
-
-  </Target>
-
-  <!-- ──────────────────────────────────────────────────────────── iOS ──── -->
-
-  <Target Name="_DeviceRunnersiOSTest">
-
-    <!--
-      Locate the .app bundle produced under $(OutputPath).
-      For simulator builds the directory ends in .app and sits directly
-      inside the output path (e.g. MyApp.app/).
-
-      MSBuild's Include glob does not reliably match directories by name
-      (*.app/ fails on macOS), so we use Directory.GetDirectories instead.
-    -->
-    <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
-      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
-    </PropertyGroup>
-
-    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
-           Condition="'$(_DeviceRunnersAppPath)' == ''" />
-
-    <PropertyGroup>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
-
-    <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true"
-          Condition="'$(DeviceRunnersDevice)' == ''">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true"
-          Condition="'$(DeviceRunnersDevice)' != ''">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <CallTarget Targets="_DeviceRunnersReportResults" />
-
-  </Target>
-
-  <!-- ──────────────────────────────────────────────────── macOS Catalyst ── -->
-
-  <Target Name="_DeviceRunnersMacOSTest">
-
-    <!--
-      Locate the .app bundle produced under $(OutputPath).
-      For macOS Catalyst the directory ends in .app and sits directly
-      inside the output path (e.g. MyApp.app/).
-
-      MSBuild's Include glob does not reliably match directories by name
-      (*.app/ fails on macOS), so we use Directory.GetDirectories instead.
-    -->
-    <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
-      <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
-    </PropertyGroup>
-
-    <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
-           Condition="'$(_DeviceRunnersAppPath)' == ''" />
-
-    <PropertyGroup>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
-    </PropertyGroup>
-
-    <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
-
-    <!--
-      The CLI installs the .app bundle, launches the executable directly with env vars
-      injected at process start, listens for TCP results, and writes the TRX file.
-    -->
-    <Exec Command="$(_DeviceRunnersCommand) macos test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <CallTarget Targets="_DeviceRunnersReportResults" />
-
-  </Target>
-
-  <!-- ─────────────────────────────────────────────────── Windows (unpackaged) ── -->
-
-  <Target Name="_DeviceRunnersWindowsTest">
-
-    <PropertyGroup>
-      <!-- Unpackaged Windows exe produced by dotnet build with WindowsPackageType=None. -->
-      <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
-    </PropertyGroup>
-
-    <Error Text="Executable not found at '$(_DeviceRunnersExePath)'. Make sure the project builds successfully."
-           Condition="!Exists('$(_DeviceRunnersExePath)')" />
-
-    <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersExePath)" />
-
-    <!--
-      The CLI launches the exe with env vars injected at process start, listens for
-      TCP results, and writes the TRX file.
-      Note: written as a single line because cmd.exe does not support \ continuation.
-    -->
-    <Exec Command="$(_DeviceRunnersCommand) windows test --app &quot;$(_DeviceRunnersExePath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="true">
-      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
-    </Exec>
-
-    <CallTarget Targets="_DeviceRunnersReportResults" />
-
-  </Target>
-
-  <!--
-    Parse the TRX written by the CLI and emit a human-readable summary.
-
-    On success:  Passed! - Failed: 0, Passed: 44, Skipped: 3, Total: 47
-    On failure:  Failed! - Failed: 5, Passed: 36, Skipped: 3, Total: 44
-                 [error] Test run failed: 5 of 44 tests failed. TRX: <path>
-
-    The TRX uses the http://microsoft.com/schemas/VisualStudio/TeamTest/2010
-    namespace so XmlPeek queries must be namespace-qualified.
-
-    If the TRX doesn't exist (CLI crashed before writing it) we fall back to a
-    plain error that still includes the exit code so the cause is clear.
-  -->
-  <Target Name="_DeviceRunnersReportResults">
-
-    <PropertyGroup>
-      <_DeviceRunnersTrxExists>false</_DeviceRunnersTrxExists>
-      <_DeviceRunnersTrxExists Condition="Exists('$(_DeviceRunnersTrxFile)')">true</_DeviceRunnersTrxExists>
-      <_DeviceRunnersNs>&lt;Namespace Prefix='t' Uri='http://microsoft.com/schemas/VisualStudio/TeamTest/2010'/&gt;</_DeviceRunnersNs>
-    </PropertyGroup>
-
-    <!-- Read counters from the TRX when it exists. -->
-    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
-             Namespaces="$(_DeviceRunnersNs)"
-             Query="//t:Counters/@total"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxTotal" />
-    </XmlPeek>
-    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
-             Namespaces="$(_DeviceRunnersNs)"
-             Query="//t:Counters/@passed"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxPassed" />
-    </XmlPeek>
-    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
-             Namespaces="$(_DeviceRunnersNs)"
-             Query="//t:Counters/@failed"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxFailed" />
-    </XmlPeek>
-
-    <!--
-      Count skipped tests by counting UnitTestResult elements with outcome="NotExecuted".
-      The Counters/@notExecuted attribute is unreliable for xunit/nunit skipped tests —
-      they appear as outcome="NotExecuted" in individual results but the Counters
-      attribute stays 0. Counting the elements directly is the correct approach.
-    -->
-    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
-             Namespaces="$(_DeviceRunnersNs)"
-             Query="//t:UnitTestResult/@testId[../@outcome='NotExecuted']"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxSkipped" />
-    </XmlPeek>
-
-    <!-- Success summary. -->
-    <Message Importance="high"
-             Text="Passed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '0'" />
-
-    <!-- Failure summary + clean error (no MSB3073 noise). -->
-    <Message Importance="high"
-             Text="Failed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
-
-    <Error Text="Test run failed: @(_TrxFailed) of @(_TrxTotal) tests failed. See TRX for details: $(_DeviceRunnersTrxFile)"
-           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
-
-    <!-- Fallback: CLI crashed before writing TRX. -->
-    <Error Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the build log above for details."
-           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0'" />
-
   </Target>
 
 </Project>
