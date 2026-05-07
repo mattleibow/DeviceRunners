@@ -177,11 +177,11 @@
   <!-- =============================================== Phase 3 - Report results === -->
 
   <!--
-    Parse the TRX written by the CLI and emit a dotnet-test-style summary line.
+    Parse the TRX written by the CLI and emit output matching the standard
+    dotnet test format so that tooling that parses dotnet test output works:
 
-    On success:  Passed! - Failed: 0, Passed: 44, Skipped: 3, Total: 47
-    On failure:  Failed! - Failed: 5, Passed: 36, Skipped: 3, Total: 44
-                 error: Test run failed: 5 of 44 tests failed. TRX: <path>
+      Test summary: total: 44, failed: 5, succeeded: 36, skipped: 3, duration: 28.7s
+      See TRX for details: /path/to/test-results.trx
 
     The TRX uses the http://microsoft.com/schemas/VisualStudio/TeamTest/2010
     namespace, so XmlPeek queries must be namespace-qualified.
@@ -190,6 +190,8 @@
     skips by design (that counter is for infrastructure failures). We count
     UnitTestResult[@outcome='NotExecuted'] elements directly instead.
     See TrxResultChannelFormatter.cs for details.
+
+    Duration is derived from Times/@start and Times/@finish in the TRX.
 
     Fallback: if the CLI crashed before writing the TRX, emit a plain error
     with the exit code so the cause is still visible.
@@ -202,21 +204,35 @@
       <_DeviceRunnersNs>&lt;Namespace Prefix='t' Uri='http://microsoft.com/schemas/VisualStudio/TeamTest/2010'/&gt;</_DeviceRunnersNs>
     </PropertyGroup>
 
+    <!-- Read scalar counters as properties (single-value XPath attributes). -->
     <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
              Query="//t:Counters/@total"
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxTotal" />
+      <Output TaskParameter="Result" PropertyName="_TrxTotal" />
     </XmlPeek>
     <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
              Query="//t:Counters/@passed"
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxPassed" />
+      <Output TaskParameter="Result" PropertyName="_TrxPassed" />
     </XmlPeek>
     <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
              Query="//t:Counters/@failed"
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
-      <Output TaskParameter="Result" ItemName="_TrxFailed" />
+      <Output TaskParameter="Result" PropertyName="_TrxFailed" />
     </XmlPeek>
+
+    <!-- Read run start/finish timestamps to compute wall-clock duration. -->
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Times/@start"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" PropertyName="_TrxStart" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Times/@finish"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" PropertyName="_TrxFinish" />
+    </XmlPeek>
+
     <!--
       Count skipped tests by counting UnitTestResult elements with outcome="NotExecuted".
       Counters/@notExecuted stays 0 for intentional skips by design.
@@ -227,14 +243,28 @@
       <Output TaskParameter="Result" ItemName="_TrxSkipped" />
     </XmlPeek>
 
-    <Message Importance="high"
-             Text="Passed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '0'" />
+    <!-- Compute duration in seconds from start/finish timestamps. -->
+    <PropertyGroup Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_TrxStart)' != '' And '$(_TrxFinish)' != ''">
+      <_TrxDuration>$([System.Math]::Round($([System.DateTime]::Parse('$(_TrxFinish)').Subtract($([System.DateTime]::Parse('$(_TrxStart)'))).TotalSeconds), 1))</_TrxDuration>
+    </PropertyGroup>
+    <PropertyGroup>
+      <_TrxDuration Condition="'$(_TrxDuration)' == ''">0</_TrxDuration>
+    </PropertyGroup>
 
+    <!--
+      Emit the standard dotnet test output format:
+        Results File: /path/to/test-results.trx
+        Test summary: total: 44, failed: 5, succeeded: 36, skipped: 3, duration: 9.5s
+    -->
     <Message Importance="high"
-             Text="Failed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
-             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
-    <Error Text="Test run failed: @(_TrxFailed) of @(_TrxTotal) tests failed. See TRX for details: $(_DeviceRunnersTrxFile)"
+             Text="Results File: $(_DeviceRunnersTrxFile)"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'" />
+    <Message Importance="high"
+             Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'" />
+
+    <!-- Signal MSBuild failure when tests failed (or CLI crashed without TRX). -->
+    <Error Text="Test run failed."
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
 
     <Error Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
