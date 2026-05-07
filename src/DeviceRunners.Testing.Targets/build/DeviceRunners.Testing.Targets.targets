@@ -252,9 +252,11 @@
     </PropertyGroup>
 
     <!--
-      Emit the standard dotnet test output format:
-        Results File: /path/to/test-results.trx
-        Test summary: total: 44, failed: 5, succeeded: 36, skipped: 3, duration: 9.5s
+      Emit the standard dotnet test output format.
+      Note: the dotnet CLI terminal logger (enabled by default in .NET 8+) filters
+      Message tasks regardless of Importance. These lines are visible when running
+      with "tl:off" or "verbosity normal". The error TESTERROR line below always
+      surfaces the summary for the default terminal logger case.
     -->
     <Message Importance="high"
              Text="Results File: $(_DeviceRunnersTrxFile)"
@@ -263,8 +265,13 @@
              Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s"
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'" />
 
-    <!-- Signal MSBuild failure when tests failed (or CLI crashed without TRX). -->
-    <Error Code="TESTERROR" Text="Test run failed."
+    <!--
+      Signal MSBuild failure. The summary and results path are included in the
+      error text so they are always visible via the terminal logger at default
+      verbosity (which filters Message tasks but always shows errors).
+    -->
+    <Error Code="TESTERROR"
+           Text="Test run failed: $(_TrxFailed) of $(_TrxTotal) tests failed ($(_TrxPassed) succeeded, @(_TrxSkipped->Count()) skipped, duration: $(_TrxDuration)s). Results File: $(_DeviceRunnersTrxFile)"
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
 
     <Error Code="TESTERROR" Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
