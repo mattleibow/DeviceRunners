@@ -271,7 +271,7 @@
       verbosity (which filters Message tasks but always shows errors).
     -->
     <Error Code="TESTERROR"
-           Text="Test run failed: $(_TrxFailed) of $(_TrxTotal) tests failed ($(_TrxPassed) succeeded, @(_TrxSkipped->Count()) skipped, duration: $(_TrxDuration)s). Results File: $(_DeviceRunnersTrxFile)"
+           Text="Results File: $(_DeviceRunnersTrxFile)%0ATest summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s"
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
 
     <Error Code="TESTERROR" Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
