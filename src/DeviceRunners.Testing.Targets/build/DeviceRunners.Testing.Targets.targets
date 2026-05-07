@@ -4,8 +4,8 @@
     CLI tool resolution.
 
     The NuGet package ships a framework-dependent DeviceRunners.Cli.dll in tools/.
-    Invoke it via `dotnet <dll>` — dotnet is always available on any machine
-    running `dotnet test`, so no per-OS or per-architecture binary is needed.
+    Invoke it via "dotnet <dll>" - dotnet is always available on any machine
+    running "dotnet test", so no per-OS or per-architecture binary is needed.
 
     Override by setting $(DeviceRunnersBin) in your project file:
       <PropertyGroup>
@@ -19,52 +19,50 @@
   </PropertyGroup>
 
   <!--
-    Platform condition shorthand used by every target that is platform-scoped.
-    Each target repeats only the relevant platform identifier from this set.
+    Compute the target platform once so all targets and conditions can use
+    $(_DeviceRunnersPlatform) instead of repeating the property function call.
+    $(_DeviceRunnersIsSupportedPlatform) drives the VSTest entry-point condition.
   -->
   <PropertyGroup>
-    <_DeviceRunnersPlatformCondition>
-      $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
-      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
-      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
-      Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
-    </_DeviceRunnersPlatformCondition>
+    <_DeviceRunnersPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DeviceRunnersPlatform>
+    <_DeviceRunnersIsSupportedPlatform Condition="'$(_DeviceRunnersPlatform)' == 'android'
+                                               Or '$(_DeviceRunnersPlatform)' == 'ios'
+                                               Or '$(_DeviceRunnersPlatform)' == 'maccatalyst'
+                                               Or '$(_DeviceRunnersPlatform)' == 'windows'">true</_DeviceRunnersIsSupportedPlatform>
   </PropertyGroup>
 
-  <!-- ═══════════════════════════════════════════════════ Entry point ══════ -->
+  <!-- ================================================================ Entry point === -->
 
   <!--
-    VSTest — invoked by `dotnet test`.
+    VSTest - invoked by "dotnet test".
 
     Replaces the default VSTest behaviour for device platforms:
-      1. _DeviceRunnersCheckCli  — fail fast if CLI tool is missing.
-      2. Build                   — compile the app (APK / .app / .exe).
-      3. _DeviceRunnersRunTests  — prepare args → exec CLI → report results.
+      1. _DeviceRunnersCheckCli  - fail fast if CLI tool is missing.
+      2. Build                   - compile the app (APK / .app / .exe).
+      3. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
   -->
   <Target Name="VSTest"
           DependsOnTargets="_DeviceRunnersCheckCli;Build;_DeviceRunnersRunTests"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
-                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
-                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
-                  Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'" />
+          Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
 
   <!-- Validate CLI availability before spending time building the app. -->
-  <Target Name="_DeviceRunnersCheckCli">
+  <Target Name="_DeviceRunnersCheckCli"
+          Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'">
     <Error Condition="!Exists('$(_DeviceRunnersDllPath)') And '$(DeviceRunnersBin)' == ''"
            Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersDllPath)'. Run 'dotnet pack DeviceRunners.Testing.Targets.csproj' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
   </Target>
 
-  <!-- ═══════════════════════════════════════════════════ Orchestrator ════ -->
+  <!-- ============================================================== Orchestrator === -->
 
   <!--
     Chains the three test-execution phases in order.
     Each phase is a separate target so MSBuild tracks them individually and
-    errors in one phase halt execution before the next phase starts.
+    an error in one phase halts execution before the next phase starts.
   -->
   <Target Name="_DeviceRunnersRunTests"
           DependsOnTargets="_DeviceRunnersPrepareArgs;_DeviceRunnersExecTests;_DeviceRunnersReportResults" />
 
-  <!-- ═══════════════════════════════════════ Phase 1 — Prepare args ══════ -->
+  <!-- =========================================== Phase 1 - Prepare arguments === -->
 
   <!--
     Chains common arg setup then the single platform-specific arg target whose
@@ -75,7 +73,7 @@
           DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs" />
 
   <!--
-    Shared setup: TRX output path, results directory, optional --device flag,
+    Shared setup: TRX output path, results directory, optional device flag,
     and the common CLI flags shared by all platforms.
   -->
   <Target Name="_DeviceRunnersCommonArgs">
@@ -84,7 +82,7 @@
       <!-- GetDirectoryName strips the trailing separator that $(TestResultsDirectory) always carries. -->
       <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersTrxFile)'))</_DeviceRunnersResultsDir>
 
-      <!-- Optional --device flag; expands to empty string when DeviceRunnersDevice is unset. -->
+      <!-- Optional device flag; expands to empty string when DeviceRunnersDevice is unset. -->
       <_DeviceRunnersDeviceArg />
       <_DeviceRunnersDeviceArg Condition="'$(DeviceRunnersDevice)' != ''"> --device &quot;$(DeviceRunnersDevice)&quot;</_DeviceRunnersDeviceArg>
 
@@ -94,10 +92,10 @@
     <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
   </Target>
 
-  <!-- ─────────────────────────────────────────────────────── Android args ── -->
+  <!-- == Android args == -->
 
   <Target Name="_DeviceRunnersAndroidArgs"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
     <PropertyGroup>
       <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
     </PropertyGroup>
@@ -109,14 +107,14 @@
     <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
   </Target>
 
-  <!-- ──────────────────────────────────────────────────────────── iOS args ── -->
+  <!-- == iOS args == -->
 
   <!--
     MSBuild's Include glob does not reliably match directories by name on macOS
-    (*.app/ fails), so we use Directory.GetDirectories to locate the .app bundle.
+    (*.app/ fails), so use Directory.GetDirectories to locate the .app bundle.
   -->
   <Target Name="_DeviceRunnersiOSArgs"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'ios'">
     <PropertyGroup>
       <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
@@ -129,10 +127,10 @@
     <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
   </Target>
 
-  <!-- ─────────────────────────────────────────────────── macOS Catalyst args ── -->
+  <!-- == macOS Catalyst args == -->
 
   <Target Name="_DeviceRunnersMacOSArgs"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'maccatalyst'">
     <PropertyGroup>
       <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
@@ -140,29 +138,29 @@
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
            Condition="'$(_DeviceRunnersAppPath)' == ''" />
     <PropertyGroup>
-      <!-- macOS always runs on the local machine; --device is not applicable. -->
+      <!-- macOS always runs on the local machine; the device flag is not applicable. -->
       <_DeviceRunnersCliArgs>macos test --app &quot;$(_DeviceRunnersAppPath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
   </Target>
 
-  <!-- ──────────────────────────────────────────────── Windows (unpackaged) args ── -->
+  <!-- == Windows (unpackaged) args == -->
 
   <Target Name="_DeviceRunnersWindowsArgs"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'windows'">
     <PropertyGroup>
       <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
     </PropertyGroup>
     <Error Text="Executable not found at '$(_DeviceRunnersExePath)'. Make sure the project builds successfully."
            Condition="!Exists('$(_DeviceRunnersExePath)')" />
     <PropertyGroup>
-      <!-- Windows always runs on the local machine; --device is not applicable. -->
+      <!-- Windows always runs on the local machine; the device flag is not applicable. -->
       <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersExePath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersExePath)" />
   </Target>
 
-  <!-- ══════════════════════════════════════ Phase 2 — Execute tests ══════ -->
+  <!-- ================================================ Phase 2 - Execute tests === -->
 
   <!--
     Single Exec that runs the CLI with the fully assembled $(_DeviceRunnersCliArgs).
@@ -176,7 +174,7 @@
     </Exec>
   </Target>
 
-  <!-- ══════════════════════════════════════ Phase 3 — Report results ═════ -->
+  <!-- =============================================== Phase 3 - Report results === -->
 
   <!--
     Parse the TRX written by the CLI and emit a dotnet-test-style summary line.
@@ -189,8 +187,9 @@
     namespace, so XmlPeek queries must be namespace-qualified.
 
     Skipped count: Counters/@notExecuted stays 0 for intentional xunit/nunit
-    skips (by design — that counter is for infrastructure failures). We count
+    skips by design (that counter is for infrastructure failures). We count
     UnitTestResult[@outcome='NotExecuted'] elements directly instead.
+    See TrxResultChannelFormatter.cs for details.
 
     Fallback: if the CLI crashed before writing the TRX, emit a plain error
     with the exit code so the cause is still visible.
@@ -218,6 +217,10 @@
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
       <Output TaskParameter="Result" ItemName="_TrxFailed" />
     </XmlPeek>
+    <!--
+      Count skipped tests by counting UnitTestResult elements with outcome="NotExecuted".
+      Counters/@notExecuted stays 0 for intentional skips by design.
+    -->
     <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)" Namespaces="$(_DeviceRunnersNs)"
              Query="//t:UnitTestResult/@testId[../@outcome='NotExecuted']"
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
@@ -239,19 +242,19 @@
 
   </Target>
 
-  <!-- ══════════════════════════ Android env vars baked into APK at build ═ -->
+  <!-- ==================================== Android env vars baked into APK at build === -->
 
   <!--
     Injects DeviceRunners configuration into the APK via the Android SDK's
     _GenerateEnvironmentFiles mechanism. The Mono runtime reads the resulting
-    KEY=VALUE file (__environment__.txt) at startup via Environment.GetEnvironmentVariable().
+    KEY=VALUE file (__environment__.txt) at startup.
 
     10.0.2.2 is the Android emulator's gateway address to reach the host machine.
     localhost covers physical devices when port-forwarded or on the same network.
   -->
   <Target Name="_DeviceRunnersAndroidEnvironment"
           BeforeTargets="_GenerateEnvironmentFiles"
-          Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
     <ItemGroup>
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
