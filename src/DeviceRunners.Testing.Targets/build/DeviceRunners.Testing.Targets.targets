@@ -91,14 +91,18 @@
     <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
 
     <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false"
-          Condition="'$(DeviceRunnersDevice)' == ''" />
+          IgnoreExitCode="true"
+          Condition="'$(DeviceRunnersDevice)' == ''">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
     <Exec Command="$(_DeviceRunnersCommand) android test --app &quot;$(_DeviceRunnersApkPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false"
-          Condition="'$(DeviceRunnersDevice)' != ''" />
+          IgnoreExitCode="true"
+          Condition="'$(DeviceRunnersDevice)' != ''">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
-    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+    <CallTarget Targets="_DeviceRunnersReportResults" />
 
   </Target>
 
@@ -130,14 +134,18 @@
     <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
 
     <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false"
-          Condition="'$(DeviceRunnersDevice)' == ''" />
+          IgnoreExitCode="true"
+          Condition="'$(DeviceRunnersDevice)' == ''">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
     <Exec Command="$(_DeviceRunnersCommand) ios test --app &quot;$(_DeviceRunnersAppPath)&quot; --device &quot;$(DeviceRunnersDevice)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false"
-          Condition="'$(DeviceRunnersDevice)' != ''" />
+          IgnoreExitCode="true"
+          Condition="'$(DeviceRunnersDevice)' != ''">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
-    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+    <CallTarget Targets="_DeviceRunnersReportResults" />
 
   </Target>
 
@@ -173,9 +181,11 @@
       injected at process start, listens for TCP results, and writes the TRX file.
     -->
     <Exec Command="$(_DeviceRunnersCommand) macos test --app &quot;$(_DeviceRunnersAppPath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false" />
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
-    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+    <CallTarget Targets="_DeviceRunnersReportResults" />
 
   </Target>
 
@@ -201,9 +211,84 @@
       Note: written as a single line because cmd.exe does not support \ continuation.
     -->
     <Exec Command="$(_DeviceRunnersCommand) windows test --app &quot;$(_DeviceRunnersExePath)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;"
-          IgnoreExitCode="false" />
+          IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
+    </Exec>
 
-    <Message Importance="high" Text="DeviceRunners: TRX written to $(_DeviceRunnersTrxFile)" />
+    <CallTarget Targets="_DeviceRunnersReportResults" />
+
+  </Target>
+
+  <!--
+    Parse the TRX written by the CLI and emit a human-readable summary.
+
+    On success:  Passed! - Failed: 0, Passed: 44, Skipped: 3, Total: 47
+    On failure:  Failed! - Failed: 5, Passed: 36, Skipped: 3, Total: 44
+                 [error] Test run failed: 5 of 44 tests failed. TRX: <path>
+
+    The TRX uses the http://microsoft.com/schemas/VisualStudio/TeamTest/2010
+    namespace so XmlPeek queries must be namespace-qualified.
+
+    If the TRX doesn't exist (CLI crashed before writing it) we fall back to a
+    plain error that still includes the exit code so the cause is clear.
+  -->
+  <Target Name="_DeviceRunnersReportResults">
+
+    <PropertyGroup>
+      <_DeviceRunnersTrxExists>false</_DeviceRunnersTrxExists>
+      <_DeviceRunnersTrxExists Condition="Exists('$(_DeviceRunnersTrxFile)')">true</_DeviceRunnersTrxExists>
+      <_DeviceRunnersNs>&lt;Namespace Prefix='t' Uri='http://microsoft.com/schemas/VisualStudio/TeamTest/2010'/&gt;</_DeviceRunnersNs>
+    </PropertyGroup>
+
+    <!-- Read counters from the TRX when it exists. -->
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
+             Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@total"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxTotal" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
+             Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@passed"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxPassed" />
+    </XmlPeek>
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
+             Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:Counters/@failed"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxFailed" />
+    </XmlPeek>
+
+    <!--
+      Count skipped tests by counting UnitTestResult elements with outcome="NotExecuted".
+      The Counters/@notExecuted attribute is unreliable for xunit/nunit skipped tests —
+      they appear as outcome="NotExecuted" in individual results but the Counters
+      attribute stays 0. Counting the elements directly is the correct approach.
+    -->
+    <XmlPeek XmlInputPath="$(_DeviceRunnersTrxFile)"
+             Namespaces="$(_DeviceRunnersNs)"
+             Query="//t:UnitTestResult/@testId[../@outcome='NotExecuted']"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true'">
+      <Output TaskParameter="Result" ItemName="_TrxSkipped" />
+    </XmlPeek>
+
+    <!-- Success summary. -->
+    <Message Importance="high"
+             Text="Passed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '0'" />
+
+    <!-- Failure summary + clean error (no MSB3073 noise). -->
+    <Message Importance="high"
+             Text="Failed! - Failed: @(_TrxFailed), Passed: @(_TrxPassed), Skipped: @(_TrxSkipped->Count()), Total: @(_TrxTotal) - $(_DeviceRunnersTrxFile)"
+             Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
+
+    <Error Text="Test run failed: @(_TrxFailed) of @(_TrxTotal) tests failed. See TRX for details: $(_DeviceRunnersTrxFile)"
+           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
+
+    <!-- Fallback: CLI crashed before writing TRX. -->
+    <Error Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the build log above for details."
+           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0'" />
 
   </Target>
 
