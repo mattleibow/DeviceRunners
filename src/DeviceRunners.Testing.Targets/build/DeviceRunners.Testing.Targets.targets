@@ -264,10 +264,10 @@
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'" />
 
     <!-- Signal MSBuild failure when tests failed (or CLI crashed without TRX). -->
-    <Error Text="Test run failed."
+    <Error Code="TESTERROR" Text="Test run failed."
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
 
-    <Error Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
+    <Error Code="TESTERROR" Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
            Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0'" />
 
   </Target>
