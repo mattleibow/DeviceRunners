@@ -10,6 +10,9 @@
     <!-- Artifacts Directory Configuration -->
     <UseArtifactsOutput>true</UseArtifactsOutput>
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+
+    <!-- Skip Xcode version validation so minor Xcode updates don't break builds -->
+    <ValidateXcodeVersion>false</ValidateXcodeVersion>
   </PropertyGroup>
 
 </Project>
