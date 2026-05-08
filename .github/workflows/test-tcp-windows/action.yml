@@ -20,31 +20,14 @@ runs:
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Build and Install CLI Tool
-      shell: pwsh
-      run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
-    - name: Publish App
-      shell: pwsh
-      run: |
-        $certResult = device-runners windows cert install --project ${{ inputs.test-project }} --output Json
-        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
-        dotnet publish ${{ inputs.test-project }} `
-          -f ${{ inputs.target-framework }} `
-          -c ${{ inputs.configuration }} `
-          -p:TestingMode=NonInteractiveVisual `
-          -p:AppxPackageSigningEnabled=true `
-          -p:PackageCertificateThumbprint=$fingerprint `
-          -p:PackageCertificateKeyFile="" `
-          /bl:./artifacts/logs/msbuild-publish.binlog
-        device-runners windows cert uninstall --fingerprint $fingerprint
     - name: Run Tests
       shell: pwsh
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts","sample" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
-        if (-not $msix) { Write-Error "No .msix file found in artifacts or sample"; exit 1 }
-        device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
+        dotnet test ${{ inputs.test-project }} `
+          -f ${{ inputs.target-framework }} `
+          -c ${{ inputs.configuration }} `
+          -p:TestingMode=NonInteractiveVisual `
+          /bl:./artifacts/logs/msbuild-test.binlog
     - name: Clean up build artifacts before upload
       if: always()
       shell: pwsh
