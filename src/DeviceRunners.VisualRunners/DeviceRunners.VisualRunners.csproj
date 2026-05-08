@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DeviceRunners.Core\DeviceRunners.Core.csproj" />
+    <ProjectReference Include="..\DeviceRunners.VisualRunners.Core\DeviceRunners.VisualRunners.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,6 +9,8 @@
     <ToolCommandName>device-runners</ToolCommandName>
     <PackageId>DeviceRunners.Cli</PackageId>
     <AssemblyName>DeviceRunners.Cli</AssemblyName>
+    <PublishTrimmed>true</PublishTrimmed>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+    <ProjectReference Include="..\DeviceRunners.VisualRunners.Core\DeviceRunners.VisualRunners.Core.csproj" />
   </ItemGroup>
 
 </Project>
