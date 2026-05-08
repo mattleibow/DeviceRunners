@@ -79,7 +79,8 @@ public class MacOSTestCommand(IAnsiConsole console) : BaseTestCommand<MacOSTestC
             };
             WriteResult(result, settings);
 
-            return testFailures > 0 ? 1 : 0;
+            // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
+            return testFailures < 0 ? 2 : testFailures > 0 ? 1 : 0;
         }
         catch (Exception ex)
         {

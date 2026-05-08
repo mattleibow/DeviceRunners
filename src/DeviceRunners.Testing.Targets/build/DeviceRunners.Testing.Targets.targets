@@ -266,16 +266,23 @@
              Condition="'$(_DeviceRunnersTrxExists)' == 'true'" />
 
     <!--
-      Signal MSBuild failure. The summary and results path are included in the
-      error text so they are always visible via the terminal logger at default
-      verbosity (which filters Message tasks but always shows errors).
+      Signal MSBuild failure.
+      CLI exit codes: 0 = success, 1 = test failures, 2 = app crashed.
     -->
     <Error Code="TESTERROR"
+           Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s (incomplete: app crashed)"
+           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '2'" />
+
+    <Error Code="TESTERROR"
            Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s"
-           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' != '0'" />
+           Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '1'" />
+
+    <Error Code="TESTERROR"
+           Text="The application crashed before producing any test results (exit code 2). Check the device log for details."
+           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' == '2'" />
 
     <Error Code="TESTERROR" Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."
-           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0'" />
+           Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' != '0' And '$(_DeviceRunnersExitCode)' != '2'" />
 
   </Target>
 

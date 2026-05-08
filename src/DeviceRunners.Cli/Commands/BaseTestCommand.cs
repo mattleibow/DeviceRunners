@@ -170,14 +170,13 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
         // Detect app crash: if we received a "begin" event and test results but
         // never got the "end" event, the app crashed or was killed mid-run.
-        // Report this explicitly so partial results are not mistaken for a full run.
+        // Return -1 to signal crash to the caller (mapped to exit code 2).
         if (eventStream.HasStarted && !eventStream.HasEnded && eventStream.TotalCount > 0)
         {
             WriteConsoleOutput($"    [red]The application appears to have crashed during the test run.[/]", settings);
             WriteConsoleOutput($"    [red]Only {eventStream.TotalCount} test result(s) were received before the connection was lost.[/]", settings);
             WriteConsoleOutput($"    [red]Check the device log for crash details.[/]", settings);
-            // Ensure failure even if all received tests passed
-            return (Math.Max(eventStream.FailedCount, 1), resultsFile);
+            return (-1, resultsFile);
         }
 
         if (eventStream.TotalCount == 0)
