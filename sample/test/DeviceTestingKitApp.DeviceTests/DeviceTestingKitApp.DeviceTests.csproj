@@ -56,6 +56,13 @@
     <PackageReference Include="xunit.runner.utility" />
   </ItemGroup>
 
+  <!-- Prevent the iOS/Android linker from stripping referenced test assemblies.
+       Test classes are discovered via reflection, so the linker can't trace them. -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.XunitTests\DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.Library.NUnitTests\DeviceTestingKitApp.Library.NUnitTests.csproj" />
