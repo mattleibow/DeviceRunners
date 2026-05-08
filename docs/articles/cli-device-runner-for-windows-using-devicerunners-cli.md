@@ -1,0 +1,68 @@
+# Windows Testing with DeviceRunners CLI
+
+
+This guide covers testing Windows applications using the DeviceRunners CLI tool. The tool supports both packaged (.msix) and unpackaged (.exe) Windows applications.
+
+## Running Tests
+
+1. Build the app for testing:  
+   ```
+   dotnet publish <path/to/app.csproj> -f net9.0-windows10.0.19041.0 -c Release
+   ```
+
+2. Run the tests:  
+   ```
+   device-runners windows test --app <path/to/app.[msix|exe]> --results-directory <path/to/output>
+   ```
+
+3. View test results:  
+   ```
+   <path/to/output>/TestResults.xml
+   ```
+
+## Complete Examples
+
+### Testing a Packaged Application
+
+To build and test a packaged app at `sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj`:
+
+```pwsh
+# Create and install certificate automatically
+$certResult = device-runners windows cert install `
+  --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+  --output Json
+$fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
+
+# Build the packaged app
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+  -f net9.0-windows10.0.19041.0 `
+  -c Release `
+  -p:AppxPackageSigningEnabled=true `
+  -p:PackageCertificateThumbprint=$fingerprint `
+  -p:PackageCertificateKeyFile=""
+
+# Clean up certificate after build
+device-runners windows cert uninstall --fingerprint $fingerprint
+
+# Run tests (the CLI tool will handle certificate installation automatically)
+$msix = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages\DeviceTestingKitApp.DeviceTests_1.0.0.1_Test\DeviceTestingKitApp.DeviceTests_1.0.0.1_x64.msix"
+device-runners windows test --app $msix --results-directory artifacts/test-results
+
+# Test result file will be: artifacts/test-results/TestResults.xml
+```
+
+### Testing an Unpackaged Application
+
+```pwsh
+# Build the unpackaged app  
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+  -f net9.0-windows10.0.19041.0 `
+  -c Release `
+  -p:WindowsPackageType=None
+
+# Run tests
+$exe = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\DeviceTestingKitApp.DeviceTests.exe"
+device-runners windows test --app $exe --results-directory artifacts/test-results
+
+# Test result file will be: artifacts/test-results/TestResults.xml
+```

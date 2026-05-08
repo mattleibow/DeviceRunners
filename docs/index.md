@@ -1,0 +1,3 @@
+<meta http-equiv="refresh" content="0;url=articles/index.html" />
+
+Redirecting to [documentation](articles/index.md)...
