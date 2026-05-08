@@ -5,29 +5,30 @@ This page provides a comprehensive technical overview of all DeviceRunners compo
 
 ## Overview
 
-DeviceRunners is a comprehensive testing framework for .NET MAUI applications that supports multiple testing approaches across different platforms. The project consists of two main testing strategies:
+DeviceRunners is a comprehensive testing framework for .NET MAUI applications that supports multiple testing approaches across different platforms. The project consists of three main testing strategies:
 
-1. **Visual Test Runners** - Interactive UI-based test execution for development and manual testing
-2. **CLI Test Runners** - Automated command-line test execution for CI/CD and scripted testing
+1. **`dotnet test` Integration** - Standard .NET test workflow via the `DeviceRunners.Testing.Targets` NuGet package (recommended)
+2. **Visual Test Runners** - Interactive UI-based test execution for development and manual testing
+3. **CLI Test Runners** - Automated command-line test execution for advanced scenarios
 
 ## Supported Platforms
 
-| Platform | Visual Runner | CLI Runner (XHarness) | CLI Runner (New Tool) |
-|----------|---------------|----------------------|----------------------|
-| **Android** | ✅ | ✅ | ✅ |
-| **iOS** | ✅ | ✅ | ✅ |
-| **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ |
-| **Windows (WinUI 3)** | ✅ | ❌ | ✅ |
+| Platform | `dotnet test` | Visual Runner | CLI Runner | XHarness (Legacy) |
+|----------|:---:|:---:|:---:|:---:|
+| **Android** | ✅ | ✅ | ✅ | ✅ |
+| **iOS** | ✅ | ✅ | ✅ | ✅ |
+| **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ | ✅ |
+| **Windows (WinUI 3)** | ✅ (unpackaged) | ✅ | ✅ | ❌ |
 
 ## Supported Testing Frameworks
 
-| Framework | Visual Runner | XHarness Runner | New CLI Tool |
-|-----------|---------------|-----------------|--------------|
-| **Xunit** | ✅ | ✅ | ✅ (any) |
-| **NUnit** | ✅ | ❌ | ✅ (any) |
+| Framework | Visual Runner | `dotnet test` / CLI | XHarness Runner |
+|-----------|:---:|:---:|:---:|
+| **Xunit** | ✅ | ✅ (any) | ✅ |
+| **NUnit** | ✅ | ✅ (any) | ❌ |
 
 > [!NOTE]
-> The CLI tool is framework-agnostic — it launches the test app and collects results via TCP. It works with any testing framework that the app supports.
+> Both `dotnet test` and the CLI tool are framework-agnostic — they launch the test app and collect results via TCP. They work with any testing framework that the app supports.
 
 ## Core Architecture Components
 
@@ -284,8 +285,56 @@ The repository includes comprehensive sample projects demonstrating:
 - Multi-framework test projects (Xunit + NUnit)
 - UI testing patterns
 - Visual and XHarness runner configurations
+- `dotnet test` integration via `DeviceRunners.Testing.Targets`
 - Platform-specific implementations
 - MAUI library testing
+
+## DeviceRunners.Testing.Targets Package
+
+The `DeviceRunners.Testing.Targets` NuGet package enables `dotnet test` for device platforms by replacing the standard VSTest MSBuild target with a custom implementation that:
+
+1. **Builds** the app for the target platform
+2. **Deploys** it using the bundled DeviceRunners CLI tool
+3. **Launches** the app with environment variables for auto-run and TCP connection
+4. **Collects** test results via TCP and writes a TRX file
+5. **Reports** results in the standard `dotnet test` output format
+
+### Package Structure
+
+The package ships two MSBuild files and a framework-dependent CLI tool:
+
+```
+build/
+  DeviceRunners.Testing.Targets.props    # Imported early: disables MTP, sets defaults
+  DeviceRunners.Testing.Targets.targets  # Imported late: custom VSTest target chain
+tools/
+  DeviceRunners.Cli.dll                  # CLI tool (built at pack time, not checked in)
+  ...                                    # Dependencies
+```
+
+### MSBuild Target Chain
+
+```
+VSTest  (entry point, replaces SDK default)
+  -> _DeviceRunnersCheckCli       (verify CLI tool exists)
+  -> Build                        (compile the app)
+  -> _DeviceRunnersRunTests       (orchestrator)
+       -> _DeviceRunnersPrepareArgs    (common + platform-specific CLI args)
+       -> _DeviceRunnersExecTests      (single Exec, captures exit code)
+       -> _DeviceRunnersReportResults  (parse TRX, emit summary)
+```
+
+Platform detection uses `$(_DeviceRunnersPlatform)` computed once from `GetTargetPlatformIdentifier`. Each platform has its own args target that assembles the CLI command. The `_DeviceRunnersExecTests` target runs a single `Exec` with `IgnoreExitCode="true"` and captures the exit code for clean error reporting.
+
+### Exit Code Protocol
+
+| Code | Meaning | MSBuild Output |
+|------|---------|----------------|
+| 0 | All tests passed | No error |
+| 1 | Test failures | `error TESTERROR: Test summary: ...` |
+| 2 | App crashed | `error TESTERROR: Test summary: ... (incomplete: app crashed)` |
+
+For more details, see [Using dotnet test](using-dotnet-test.md).
 
 ## Future Architecture Considerations
 
