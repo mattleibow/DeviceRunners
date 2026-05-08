@@ -50,7 +50,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
     protected abstract Task<int> ExecuteAsync(CommandContext context, TSettings settings);
 
-    protected async Task<(int testFailures, string? testResults)> StartTestListener(TSettings settings)
+    protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed);
+
+    protected async Task<TestListenerResult> StartTestListener(TSettings settings)
     {
         // Ensure artifacts directory exists
         Directory.CreateDirectory(settings.ResultsDirectory);
@@ -176,16 +178,16 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
             WriteConsoleOutput($"    [red]The application appears to have crashed during the test run.[/]", settings);
             WriteConsoleOutput($"    [red]Only {eventStream.TotalCount} test result(s) were received before the connection was lost.[/]", settings);
             WriteConsoleOutput($"    [red]Check the device log for crash details.[/]", settings);
-            return (-1, resultsFile);
+            return new TestListenerResult(eventStream.FailedCount, resultsFile, Crashed: true);
         }
 
         if (eventStream.TotalCount == 0)
         {
             WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
-            return (1, null);
+            return new TestListenerResult(1, null, Crashed: false);
         }
 
-        return (eventStream.FailedCount, resultsFile);
+        return new TestListenerResult(eventStream.FailedCount, resultsFile, Crashed: false);
     }
 
     /// <summary>

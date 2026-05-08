@@ -59,7 +59,7 @@ public class MacOSTestCommand(IAnsiConsole console) : BaseTestCommand<MacOSTestC
             WriteConsoleOutput($"    Application started.", settings);
 
             // Handle TCP test results
-            var (testFailures, testResults) = await StartTestListener(settings);
+            var listener = await StartTestListener(settings);
 
             WriteConsoleOutput($"", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);
@@ -70,17 +70,17 @@ public class MacOSTestCommand(IAnsiConsole console) : BaseTestCommand<MacOSTestC
 
             var result = new TestStartResult
             {
-                Success = testFailures == 0,
+                Success = listener.FailedCount == 0 && !listener.Crashed,
                 AppIdentity = appIdentifier,
                 AppPath = settings.App,
                 ResultsDirectory = settings.ResultsDirectory,
-                TestFailures = testFailures,
-                TestResults = testResults
+                TestFailures = listener.FailedCount,
+                TestResults = listener.ResultsFile
             };
             WriteResult(result, settings);
 
             // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-            return testFailures < 0 ? 2 : testFailures > 0 ? 1 : 0;
+            return listener.Crashed ? 2 : listener.FailedCount > 0 ? 1 : 0;
         }
         catch (Exception ex)
         {

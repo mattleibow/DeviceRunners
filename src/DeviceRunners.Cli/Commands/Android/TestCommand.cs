@@ -85,7 +85,7 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
             WriteConsoleOutput($"    Application started.", settings);
 
             // Handle TCP test results
-            var (testFailures, testResults) = await StartTestListener(settings);
+            var listener = await StartTestListener(settings);
 
             WriteConsoleOutput($"", settings);
             WriteConsoleOutput($"[blue]============================================================[/]", settings);
@@ -102,18 +102,18 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
 
             var testResult = new TestStartResult
             {
-                Success = testFailures == 0,
+                Success = listener.FailedCount == 0 && !listener.Crashed,
                 AppIdentity = packageName,
                 AppPath = settings.App,
                 ResultsDirectory = settings.ResultsDirectory,
-                TestFailures = testFailures,
-                TestResults = testResults,
+                TestFailures = listener.FailedCount,
+                TestResults = listener.ResultsFile,
                 LogcatFile = logcatFile
             };
             WriteResult(testResult, settings);
 
             // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-            return testFailures < 0 ? 2 : testFailures > 0 ? 1 : 0;
+            return listener.Crashed ? 2 : listener.FailedCount > 0 ? 1 : 0;
         }
         catch (Exception ex)
         {
