@@ -16,11 +16,10 @@
 
   <!--
     Publish DeviceRunners.Cli as a framework-dependent binary into tools/.
-    We do NOT use a RID (-r) because cross-RID restore fails when the project graph
-    contains Android/iOS TFMs (NuGet tries to resolve Mono runtime packs for the
-    host RID, which don't exist in public feeds).  Framework-dependent is fine: any
-    machine running `dotnet test` already has the .NET runtime available, so we can
-    invoke the tool via `dotnet tools/DeviceRunners.Cli.dll`.
+    The CLI project has SelfContained, PublishSingleFile, and PublishTrimmed
+    enabled by default (for standalone use). The NuGet package overrides these
+    to produce a framework-dependent publish: any machine running `dotnet test`
+    already has the .NET runtime, so we invoke via `dotnet tools/DeviceRunners.Cli.dll`.
 
     When packing the NuGet package, this target runs automatically before GenerateNuspec.
     To populate the tools/ folder for in-repo use without packing:
@@ -28,7 +27,7 @@
   -->
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool..." />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net9.0 -c $(Configuration) -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net9.0 -c $(Configuration) -p:SatelliteResourceLanguages=en -p:SelfContained=false -p:PublishSingleFile=false -p:PublishTrimmed=false -o &quot;$(_CliToolsDir)&quot;" />
   </Target>
 
   <!--

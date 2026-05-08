@@ -9,12 +9,16 @@
     <ToolCommandName>device-runners</ToolCommandName>
     <PackageId>DeviceRunners.Cli</PackageId>
     <AssemblyName>DeviceRunners.Cli</AssemblyName>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <!-- Spectre.Console.Cli uses reflection to discover command settings types.
          SuppressTrimAnalysisWarnings keeps the build clean; the TrimmerRootAssembly
          entries below ensure the needed types survive. -->
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <!-- Default RIDs for dotnet publish (macOS arm64 + Windows x64). -->
+    <RuntimeIdentifiers>osx-arm64;win-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
