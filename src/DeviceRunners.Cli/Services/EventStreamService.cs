@@ -14,6 +14,12 @@ public class EventStreamService
 {
     readonly StringBuilder _lineBuffer = new();
 
+    /// <summary>Whether a "begin" event has been received.</summary>
+    public bool HasStarted { get; private set; }
+
+    /// <summary>Whether an "end" event has been received (clean completion).</summary>
+    public bool HasEnded { get; private set; }
+
     /// <summary>Number of test results received so far.</summary>
     public int TotalCount { get; private set; }
 
@@ -94,6 +100,7 @@ public class EventStreamService
         switch (evt.Type)
         {
             case TestResultEvent.TypeBegin:
+                HasStarted = true;
                 TestRunStarted?.Invoke(this, new TestRunBeginEventArgs { Message = evt.Message });
                 break;
 
@@ -116,6 +123,7 @@ public class EventStreamService
                 break;
 
             case TestResultEvent.TypeEnd:
+                HasEnded = true;
                 TestRunEnded?.Invoke(this, EventArgs.Empty);
                 break;
         }
