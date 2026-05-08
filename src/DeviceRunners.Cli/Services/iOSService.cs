@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using AppleDev;
@@ -107,27 +106,8 @@ public class iOSService
         bool success;
         if (environmentVariables is { Count: > 0 })
         {
-            // xcrun simctl honours SIMCTL_CHILD_<KEY>=<VALUE> environment variables on
-            // the xcrun process itself and passes them as <KEY>=<VALUE> to the launched app.
-            var psi = new ProcessStartInfo("xcrun")
-            {
-                ArgumentList = { "simctl", "launch", "--terminate-running-process", targetDevice, bundleIdentifier },
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
-            foreach (var (key, value) in environmentVariables)
-                psi.EnvironmentVariables[$"SIMCTL_CHILD_{key}"] = value;
-
-            var process = Process.Start(psi)
-                ?? throw new InvalidOperationException("Failed to start xcrun simctl launch.");
-            await process.WaitForExitAsync();
-            if (process.ExitCode != 0)
-            {
-                var stderr = await process.StandardError.ReadToEndAsync();
-                throw new InvalidOperationException($"Failed to launch app '{bundleIdentifier}' on device '{targetDevice}': {stderr}");
-            }
-            success = true;
+            var readOnly = new Dictionary<string, string>(environmentVariables) as IReadOnlyDictionary<string, string>;
+            success = await _simCtl.LaunchAppAsync(targetDevice, bundleIdentifier, readOnly);
         }
         else
         {
