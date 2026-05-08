@@ -1,8 +1,10 @@
-# Prerequisites
+# Android Testing with XHarness
 
-Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) wiki.
+## Prerequisites
 
-# Running Tests
+Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) article.
+
+## Running Tests
 
 1. Build the app package for testing:  
    ```
@@ -34,8 +36,8 @@ xharness android test \
 # test result file will be artifacts/TestResults.xml
 ```
 
-> **NOTES**
-> * If you want to build a debug app and test that, you will also need to set `EmbedAssembliesIntoApk` to `True`:  
+> [!NOTE]
+> If you want to build a debug app and test that, you will also need to set `EmbedAssembliesIntoApk` to `True`:  
 >   ```
 >   dotnet publish ... -p:EmbedAssembliesIntoApk=true
 >   ```

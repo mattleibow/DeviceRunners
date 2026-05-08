@@ -1,11 +1,9 @@
 
-# Welcome to the Wiki page of the Test Device Runners!
+# Welcome to the DeviceRunners Documentation!
 
-We are glad you are here and one step closer to learn more about this library and the ways you can contribute 🙌
+We are glad you are here and one step closer to learning more about this library and the ways you can contribute 🙌
 
-The section on the right will help you navigate and answer all the questions you may have regarding the library. You can submit an issue to suggest any changes, introduce features, file bug reports, or leave a Test Device Runners related question. You can also submit a pull request and contribute many other ways listed in the Contribution Section to the right.
-
-Every single contribution of yours will improve and strengthen the performance of the library. Let's jump into the ride 🎢
+Use the table of contents to navigate and find answers to your questions. You can submit an issue to suggest changes, introduce features, file bug reports, or leave a DeviceRunners related question. You can also submit a pull request and contribute to the project.
 
 ## Getting Started
 
@@ -35,7 +33,13 @@ Platform-specific tools for specialized scenarios:
 ### Architecture and Development
 - **[Technical Architecture Overview](technical-architecture-overview.md)** - Comprehensive technical documentation
 - **[Types of Tests](types-of-tests.md)** - Understanding different testing approaches
+- **[CLI Test Workflow](devicerunners-cli-test-workflow.md)** - Detailed workflow for CLI test execution
 
-# Feedback and Requests
+### Helper Guides
+- **[Managing Android Emulators](managing-android-emulators.md)** - Set up and manage Android emulators
+- **[Preview Packages](preview-packages.md)** - Using pre-release NuGet packages
+- **[CI Pipeline Configuration](ci-pipeline.md)** - GitHub Actions and Azure Pipelines setup
 
-Please use [GitHub Issues](https://github.com/mattleibow/DeviceRunners/issues) for bug reports and feature requests. You can also chat with community members about the project in our [Community Discord](https://aka.ms/dotnet-discord) channel, which is `xamarin-community-toolkit` for now. There is also the [GitHub discussions](https://github.com/mattleibow/DeviceRunners/discussions) for topics relating to the use and development of this library.
+## Feedback and Requests
+
+Please use [GitHub Issues](https://github.com/mattleibow/DeviceRunners/issues) for bug reports and feature requests. You can also chat with community members about the project in our [Community Discord](https://aka.ms/dotnet-discord). There is also the [GitHub discussions](https://github.com/mattleibow/DeviceRunners/discussions) for topics relating to the use and development of this library.

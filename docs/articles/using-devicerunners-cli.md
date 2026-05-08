@@ -1,7 +1,5 @@
 # Using DeviceRunners CLI
 
-> [!NOTE]
-> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
 
 The DeviceRunners CLI is a cross-platform .NET tool that provides comprehensive testing utilities for .NET MAUI applications across multiple platforms. It provides a consistent interface for installing, launching, and testing applications while handling platform-specific complexities automatically.
 
@@ -9,7 +7,7 @@ The DeviceRunners CLI is a cross-platform .NET tool that provides comprehensive 
 
 The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applications with:
 
-- **Cross-Platform Support**: Works on Windows, macOS, and Linux
+- **Cross-Platform Support**: Works on Windows and macOS (Android commands also work on Linux)
 - **Multiple Output Formats**: Human-readable, JSON, XML, and text formats
 - **Automatic Resource Management**: Handles installation, cleanup, and certificates
 - **TCP Result Streaming**: Real-time test result communication
@@ -105,7 +103,7 @@ All platforms support TCP-based test result communication:
 
 ### Default Configuration
 - **Port**: 16384
-- **Connection Timeout**: 30 seconds
+- **Connection Timeout**: 120 seconds
 - **Data Timeout**: 30 seconds
 
 ### Custom Configuration

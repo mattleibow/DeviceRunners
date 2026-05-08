@@ -1,7 +1,5 @@
 # Managing Android Emulators
 
-> [!NOTE]
-> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
 
 This guide covers setting up and managing Android emulators for use with the DeviceRunners CLI tool.
 
@@ -9,10 +7,13 @@ This guide covers setting up and managing Android emulators for use with the Dev
 
 The DeviceRunners CLI tool works with any running Android emulator or connected device. For comprehensive emulator management, we recommend using the `AndroidSDK.Tool`, which provides a convenient .NET interface for Android SDK operations.
 
-## Installing AndroidSDK.Tool
+## Installing AndroidSdk.Tool
+
+> [!TIP]
+> Use `android …` if installed globally, or `dotnet android …` if restored as a local tool via `dotnet tool restore`.
 
 ```bash
-dotnet tool install --global AndroidSDK.Tool
+dotnet tool install --global AndroidSdk.Tool
 ```
 
 ## Creating and Starting an Emulator

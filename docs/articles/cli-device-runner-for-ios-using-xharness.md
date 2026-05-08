@@ -1,8 +1,10 @@
-# Prerequisites
+# iOS Testing with XHarness
 
-Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) wiki.
+## Prerequisites
 
-# Running Tests
+Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) article.
+
+## Running Tests
 
 1. Build the app package for testing:
    ```
@@ -33,13 +35,12 @@ xharness apple test \
 # test result file will be artifacts/xunit-test-ios-simulator-64-########_######.xml
 ```
 
-> **NOTES**
-> * It appears that you cannot publish for a simulator and I am having issues building a Release app for iOS.
-> * If you want to laucn on a specific device, you can pass `--device <UDID>` using the UDID from running:  
->   ```
+> [!NOTE]
+> It appears that you cannot publish for a simulator — use `dotnet build` with Debug configuration instead.
+
+> [!TIP]
+> To launch on a specific device, pass `--device <UDID>` using the UDID from running:  
+>   ```bash
 >   xharness apple state --include-simulator-uuid
 >   ```
-> * If you want to reset the simulator before running a test and exit afterwards, add `--reset-simulator` to the test command:  
->   ```
->   xharness apple test ... --reset-simulator
->   ```
+> To reset the simulator before running a test and exit afterwards, add `--reset-simulator` to the test command.

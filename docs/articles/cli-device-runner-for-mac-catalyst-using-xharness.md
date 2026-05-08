@@ -1,8 +1,10 @@
-# Prerequisites
+# Mac Catalyst Testing with XHarness
 
-Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) wiki.
+## Prerequisites
 
-# Running Tests
+Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) article.
+
+## Running Tests
 
 1. Build the app package for testing:
    ```

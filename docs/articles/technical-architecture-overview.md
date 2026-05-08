@@ -1,7 +1,5 @@
 # DeviceRunners Technical Architecture Overview
 
-> [!NOTE]
-> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
 
 This page provides a comprehensive technical overview of all DeviceRunners components, features, and architectures. This serves as a reference for understanding the entire ecosystem before diving into specific documentation.
 
@@ -25,8 +23,11 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 
 | Framework | Visual Runner | XHarness Runner | New CLI Tool |
 |-----------|---------------|-----------------|--------------|
-| **Xunit** | ✅ | ✅ | ❌ |
-| **NUnit** | ✅ | ❌ | ❌ |
+| **Xunit** | ✅ | ✅ | ✅ (any) |
+| **NUnit** | ✅ | ❌ | ✅ (any) |
+
+> [!NOTE]
+> The CLI tool is framework-agnostic — it launches the test app and collects results via TCP. It works with any testing framework that the app supports.
 
 ## Core Architecture Components
 
@@ -67,7 +68,7 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 - Platform-specific implementations:
   - Android: `DefaultAndroidEntryPoint` integration
   - iOS/Mac Catalyst: `iOSApplicationEntryPoint` integration  
-  - Windows: `DefaultAndroidEntryPoint` integration
+  - Windows: `DefaultAndroidEntryPoint` integration (reuses the Android base class)
 
 #### XHarness MAUI Integration (`DeviceRunners.XHarness.Maui`)
 - MAUI app integration via `UseXHarnessTestRunner()`
@@ -111,6 +112,7 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 
 #### CLI Tool Features
 - JSON and verbose output modes (`--output json`)
+- XML and text output modes (`--output xml`, `--output text`)
 - TCP result listening for test execution
 - Automatic certificate management (Windows)
 - Device/emulator targeting (Android)
@@ -147,7 +149,7 @@ builder.UseVisualTestRunner(conf => conf
     .AddFileResultChannel(new FileResultChannelOptions { Directory = "test-results" })
     .AddTcpResultChannel(new TcpResultChannelOptions
     {
-        HostNames = ["localhost", "10.0.2.2"],
+        HostNames = ["localhost", "10.0.2.2"], // 10.0.2.2 is the Android emulator's alias for the host machine
         Port = 16384,
         Formatter = new EventStreamFormatter(),
         Required = false,

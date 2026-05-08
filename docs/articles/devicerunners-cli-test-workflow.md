@@ -1,7 +1,5 @@
 # DeviceRunners CLI Test Workflow
 
-> [!NOTE]
-> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
 
 This document provides detailed information about how the DeviceRunners CLI tool executes tests across different platforms. Understanding this workflow can help with troubleshooting and advanced configuration scenarios.
 
@@ -108,6 +106,22 @@ Post-test cleanup and result processing:
 1. Uninstalls the application to clean up the system
 2. Preserves test results for analysis
 
+### iOS Test Workflow
+
+**Preparation:**
+1. Validates the .app bundle and determines bundle identifier
+2. Identifies target simulator (uses booted simulator if `--device` not specified)
+3. Installs the application to the simulator
+
+**Execution:**
+1. Launches the application on the simulator
+2. Starts TCP listener on specified port for test results
+3. Waits for test completion with configurable timeouts
+4. Captures and analyzes test results in real-time
+
+**Cleanup:**
+1. Preserves test results for analysis
+
 ## Test Result Communication
 
 ### TCP Protocol
@@ -127,7 +141,7 @@ Test results are saved in the specified results directory:
 ## Timeout Configuration
 
 ### Connection Timeout
-- **Default**: 30 seconds
+- **Default**: 120 seconds
 - **Purpose**: Maximum time to wait for initial application connection
 - **Configurable**: `--connection-timeout` parameter
 

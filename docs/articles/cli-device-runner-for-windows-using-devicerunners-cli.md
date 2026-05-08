@@ -1,7 +1,5 @@
 # Windows Testing with DeviceRunners CLI
 
-> [!NOTE]
-> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
 
 This guide covers testing Windows applications using the DeviceRunners CLI tool. The tool supports both packaged (.msix) and unpackaged (.exe) Windows applications.
 

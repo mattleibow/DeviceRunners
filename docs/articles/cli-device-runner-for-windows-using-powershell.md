@@ -1,7 +1,11 @@
+# Windows Testing with PowerShell (Legacy)
 
-> XHarness does not _yet_ support launching Windows tests, but this is easy to work around with a small powershell script. These scripts are found in the [`./scripts/`](https://github.com/mattleibow/DeviceRunners/tree/main/scripts) folder.
+> [!IMPORTANT]
+> This article describes the legacy PowerShell-based approach. For new projects, use the **[DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md)** instead.
 
-1. Build the app package for testing:
+> XHarness does not _yet_ support launching Windows tests, but this is easy to work around with a small PowerShell script. These scripts are found in the [`./scripts/`](https://github.com/mattleibow/DeviceRunners/tree/main/scripts) folder.
+
+## Running Tests
    ```
    dotnet publish <path/to/app.csproj> -f net9.0-windows10.0.<version>.0 -c Release -p:AppxPackageSigningEnabled=true
    ```
