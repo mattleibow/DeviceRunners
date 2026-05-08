@@ -1,0 +1,137 @@
+# Using DeviceRunners CLI
+
+> [!NOTE]
+> This documentation was partially generated using AI and may contain mistakes or be missing information. Please verify commands and procedures before use, and report any issues or improvements needed.
+
+The DeviceRunners CLI is a cross-platform .NET tool that provides comprehensive testing utilities for .NET MAUI applications across multiple platforms. It provides a consistent interface for installing, launching, and testing applications while handling platform-specific complexities automatically.
+
+## Overview
+
+The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applications with:
+
+- **Cross-Platform Support**: Works on Windows, macOS, and Linux
+- **Multiple Output Formats**: Human-readable, JSON, XML, and text formats
+- **Automatic Resource Management**: Handles installation, cleanup, and certificates
+- **TCP Result Streaming**: Real-time test result communication
+- **Comprehensive Error Handling**: Clear error messages and validation
+- **CI/CD Friendly**: Designed for automation and continuous integration
+
+## Supported Platforms
+
+| Platform | Commands Available | App Types Supported |
+|----------|-------------------|-------------------|
+| **Windows** | `install`, `uninstall`, `launch`, `test`, `cert` | MSIX packages, EXE files |
+| **Android** | `install`, `uninstall`, `launch`, `test` | APK packages |
+| **macOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Mac Catalyst) |
+
+## Output Formats
+
+All commands support global options for output formatting and automation:
+
+### Available Formats
+
+- **Default**: Rich, colored console output for human users
+- **`--output json`**: Structured JSON for automation and scripting
+- **`--output xml`**: XML format for CI/CD integration
+- **`--output text`**: Simple key=value pairs for basic automation
+
+### Examples
+
+```bash
+# Human-readable output with colors and progress
+device-runners windows test --app app.msix
+
+# JSON output for automation (suppresses verbose logs)
+device-runners windows test --app app.msix --output json
+
+# XML output for CI/CD systems
+device-runners android test --app app.apk --output xml
+```
+
+## Platform-Specific Documentation
+
+For detailed platform-specific instructions, see:
+
+- **[Android - DeviceRunners CLI](cli-device-runner-for-android-using-devicerunners-cli.md)** - Android APK testing
+- **[Windows - DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing  
+- **[macOS - DeviceRunners CLI](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst .app testing
+
+## Common Command Patterns
+
+### Testing Applications
+
+The `test` command is the primary interface for running tests across all platforms:
+
+```bash
+# Windows (MSIX)
+device-runners windows test --app path/to/app.msix --results-directory results
+
+# Windows (EXE)  
+device-runners windows test --app path/to/app.exe --results-directory results
+
+# Android
+device-runners android test --app path/to/app.apk --results-directory results
+
+# macOS
+device-runners macos test --app path/to/app.app --results-directory results
+```
+
+### Application Management
+
+Install, launch, and uninstall applications:
+
+```bash
+# Install applications
+device-runners windows install --app app.msix
+device-runners android install --app app.apk
+device-runners macos install --app app.app
+
+# Launch applications
+device-runners windows launch --identity "MyApp"
+device-runners android launch --package com.example.app
+device-runners macos launch --app app.app
+
+# Uninstall applications
+device-runners windows uninstall --identity "MyApp"
+device-runners android uninstall --package com.example.app
+device-runners macos uninstall --app app.app
+```
+
+## Network Configuration
+
+All platforms support TCP-based test result communication:
+
+### Default Configuration
+- **Port**: 16384
+- **Connection Timeout**: 30 seconds
+- **Data Timeout**: 30 seconds
+
+### Custom Configuration
+```bash
+device-runners [platform] test \
+  --app path/to/app \
+  --port 8080 \
+  --connection-timeout 60 \
+  --data-timeout 45
+```
+
+## TCP Port Listener
+
+The CLI tool includes a standalone TCP port listener for receiving test results:
+
+```bash
+# Interactive mode (waits indefinitely)
+device-runners listen --port 16384
+
+# Non-interactive mode (with timeouts)
+device-runners listen --port 16384 --non-interactive --connection-timeout 60 --data-timeout 30
+
+# Save results to file
+device-runners listen --port 16384 --results-file results.txt --non-interactive
+```
+
+## Additional Resources
+
+For more detailed information about the internal workflow and architecture:
+
+- **[Technical Architecture Overview](technical-architecture-overview.md)** - Complete technical documentation
