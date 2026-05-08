@@ -153,29 +153,17 @@
   <!-- =[ Windows args ]= -->
 
   <!--
-    Uses $(WindowsPackageType) to determine unpackaged (.exe) vs packaged (.msix).
-    WindowsPackageType=None produces a plain .exe; anything else produces an MSIX.
+    Windows currently supports unpackaged (.exe) mode only via dotnet test.
+    MSIX support is planned for a future release (requires dotnet publish integration).
+    For MSIX testing, use the DeviceRunners CLI directly.
   -->
   <Target Name="_DeviceRunnersWindowsArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'windows'">
-
-    <!-- Unpackaged: use the .exe directly. -->
-    <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+    <PropertyGroup>
       <_DeviceRunnersWindowsApp>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersWindowsApp>
     </PropertyGroup>
-    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. Make sure the project builds successfully."
-           Condition="'$(WindowsPackageType)' == 'None' And !Exists('$(_DeviceRunnersWindowsApp)')" />
-
-    <!-- Packaged: find the .msix in AppPackages. -->
-    <ItemGroup Condition="'$(WindowsPackageType)' != 'None'">
-      <_DeviceRunnersMsixFiles Include="$(MSBuildProjectDirectory)\AppPackages\**\*.msix" />
-    </ItemGroup>
-    <PropertyGroup Condition="'$(WindowsPackageType)' != 'None'">
-      <_DeviceRunnersWindowsApp>@(_DeviceRunnersMsixFiles, '')</_DeviceRunnersWindowsApp>
-    </PropertyGroup>
-    <Error Text="No .msix found in AppPackages. Make sure the project builds and packages successfully."
-           Condition="'$(WindowsPackageType)' != 'None' And '$(_DeviceRunnersWindowsApp)' == ''" />
-
+    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. Make sure the project builds successfully and WindowsPackageType is set to None."
+           Condition="!Exists('$(_DeviceRunnersWindowsApp)')" />
     <PropertyGroup>
       <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsApp)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>

@@ -169,7 +169,10 @@ For platform-specific setup and prerequisites:
 | No extra tooling | Yes | Global tool | Global tool |
 | CI-friendly | Yes | Yes | Yes |
 | Interactive debugging | No (use Visual Runner) | No | No |
-| MSIX packaged apps | Yes (auto-detected) | Yes | Yes |
+| MSIX packaged apps | Coming soon | Yes | Yes |
+
+> [!NOTE]
+> `dotnet test` does not yet support MSIX-packaged Windows apps because it uses `Build` (not `Publish`) which doesn't produce MSIX output. For packaged apps, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly. MSIX support is tracked for a future release.
 
 > [!NOTE]
 > For MSIX-packaged Windows apps or scenarios requiring fine-grained control over deployment, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly.

@@ -42,9 +42,12 @@ For MSIX-packaged apps, the CLI handles installation, certificate management, la
 
 If your project sets `WindowsPackageType=None`, the build produces a plain `.exe`. This is the simplest workflow — no certificate management, no package installation, no cleanup.
 
-### Packaged (MSIX) Mode
+### MSIX Packaged Apps
 
-If your project uses the default Windows packaging (or explicitly sets `WindowsPackageType=MSIX`), `dotnet test` will find the `.msix` in the output and use the CLI's full MSIX workflow (install certificate, install package, launch, collect results, uninstall).
+> [!NOTE]
+> `dotnet test` does not yet support MSIX-packaged Windows apps. MSIX packaging requires `dotnet publish`, but `dotnet test` uses `Build`. Support is coming in a future release.
+>
+> For now, use the [DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md) for MSIX testing.
 
 ## Troubleshooting
 
