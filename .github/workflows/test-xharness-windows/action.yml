@@ -28,6 +28,7 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=XHarness `
+          -p:WindowsPackageType=MSIX `
           -p:AppxPackageSigningEnabled=true `
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
