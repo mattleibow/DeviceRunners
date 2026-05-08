@@ -33,7 +33,6 @@ jobs:
         run: docfx docs/docfx.json --warningsAsErrors
 
       - name: Upload artifact
-        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_site
