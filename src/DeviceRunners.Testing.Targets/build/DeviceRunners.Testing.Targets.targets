@@ -46,15 +46,8 @@
       3. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
   -->
   <Target Name="VSTest"
-          DependsOnTargets="_DeviceRunnersCheckCli;Build;_DeviceRunnersRunTests"
+          DependsOnTargets="Build;_DeviceRunnersRunTests"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
-
-  <!-- Validate CLI availability before spending time building the app. -->
-  <Target Name="_DeviceRunnersCheckCli"
-          Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'">
-    <Error Condition="'$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)')"
-           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersExePath)'. Install the DeviceRunners.Testing.Targets NuGet package, or for in-repo dev run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj" />
-  </Target>
 
   <!-- =[ Orchestrator ]= -->
 
