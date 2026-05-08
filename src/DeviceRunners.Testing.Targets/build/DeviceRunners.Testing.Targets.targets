@@ -35,7 +35,7 @@
                                                Or '$(_DeviceRunnersPlatform)' == 'windows'">true</_DeviceRunnersIsSupportedPlatform>
   </PropertyGroup>
 
-  <!-- ================================================================ Entry point === -->
+  <!-- =[ Entry point ]= -->
 
   <!--
     VSTest - invoked by "dotnet test".
@@ -52,11 +52,11 @@
   <!-- Validate CLI availability before spending time building the app. -->
   <Target Name="_DeviceRunnersCheckCli"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'">
-    <Error Condition="'$(_DeviceRunnersCommand)' == '' Or ('$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)'))"
-           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersExePath)'. Run 'dotnet publish' for this RID or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
+    <Error Condition="'$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)')"
+           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersExePath)'. Install the DeviceRunners.Testing.Targets NuGet package, or for in-repo dev run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj" />
   </Target>
 
-  <!-- ============================================================== Orchestrator === -->
+  <!-- =[ Orchestrator ]= -->
 
   <!--
     Chains the three test-execution phases in order.
@@ -66,7 +66,7 @@
   <Target Name="_DeviceRunnersRunTests"
           DependsOnTargets="_DeviceRunnersPrepareArgs;_DeviceRunnersExecTests;_DeviceRunnersReportResults" />
 
-  <!-- =========================================== Phase 1 - Prepare arguments === -->
+  <!-- =[ Phase 1: Prepare arguments ]= -->
 
   <!--
     Chains common arg setup then the single platform-specific arg target whose
@@ -96,7 +96,7 @@
     <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
   </Target>
 
-  <!-- == Android args == -->
+  <!-- =[ Android args ]= -->
 
   <Target Name="_DeviceRunnersAndroidArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'android'">
@@ -111,7 +111,7 @@
     <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
   </Target>
 
-  <!-- == iOS args == -->
+  <!-- =[ iOS args ]= -->
 
   <!--
     MSBuild's Include glob does not reliably match directories by name on macOS
@@ -131,7 +131,7 @@
     <Message Importance="high" Text="DeviceRunners: running iOS tests from $(_DeviceRunnersAppPath)" />
   </Target>
 
-  <!-- == macOS Catalyst args == -->
+  <!-- =[ macOS Catalyst args ]= -->
 
   <Target Name="_DeviceRunnersMacOSArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'maccatalyst'">
@@ -148,44 +148,39 @@
     <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
   </Target>
 
-  <!-- == Windows args == -->
+  <!-- =[ Windows args ]= -->
 
   <!--
-    Detects whether the build produced an unpackaged .exe or a packaged .msix
-    and assembles the CLI arguments accordingly.
+    Uses $(WindowsPackageType) to determine unpackaged (.exe) vs packaged (.msix).
+    WindowsPackageType=None produces a plain .exe; anything else produces an MSIX.
   -->
   <Target Name="_DeviceRunnersWindowsArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'windows'">
-    <PropertyGroup>
-      <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
-    </PropertyGroup>
-
-    <!-- Search for MSIX in common output locations (AppPackages under project dir). -->
-    <ItemGroup>
-      <_DeviceRunnersMsixFiles Include="$(MSBuildProjectDirectory)\AppPackages\**\*.msix" />
-    </ItemGroup>
-    <PropertyGroup>
-      <_DeviceRunnersMsixPath>@(_DeviceRunnersMsixFiles->FirstOrDefault())</_DeviceRunnersMsixPath>
-    </PropertyGroup>
 
     <!-- Unpackaged: use the .exe directly. -->
-    <PropertyGroup Condition="Exists('$(_DeviceRunnersExePath)')">
-      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersExePath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
-      <_DeviceRunnersWindowsApp>$(_DeviceRunnersExePath)</_DeviceRunnersWindowsApp>
+    <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
+      <_DeviceRunnersWindowsApp>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersWindowsApp>
     </PropertyGroup>
+    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. Make sure the project builds successfully."
+           Condition="'$(WindowsPackageType)' == 'None' And !Exists('$(_DeviceRunnersWindowsApp)')" />
 
-    <!-- Packaged: use the .msix. -->
-    <PropertyGroup Condition="!Exists('$(_DeviceRunnersExePath)') And '$(_DeviceRunnersMsixPath)' != ''">
-      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersMsixPath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
-      <_DeviceRunnersWindowsApp>$(_DeviceRunnersMsixPath)</_DeviceRunnersWindowsApp>
+    <!-- Packaged: find the .msix in AppPackages. -->
+    <ItemGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_DeviceRunnersMsixFiles Include="$(MSBuildProjectDirectory)\AppPackages\**\*.msix" />
+    </ItemGroup>
+    <PropertyGroup Condition="'$(WindowsPackageType)' != 'None'">
+      <_DeviceRunnersWindowsApp>@(_DeviceRunnersMsixFiles, '')</_DeviceRunnersWindowsApp>
     </PropertyGroup>
+    <Error Text="No .msix found in AppPackages. Make sure the project builds and packages successfully."
+           Condition="'$(WindowsPackageType)' != 'None' And '$(_DeviceRunnersWindowsApp)' == ''" />
 
-    <Error Text="No .exe or .msix found for Windows tests. Build output: '$(OutputPath)'. Make sure the project builds successfully."
-           Condition="'$(_DeviceRunnersWindowsApp)' == ''" />
+    <PropertyGroup>
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsApp)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersWindowsApp)" />
   </Target>
 
-  <!-- ================================================ Phase 2 - Execute tests === -->
+  <!-- =[ Phase 2: Execute tests ]= -->
 
   <!--
     Single Exec that runs the CLI with the fully assembled $(_DeviceRunnersCliArgs).
@@ -199,7 +194,7 @@
     </Exec>
   </Target>
 
-  <!-- =============================================== Phase 3 - Report results === -->
+  <!-- =[ Phase 3: Report results ]= -->
 
   <!--
     Parse the TRX written by the CLI and emit output matching the standard
@@ -311,7 +306,7 @@
 
   </Target>
 
-  <!-- ==================================== Android env vars baked into APK at build === -->
+  <!-- =[ Android env vars baked into APK at build ]= -->
 
   <!--
     Injects DeviceRunners configuration into the APK via the Android SDK's

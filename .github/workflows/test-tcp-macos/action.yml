@@ -27,10 +27,9 @@ runs:
         runtime-identifier: ${{ inputs.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Build DeviceRunners.Testing.Targets Package
+    - name: Publish CLI Tool Binaries
       shell: bash
-      run: |
-        dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c ${{ inputs.configuration }}
     - name: Run Tests
       shell: bash
       run: |

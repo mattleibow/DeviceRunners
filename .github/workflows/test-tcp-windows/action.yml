@@ -20,6 +20,9 @@ runs:
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Publish CLI Tool Binaries
+      shell: pwsh
+      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c ${{ inputs.configuration }}
     - name: Run Tests
       shell: pwsh
       run: |
