@@ -50,7 +50,13 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
     protected abstract Task<int> ExecuteAsync(CommandContext context, TSettings settings);
 
-    protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed);
+    protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed)
+    {
+        // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
+        public int ToExitCode() => Crashed ? 2 : FailedCount > 0 ? 1 : 0;
+
+        public bool Success => FailedCount == 0 && !Crashed;
+    }
 
     protected async Task<TestListenerResult> StartTestListener(TSettings settings)
     {

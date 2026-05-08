@@ -102,7 +102,7 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
 
             var testResult = new TestStartResult
             {
-                Success = listener.FailedCount == 0 && !listener.Crashed,
+                Success = listener.Success,
                 AppIdentity = packageName,
                 AppPath = settings.App,
                 ResultsDirectory = settings.ResultsDirectory,
@@ -113,7 +113,7 @@ public class AndroidTestCommand(IAnsiConsole console) : BaseTestCommand<AndroidT
             WriteResult(testResult, settings);
 
             // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-            return listener.Crashed ? 2 : listener.FailedCount > 0 ? 1 : 0;
+            return listener.ToExitCode();
         }
         catch (Exception ex)
         {

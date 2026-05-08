@@ -130,7 +130,7 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 
         var result = new TestStartResult
         {
-            Success = listener.FailedCount == 0 && !listener.Crashed,
+            Success = listener.Success,
             AppPath = settings.App,
             ResultsDirectory = settings.ResultsDirectory,
             TestFailures = listener.FailedCount,
@@ -139,7 +139,7 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
         WriteResult(result, settings);
 
         // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-        return listener.Crashed ? 2 : listener.FailedCount > 0 ? 1 : 0;
+        return listener.ToExitCode();
     }
 
     private async Task<int> ExecutePackagedApp(Settings settings)
@@ -255,7 +255,7 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 
         var result = new TestStartResult
         {
-            Success = listener.FailedCount == 0 && !listener.Crashed,
+            Success = listener.Success,
             AppIdentity = appIdentity,
             AppPath = settings.App,
             CertificateThumbprint = certFingerprint,
@@ -266,7 +266,7 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
         WriteResult(result, settings);
 
         // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-        return listener.Crashed ? 2 : listener.FailedCount > 0 ? 1 : 0;
+        return listener.ToExitCode();
     }
 }
 
