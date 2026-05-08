@@ -18,11 +18,8 @@
     <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-x64</_DeviceRunnersRid>
     <_DeviceRunnersExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli.exe</_DeviceRunnersExePath>
     <_DeviceRunnersExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli</_DeviceRunnersExePath>
-    <!-- Fallback: framework-dependent DLL at the old path (for in-repo dev or older packages). -->
-    <_DeviceRunnersDllPath>$(_DeviceRunnersToolsDir)DeviceRunners.Cli.dll</_DeviceRunnersDllPath>
     <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersCommand>
-    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == '' And Exists('$(_DeviceRunnersExePath)')">$(_DeviceRunnersExePath)</_DeviceRunnersCommand>
-    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)') And Exists('$(_DeviceRunnersDllPath)')">dotnet &quot;$(_DeviceRunnersDllPath)&quot;</_DeviceRunnersCommand>
+    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == ''">$(_DeviceRunnersExePath)</_DeviceRunnersCommand>
   </PropertyGroup>
 
   <!--
@@ -55,8 +52,8 @@
   <!-- Validate CLI availability before spending time building the app. -->
   <Target Name="_DeviceRunnersCheckCli"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'">
-    <Error Condition="'$(_DeviceRunnersCommand)' == ''"
-           Text="DeviceRunners CLI tool not found. Looked for native binary at '$(_DeviceRunnersExePath)' and framework-dependent DLL at '$(_DeviceRunnersDllPath)'. Run 'dotnet pack DeviceRunners.Testing.Targets.csproj' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
+    <Error Condition="'$(_DeviceRunnersCommand)' == '' Or ('$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)'))"
+           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersExePath)'. Run 'dotnet publish' for this RID or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
   </Target>
 
   <!-- ============================================================== Orchestrator === -->
