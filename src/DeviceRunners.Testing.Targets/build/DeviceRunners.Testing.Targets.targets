@@ -162,7 +162,7 @@
     <PropertyGroup>
       <_DeviceRunnersWindowsApp>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersWindowsApp>
     </PropertyGroup>
-    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. Make sure the project builds successfully and WindowsPackageType is set to None."
+    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. dotnet test currently only supports unpackaged Windows apps (WindowsPackageType=None). For MSIX packaged apps, use the DeviceRunners CLI directly."
            Condition="!Exists('$(_DeviceRunnersWindowsApp)')" />
     <PropertyGroup>
       <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsApp)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
