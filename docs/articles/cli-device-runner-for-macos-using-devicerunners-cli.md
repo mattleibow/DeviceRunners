@@ -26,11 +26,11 @@ The DeviceRunners CLI tool provides a comprehensive test workflow for Mac Cataly
 
 ## Complete Example
 
-To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on Apple Silicon macOS:
+To build and test the app at the path `sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj` and get the test output at the path `artifacts` on Apple Silicon macOS:
 
 ```bash
 # Build the test app
-dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
   -f net9.0-maccatalyst \
   -r maccatalyst-x64 \
   -c Release
@@ -40,7 +40,7 @@ app_bundle=
 
 # Run tests
 device-runners macos test \
-  --app sample/SampleMauiApp/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/SampleMauiApp.app \
+  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/DeviceTestingKitApp.DeviceTests.app \
   --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

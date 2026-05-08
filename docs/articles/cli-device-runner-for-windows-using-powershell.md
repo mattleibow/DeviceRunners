@@ -3,7 +3,7 @@
 
 1. Build the app package for testing:
    ```
-   dotnet publish <path/to/app.csproj> -f net7.0-windows10.0.<version>.0 -c Release -p:AppxPackageSigningEnabled=true
+   dotnet publish <path/to/app.csproj> -f net9.0-windows10.0.<version>.0 -c Release -p:AppxPackageSigningEnabled=true
    ```
 2. Run the tests:  
    ```
@@ -14,12 +14,12 @@
    <path/to/output>/TestResults.xml
    ```
 
-To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on my Windows laptop:
+To build and test the app at the path `sample\test\DeviceTestingKitApp.DeviceTests\DeviceTestingKitApp.DeviceTests.csproj` and get the test output at the path `artifacts` on my Windows laptop:
 
 ```
-$fingerprint = .\scripts\New-Certificate.ps1 -Project sample\SampleMauiApp\SampleMauiApp.csproj
-dotnet publish sample\SampleMauiApp\SampleMauiApp.csproj `
-  -f net7.0-windows10.0.19041.0 `
+$fingerprint = .\scripts\New-Certificate.ps1 -Project sample\test\DeviceTestingKitApp.DeviceTests\DeviceTestingKitApp.DeviceTests.csproj
+dotnet publish sample\test\DeviceTestingKitApp.DeviceTests\DeviceTestingKitApp.DeviceTests.csproj `
+  -f net9.0-windows10.0.19041.0 `
   -c Release `
   -p:AppxPackageSigningEnabled=true `
   -p:PackageCertificateThumbprint=$fingerprint `
@@ -27,7 +27,7 @@ dotnet publish sample\SampleMauiApp\SampleMauiApp.csproj `
 ./scripts/Remove-Certificate.ps1 -CertificateFingerprint $fingerprint
 
 ./scripts/Start-Tests.ps1 `
-  -App sample\SampleMauiApp\bin\Release\net7.0-windows10.0.19041.0\win10-x64\AppPackages\SampleMauiApp_1.0.0.1_Test\SampleMauiApp_1.0.0.1_x64.msix `
+  -App sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages\DeviceTestingKitApp.DeviceTests_1.0.0.1_Test\DeviceTestingKitApp.DeviceTests_1.0.0.1_x64.msix `
   -OutputDirectory artifacts
 
 # test result file will be artifacts/TestResults.xml

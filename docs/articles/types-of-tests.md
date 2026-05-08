@@ -8,7 +8,7 @@ There are 3 types of tests:
 
 We have many tests that are just testing code that is not on a device. It all runs on the host. For example, our XAML unit tests. These tests are written using Xunit and run in VS/CLI and do _not_ have any app related code. 
 
-I do this in: https://github.com/mattleibow/DeviceRunners/blob/main/sample/SampleXunitTestProject/UnitTests.cs
+I do this in: https://github.com/mattleibow/DeviceRunners/blob/main/sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/UnitTests.cs
 
 For example, you might use this to test to see if your VM and/or XAML page updates when some event happens. For a more concrete example, you could have a page that shows a list of monkeys, a refresh button and a loading indicator. When your page is ready, you can write a plain test to trigger the refresh command and then you can observe the xaml loads correctly, the indicator is shown and then when data is loaded you can observe the items:
 
@@ -60,14 +60,14 @@ public void TestLoadingWorksCorrectly()
 
 On-device testing is very much like the plain tests, except instead of running on the host/dev machine, it runs on the device. This is what the DeviceRunners repository solves. These tests are run in the context of a mobile app - in the current state we just have a .NET Maui app. This is _not_ your shipping app, but rather a special test runner app. It provides a visual runner shell as well as some hooks to run from the CLI using XHarness. I have lots more info on the wiki: https://github.com/mattleibow/DeviceRunners/wiki
 
-For plain tests running in the context of a device, I have an example: https://github.com/mattleibow/DeviceRunners/blob/main/sample/SampleMauiApp/Tests/UnitTests.cs
+For plain tests running in the context of a device, I have an example: https://github.com/mattleibow/DeviceRunners/blob/main/sample/test/DeviceTestingKitApp.DeviceTests/Tests/UnitTests.cs
 
 The reason this test run is better than plain tests is that it runs closer to the intended target. It is just as fast (or very close). Another benefit is that native controls will be instantiated so you can detect a crash or hang due to UI thread operations or some other situation.
 
 The current test runner is using the [.NET MAUI Shell](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/) as a host, so you will have to work in the context of that. If there is demand, we can always create a more "you bring your own app" runner as the MAUI part of the runner is super thin.
 
-For UI-based tests, I have an example: https://github.com/mattleibow/DeviceRunners/blob/main/sample/SampleMauiApp/Tests/UITests/TestPageUITests.cs
-And for the setup, I have simple code: https://github.com/mattleibow/DeviceRunners/blob/main/sample/SampleMauiApp/Tests/UITests/UITests.cs
+For UI-based tests, I have an example: https://github.com/mattleibow/DeviceRunners/blob/main/sample/test/DeviceTestingKitApp.DeviceTests/Tests/UITests/TestPageUITests.cs
+And for the setup, I have simple code: https://github.com/mattleibow/DeviceRunners/blob/main/sample/test/DeviceTestingKitApp.DeviceTests/Tests/UITests/UITests.cs
 
 If we follow on from the example above, we can run the same test on the device, but maybe for the setup you would first push the page:
 

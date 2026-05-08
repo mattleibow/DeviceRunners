@@ -6,7 +6,7 @@ Before running any tests on the CLI, you will need the XHarness .NET tool. For m
 
 1. Build the app package for testing:  
    ```
-   dotnet publish <path/to/app.csproj> -r <runtime-identifier> -f net7.0-android -c Release
+   dotnet publish <path/to/app.csproj> -r <runtime-identifier> -f net9.0-android -c Release
    ```
 2. Run the tests:  
    ```
@@ -17,17 +17,17 @@ Before running any tests on the CLI, you will need the XHarness .NET tool. For m
    <path/to/output>/TestResults.xml
    ```
 
-To build and test the app at the path `sample/SampleMauiApp/SampleMauiApp.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
+To build and test the app at the path `sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj` and get the test output at the path `artifacts` on my ARM64 Apple Silicon laptop:
 
 ```
-dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj \
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
   -r android-arm64 \
-  -f net7.0-android \
+  -f net9.0-android \
   -c Release
 
 xharness android test \
-  --app sample/SampleMauiApp/bin/Release/net7.0-android/android-arm64/publish/com.companyname.samplemauiapp-Signed.apk \
-  --package-name com.companyname.samplemauiapp \
+  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net9.0-android/android-arm64/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+  --package-name com.companyname.devicetestingkitapp.devicetests \
   --instrumentation devicerunners.xharness.maui.XHarnessInstrumentation \
   --output-directory artifacts
 

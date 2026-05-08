@@ -26,17 +26,17 @@ This guide covers testing Windows applications using the DeviceRunners CLI tool.
 
 ### Testing a Packaged Application
 
-To build and test a packaged app at `sample/SampleMauiApp/SampleMauiApp.csproj`:
+To build and test a packaged app at `sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj`:
 
 ```pwsh
 # Create and install certificate automatically
 $certResult = device-runners windows cert install `
-  --project sample/SampleMauiApp/SampleMauiApp.csproj `
+  --project sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
   --output Json
 $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
 
 # Build the packaged app
-dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj `
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
   -f net9.0-windows10.0.19041.0 `
   -c Release `
   -p:AppxPackageSigningEnabled=true `
@@ -47,7 +47,7 @@ dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj `
 device-runners windows cert uninstall --fingerprint $fingerprint
 
 # Run tests (the CLI tool will handle certificate installation automatically)
-$msix = "sample\SampleMauiApp\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages\SampleMauiApp_1.0.0.1_Test\SampleMauiApp_1.0.0.1_x64.msix"
+$msix = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages\DeviceTestingKitApp.DeviceTests_1.0.0.1_Test\DeviceTestingKitApp.DeviceTests_1.0.0.1_x64.msix"
 device-runners windows test --app $msix --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml
@@ -57,13 +57,13 @@ device-runners windows test --app $msix --results-directory artifacts/test-resul
 
 ```pwsh
 # Build the unpackaged app  
-dotnet publish sample/SampleMauiApp/SampleMauiApp.csproj `
+dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
   -f net9.0-windows10.0.19041.0 `
   -c Release `
   -p:WindowsPackageType=None
 
 # Run tests
-$exe = "sample\SampleMauiApp\bin\Release\net9.0-windows10.0.19041.0\win10-x64\SampleMauiApp.exe"
+$exe = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\DeviceTestingKitApp.DeviceTests.exe"
 device-runners windows test --app $exe --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

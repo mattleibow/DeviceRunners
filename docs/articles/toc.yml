@@ -27,6 +27,8 @@
       href: cli-device-runner-for-windows-using-devicerunners-cli.md
     - name: macOS
       href: cli-device-runner-for-macos-using-devicerunners-cli.md
+    - name: iOS
+      href: cli-device-runner-for-ios-using-devicerunners-cli.md
     - name: CLI Test Workflow
       href: devicerunners-cli-test-workflow.md
 

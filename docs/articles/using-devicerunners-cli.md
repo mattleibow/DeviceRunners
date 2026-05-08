@@ -23,6 +23,7 @@ The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applica
 | **Windows** | `install`, `uninstall`, `launch`, `test`, `cert` | MSIX packages, EXE files |
 | **Android** | `install`, `uninstall`, `launch`, `test` | APK packages |
 | **macOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Mac Catalyst) |
+| **iOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Simulator) |
 
 ## Output Formats
 
@@ -55,6 +56,7 @@ For detailed platform-specific instructions, see:
 - **[Android - DeviceRunners CLI](cli-device-runner-for-android-using-devicerunners-cli.md)** - Android APK testing
 - **[Windows - DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing  
 - **[macOS - DeviceRunners CLI](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst .app testing
+- **[iOS - DeviceRunners CLI](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator .app testing
 
 ## Common Command Patterns
 

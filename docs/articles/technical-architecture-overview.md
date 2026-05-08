@@ -17,7 +17,7 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 | Platform | Visual Runner | CLI Runner (XHarness) | CLI Runner (New Tool) |
 |----------|---------------|----------------------|----------------------|
 | **Android** | ✅ | ✅ | ✅ |
-| **iOS** | ✅ | ✅ | ❌ |
+| **iOS** | ✅ | ✅ | ✅ |
 | **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ |
 | **Windows (WinUI 3)** | ✅ | ❌ | ✅ |
 
@@ -100,6 +100,12 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 - `macos launch` - Launch applications
 - `macos test` - Run tests
 
+**iOS Commands:**
+- `ios install` - Install .app bundles to simulator
+- `ios uninstall` - Uninstall applications from simulator
+- `ios launch` - Launch applications on simulator
+- `ios test` - Run tests on simulator
+
 **Network Commands:**
 - `listen` - Start TCP port listener for test results
 
@@ -133,14 +139,21 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 ```csharp
 var builder = MauiApp.CreateBuilder();
 builder.UseVisualTestRunner(conf => conf
+    .EnableAutoStart(true)
     .AddTestAssembly(typeof(MyTests).Assembly)
     .AddXunit()
     .AddNUnit()
     .AddConsoleResultChannel()
+    .AddFileResultChannel(new FileResultChannelOptions { Directory = "test-results" })
     .AddTcpResultChannel(new TcpResultChannelOptions
     {
-        HostNames = ["localhost"],
-        Port = 16384
+        HostNames = ["localhost", "10.0.2.2"],
+        Port = 16384,
+        Formatter = new EventStreamFormatter(),
+        Required = false,
+        Retries = 3,
+        RetryTimeout = TimeSpan.FromSeconds(5),
+        Timeout = TimeSpan.FromSeconds(30)
     }));
 ```
 
@@ -170,16 +183,16 @@ The framework supports multiple result output channels:
 
 - **Console Channel** - Console output
 - **TCP Channel** - Network-based result streaming  
-- **File Channel** - File-based result output
+- **File Channel** - File-based result output (via `AddFileResultChannel()`)
 - **Custom Channels** - Extensible channel system
 
 ## Configuration Management
 
 ### Visual Test Runner Configuration
-- Assembly discovery and loading
+- Assembly discovery and loading (via `AddTestAssembly()` and `AddTestAssemblies()`)
 - Framework-specific discoverer registration  
 - Result channel configuration
-- Auto-start and auto-terminate options
+- Auto-start and auto-terminate options (via `EnableAutoStart()`)
 
 ### XHarness Test Runner Configuration
 - Environment variable detection
