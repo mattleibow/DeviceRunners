@@ -36,8 +36,7 @@ runs:
     - name: Run Tests
       shell: powershell
       run: |
-        $projectDir = Split-Path "${{ inputs.test-project }}"
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path $projectDir,"artifacts" | Select-Object -First 1).FullName
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
         if (-not $msix) { Write-Error "No .msix file found"; exit 1 }
         ./scripts/Start-Tests.ps1 `
           -App $msix `
