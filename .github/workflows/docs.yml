@@ -1,6 +1,9 @@
 name: Docs
 
 on:
+  pull_request:
+    paths:
+      - 'docs/**'
   push:
     branches: [ main ]
     paths:
@@ -13,8 +16,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -27,15 +30,17 @@ jobs:
         run: dotnet tool install -g docfx
 
       - name: Build docs
-        run: docfx docs/docfx.json
+        run: docfx docs/docfx.json --warningsAsErrors
 
       - name: Upload artifact
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/_site
 
   deploy:
     name: Deploy
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
