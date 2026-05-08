@@ -17,8 +17,10 @@
          SuppressTrimAnalysisWarnings keeps the build clean; the TrimmerRootAssembly
          entries below ensure the needed types survive. -->
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-    <!-- Default RIDs for dotnet publish (macOS arm64 + Windows x64). -->
-    <RuntimeIdentifiers>osx-arm64;win-x64</RuntimeIdentifiers>
+    <!-- The CLI uses reflection-based JSON and XML serialization for output formatting. -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
+    <!-- Default RIDs for dotnet publish (macOS arm64, Windows x64, Linux x64). -->
+    <RuntimeIdentifiers>osx-arm64;win-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>

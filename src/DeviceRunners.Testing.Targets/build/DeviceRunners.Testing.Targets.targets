@@ -3,9 +3,8 @@
   <!--
     CLI tool resolution.
 
-    The NuGet package ships a framework-dependent DeviceRunners.Cli.dll in tools/.
-    Invoke it via "dotnet <dll>" - dotnet is always available on any machine
-    running "dotnet test", so no per-OS or per-architecture binary is needed.
+    The NuGet package ships self-contained, single-file binaries per RID in
+    tools/<rid>/. The targets detect the host OS and select the right binary.
 
     Override by setting $(DeviceRunnersBin) in your project file:
       <PropertyGroup>
@@ -13,9 +12,17 @@
       </PropertyGroup>
   -->
   <PropertyGroup>
-    <_DeviceRunnersDllPath>$(MSBuildThisFileDirectory)..\tools\DeviceRunners.Cli.dll</_DeviceRunnersDllPath>
+    <_DeviceRunnersToolsDir>$(MSBuildThisFileDirectory)..\tools\</_DeviceRunnersToolsDir>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('osx'))">osx-arm64</_DeviceRunnersRid>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('windows'))">win-x64</_DeviceRunnersRid>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-x64</_DeviceRunnersRid>
+    <_DeviceRunnersExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli.exe</_DeviceRunnersExePath>
+    <_DeviceRunnersExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli</_DeviceRunnersExePath>
+    <!-- Fallback: framework-dependent DLL at the old path (for in-repo dev or older packages). -->
+    <_DeviceRunnersDllPath>$(_DeviceRunnersToolsDir)DeviceRunners.Cli.dll</_DeviceRunnersDllPath>
     <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersCommand>
-    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == ''">dotnet &quot;$(_DeviceRunnersDllPath)&quot;</_DeviceRunnersCommand>
+    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == '' And Exists('$(_DeviceRunnersExePath)')">$(_DeviceRunnersExePath)</_DeviceRunnersCommand>
+    <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' == '' And !Exists('$(_DeviceRunnersExePath)') And Exists('$(_DeviceRunnersDllPath)')">dotnet &quot;$(_DeviceRunnersDllPath)&quot;</_DeviceRunnersCommand>
   </PropertyGroup>
 
   <!--
@@ -48,8 +55,8 @@
   <!-- Validate CLI availability before spending time building the app. -->
   <Target Name="_DeviceRunnersCheckCli"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'">
-    <Error Condition="!Exists('$(_DeviceRunnersDllPath)') And '$(DeviceRunnersBin)' == ''"
-           Text="DeviceRunners CLI tool not found at '$(_DeviceRunnersDllPath)'. Run 'dotnet pack DeviceRunners.Testing.Targets.csproj' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
+    <Error Condition="'$(_DeviceRunnersCommand)' == ''"
+           Text="DeviceRunners CLI tool not found. Looked for native binary at '$(_DeviceRunnersExePath)' and framework-dependent DLL at '$(_DeviceRunnersDllPath)'. Run 'dotnet pack DeviceRunners.Testing.Targets.csproj' to populate it, or set &lt;DeviceRunnersBin&gt;device-runners&lt;/DeviceRunnersBin&gt; to use a globally installed tool." />
   </Target>
 
   <!-- ============================================================== Orchestrator === -->
