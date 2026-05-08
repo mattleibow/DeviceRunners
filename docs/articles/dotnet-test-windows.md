@@ -15,11 +15,20 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-windows10.0.19041.0
 
 ## How It Works
 
-### Unpackaged Mode
+### Automatic Detection
 
-The Testing.Targets package defaults to `WindowsPackageType=None`, which produces a plain `.exe` instead of an MSIX package. This simplifies the workflow — no certificate management, no package installation, no cleanup.
+The MSBuild targets automatically detect what the build produced and adapt:
 
-The CLI locates the `.exe` in the build output and launches it directly with environment variables:
+| Build Output | `WindowsPackageType` | How Tests Run |
+|-------------|---------------------|---------------|
+| `.exe` (unpackaged) | `None` | CLI launches the `.exe` directly with environment variables |
+| `.msix` (packaged) | _(default/MSIX)_ | CLI installs and launches the MSIX package |
+
+You don't need to set `WindowsPackageType` — the targets find whichever artifact exists.
+
+### Environment Variables
+
+For unpackaged apps, environment variables are injected directly into the process at launch time:
 
 | Variable | Value | Purpose |
 |----------|-------|---------|
@@ -27,23 +36,21 @@ The CLI locates the `.exe` in the build output and launches it directly with env
 | `DEVICE_RUNNERS_PORT` | `16384` (default) | TCP port to connect to on the host |
 | `DEVICE_RUNNERS_HOST_NAMES` | `localhost` | Host address |
 
-### MSIX Packaged Apps
+For MSIX-packaged apps, the CLI handles installation, certificate management, launching, and cleanup.
 
-If you need MSIX packaging (e.g., for testing APIs that require package identity), override the default:
+### Unpackaged Mode
 
-```bash
-dotnet test MyApp.csproj -f net10.0-windows10.0.19041.0 \
-  -p:WindowsPackageType=MSIX
-```
+If your project sets `WindowsPackageType=None`, the build produces a plain `.exe`. This is the simplest workflow — no certificate management, no package installation, no cleanup.
 
-> [!NOTE]
-> MSIX packaging with `dotnet test` is not fully supported yet. For MSIX-packaged Windows apps, use the [DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md) which handles certificate management and package installation.
+### Packaged (MSIX) Mode
+
+If your project uses the default Windows packaging (or explicitly sets `WindowsPackageType=MSIX`), `dotnet test` will find the `.msix` in the output and use the CLI's full MSIX workflow (install certificate, install package, launch, collect results, uninstall).
 
 ## Troubleshooting
 
-### "Executable not found"
+### "No .exe or .msix found"
 
-Ensure the project targets a Windows TFM and that `WindowsPackageType` is `None` (the default when using Testing.Targets). If you've set `WindowsPackageType=MSIX` elsewhere, the build produces an MSIX instead of an EXE.
+Ensure the project targets a Windows TFM and builds successfully. Check the build output directory for the expected artifact.
 
 ### Firewall Prompts
 

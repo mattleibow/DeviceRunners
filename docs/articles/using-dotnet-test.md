@@ -169,7 +169,7 @@ For platform-specific setup and prerequisites:
 | No extra tooling | Yes | Global tool | Global tool |
 | CI-friendly | Yes | Yes | Yes |
 | Interactive debugging | No (use Visual Runner) | No | No |
-| MSIX packaged apps | No | Yes | Yes |
+| MSIX packaged apps | Yes (auto-detected) | Yes | Yes |
 
 > [!NOTE]
 > For MSIX-packaged Windows apps or scenarios requiring fine-grained control over deployment, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly.

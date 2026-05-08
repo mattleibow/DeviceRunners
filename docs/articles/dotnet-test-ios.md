@@ -78,5 +78,3 @@ dotnet test MyApp.csproj -f net10.0-ios \
 ### App crashes with partial results
 
 If you see `(incomplete: app crashed)` in the output, check the device log at `<results-directory>/ios-device-log.txt` for the full managed exception stack trace. Common causes:
-- MAUI framework bugs during layout (e.g., `Button.LayoutButton` NRE on older MAUI versions)
-- Missing assemblies (ensure referenced test assemblies have `TrimmerRootAssembly` entries if using Release builds)

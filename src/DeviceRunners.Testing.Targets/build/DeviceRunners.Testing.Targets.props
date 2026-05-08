@@ -77,10 +77,4 @@
     <EmbedAssembliesIntoApk Condition="'$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
-  <!-- Windows (unpackaged): force unpackaged mode so dotnet test produces a plain .exe.
-       The CLI launches it with env vars injected at process start time. -->
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
-    <WindowsPackageType Condition="'$(WindowsPackageType)' == ''">None</WindowsPackageType>
-  </PropertyGroup>
-
 </Project>

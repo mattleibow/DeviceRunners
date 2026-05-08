@@ -144,20 +144,41 @@
     <Message Importance="high" Text="DeviceRunners: running macOS Catalyst tests from $(_DeviceRunnersAppPath)" />
   </Target>
 
-  <!-- == Windows (unpackaged) args == -->
+  <!-- == Windows args == -->
 
+  <!--
+    Detects whether the build produced an unpackaged .exe or a packaged .msix
+    and assembles the CLI arguments accordingly.
+  -->
   <Target Name="_DeviceRunnersWindowsArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'windows'">
     <PropertyGroup>
       <_DeviceRunnersExePath>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersExePath>
     </PropertyGroup>
-    <Error Text="Executable not found at '$(_DeviceRunnersExePath)'. Make sure the project builds successfully."
-           Condition="!Exists('$(_DeviceRunnersExePath)')" />
+
+    <!-- Search for MSIX in common output locations (AppPackages under project dir). -->
+    <ItemGroup>
+      <_DeviceRunnersMsixFiles Include="$(MSBuildProjectDirectory)\AppPackages\**\*.msix" />
+    </ItemGroup>
     <PropertyGroup>
-      <!-- Windows always runs on the local machine; the device flag is not applicable. -->
-      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersExePath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersMsixPath>@(_DeviceRunnersMsixFiles->FirstOrDefault())</_DeviceRunnersMsixPath>
     </PropertyGroup>
-    <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersExePath)" />
+
+    <!-- Unpackaged: use the .exe directly. -->
+    <PropertyGroup Condition="Exists('$(_DeviceRunnersExePath)')">
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersExePath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersWindowsApp>$(_DeviceRunnersExePath)</_DeviceRunnersWindowsApp>
+    </PropertyGroup>
+
+    <!-- Packaged: use the .msix. -->
+    <PropertyGroup Condition="!Exists('$(_DeviceRunnersExePath)') And '$(_DeviceRunnersMsixPath)' != ''">
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersMsixPath)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersWindowsApp>$(_DeviceRunnersMsixPath)</_DeviceRunnersWindowsApp>
+    </PropertyGroup>
+
+    <Error Text="No .exe or .msix found for Windows tests. Build output: '$(OutputPath)'. Make sure the project builds successfully."
+           Condition="'$(_DeviceRunnersWindowsApp)' == ''" />
+    <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersWindowsApp)" />
   </Target>
 
   <!-- ================================================ Phase 2 - Execute tests === -->

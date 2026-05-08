@@ -28,7 +28,6 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=XHarness `
-          -p:WindowsPackageType=MSIX `
           -p:AppxPackageSigningEnabled=true `
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
@@ -37,7 +36,7 @@ runs:
     - name: Run Tests
       shell: powershell
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts","sample" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
         ./scripts/Start-Tests.ps1 `
           -App $msix `
