@@ -41,13 +41,19 @@
     VSTest - invoked by "dotnet test".
 
     Replaces the default VSTest behaviour for device platforms:
-      1. _DeviceRunnersCheckCli  - fail fast if CLI tool is missing.
-      2. Build                   - compile the app (APK / .app / .exe).
-      3. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
+      1. Build                   - compile the app (APK / .app / .exe).
+      2. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
   -->
   <Target Name="VSTest"
-          DependsOnTargets="Build;_DeviceRunnersRunTests"
+          DependsOnTargets="_DeviceRunnersPreBuild;Build;_DeviceRunnersRunTests"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
+
+  <!-- Set properties that Build needs to know about (before Build runs). -->
+  <Target Name="_DeviceRunnersPreBuild">
+    <PropertyGroup>
+      <DeviceRunnersInjectEnvironment>true</DeviceRunnersInjectEnvironment>
+    </PropertyGroup>
+  </Target>
 
   <!-- =[ Orchestrator ]= -->
 
@@ -306,12 +312,16 @@
     _GenerateEnvironmentFiles mechanism. The Mono runtime reads the resulting
     KEY=VALUE file (__environment__.txt) at startup.
 
+    Only runs when DeviceRunnersInjectEnvironment=true, which is set by the
+    _DeviceRunnersPrepareArgs target during dotnet test. A plain dotnet build
+    does not inject these variables.
+
     10.0.2.2 is the Android emulator's gateway address to reach the host machine.
     localhost covers physical devices when port-forwarded or on the same network.
   -->
   <Target Name="_DeviceRunnersAndroidEnvironment"
           BeforeTargets="_GenerateEnvironmentFiles"
-          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(DeviceRunnersInjectEnvironment)' == 'true'">
     <ItemGroup>
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
