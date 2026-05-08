@@ -13,9 +13,12 @@
   -->
   <PropertyGroup>
     <_DeviceRunnersToolsDir>$(MSBuildThisFileDirectory)..\tools\</_DeviceRunnersToolsDir>
-    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('osx'))">osx-arm64</_DeviceRunnersRid>
-    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('windows'))">win-x64</_DeviceRunnersRid>
-    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-x64</_DeviceRunnersRid>
+    <_DeviceRunnersArch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</_DeviceRunnersArch>
+    <_DeviceRunnersArch Condition="'$(_DeviceRunnersArch)' == 'x64'">x64</_DeviceRunnersArch>
+    <_DeviceRunnersArch Condition="'$(_DeviceRunnersArch)' == 'arm64'">arm64</_DeviceRunnersArch>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('osx'))">osx-$(_DeviceRunnersArch)</_DeviceRunnersRid>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('windows'))">win-$(_DeviceRunnersArch)</_DeviceRunnersRid>
+    <_DeviceRunnersRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-$(_DeviceRunnersArch)</_DeviceRunnersRid>
     <_DeviceRunnersExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli.exe</_DeviceRunnersExePath>
     <_DeviceRunnersExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DeviceRunnersToolsDir)$(_DeviceRunnersRid)\DeviceRunners.Cli</_DeviceRunnersExePath>
     <_DeviceRunnersCommand Condition="'$(DeviceRunnersBin)' != ''">$(DeviceRunnersBin)</_DeviceRunnersCommand>

@@ -1,5 +1,5 @@
 name: 'TCP Windows Test'
-description: 'Run TCP-based device tests on Windows (packaged MSIX)'
+description: 'Run TCP-based device tests on Windows'
 
 inputs:
   test-project:
@@ -30,6 +30,7 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
+          -p:WindowsPackageType=None `
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Clean up build artifacts before upload
       if: always()

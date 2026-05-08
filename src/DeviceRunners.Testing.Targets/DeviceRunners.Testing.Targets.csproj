@@ -15,13 +15,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_CliRids>osx-arm64;win-x64;linux-x64</_CliRids>
+    <_CliRids>osx-arm64;osx-x64;win-x64;win-arm64;linux-x64;linux-arm64</_CliRids>
+    <_CliPublishArgs>-f net10.0 -c $(Configuration) -p:SatelliteResourceLanguages=en /nodeReuse:false</_CliPublishArgs>
   </PropertyGroup>
 
   <!--
     Publish DeviceRunners.Cli as a self-contained, trimmed, single-file binary
-    per RID into tools/<rid>/. Each platform gets a native executable (~19 MB)
+    per RID into tools/<rid>/. Each platform gets a native executable (~20 MB)
     that requires no .NET runtime on the host machine.
+
+    /nodeReuse:false prevents file locking between sequential publishes.
 
     When packing the NuGet package, this target runs automatically before GenerateNuspec.
     To populate the tools/ folder for in-repo use without packing:
@@ -29,13 +32,22 @@
   -->
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for osx-arm64..." />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r osx-arm64 -c $(Configuration) -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)osx-arm64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-arm64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)osx-arm64&quot;" />
+
+    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for osx-x64..." />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r osx-x64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)osx-x64&quot;" />
 
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for win-x64..." />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r win-x64 -c $(Configuration) -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)win-x64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r win-x64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)win-x64&quot;" />
+
+    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for win-arm64..." />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r win-arm64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)win-arm64&quot;" />
 
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for linux-x64..." />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r linux-x64 -c $(Configuration) -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)linux-x64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r linux-x64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)linux-x64&quot;" />
+
+    <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for linux-arm64..." />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -r linux-arm64 $(_CliPublishArgs) -o &quot;$(_CliToolsDir)linux-arm64&quot;" />
   </Target>
 
   <!--
