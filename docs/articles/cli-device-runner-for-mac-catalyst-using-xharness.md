@@ -1,6 +1,6 @@
 # Prerequisites
 
-Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XXarness](using-xharness.md) wiki.
+Before running any tests on the CLI, you will need the XHarness .NET tool. For more information as to what that is and what it does, see the [Using XHarness](using-xharness.md) wiki.
 
 # Running Tests
 
