@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using DeviceRunners;
 using DeviceRunners.VisualRunners;
 
@@ -11,12 +13,14 @@ public abstract class TestRunnerTests : IAsyncLifetime
 
 	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
+	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
+
 	protected IReadOnlyList<ITestAssemblyInfo> _testAssemblies = null!;
 	protected VisualTestRunnerConfiguration _options = null!;
 
 	public async Task InitializeAsync()
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		_options = new VisualTestRunnerConfiguration(assemblies);
 
 		var discoverer = CreateTestDiscoverer(_options);

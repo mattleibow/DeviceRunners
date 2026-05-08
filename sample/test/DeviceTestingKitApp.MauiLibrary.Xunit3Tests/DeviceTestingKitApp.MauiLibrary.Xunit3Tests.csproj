@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">INCLUDE_FAILING_TESTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceTestingKitApp.MauiLibrary\DeviceTestingKitApp.MauiLibrary.csproj" />
+  </ItemGroup>
+
+</Project>

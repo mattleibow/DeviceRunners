@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Threading.Channels;
 
 using DeviceRunners;
@@ -16,10 +17,12 @@ public abstract class HomeViewModelTests
 
 	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
+	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
+
 	[Fact]
 	public async Task StartAssemblyScanAsyncCreatesAllTheViewExpectedModels()
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		var options = new VisualTestRunnerConfiguration(assemblies);
 		var discoverer = CreateTestDiscoverer(options);
 		var runner = CreateTestRunner(options);
@@ -41,7 +44,7 @@ public abstract class HomeViewModelTests
 	[InlineData(true, true)]
 	public async Task AutoStartAndAutoTerminateWorkCorrectly(bool autoStart, bool autoTerminate)
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		var options = new VisualTestRunnerConfiguration(assemblies, autoStart, autoTerminate);
 		var discoverer = CreateTestDiscoverer(options);
 		var runner = CreateTestRunner(options);

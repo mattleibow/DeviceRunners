@@ -10,6 +10,7 @@
     <Project Path="sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.Library.NUnitTests/DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.Xunit3Tests/DeviceTestingKitApp.MauiLibrary.Xunit3Tests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DeviceRunners.Cli/DeviceRunners.Cli.csproj" />
@@ -20,6 +21,7 @@
     <Project Path="src/DeviceRunners.VisualRunners.Maui/DeviceRunners.VisualRunners.Maui.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.NUnit/DeviceRunners.VisualRunners.NUnit.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Xunit/DeviceRunners.VisualRunners.Xunit.csproj" />
+    <Project Path="src/DeviceRunners.VisualRunners.Xunit3/DeviceRunners.VisualRunners.Xunit3.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners/DeviceRunners.VisualRunners.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Maui/DeviceRunners.XHarness.Maui.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Xunit/DeviceRunners.XHarness.Xunit.csproj" />
