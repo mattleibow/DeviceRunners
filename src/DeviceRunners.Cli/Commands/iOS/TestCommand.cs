@@ -110,12 +110,13 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             await iOSService.TerminateAppAsync(appIdentifier, targetDevice);
             WriteConsoleOutput($"    Application terminated.", settings);
 
-            // Save device log
+            // Save device log (filtered to app process for managed exception details)
+            var appName = Path.GetFileNameWithoutExtension(settings.App);
             var deviceLogFile = GetDeviceLogFilePath(settings);
             WriteConsoleOutput($"  - Saving device log to: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
             try
             {
-                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, targetDevice);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, targetDevice, processName: appName);
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)
@@ -148,7 +149,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
             try
             {
                 WriteConsoleOutput($"  - Saving device log due to error: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
-                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, settings.Device);
+                await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, settings.Device, processName: Path.GetFileNameWithoutExtension(settings.App));
                 WriteConsoleOutput($"    Device log saved.", settings);
             }
             catch (Exception logEx)

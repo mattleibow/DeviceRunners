@@ -222,7 +222,7 @@ public class iOSService
         }
     }
 
-    public async Task SaveDeviceLogAsync(string outputPath, DateTimeOffset? startDate = null, string? deviceId = null)
+    public async Task SaveDeviceLogAsync(string outputPath, DateTimeOffset? startDate = null, string? deviceId = null, string? processName = null)
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -237,10 +237,12 @@ public class iOSService
 
         try
         {
-            // Use the AppleDev library's GetLogsPlainAsync method
-            var logLines = await _simCtl.GetLogsPlainAsync(targetDevice, start: startDate);
-            
-            // Write the log lines to the output file
+            var predicate = !string.IsNullOrEmpty(processName)
+                ? $"process == \"{processName}\""
+                : null;
+
+            var logLines = await _simCtl.GetLogsPlainAsync(targetDevice, predicate: predicate, start: startDate);
+
             await File.WriteAllLinesAsync(outputPath, logLines);
         }
         catch (Exception ex)
