@@ -8,8 +8,11 @@ namespace VisualRunnerTests.Testing;
 
 public class Xunit3TestDiscovererTests : TestDiscovererTests
 {
-	public override Assembly TestAssembly => typeof(TestProject.Xunit3Tests.Xunit3Tests).Assembly;
+public override Assembly TestAssembly => typeof(TestProject.Xunit3Tests.Xunit3Tests).Assembly;
 
-	public override ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration) =>
-		new Xunit3TestDiscoverer(configuration);
+// xUnit v3 discovers 6 tests (output helper tests not discovered in class library mode)
+public override int ExpectedTestCount => 6;
+
+public override ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration) =>
+new Xunit3TestDiscoverer(configuration);
 }

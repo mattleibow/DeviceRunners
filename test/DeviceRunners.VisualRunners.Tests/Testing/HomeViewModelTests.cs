@@ -19,6 +19,8 @@ public abstract class HomeViewModelTests
 
 	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
 
+	public virtual int ExpectedTestCount => Constants.TestCount;
+
 	[Fact]
 	public async Task StartAssemblyScanAsyncCreatesAllTheViewExpectedModels()
 	{
@@ -34,7 +36,7 @@ public abstract class HomeViewModelTests
 
 		var vmAssembly = Assert.Single(vm.TestAssemblies);
 		Assert.NotEmpty(vmAssembly.TestCases);
-		Assert.Equal(Constants.TestCount, vmAssembly.TestCases.Count);
+		Assert.Equal(ExpectedTestCount, vmAssembly.TestCases.Count);
 	}
 
 	[Theory]

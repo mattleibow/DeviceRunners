@@ -13,6 +13,8 @@ public abstract class TestDiscovererTests
 
 	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
 
+	public virtual int ExpectedTestCount => Constants.TestCount;
+
 	[Fact]
 	public async Task DiscoverAsyncCanFindAllTests()
 	{
@@ -31,7 +33,7 @@ public abstract class TestDiscovererTests
 		var testCases = assemblyInfo.TestCases;
 		Assert.NotNull(testCases);
 		Assert.NotEmpty(testCases);
-		Assert.Equal(Constants.TestCount, testCases.Count);
+		Assert.Equal(ExpectedTestCount, testCases.Count);
 
 		foreach (var test in testCases)
 		{

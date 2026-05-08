@@ -2,19 +2,30 @@ using Xunit;
 
 namespace TestProject.Xunit3Tests;
 
-public class Xunit3TestsWithOutput(ITestOutputHelper output)
+public class Xunit3TestsWithOutput : IDisposable
 {
-	[Fact]
-	public void SimpleTest_Output()
-	{
-		output.WriteLine(Constants.TestOutput);
-	}
+readonly ITestOutputHelper _output;
 
-	[Fact]
-	public void SimpleTest_Output_Failed()
-	{
-		output.WriteLine(Constants.TestOutput);
+public Xunit3TestsWithOutput(ITestOutputHelper output)
+{
+_output = output;
+}
 
-		throw new Exception(Constants.ErrorMessage);
-	}
+public void Dispose()
+{
+}
+
+[Fact]
+public void SimpleTest_Output()
+{
+_output.WriteLine(Constants.TestOutput);
+}
+
+[Fact]
+public void SimpleTest_Output_Failed()
+{
+_output.WriteLine(Constants.TestOutput);
+
+throw new Exception(Constants.ErrorMessage);
+}
 }

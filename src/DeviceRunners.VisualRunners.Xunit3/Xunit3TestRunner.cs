@@ -1,5 +1,6 @@
 using System.Reflection;
 
+using Xunit;
 using Xunit.Runner.Common;
 using Xunit.Sdk;
 using Xunit.v3;
@@ -38,23 +39,18 @@ using (await _executionLock.LockAsync())
 {
 await using var closing = await ResultChannelManagerScope.OpenAsync(_resultChannelManager);
 
-await AsyncUtils.RunAsync(() => RunTests(testAssemblies, cancellationToken));
-}
-}
-
-void RunTests(IEnumerable<ITestAssemblyInfo> testAssemblies, CancellationToken cancellationToken = default)
-{
 var xunit3Assemblies = testAssemblies.OfType<Xunit3TestAssemblyInfo>().ToList();
 if (xunit3Assemblies.Count == 0)
 return;
 
 foreach (var assembly in xunit3Assemblies)
 {
-RunTests(assembly, cancellationToken);
+await RunTests(assembly, cancellationToken);
+}
 }
 }
 
-void RunTests(Xunit3TestAssemblyInfo assemblyInfo, CancellationToken cancellationToken = default)
+async Task RunTests(Xunit3TestAssemblyInfo assemblyInfo, CancellationToken cancellationToken = default)
 {
 if (cancellationToken.IsCancellationRequested)
 return;
@@ -75,6 +71,9 @@ var testCaseLookup = assemblyInfo.TestCases
 
 var testCaseIdsToRun = new HashSet<string>(assemblyInfo.TestCases.Select(tc => tc.TestCaseUniqueID));
 
+// Initialize the xUnit v3 TestContext — required before using ExtensibilityPointFactory
+TestContext.SetForInitialization(diagnosticMessageSink: null, diagnosticMessages: false, internalDiagnosticMessages: false);
+
 var testFramework = ExtensibilityPointFactory.GetTestFramework(assembly);
 
 // Discover to get ITestCase objects, then run selected ones
@@ -84,12 +83,12 @@ var discoveredTestCases = new List<ITestCase>();
 var discoveryOptions = TestFrameworkOptions.ForDiscovery(new TestAssemblyConfiguration());
 discoveryOptions.SetSynchronousMessageReporting(true);
 
-frameworkDiscoverer.Find(testCase =>
+await frameworkDiscoverer.Find(testCase =>
 {
 if (testCaseIdsToRun.Contains(testCase.UniqueID))
 discoveredTestCases.Add(testCase);
 return new ValueTask<bool>(true);
-}, discoveryOptions);
+}, discoveryOptions, cancellationToken: cancellationToken);
 
 if (discoveredTestCases.Count == 0)
 return;

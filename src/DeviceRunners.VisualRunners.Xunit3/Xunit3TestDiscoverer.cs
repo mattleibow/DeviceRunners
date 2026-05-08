@@ -2,6 +2,7 @@ using System.Reflection;
 
 using Microsoft.Extensions.Logging;
 
+using Xunit;
 using Xunit.Runner.Common;
 using Xunit.Sdk;
 using Xunit.v3;
@@ -19,10 +20,7 @@ _diagnosticsManager = diagnosticsManager;
 _testAssemblies = options.TestAssemblies.ToArray();
 }
 
-public Task<IReadOnlyList<ITestAssemblyInfo>> DiscoverAsync(CancellationToken cancellationToken = default) =>
-AsyncUtils.RunAsync(() => Discover(cancellationToken));
-
-IReadOnlyList<ITestAssemblyInfo> Discover(CancellationToken cancellationToken = default)
+public async Task<IReadOnlyList<ITestAssemblyInfo>> DiscoverAsync(CancellationToken cancellationToken = default)
 {
 var result = new List<ITestAssemblyInfo>();
 
@@ -37,6 +35,9 @@ var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
 
 try
 {
+// Initialize the xUnit v3 TestContext — required before using ExtensibilityPointFactory
+TestContext.SetForInitialization(diagnosticMessageSink: null, diagnosticMessages: false, internalDiagnosticMessages: false);
+
 var testFramework = ExtensibilityPointFactory.GetTestFramework(assm);
 var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
 
@@ -45,11 +46,12 @@ var discoveredTestCases = new List<ITestCase>();
 var discoveryOptions = TestFrameworkOptions.ForDiscovery(new TestAssemblyConfiguration());
 discoveryOptions.SetSynchronousMessageReporting(true);
 
-frameworkDiscoverer.Find(testCase =>
+// Find() runs discovery on a ThreadPool thread and returns a ValueTask
+await frameworkDiscoverer.Find(testCase =>
 {
 discoveredTestCases.Add(testCase);
 return new ValueTask<bool>(true);
-}, discoveryOptions);
+}, discoveryOptions, cancellationToken: cancellationToken);
 
 var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName);
 var testCases = discoveredTestCases
