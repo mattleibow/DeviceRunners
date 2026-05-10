@@ -42,7 +42,7 @@ runs:
     - name: Run Tests
       shell: pwsh
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" | Select-Object -First 1).FullName
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" | Where-Object { $_.DirectoryName -match "AppPackages" } | Select-Object -First 1).FullName
         if (-not $msix) { Write-Error "No .msix file found"; exit 1 }
         device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
     - name: Clean up build artifacts before upload

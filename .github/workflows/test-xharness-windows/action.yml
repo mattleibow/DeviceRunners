@@ -36,7 +36,7 @@ runs:
     - name: Run Tests
       shell: powershell
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" | Select-Object -First 1).FullName
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" | Where-Object { $_.DirectoryName -match "AppPackages" } | Select-Object -First 1).FullName
         if (-not $msix) { Write-Error "No .msix file found"; exit 1 }
         ./scripts/Start-Tests.ps1 `
           -App $msix `
