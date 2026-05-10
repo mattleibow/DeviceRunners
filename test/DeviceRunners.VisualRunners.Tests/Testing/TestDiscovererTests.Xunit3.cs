@@ -10,7 +10,6 @@ public class Xunit3TestDiscovererTests : TestDiscovererTests
 {
 public override Assembly TestAssembly => typeof(TestProject.Xunit3Tests.Xunit3Tests).Assembly;
 
-// xUnit v3 discovers 6 tests (output helper tests not discovered in class library mode)
 public override int ExpectedTestCount => 6;
 
 public override ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration) =>

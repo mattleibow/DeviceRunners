@@ -4,118 +4,162 @@ namespace DeviceRunners.VisualRunners.Xunit3;
 
 class Xunit3ExecutionMessageSink : IMessageSink
 {
-	readonly IReadOnlyDictionary<string, Xunit3TestCaseInfo> _testCases;
-	readonly IResultChannelManager? _resultChannelManager;
-	readonly CancellationToken _cancellationToken;
+readonly object _lock = new();
+readonly IReadOnlyDictionary<string, Xunit3TestCaseInfo> _testCases;
+readonly IResultChannelManager? _resultChannelManager;
+readonly IDiagnosticsManager? _diagnosticsManager;
+readonly CancellationToken _cancellationToken;
 
-	// Cache test metadata for mapping results
-	readonly Dictionary<string, string> _testUniqueIdToTestCaseId = new();
-	readonly Dictionary<string, (TimeSpan Duration, string? Output)> _testFinishedData = new();
+readonly Dictionary<string, string> _testUniqueIdToTestCaseId = new();
+readonly Dictionary<string, (TimeSpan Duration, string? Output)> _testFinishedData = new();
+readonly Dictionary<string, (TestResultStatus Status, string? ErrorMessage, string? ErrorStackTrace, string? SkipReason)> _pendingResults = new();
 
-	public Xunit3ExecutionMessageSink(
-		IReadOnlyDictionary<string, Xunit3TestCaseInfo> testCases,
-		IResultChannelManager? resultChannelManager,
-		CancellationToken cancellationToken = default)
-	{
-		_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
-		_resultChannelManager = resultChannelManager;
-		_cancellationToken = cancellationToken;
-	}
+public Xunit3ExecutionMessageSink(
+IReadOnlyDictionary<string, Xunit3TestCaseInfo> testCases,
+IResultChannelManager? resultChannelManager,
+IDiagnosticsManager? diagnosticsManager = null,
+CancellationToken cancellationToken = default)
+{
+_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
+_resultChannelManager = resultChannelManager;
+_diagnosticsManager = diagnosticsManager;
+_cancellationToken = cancellationToken;
+}
 
-	public ManualResetEventSlim Finished { get; } = new(false);
+public ManualResetEventSlim Finished { get; } = new(false);
 
-	public bool OnMessage(IMessageSinkMessage message)
-	{
-		switch (message)
-		{
-			case ITestStarting testStarting:
-				// Map test unique ID to test case unique ID for result matching
-				_testUniqueIdToTestCaseId[testStarting.TestUniqueID] = testStarting.TestCaseUniqueID;
-				break;
+public bool OnMessage(IMessageSinkMessage message)
+{
+lock (_lock)
+{
+switch (message)
+{
+case ITestStarting testStarting:
+_testUniqueIdToTestCaseId[testStarting.TestUniqueID] = testStarting.TestCaseUniqueID;
+break;
 
-			case ITestPassed testPassed:
-				RecordResult(testPassed.TestUniqueID, TestResultStatus.Passed);
-				break;
+case ITestPassed testPassed:
+RecordResult(testPassed.TestUniqueID, TestResultStatus.Passed);
+break;
 
-			case ITestFailed testFailed:
-				RecordResult(testFailed.TestUniqueID, TestResultStatus.Failed,
-					errorMessage: CombineMessages(testFailed),
-					errorStackTrace: CombineStackTraces(testFailed));
-				break;
+case ITestFailed testFailed:
+RecordResult(testFailed.TestUniqueID, TestResultStatus.Failed,
+errorMessage: CombineMessages(testFailed),
+errorStackTrace: CombineStackTraces(testFailed));
+break;
 
-			case ITestSkipped testSkipped:
-				RecordResult(testSkipped.TestUniqueID, TestResultStatus.Skipped,
-					skipReason: testSkipped.Reason);
-				break;
+case ITestSkipped testSkipped:
+RecordResult(testSkipped.TestUniqueID, TestResultStatus.Skipped,
+skipReason: testSkipped.Reason);
+break;
 
-			case ITestNotRun testNotRun:
-				RecordResult(testNotRun.TestUniqueID, TestResultStatus.NotRun);
-				break;
+case ITestNotRun:
+RecordResult(((ITestNotRun)message).TestUniqueID, TestResultStatus.NotRun);
+break;
 
-			case ITestFinished testFinished:
-				_testFinishedData[testFinished.TestUniqueID] = (
-					TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
-					testFinished.Output);
-				FlushResult(testFinished.TestUniqueID);
-				break;
+case ITestFinished testFinished:
+_testFinishedData[testFinished.TestUniqueID] = (
+TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
+testFinished.Output);
+FlushResult(testFinished.TestUniqueID);
+break;
 
-			case ITestAssemblyFinished:
-				Finished.Set();
-				break;
-		}
+// Handle framework-level errors
+case IErrorMessage errorMessage:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Framework error: {string.Join(Environment.NewLine, errorMessage.Messages)}");
+break;
 
-		return !_cancellationToken.IsCancellationRequested;
-	}
+case ITestAssemblyCleanupFailure cleanupFailure:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Test assembly cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+break;
 
-	// Pending results that haven't been flushed yet (waiting for ITestFinished)
-	readonly Dictionary<string, (TestResultStatus Status, string? ErrorMessage, string? ErrorStackTrace, string? SkipReason)> _pendingResults = new();
+case ITestCollectionCleanupFailure cleanupFailure:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Test collection cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+break;
 
-	void RecordResult(string testUniqueID, TestResultStatus status, string? errorMessage = null, string? errorStackTrace = null, string? skipReason = null)
-	{
-		_pendingResults[testUniqueID] = (status, errorMessage, errorStackTrace, skipReason);
-	}
+case ITestClassCleanupFailure cleanupFailure:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Test class cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+break;
 
-	void FlushResult(string testUniqueID)
-	{
-		if (!_pendingResults.TryGetValue(testUniqueID, out var pending))
-			return;
+case ITestCaseCleanupFailure cleanupFailure:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Test case cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+break;
 
-		_pendingResults.Remove(testUniqueID);
+case ITestCleanupFailure cleanupFailure:
+_diagnosticsManager?.PostDiagnosticMessage(
+$"Test cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+break;
 
-		if (!_testUniqueIdToTestCaseId.TryGetValue(testUniqueID, out var testCaseUniqueID))
-			return;
+case ITestAssemblyFinished:
+// Flush any remaining pending results that never got ITestFinished
+FlushRemainingResults();
+Finished.Set();
+break;
+}
+}
 
-		if (!_testCases.TryGetValue(testCaseUniqueID, out var testCase))
-			return;
+return !_cancellationToken.IsCancellationRequested;
+}
 
-		var finishedData = _testFinishedData.GetValueOrDefault(testUniqueID);
+void RecordResult(string testUniqueID, TestResultStatus status, string? errorMessage = null, string? errorStackTrace = null, string? skipReason = null)
+{
+_pendingResults[testUniqueID] = (status, errorMessage, errorStackTrace, skipReason);
+}
 
-		var result = new Xunit3TestResultInfo(
-			testCase,
-			pending.Status,
-			finishedData.Duration,
-			output: finishedData.Output,
-			errorMessage: pending.ErrorMessage,
-			errorStackTrace: pending.ErrorStackTrace,
-			skipReason: pending.SkipReason);
+void FlushResult(string testUniqueID)
+{
+if (!_pendingResults.TryGetValue(testUniqueID, out var pending))
+return;
 
-		testCase.ReportResult(result);
-		_resultChannelManager?.RecordResult(result);
-	}
+_pendingResults.Remove(testUniqueID);
 
-	static string? CombineMessages(ITestFailed failure)
-	{
-		if (failure.Messages.Length == 0)
-			return null;
+if (!_testUniqueIdToTestCaseId.TryGetValue(testUniqueID, out var testCaseUniqueID))
+return;
 
-		return string.Join(Environment.NewLine, failure.Messages);
-	}
+if (!_testCases.TryGetValue(testCaseUniqueID, out var testCase))
+return;
 
-	static string? CombineStackTraces(ITestFailed failure)
-	{
-		if (failure.StackTraces.Length == 0)
-			return null;
+var finishedData = _testFinishedData.GetValueOrDefault(testUniqueID);
 
-		return string.Join(Environment.NewLine + "--- End of stack trace from previous exception ---" + Environment.NewLine, failure.StackTraces.Where(s => s is not null));
-	}
+var result = new Xunit3TestResultInfo(
+testCase,
+pending.Status,
+finishedData.Duration,
+output: finishedData.Output,
+errorMessage: pending.ErrorMessage,
+errorStackTrace: pending.ErrorStackTrace,
+skipReason: pending.SkipReason);
+
+testCase.ReportResult(result);
+_resultChannelManager?.RecordResult(result);
+}
+
+void FlushRemainingResults()
+{
+foreach (var testUniqueID in _pendingResults.Keys.ToList())
+{
+FlushResult(testUniqueID);
+}
+}
+
+static string? CombineMessages(ITestFailed failure)
+{
+if (failure.Messages.Length == 0)
+return null;
+
+return string.Join(Environment.NewLine, failure.Messages);
+}
+
+static string? CombineStackTraces(ITestFailed failure)
+{
+if (failure.StackTraces.Length == 0)
+return null;
+
+return string.Join(Environment.NewLine + "--- End of stack trace from previous exception ---" + Environment.NewLine, failure.StackTraces.Where(s => s is not null));
+}
 }

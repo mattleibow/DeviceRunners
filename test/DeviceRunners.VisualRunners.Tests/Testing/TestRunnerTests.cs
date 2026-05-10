@@ -65,11 +65,21 @@ public abstract class TestRunnerTests : IAsyncLifetime
 		AssertTestResult(simpleTest);
 	}
 
+	public virtual bool SupportsOutputCapture => true;
+
 	[Fact]
 	public async Task RunTestsAsyncCanCaptureOutput()
 	{
 		var testAssembly = _testAssemblies[0];
 		var simpleTests = testAssembly.TestCases.Where(tc => tc.DisplayName.Contains("_Output")).ToList();
+
+		if (!SupportsOutputCapture)
+		{
+			Assert.Empty(simpleTests);
+			return;
+		}
+
+		Assert.NotEmpty(simpleTests);
 
 		var runner = CreateTestRunner(_options);
 		await runner.RunTestsAsync(simpleTests);

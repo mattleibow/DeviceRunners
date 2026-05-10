@@ -11,75 +11,92 @@ namespace DeviceRunners.VisualRunners.Xunit3;
 
 public class Xunit3TestDiscoverer : ITestDiscoverer
 {
-	readonly IDiagnosticsManager? _diagnosticsManager;
-	readonly IReadOnlyList<Assembly> _testAssemblies;
+readonly IDiagnosticsManager? _diagnosticsManager;
+readonly IReadOnlyList<Assembly> _testAssemblies;
 
-	public Xunit3TestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null, ILogger<Xunit3TestDiscoverer>? logger = null)
-	{
-		_diagnosticsManager = diagnosticsManager;
-		_testAssemblies = options.TestAssemblies.ToArray();
-	}
+public Xunit3TestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null, ILogger<Xunit3TestDiscoverer>? logger = null)
+{
+_diagnosticsManager = diagnosticsManager;
+_testAssemblies = options.TestAssemblies.ToArray();
+}
 
-	public async Task<IReadOnlyList<ITestAssemblyInfo>> DiscoverAsync(CancellationToken cancellationToken = default)
-	{
-		var result = new List<ITestAssemblyInfo>();
+public async Task<IReadOnlyList<ITestAssemblyInfo>> DiscoverAsync(CancellationToken cancellationToken = default)
+{
+var result = new List<ITestAssemblyInfo>();
 
-		try
-		{
-			foreach (var assm in _testAssemblies)
-			{
-				if (cancellationToken.IsCancellationRequested)
-					break;
+try
+{
+foreach (var assm in _testAssemblies)
+{
+if (cancellationToken.IsCancellationRequested)
+break;
 
-				var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
+var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
 
-				try
-				{
-					// Initialize the xUnit v3 TestContext — required before using ExtensibilityPointFactory
-					TestContext.SetForInitialization(diagnosticMessageSink: null, diagnosticMessages: false, internalDiagnosticMessages: false);
+try
+{
+// Wire diagnostic sink so xUnit framework errors are forwarded to IDiagnosticsManager
+var diagnosticSink = CreateDiagnosticSink(assemblyFileName);
+var hasDiagnostics = diagnosticSink is not null;
 
-					var testFramework = ExtensibilityPointFactory.GetTestFramework(assm);
-					var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
+TestContext.SetForInitialization(
+diagnosticMessageSink: diagnosticSink,
+diagnosticMessages: hasDiagnostics,
+internalDiagnosticMessages: hasDiagnostics);
 
-					var discoveredTestCases = new List<ITestCase>();
+var testFramework = ExtensibilityPointFactory.GetTestFramework(assm);
+await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
-					var discoveryOptions = TestFrameworkOptions.ForDiscovery(new TestAssemblyConfiguration());
-					discoveryOptions.SetSynchronousMessageReporting(true);
+var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
 
-					// Find() runs discovery on a ThreadPool thread and returns a ValueTask
-					await frameworkDiscoverer.Find(testCase =>
-					{
-						discoveredTestCases.Add(testCase);
-						return new ValueTask<bool>(true);
-					}, discoveryOptions, cancellationToken: cancellationToken);
+var discoveredTestCases = new List<ITestCase>();
 
-					var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName);
-					var testCases = discoveredTestCases
-					.Select(tc => new Xunit3TestCaseInfo(
-					testAssembly,
-					tc.UniqueID,
-					tc.TestCaseDisplayName,
-					tc.TestClassName,
-					tc.TestMethodName))
-					.ToList();
+var discoveryOptions = TestFrameworkOptions.ForDiscovery(new TestAssemblyConfiguration());
+discoveryOptions.SetSynchronousMessageReporting(true);
 
-					if (testCases.Count > 0)
-					{
-						testAssembly.TestCases.AddRange(testCases);
-						result.Add(testAssembly);
-					}
-				}
-				catch (Exception ex)
-				{
-					_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests: '{ex.Message}'{Environment.NewLine}{ex}");
-		}
+await frameworkDiscoverer.Find(testCase =>
+{
+discoveredTestCases.Add(testCase);
+return new ValueTask<bool>(true);
+}, discoveryOptions, cancellationToken: cancellationToken);
 
-		return result;
-	}
+var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName);
+var testCases = discoveredTestCases
+.Select(tc => new Xunit3TestCaseInfo(
+testAssembly,
+tc.UniqueID,
+tc.TestCaseDisplayName,
+tc.TestClassName,
+tc.TestMethodName))
+.ToList();
+
+if (testCases.Count > 0)
+{
+testAssembly.TestCases.AddRange(testCases);
+result.Add(testAssembly);
+}
+}
+catch (Exception ex)
+{
+_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+}
+}
+}
+catch (Exception ex)
+{
+_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests: '{ex.Message}'{Environment.NewLine}{ex}");
+}
+
+return result;
+}
+
+Xunit3DiagnosticMessageSink? CreateDiagnosticSink(string assemblyFileName)
+{
+if (_diagnosticsManager is null)
+return null;
+
+return new Xunit3DiagnosticMessageSink(
+d => _diagnosticsManager.PostDiagnosticMessage(d),
+Path.GetFileNameWithoutExtension(assemblyFileName));
+}
 }
