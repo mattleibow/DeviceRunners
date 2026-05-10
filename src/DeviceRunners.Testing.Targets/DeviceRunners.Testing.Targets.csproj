@@ -16,7 +16,7 @@
 
   <PropertyGroup>
     <_CliRids>osx-arm64;osx-x64;win-x64;win-arm64;linux-x64;linux-arm64</_CliRids>
-    <_CliPublishArgs>-f net10.0 -c $(Configuration) -p:SatelliteResourceLanguages=en /nodeReuse:false</_CliPublishArgs>
+    <_CliPublishArgs>-f net10.0 -c $(Configuration) --self-contained -p:PublishSingleFile=true -p:SatelliteResourceLanguages=en /nodeReuse:false</_CliPublishArgs>
   </PropertyGroup>
 
   <!--
