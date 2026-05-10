@@ -29,6 +29,7 @@ runs:
         dotnet test ${{ inputs.test-project }} `
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
+          -p:WindowsPackageType=None `
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Upload Artifacts
       if: always()
