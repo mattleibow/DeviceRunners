@@ -17,6 +17,7 @@
     <Project Path="src/DeviceRunners.Core/DeviceRunners.Core.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Maui/DeviceRunners.UITesting.Maui.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Xunit/DeviceRunners.UITesting.Xunit.csproj" />
+    <Project Path="src/DeviceRunners.UITesting.Xunit3/DeviceRunners.UITesting.Xunit3.csproj" />
     <Project Path="src/DeviceRunners.UITesting/DeviceRunners.UITesting.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Maui/DeviceRunners.VisualRunners.Maui.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.NUnit/DeviceRunners.VisualRunners.NUnit.csproj" />

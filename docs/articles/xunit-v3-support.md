@@ -110,10 +110,32 @@ All execution happens in-process on the device — no separate test process is l
 
 ## Current Limitations
 
-- **Configuration files**: `xunit.runner.json` configuration files are not currently loaded. Default xUnit v3 settings are used. This is planned for a future release.
-- **XHarness**: xUnit v3 XHarness integration is not yet available (no official XHarness v3 packages)
 - **Test Explorer**: Device test projects using xUnit v3 cannot be run via `dotnet test` or Visual Studio Test Explorer (this is a fundamental xUnit v3 architecture limitation for device testing)
-- **UI Testing**: xUnit v3 UI testing integration (`DeviceRunners.UITesting.Xunit3`) is planned for a future release
+
+## UI Testing
+
+DeviceRunners also provides `[UIFact]` and `[UITheory]` attributes for xUnit v3 via the `DeviceRunners.UITesting.Xunit3` package. These work the same as their xUnit v2 counterparts — test methods decorated with these attributes will be dispatched to the UI thread for execution.
+
+```csharp
+using Xunit;
+
+public class MyUITests
+{
+    [UIFact]
+    public void TestOnUIThread()
+    {
+        // This runs on the UI thread
+    }
+
+    [UITheory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void TheoryOnUIThread(int value)
+    {
+        // This also runs on the UI thread
+    }
+}
+```
 
 ## Differences from xUnit v2
 
@@ -124,5 +146,6 @@ All execution happens in-process on the device — no separate test process is l
 | Test execution API | `XunitFrontController.RunTests()` | `ITestFrameworkExecutor.RunTestCases()` |
 | Message handling | Event-based `TestMessageSink` | `IMessageSink.OnMessage()` |
 | Selective execution | `ITestCase` object references | Re-discover + filter by unique ID |
-| Configuration | Loads `xunit.runner.json` | Default configuration (file loading planned) |
+| Configuration | Loads `xunit.runner.json` | Loads `xunit.runner.json` |
+| UI testing attributes | `DeviceRunners.UITesting.Xunit` | `DeviceRunners.UITesting.Xunit3` |
 | `IAsyncLifetime` | Returns `Task` | Returns `ValueTask` |

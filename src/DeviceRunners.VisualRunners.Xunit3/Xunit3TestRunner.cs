@@ -71,7 +71,6 @@ var testCaseLookup = assemblyInfo.TestCases
 
 var testCaseIdsToRun = new HashSet<string>(assemblyInfo.TestCases.Select(tc => tc.TestCaseUniqueID));
 
-// Wire diagnostic sink so xUnit framework errors are forwarded to IDiagnosticsManager
 Xunit3DiagnosticMessageSink? diagnosticSink = null;
 if (_diagnosticsManager is not null)
 {
@@ -89,11 +88,14 @@ internalDiagnosticMessages: hasDiagnostics);
 var testFramework = ExtensibilityPointFactory.GetTestFramework(assembly);
 await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
+// Use configuration from discovery if available
+var configuration = assemblyInfo.Configuration;
+
 // Discover to get ITestCase objects, then run selected ones
 var frameworkDiscoverer = testFramework.GetDiscoverer(assembly);
 var discoveredTestCases = new List<ITestCase>();
 
-var discoveryOptions = TestFrameworkOptions.ForDiscovery(new TestAssemblyConfiguration());
+var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 discoveryOptions.SetSynchronousMessageReporting(true);
 
 await frameworkDiscoverer.Find(testCase =>
@@ -108,7 +110,7 @@ return;
 
 var executor = testFramework.GetExecutor(assembly);
 
-var executionOptions = TestFrameworkOptions.ForExecution(new TestAssemblyConfiguration());
+var executionOptions = TestFrameworkOptions.ForExecution(configuration);
 executionOptions.SetSynchronousMessageReporting(true);
 
 var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);

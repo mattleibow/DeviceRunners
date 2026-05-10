@@ -55,6 +55,7 @@
     <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.Xunit3Tests\DeviceTestingKitApp.MauiLibrary.Xunit3Tests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.Library.NUnitTests\DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit3\DeviceRunners.UITesting.Xunit3.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
