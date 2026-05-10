@@ -97,6 +97,7 @@ var discoveredTestCases = new List<ITestCase>();
 
 var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 discoveryOptions.SetSynchronousMessageReporting(true);
+discoveryOptions.SetPreEnumerateTheories(true);
 
 await frameworkDiscoverer.Find(testCase =>
 {
