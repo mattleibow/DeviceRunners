@@ -23,7 +23,8 @@
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
-                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">
     <VSTestTargets Condition="'$(VSTestTargets)' == ''">$(MSBuildThisFileDirectory)DeviceRunners.Testing.Targets.VSTest.targets.disabled</VSTestTargets>
     <!--
       Skip the default VSTest build step — our custom VSTest target already has
@@ -59,6 +60,12 @@
          UseArtifactsOutput=true, otherwise to $(MSBuildProjectDirectory)\test-results. -->
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ArtifactsPath)'))test-results\</TestResultsDirectory>
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
+
+    <!-- WASM: test execution timeout in seconds (default 5 minutes). -->
+    <DeviceRunnersWasmTimeout Condition="'$(DeviceRunnersWasmTimeout)' == ''">300</DeviceRunnersWasmTimeout>
+
+    <!-- WASM: browser to use for test execution (chromium, firefox, webkit). -->
+    <DeviceRunnersWasmBrowser Condition="'$(DeviceRunnersWasmBrowser)' == ''" />
   </PropertyGroup>
 
   <!--

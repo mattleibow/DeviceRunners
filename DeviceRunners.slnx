@@ -10,6 +10,7 @@
     <Project Path="sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.Library.NUnitTests/DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DeviceRunners.Cli/DeviceRunners.Cli.csproj" />

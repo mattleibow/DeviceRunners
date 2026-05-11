@@ -35,7 +35,8 @@
     <_DeviceRunnersIsSupportedPlatform Condition="'$(_DeviceRunnersPlatform)' == 'android'
                                                Or '$(_DeviceRunnersPlatform)' == 'ios'
                                                Or '$(_DeviceRunnersPlatform)' == 'maccatalyst'
-                                               Or '$(_DeviceRunnersPlatform)' == 'windows'">true</_DeviceRunnersIsSupportedPlatform>
+                                               Or '$(_DeviceRunnersPlatform)' == 'windows'
+                                               Or '$(_DeviceRunnersPlatform)' == 'browser'">true</_DeviceRunnersIsSupportedPlatform>
   </PropertyGroup>
 
   <!-- =[ Entry point ]= -->
@@ -76,7 +77,7 @@
     Properties set here flow into _DeviceRunnersExecTests and _DeviceRunnersReportResults.
   -->
   <Target Name="_DeviceRunnersPrepareArgs"
-          DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs" />
+          DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs;_DeviceRunnersWasmArgs" />
 
   <!--
     Shared setup: TRX output path, results directory, optional device flag,
@@ -168,6 +169,34 @@
       <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsApp)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersWindowsApp)" />
+  </Target>
+
+  <!-- =[ WASM (browser) args ]= -->
+
+  <!--
+    For browser WASM projects, "dotnet test" publishes the app then invokes
+    the CLI's "wasm test" command which starts a web server, launches a
+    headless browser, captures console output (NDJSON), and produces TRX.
+    
+    The publish output is at $(PublishDir) which contains the wwwroot/ with
+    index.html, the .wasm/.dll files, and the Blazor framework files.
+  -->
+  <Target Name="_DeviceRunnersWasmArgs"
+          Condition="'$(_DeviceRunnersPlatform)' == 'browser'"
+          DependsOnTargets="Publish">
+    <PropertyGroup>
+      <!-- Look for wwwroot inside publish output; if not found, use publish dir directly -->
+      <_DeviceRunnersWasmDir Condition="Exists('$(PublishDir)wwwroot')">$(PublishDir)wwwroot</_DeviceRunnersWasmDir>
+      <_DeviceRunnersWasmDir Condition="'$(_DeviceRunnersWasmDir)' == ''">$(PublishDir)</_DeviceRunnersWasmDir>
+    </PropertyGroup>
+    <Error Text="Published WASM output not found at '$(PublishDir)'. Make sure the project publishes successfully."
+           Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
+    <PropertyGroup>
+      <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --logger &quot;trx;LogFileName=test-results.trx&quot; --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersCliArgs Condition="'$(DeviceRunnersWasmBrowser)' != ''">$(_DeviceRunnersCliArgs) --browser &quot;$(DeviceRunnersWasmBrowser)&quot;</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>
 
   <!-- =[ Phase 2: Execute tests ]= -->
