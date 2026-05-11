@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\DeviceRunners.Core\DeviceRunners.Core.csproj" />
     <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
   </ItemGroup>

@@ -1,4 +1,5 @@
 @using System.ComponentModel
+@using System.Collections.Specialized
 
 @implements IDisposable
 
@@ -74,13 +75,14 @@
     protected override void OnInitialized()
     {
         Assembly.PropertyChanged += OnPropertyChanged;
-        Assembly.TestCases.CollectionChanged += OnCollectionChanged;
+        if (Assembly.TestCases is INotifyCollectionChanged ncc)
+            ncc.CollectionChanged += OnCollectionChanged;
     }
 
     void OnPropertyChanged(object? sender, PropertyChangedEventArgs e) =>
         InvokeAsync(StateHasChanged);
 
-    void OnCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+    void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) =>
         InvokeAsync(StateHasChanged);
 
     void RunAll() =>
@@ -113,6 +115,7 @@
     public void Dispose()
     {
         Assembly.PropertyChanged -= OnPropertyChanged;
-        Assembly.TestCases.CollectionChanged -= OnCollectionChanged;
+        if (Assembly.TestCases is INotifyCollectionChanged ncc)
+            ncc.CollectionChanged -= OnCollectionChanged;
     }
 }
