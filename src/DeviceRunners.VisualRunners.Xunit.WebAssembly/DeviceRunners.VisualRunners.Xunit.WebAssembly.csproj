@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-browser;net10.0-browser</TargetFrameworks>
+    <RootNamespace>DeviceRunners.VisualRunners.Xunit</RootNamespace>
+    <Description>Xunit v2 test runner plugin for browser WebAssembly environments.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.utility" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.VisualRunners.WebAssembly\DeviceRunners.VisualRunners.WebAssembly.csproj" />
+  </ItemGroup>
+
+</Project>
