@@ -1,0 +1,118 @@
+@using System.ComponentModel
+
+@implements IDisposable
+
+<div class="dr-assembly-page">
+    <div class="dr-header">
+        <button class="dr-btn dr-btn-back" @onclick="GoBack">← Back</button>
+        <h2>@Assembly.DisplayName</h2>
+        <div class="dr-actions">
+            <button class="dr-btn dr-btn-primary" @onclick="RunAll" disabled="@Assembly.IsBusy">
+                @if (Assembly.IsBusy)
+                {
+                    <span>Running...</span>
+                }
+                else
+                {
+                    <span>Run All</span>
+                }
+            </button>
+            <button class="dr-btn dr-btn-secondary" @onclick="RunFiltered" disabled="@Assembly.IsBusy">
+                Run Filtered
+            </button>
+        </div>
+    </div>
+
+    <div class="dr-assembly-summary">
+        <span class="dr-stat dr-stat-passed">✓ @Assembly.Passed</span>
+        <span class="dr-stat dr-stat-failed">✗ @Assembly.Failed</span>
+        <span class="dr-stat dr-stat-skipped">⊘ @Assembly.Skipped</span>
+        <span class="dr-stat dr-stat-notrun">○ @Assembly.NotRun</span>
+    </div>
+
+    <div class="dr-search">
+        <input type="text" class="dr-search-input" placeholder="Filter tests..."
+               value="@Assembly.SearchQuery"
+               @oninput="OnSearchChanged" />
+    </div>
+
+    <div class="dr-filter-bar">
+        <button class="dr-filter-btn @(Assembly.ResultFilter == TestState.All ? "active" : "")" @onclick="() => SetFilter(TestState.All)">All</button>
+        <button class="dr-filter-btn @(Assembly.ResultFilter == TestState.Passed ? "active" : "")" @onclick="() => SetFilter(TestState.Passed)">Passed</button>
+        <button class="dr-filter-btn @(Assembly.ResultFilter == TestState.Failed ? "active" : "")" @onclick="() => SetFilter(TestState.Failed)">Failed</button>
+        <button class="dr-filter-btn @(Assembly.ResultFilter == TestState.Skipped ? "active" : "")" @onclick="() => SetFilter(TestState.Skipped)">Skipped</button>
+        <button class="dr-filter-btn @(Assembly.ResultFilter == TestState.NotRun ? "active" : "")" @onclick="() => SetFilter(TestState.NotRun)">Not Run</button>
+    </div>
+
+    <div class="dr-test-list">
+        @foreach (var testCase in Assembly.TestCases)
+        {
+            <div class="dr-test-item @GetTestStatusClass(testCase)" @onclick="() => SelectTest(testCase)">
+                <div class="dr-test-name">@testCase.DisplayName</div>
+                <div class="dr-test-status">
+                    <StatusBadge Status="testCase.ResultStatus" />
+                    @if (testCase.Message is not null)
+                    {
+                        <span class="dr-test-message">@testCase.Message</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public TestAssemblyViewModel Assembly { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnBackRequested { get; set; }
+
+    [Parameter]
+    public EventCallback<TestCaseViewModel> OnTestSelected { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Assembly.PropertyChanged += OnPropertyChanged;
+        Assembly.TestCases.CollectionChanged += OnCollectionChanged;
+    }
+
+    void OnPropertyChanged(object? sender, PropertyChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    void OnCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    void RunAll() =>
+        Assembly.RunAllTestsCommand.Execute(null);
+
+    void RunFiltered() =>
+        Assembly.RunFilteredTestsCommand.Execute(null);
+
+    void OnSearchChanged(ChangeEventArgs e) =>
+        Assembly.SearchQuery = e.Value?.ToString() ?? string.Empty;
+
+    void SetFilter(TestState state) =>
+        Assembly.ResultFilter = state;
+
+    async Task GoBack() =>
+        await OnBackRequested.InvokeAsync();
+
+    async Task SelectTest(TestCaseViewModel testCase) =>
+        await OnTestSelected.InvokeAsync(testCase);
+
+    static string GetTestStatusClass(TestCaseViewModel testCase) =>
+        testCase.ResultStatus switch
+        {
+            TestResultStatus.Passed => "dr-status-passed",
+            TestResultStatus.Failed => "dr-status-failed",
+            TestResultStatus.Skipped => "dr-status-skipped",
+            _ => "dr-status-notrun",
+        };
+
+    public void Dispose()
+    {
+        Assembly.PropertyChanged -= OnPropertyChanged;
+        Assembly.TestCases.CollectionChanged -= OnCollectionChanged;
+    }
+}

@@ -23,6 +23,7 @@
     <Project Path="src/DeviceRunners.VisualRunners.NUnit/DeviceRunners.VisualRunners.NUnit.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Xunit/DeviceRunners.VisualRunners.Xunit.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners/DeviceRunners.VisualRunners.csproj" />
+    <Project Path="src/DeviceRunners.VisualRunners.Blazor/DeviceRunners.VisualRunners.Blazor.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.WebAssembly/DeviceRunners.VisualRunners.WebAssembly.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Maui/DeviceRunners.XHarness.Maui.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Xunit/DeviceRunners.XHarness.Xunit.csproj" />
