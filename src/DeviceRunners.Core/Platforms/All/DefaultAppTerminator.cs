@@ -1,6 +1,6 @@
 namespace DeviceRunners.Core;
 
-#if !ANDROID && !IOS && !MACCATALYST && !WINDOWS
+#if !ANDROID && !IOS && !MACCATALYST && !WINDOWS && !BROWSER
 
 public class DefaultAppTerminator : IAppTerminator
 {
