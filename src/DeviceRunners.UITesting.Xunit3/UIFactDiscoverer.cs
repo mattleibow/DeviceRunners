@@ -4,33 +4,33 @@ using Xunit.v3;
 namespace DeviceRunners.UITesting.Xunit3;
 
 /// <summary>
-/// Custom discoverer for <see cref="UIFactAttribute"/> that creates test cases
-/// which execute test methods on the UI thread.
+/// Custom discoverer for <see cref="UIFactAttribute"/> that creates <see cref="UITestCase"/>
+/// instances which execute test methods on the UI thread.
+/// Derives from xUnit v3's <see cref="FactDiscoverer"/> to inherit all validation
+/// (parameter checks, generic method checks) and trait handling.
 /// </summary>
-public class UIFactDiscoverer : IXunitTestCaseDiscoverer
+public class UIFactDiscoverer : FactDiscoverer
 {
-	public ValueTask<IReadOnlyCollection<IXunitTestCase>> Discover(
-		ITestFrameworkDiscoveryOptions discoveryOptions,
-		IXunitTestMethod testMethod,
-		IFactAttribute factAttribute)
-	{
-		var details = TestIntrospectionHelper.GetTestCaseDetails(discoveryOptions, testMethod, factAttribute);
+protected override IXunitTestCase CreateTestCase(
+ITestFrameworkDiscoveryOptions discoveryOptions,
+IXunitTestMethod testMethod,
+IFactAttribute factAttribute)
+{
+var details = TestIntrospectionHelper.GetTestCaseDetails(discoveryOptions, testMethod, factAttribute);
 
-		return new(
-		[
-			new UITestCase(
-				details.ResolvedTestMethod,
-				details.TestCaseDisplayName,
-				details.UniqueID,
-				details.Explicit,
-				details.SkipExceptions,
-				details.SkipReason,
-				details.SkipType,
-				details.SkipUnless,
-				details.SkipWhen,
-				sourceFilePath: details.SourceFilePath,
-				sourceLineNumber: details.SourceLineNumber,
-				timeout: details.Timeout)
-		]);
-	}
+return new UITestCase(
+details.ResolvedTestMethod,
+details.TestCaseDisplayName,
+details.UniqueID,
+details.Explicit,
+details.SkipExceptions,
+details.SkipReason,
+details.SkipType,
+details.SkipUnless,
+details.SkipWhen,
+TraitsHelper.ToReadWrite(testMethod.Traits),
+sourceFilePath: details.SourceFilePath,
+sourceLineNumber: details.SourceLineNumber,
+timeout: details.Timeout);
+}
 }
