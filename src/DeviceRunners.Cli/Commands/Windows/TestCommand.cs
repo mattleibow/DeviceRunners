@@ -26,10 +26,16 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 			WriteConsoleOutput($"[blue]PREPARATION[/]", settings);
 			WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
-			// Check if this is an unpackaged app (.exe) or packaged app (.msix)
+			// Check if this is an unpackaged app (.exe), loose MSIX layout (folder/manifest), or packaged app (.msix)
 			if (string.IsNullOrEmpty(settings.App))
 			{
 				throw new ArgumentException("Application path is required. Use --app to specify the path to your application.");
+			}
+
+			var looseLayout = WinAppService.ResolveLooseLayout(settings.App);
+			if (looseLayout.HasValue)
+			{
+				return await ExecuteLoosePackagedApp(settings, looseLayout.Value.inputFolder, looseLayout.Value.manifestPath);
 			}
 
 			var extension = Path.GetExtension(settings.App).ToLowerInvariant();
@@ -140,6 +146,94 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 		WriteResult(result, settings);
 
 		// Exit codes: 0 = success, 1 = test failures, 2 = app crashed
+		return listener.ToExitCode();
+	}
+
+	private async Task<int> ExecuteLoosePackagedApp(Settings settings, string inputFolder, string manifestPath)
+	{
+		var winAppService = new WinAppService();
+
+		WriteConsoleOutput($"  - Loose MSIX layout detected.", settings);
+		WriteConsoleOutput($"    Input folder: '[green]{Markup.Escape(inputFolder)}[/]'", settings);
+		WriteConsoleOutput($"    Manifest:     '[green]{Markup.Escape(manifestPath)}[/]'", settings);
+
+		WriteConsoleOutput($"", settings);
+		WriteConsoleOutput($"[blue]============================================================[/]", settings);
+		WriteConsoleOutput($"[blue]EXECUTION[/]", settings);
+		WriteConsoleOutput($"[blue]============================================================[/]", settings);
+
+		// Register and launch the app via winapp.exe, returning immediately with PID
+		WriteConsoleOutput($"  - Registering and launching via winapp.exe (--detach)...", settings);
+		int pid;
+		try
+		{
+			pid = await winAppService.RunDetachedAsync(inputFolder, manifestPath, appArgs: null);
+		}
+		catch (Exception ex)
+		{
+			WriteConsoleOutput($"    [red]Failed to launch: {Markup.Escape(ex.Message)}[/]", settings);
+			throw;
+		}
+		WriteConsoleOutput($"    Application launched with PID: {pid}", settings);
+
+		// Handle TCP test results
+		var listener = await StartTestListener(settings);
+
+		WriteConsoleOutput($"", settings);
+		WriteConsoleOutput($"[blue]============================================================[/]", settings);
+		WriteConsoleOutput($"[blue]CLEANUP[/]", settings);
+		WriteConsoleOutput($"[blue]============================================================[/]", settings);
+
+		// Terminate the process if still running
+		WriteConsoleOutput($"  - Checking application process...", settings);
+		try
+		{
+			var process = Process.GetProcessById(pid);
+			if (!process.HasExited)
+			{
+				WriteConsoleOutput($"    Application is still running, terminating...", settings);
+				process.Kill(entireProcessTree: true);
+				process.WaitForExit(5000);
+				WriteConsoleOutput($"    Application terminated.", settings);
+			}
+			else
+			{
+				WriteConsoleOutput($"    Application has already exited.", settings);
+			}
+		}
+		catch (ArgumentException)
+		{
+			WriteConsoleOutput($"    Application process has already exited.", settings);
+		}
+		catch (Exception ex)
+		{
+			WriteConsoleOutput($"    [yellow]Warning: Failed to check/terminate process: {Markup.Escape(ex.Message)}[/]", settings);
+		}
+
+		// Unregister the development package
+		WriteConsoleOutput($"  - Unregistering development package...", settings);
+		try
+		{
+			await winAppService.UnregisterAsync(manifestPath);
+			WriteConsoleOutput($"    Package unregistered.", settings);
+		}
+		catch (Exception ex)
+		{
+			WriteConsoleOutput($"    [yellow]Warning: Failed to unregister: {Markup.Escape(ex.Message)}[/]", settings);
+		}
+
+		WriteConsoleOutput($"  - Cleanup complete.", settings);
+
+		var result = new TestStartResult
+		{
+			Success = listener.Success,
+			AppPath = settings.App,
+			ResultsDirectory = settings.ResultsDirectory,
+			TestFailures = listener.FailedCount,
+			TestResults = listener.ResultsFile
+		};
+		WriteResult(result, settings);
+
 		return listener.ToExitCode();
 	}
 
