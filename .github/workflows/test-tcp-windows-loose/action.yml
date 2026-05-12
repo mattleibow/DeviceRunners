@@ -20,6 +20,11 @@ runs:
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Enable Windows Developer Mode
+      shell: pwsh
+      run: |
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
     - name: Build and Install CLI Tool
       shell: pwsh
       run: |

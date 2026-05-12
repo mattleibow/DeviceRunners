@@ -91,8 +91,13 @@ public class WinAppService
 		var (exitCode, stdout, stderr) = await RunProcessAsync(GetWinAppPath(), args, cancellationToken);
 
 		if (exitCode != 0)
+		{
+			var errorDetails = !string.IsNullOrWhiteSpace(stderr) ? stderr
+				: !string.IsNullOrWhiteSpace(stdout) ? stdout
+				: "(no output)";
 			throw new InvalidOperationException(
-				$"winapp run --detach failed (exit code {exitCode}):\n{stderr}");
+				$"winapp run --detach failed (exit code {exitCode}):\n{errorDetails}");
+		}
 
 		try
 		{
