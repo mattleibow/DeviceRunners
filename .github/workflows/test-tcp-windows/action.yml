@@ -20,9 +20,27 @@ runs:
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - name: Enable Windows Developer Mode
+      shell: pwsh
+      run: |
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowDevelopmentWithoutDevLicense /t REG_DWORD /d 1 /f
+        reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
     - name: Publish CLI Tool Binaries
       shell: pwsh
       run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+    - name: Install Windows App Runtime framework
+      shell: pwsh
+      run: |
+        $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'win10-arm64' } else { 'win10-x64' }
+        $wasdkDir = Get-ChildItem "$env:USERPROFILE/.nuget/packages/microsoft.windowsappsdk" -Directory |
+          Sort-Object Name -Descending | Select-Object -First 1
+        if (-not $wasdkDir) { Write-Error "WindowsAppSDK NuGet package not found"; exit 1 }
+        $msixDir = Join-Path $wasdkDir.FullName "tools/MSIX/$arch"
+        Write-Host "Installing WinAppSDK runtime from: $msixDir"
+        Get-ChildItem "$msixDir/*.msix" | ForEach-Object {
+          Write-Host "  Installing: $($_.Name)"
+          Add-AppxPackage -Path $_.FullName -ErrorAction SilentlyContinue
+        }
     - name: Run Tests
       shell: pwsh
       run: |
