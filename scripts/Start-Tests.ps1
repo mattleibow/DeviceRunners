@@ -100,7 +100,7 @@ $arch = $env:PROCESSOR_ARCHITECTURE
 if ($arch -eq "AMD64") {
   $arch = "x64"
 }
-$deps = Get-ChildItem "$App\..\Dependencies\$arch\*.msix"
+$deps = Get-ChildItem "$App\..\Dependencies\$arch\*.msix" -ErrorAction SilentlyContinue
 foreach ($dep in $deps) {
   try {
     Write-Host "    Installing dependency: '$dep'"

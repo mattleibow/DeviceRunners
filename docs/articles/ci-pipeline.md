@@ -67,6 +67,7 @@ What it does:
 | `test-tcp-ios/action.yml` | Composite action | TCP iOS simulator tests |
 | `test-tcp-macos/action.yml` | Composite action | TCP Mac Catalyst tests |
 | `test-tcp-windows/action.yml` | Composite action | TCP Windows (MSIX packaged) tests |
+| `test-tcp-windows-loose/action.yml` | Composite action | TCP Windows (loose-file MSIX) tests |
 | `test-tcp-windows-unpackaged/action.yml` | Composite action | TCP Windows (unpackaged EXE) tests |
 | `test-xharness-android-linux/action.yml` | Composite action | XHarness Android tests on Linux |
 | `test-xharness-ios/action.yml` | Composite action | XHarness iOS simulator tests |
@@ -84,6 +85,7 @@ What it does:
 | `templates/test-tcp-ios.yml` | Job template | TCP iOS simulator tests |
 | `templates/test-tcp-macos.yml` | Job template | TCP Mac Catalyst tests |
 | `templates/test-tcp-windows.yml` | Job template | TCP Windows (MSIX packaged) tests |
+| `templates/test-tcp-windows-loose.yml` | Job template | TCP Windows (loose-file MSIX) tests |
 | `templates/test-tcp-windows-unpackaged.yml` | Job template | TCP Windows (unpackaged EXE) tests |
 | `templates/test-xharness-android.yml` | Job template | XHarness Android tests (Linux) |
 | `templates/test-xharness-ios.yml` | Job template | XHarness iOS simulator tests |
@@ -116,6 +118,7 @@ What it does:
 | Packaging | RID | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
 |---|---|---|---|---|---|---|
 | MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | **Stable** |
+| Loose MSIX (folder) | win10-x64 | windows-2025 | windows-2025 | ✅ | N/A | **Stable** — requires Developer Mode |
 | EXE (unpackaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | N/A | **Stable** — TCP only |
 
 ## Using `dotnet test` in CI

@@ -157,6 +157,21 @@ jobs:
         reporter: dotnet-trx
         fail-on-empty: 'false'
 
+  tcp-windows-loose:
+    name: TCP Windows (Loose MSIX)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-tcp-windows-loose
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (TCP Windows Loose MSIX)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
   tcp-windows-unpackaged:
     name: TCP Windows (EXE)
     runs-on: windows-2025
