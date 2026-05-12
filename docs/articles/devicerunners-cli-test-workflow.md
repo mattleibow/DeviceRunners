@@ -69,6 +69,25 @@ Post-test cleanup and result processing:
 1. Terminates the application process if still running
 2. Preserves test results for analysis
 
+#### Loose-File MSIX Layout (folder or AppxManifest.xml)
+
+This mode uses the bundled `winapp.exe` tool to register a packaged app directly from the build output folder — no `.msix` file or certificate needed. Requires **Windows Developer Mode** and the **Windows App Runtime framework** to be installed.
+
+**Preparation:**
+1. Detects that `--app` points to a folder containing `AppxManifest.xml` (or a manifest file directly)
+2. Resolves the input folder and manifest path
+
+**Execution:**
+1. Invokes `winapp.exe run --detach --json` to register the app from loose files and launch it
+2. Parses the JSON output to get the launched process ID (PID)
+3. Starts TCP listener on specified port for test results
+4. Monitors test progress with configurable timeouts
+
+**Cleanup:**
+1. Terminates the application process by PID if still running
+2. Invokes `winapp.exe unregister` to remove the development package registration
+3. Preserves test results for analysis
+
 ### Android Test Workflow
 
 **Preparation:**
@@ -186,9 +205,10 @@ device-runners [platform] test \
 ### Platform-Specific Options
 
 #### Windows-Specific
-- **Certificate Management**: Automatic detection and installation
-- **Dependency Handling**: Automatic installation of required dependencies
-- **Package vs. Executable**: Automatic detection and appropriate handling
+- **Certificate Management**: Automatic detection and installation (MSIX mode)
+- **Dependency Handling**: Automatic installation of required dependencies (MSIX mode)
+- **Loose-File Registration**: Uses bundled `winapp.exe` for folder-based testing (requires Developer Mode)
+- **Package vs. Executable vs. Folder**: Automatic detection and appropriate handling
 
 #### Android-Specific  
 - **Device Targeting**: Specify target device or emulator
@@ -207,7 +227,7 @@ device-runners [platform] test \
 - Check application actually attempts to connect to TCP port
 
 ### Installation Failures
-- **Windows**: Verify certificate installation and dependency availability
+- **Windows**: Verify certificate installation and dependency availability. For loose-file MSIX, ensure Windows Developer Mode is enabled and the Windows App Runtime framework is installed.
 - **Android**: Check device connectivity and storage space
 - **macOS**: Verify app bundle format and system permissions
 
