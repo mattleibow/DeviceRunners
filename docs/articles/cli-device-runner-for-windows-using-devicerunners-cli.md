@@ -1,18 +1,18 @@
 # Windows Testing with DeviceRunners CLI
 
 
-This guide covers testing Windows applications using the DeviceRunners CLI tool. The tool supports both packaged (.msix) and unpackaged (.exe) Windows applications.
+This guide covers testing Windows applications using the DeviceRunners CLI tool. The tool supports three modes: packaged (.msix), loose-file MSIX (folder), and unpackaged (.exe) Windows applications.
 
 ## Running Tests
 
-1. Build the app for testing:  
+1. Build or publish the app for testing:  
    ```
-   dotnet publish <path/to/app.csproj> -f net9.0-windows10.0.19041.0 -c Release
+   dotnet build <path/to/app.csproj> -f net10.0-windows10.0.19041.0 -c Release
    ```
 
 2. Run the tests:  
    ```
-   device-runners windows test --app <path/to/app.[msix|exe]> --results-directory <path/to/output>
+   device-runners windows test --app <path/to/app.[msix|exe]|folder> --results-directory <path/to/output>
    ```
 
 3. View test results:  
@@ -20,7 +20,42 @@ This guide covers testing Windows applications using the DeviceRunners CLI tool.
    <path/to/output>/TestResults.xml
    ```
 
+## Input Modes
+
+| `--app` value | Mode | Certificate? | Build step |
+|---|---|---|---|
+| `path/to/app.msix` | Packaged MSIX | Yes | `dotnet publish` |
+| `path/to/build-output/` | Loose-file MSIX | No | `dotnet build` |
+| `path/to/AppxManifest.xml` | Loose-file MSIX | No | `dotnet build` |
+| `path/to/app.exe` | Unpackaged executable | No | `dotnet publish -p:WindowsPackageType=None` |
+
 ## Complete Examples
+
+### Testing with Loose-File MSIX Layout (Recommended for Development)
+
+The fastest way to test — just `dotnet build`, no publish or certificate needed. Requires **Windows Developer Mode** enabled on the machine.
+
+```pwsh
+# Build the app (no publish needed)
+dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
+  -f net10.0-windows10.0.19041.0 `
+  -c Release `
+  -p:TestingMode=NonInteractiveVisual
+
+# Run tests from the build output folder
+device-runners windows test `
+  --app artifacts/bin/DeviceTestingKitApp.DeviceTests/release_net10.0-windows10.0.19041.0 `
+  --results-directory artifacts/test-results `
+  --logger trx
+```
+
+The CLI detects the folder contains an `AppxManifest.xml` and uses the bundled `winapp.exe` to:
+1. Register the app from loose files (no MSIX package needed)
+2. Launch the app via COM activation
+3. Collect test results via TCP
+4. Terminate and unregister the development package
+
+> **Note:** On CI, the Windows App Runtime framework must be installed from the NuGet cache before running. See [CI Pipeline Configuration](ci-pipeline.md) for details.
 
 ### Testing a Packaged Application
 
@@ -35,7 +70,7 @@ $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
 
 # Build the packaged app
 dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
-  -f net9.0-windows10.0.19041.0 `
+  -f net10.0-windows10.0.19041.0 `
   -c Release `
   -p:AppxPackageSigningEnabled=true `
   -p:PackageCertificateThumbprint=$fingerprint `
@@ -45,10 +80,8 @@ dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.D
 device-runners windows cert uninstall --fingerprint $fingerprint
 
 # Run tests (the CLI tool will handle certificate installation automatically)
-$msix = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages\DeviceTestingKitApp.DeviceTests_1.0.0.1_Test\DeviceTestingKitApp.DeviceTests_1.0.0.1_x64.msix"
-device-runners windows test --app $msix --results-directory artifacts/test-results
-
-# Test result file will be: artifacts/test-results/TestResults.xml
+$msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
+device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
 ```
 
 ### Testing an Unpackaged Application
@@ -56,13 +89,14 @@ device-runners windows test --app $msix --results-directory artifacts/test-resul
 ```pwsh
 # Build the unpackaged app  
 dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
-  -f net9.0-windows10.0.19041.0 `
+  -f net10.0-windows10.0.19041.0 `
   -c Release `
-  -p:WindowsPackageType=None
+  -p:WindowsPackageType=None `
+  --output artifacts/publish
 
 # Run tests
-$exe = "sample\test\DeviceTestingKitApp.DeviceTests\bin\Release\net9.0-windows10.0.19041.0\win10-x64\DeviceTestingKitApp.DeviceTests.exe"
-device-runners windows test --app $exe --results-directory artifacts/test-results
-
-# Test result file will be: artifacts/test-results/TestResults.xml
+device-runners windows test `
+  --app artifacts/publish/DeviceTestingKitApp.DeviceTests.exe `
+  --results-directory artifacts/test-results `
+  --logger trx
 ```
