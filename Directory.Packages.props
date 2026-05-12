@@ -3,9 +3,9 @@
     <PackageVersion Include="AndroidSdk" Version="0.35.1" />
     <PackageVersion Include="AppleDev" Version="0.8.10" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26107.1" />
-    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26107.1" />
-    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26107.1" />
+    <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26259.3" />
+    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26259.3" />
+    <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26259.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
@@ -17,6 +17,7 @@
     <PackageVersion Include="NUnit.Analyzers" Version="4.12.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="6.1.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools.WinApp" Version="0.3.1" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.53.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.54.0" />
     <PackageVersion Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />

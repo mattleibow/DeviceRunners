@@ -1,6 +1,8 @@
 using System.ComponentModel;
+
 using DeviceRunners.Cli.Models;
 using DeviceRunners.Cli.Services;
+
 using Spectre.Console;
 using Spectre.Console.Cli;
 
@@ -8,93 +10,88 @@ namespace DeviceRunners.Cli.Commands;
 
 public class MacOSTestCommand(IAnsiConsole console) : BaseTestCommand<MacOSTestCommand.Settings>(console)
 {
-    public class Settings : BaseTestCommandSettings
-    {
-        // Inherits App property from BaseTestCommandSettings
-    }
+	public class Settings : BaseTestCommandSettings
+	{
+		// Inherits App property from BaseTestCommandSettings
+	}
 
-    protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
-    {
-        try
-        {
-            WriteConsoleOutput($"[blue]============================================================[/]", settings);
-            WriteConsoleOutput($"[blue]PREPARATION[/]", settings);
-            WriteConsoleOutput($"[blue]============================================================[/]", settings);
+	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
+	{
+		try
+		{
+			WriteConsoleOutput($"[blue]============================================================[/]", settings);
+			WriteConsoleOutput($"[blue]PREPARATION[/]", settings);
+			WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
-            var macOSService = new MacOSService();
+			var macOSService = new MacOSService();
 
-            // Get app identifier
-            WriteConsoleOutput($"  - Determining app identifier...", settings);
-            var appIdentifier = macOSService.GetAppIdentifier(settings.App);
-            WriteConsoleOutput($"    App bundle: '[green]{Markup.Escape(settings.App)}[/]'", settings);
-            WriteConsoleOutput($"    App identifier found: '[green]{Markup.Escape(appIdentifier)}[/]'", settings);
+			// Get app identifier
+			WriteConsoleOutput($"  - Determining app identifier...", settings);
+			var appIdentifier = macOSService.GetAppIdentifier(settings.App);
+			WriteConsoleOutput($"    App bundle: '[green]{Markup.Escape(settings.App)}[/]'", settings);
+			WriteConsoleOutput($"    App identifier found: '[green]{Markup.Escape(appIdentifier)}[/]'", settings);
 
-            // Check if app is already installed
-            WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
-            if (macOSService.IsAppInstalled(settings.App))
-            {
-                WriteConsoleOutput($"    App was installed, uninstalling...", settings);
-                macOSService.UninstallApp(settings.App);
-                WriteConsoleOutput($"    Uninstall complete...", settings);
-            }
-            else
-            {
-                WriteConsoleOutput($"    App was not installed.", settings);
-            }
+			// Check if app is already installed
+			WriteConsoleOutput($"  - Testing to see if the app is installed...", settings);
+			if (macOSService.IsAppInstalled(settings.App))
+			{
+				WriteConsoleOutput($"    App was installed, uninstalling...", settings);
+				macOSService.UninstallApp(settings.App);
+				WriteConsoleOutput($"    Uninstall complete...", settings);
+			}
+			else
+			{
+				WriteConsoleOutput($"    App was not installed.", settings);
+			}
 
-            // Install the app
-            WriteConsoleOutput($"  - Installing the app...", settings);
-            macOSService.InstallApp(settings.App);
-            WriteConsoleOutput($"    Application installed.", settings);
+			// Install the app
+			WriteConsoleOutput($"  - Installing the app...", settings);
+			macOSService.InstallApp(settings.App);
+			WriteConsoleOutput($"    Application installed.", settings);
 
-            // Start the app, injecting env vars so it auto-configures headless mode.
-            WriteConsoleOutput($"  - Starting the application...", settings);
-            var environmentVariables = new Dictionary<string, string>
-            {
-                ["DEVICE_RUNNERS_AUTORUN"] = "1",
-                ["DEVICE_RUNNERS_PORT"] = settings.Port.ToString(),
-                ["DEVICE_RUNNERS_HOST_NAMES"] = "localhost",
-            };
-            macOSService.LaunchApp(settings.App, environmentVariables: environmentVariables);
-            WriteConsoleOutput($"    Application started.", settings);
+			// Start the app, injecting env vars so it auto-configures headless mode.
+			WriteConsoleOutput($"  - Starting the application...", settings);
+			var environmentVariables = GetAppEnvironmentVariables(settings);
+			macOSService.LaunchApp(settings.App, environmentVariables: environmentVariables);
+			WriteConsoleOutput($"    Application started.", settings);
 
-            // Handle TCP test results
-            var listener = await StartTestListener(settings);
+			// Handle TCP test results
+			var listener = await StartTestListener(settings);
 
-            WriteConsoleOutput($"", settings);
-            WriteConsoleOutput($"[blue]============================================================[/]", settings);
-            WriteConsoleOutput($"[blue]CLEANUP[/]", settings);
-            WriteConsoleOutput($"[blue]============================================================[/]", settings);
+			WriteConsoleOutput($"", settings);
+			WriteConsoleOutput($"[blue]============================================================[/]", settings);
+			WriteConsoleOutput($"[blue]CLEANUP[/]", settings);
+			WriteConsoleOutput($"[blue]============================================================[/]", settings);
 
-            WriteConsoleOutput($"  - Cleanup complete.", settings);
+			WriteConsoleOutput($"  - Cleanup complete.", settings);
 
-            var result = new TestStartResult
-            {
-                Success = listener.Success,
-                AppIdentity = appIdentifier,
-                AppPath = settings.App,
-                ResultsDirectory = settings.ResultsDirectory,
-                TestFailures = listener.FailedCount,
-                TestResults = listener.ResultsFile
-            };
-            WriteResult(result, settings);
+			var result = new TestStartResult
+			{
+				Success = listener.Success,
+				AppIdentity = appIdentifier,
+				AppPath = settings.App,
+				ResultsDirectory = settings.ResultsDirectory,
+				TestFailures = listener.FailedCount,
+				TestResults = listener.ResultsFile
+			};
+			WriteResult(result, settings);
 
-            // Exit codes: 0 = success, 1 = test failures, 2 = app crashed
-            return listener.ToExitCode();
-        }
-        catch (Exception ex)
-        {
-            var result = new TestStartResult
-            {
-                Success = false,
-                ErrorMessage = ex.Message,
-                AppPath = settings.App,
-                ResultsDirectory = settings.ResultsDirectory
-            };
+			// Exit codes: 0 = success, 1 = test failures, 2 = app crashed
+			return listener.ToExitCode();
+		}
+		catch (Exception ex)
+		{
+			var result = new TestStartResult
+			{
+				Success = false,
+				ErrorMessage = ex.Message,
+				AppPath = settings.App,
+				ResultsDirectory = settings.ResultsDirectory
+			};
 
-            WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
-            WriteResult(result, settings);
-            return 1;
-        }
-    }
+			WriteConsoleOutput($"[red]Error: {Markup.Escape(ex.Message)}[/]", settings);
+			WriteResult(result, settings);
+			return 1;
+		}
+	}
 }

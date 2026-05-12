@@ -1,12 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <!--
-    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
-    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
-    which causes NuGet to auto-import the same .props and .targets files.
-  -->
-  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
-
   <PropertyGroup>
     <TargetFrameworks>net10.0-android</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -60,8 +53,8 @@
   <!-- Prevent the iOS/Android linker from stripping referenced test assemblies.
        Test classes are discovered via reflection, so the linker can't trace them. -->
   <ItemGroup>
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" />
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" RootMode="all" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" RootMode="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -85,8 +78,5 @@
       <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
     </ItemGroup>
   </Target>
-
-  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
-  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
 
 </Project>
