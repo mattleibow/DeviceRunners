@@ -13,7 +13,7 @@ inputs:
     default: 'release'
   artifact-name:
     description: 'Artifact name'
-    default: 'Test Results (TCP) - Windows'
+    default: 'Test Results (TCP) - Windows (MSIX)'
 
 runs:
   using: 'composite'
@@ -24,7 +24,7 @@ runs:
       shell: pwsh
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+        dotnet tool install --global DeviceRunners.Cli
     - name: Publish App
       shell: pwsh
       run: |

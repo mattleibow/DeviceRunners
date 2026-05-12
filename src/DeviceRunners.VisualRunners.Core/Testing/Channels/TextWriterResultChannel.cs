@@ -24,7 +24,7 @@ public abstract class TextWriterResultChannel : IResultChannel
 			_writer = CreateWriter();
 
 			_formatter.BeginTestRun(_writer, message);
-		
+
 			_writer.Flush();
 		}
 

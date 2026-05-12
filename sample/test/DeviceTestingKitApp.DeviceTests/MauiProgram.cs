@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-
-using DeviceRunners.UITesting;
+﻿using DeviceRunners.UITesting;
 using DeviceRunners.VisualRunners;
+
+using Microsoft.Extensions.Logging;
 #if MODE_XHARNESS
 using DeviceRunners.XHarness;
 #endif
@@ -31,6 +31,7 @@ public static class MauiProgram
 				.AddXunit())
 #endif
 			.UseVisualTestRunner(conf => conf
+			.AddEnvironmentVariables()
 #if MODE_NON_INTERACTIVE_VISUAL
 				.EnableAutoStart(true)
 				.AddTcpResultChannel(new TcpResultChannelOptions

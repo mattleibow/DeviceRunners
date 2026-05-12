@@ -14,7 +14,7 @@ public interface IResultChannel
 public interface IResultChannelManager
 {
 	bool IsOpen { get; }
-	
+
 	Task<bool> OpenChannel(string? message = null);
 
 	void RecordResult(ITestResultInfo testResult);

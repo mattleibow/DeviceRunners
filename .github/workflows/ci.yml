@@ -143,7 +143,7 @@ jobs:
         fail-on-empty: 'false'
 
   tcp-windows:
-    name: TCP Windows
+    name: TCP Windows (MSIX)
     runs-on: windows-2025
     steps:
     - uses: actions/checkout@v4
@@ -152,13 +152,13 @@ jobs:
       uses: dorny/test-reporter@v2
       if: (always() && !cancelled())
       with:
-        name: Test Results (TCP Windows)
+        name: Test Results (TCP Windows MSIX)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
         fail-on-empty: 'false'
 
   tcp-windows-unpackaged:
-    name: TCP Windows (Unpackaged)
+    name: TCP Windows (EXE)
     runs-on: windows-2025
     steps:
     - uses: actions/checkout@v4
@@ -167,7 +167,7 @@ jobs:
       uses: dorny/test-reporter@v2
       if: (always() && !cancelled())
       with:
-        name: Test Results (TCP Windows Unpackaged)
+        name: Test Results (TCP Windows EXE)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
         fail-on-empty: 'false'
@@ -196,7 +196,7 @@ jobs:
     - uses: ./.github/workflows/test-xharness-maccatalyst
 
   xharness-windows:
-    name: XHarness Windows
+    name: XHarness Windows (MSIX)
     runs-on: windows-2025
     steps:
     - uses: actions/checkout@v4
