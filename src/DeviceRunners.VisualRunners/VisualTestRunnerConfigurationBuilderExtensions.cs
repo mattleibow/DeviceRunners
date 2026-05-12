@@ -62,10 +62,10 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	}
 
 	/// <summary>
-	/// Configures the test runner based on environment variables set by the
-	/// DeviceRunners.Testing.Targets NuGet package. When <c>DEVICE_RUNNERS_AUTORUN=1</c>
-	/// is set the runner enables auto-start and connects back to the host via TCP so
-	/// results can be collected by the CLI tool.
+	/// Configures the test runner based on <c>DEVICE_RUNNERS_*</c> environment
+	/// variables. When <c>DEVICE_RUNNERS_AUTORUN=1</c> is set the runner enables
+	/// auto-start and connects back to the host via TCP so results can be
+	/// collected by the CLI tool. When the variable is absent this is a no-op.
 	/// </summary>
 	/// <remarks>
 	/// Supported platforms: Android, iOS, macOS (Catalyst), Windows.
@@ -80,7 +80,7 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	/// <item><term>DEVICE_RUNNERS_HOST_NAMES</term><description>Semicolon-separated list of host names or IPs to try. Defaults to <c>localhost;10.0.2.2</c>.</description></item>
 	/// </list>
 	/// </remarks>
-	public static TBuilder UseTestRunnerEnvironment<TBuilder>(this TBuilder builder)
+	public static TBuilder AddEnvironmentVariables<TBuilder>(this TBuilder builder)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
 		var autorun = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_AUTORUN");
