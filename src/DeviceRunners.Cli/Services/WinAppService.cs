@@ -92,11 +92,8 @@ public class WinAppService
 
 		if (exitCode != 0)
 		{
-			var errorDetails = !string.IsNullOrWhiteSpace(stderr) ? stderr
-				: !string.IsNullOrWhiteSpace(stdout) ? stdout
-				: "(no output)";
 			throw new InvalidOperationException(
-				$"winapp run --detach failed (exit code {exitCode}):\n{errorDetails}");
+				$"winapp run --detach failed (exit code {exitCode}). stdout: {stdout} stderr: {stderr}");
 		}
 
 		try
@@ -140,10 +137,11 @@ public class WinAppService
 	public async Task UnregisterAsync(string manifestPath, CancellationToken cancellationToken = default)
 	{
 		var args = $"unregister --manifest \"{manifestPath}\"";
-		var (exitCode, _, stderr) = await RunProcessAsync(GetWinAppPath(), args, cancellationToken);
+		var (exitCode, stdout, stderr) = await RunProcessAsync(GetWinAppPath(), args, cancellationToken);
 
 		if (exitCode != 0)
-			Console.Error.WriteLine($"Warning: winapp unregister returned exit code {exitCode}: {stderr}");
+			throw new InvalidOperationException(
+				$"winapp unregister failed (exit code {exitCode}). stdout: {stdout} stderr: {stderr}");
 	}
 
 	internal static string BuildRunArgs(string inputFolder, string? manifestPath, string? appArgs)
