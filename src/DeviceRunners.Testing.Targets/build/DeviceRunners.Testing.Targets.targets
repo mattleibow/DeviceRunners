@@ -194,7 +194,6 @@
     <PropertyGroup>
       <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
       <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --logger &quot;trx;LogFileName=test-results.trx&quot; --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
-      <_DeviceRunnersCliArgs Condition="'$(DeviceRunnersWasmBrowser)' != ''">$(_DeviceRunnersCliArgs) --browser &quot;$(DeviceRunnersWasmBrowser)&quot;</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>

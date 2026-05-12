@@ -13,11 +13,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 {
 	public class Settings : BaseTestCommandSettings
 	{
-		[Description("Browser to use (chromium, firefox, webkit)")]
-		[CommandOption("--browser")]
-		[DefaultValue("chromium")]
-		public string Browser { get; set; } = "chromium";
-
 		[Description("Run browser in headed mode (visible)")]
 		[CommandOption("--headed")]
 		public bool Headed { get; set; }
@@ -51,7 +46,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 				throw new FileNotFoundException($"index.html not found in WASM app directory: {appPath}");
 
 			WriteConsoleOutput($"  - App path: [green]{Markup.Escape(appPath)}[/]", settings);
-			WriteConsoleOutput($"  - Browser: [green]{Markup.Escape(settings.Browser)}[/]", settings);
 
 			// Ensure artifacts directory exists
 			Directory.CreateDirectory(settings.ResultsDirectory);
@@ -121,7 +115,7 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 				WriteConsoleOutput($"    [yellow]Console: {Markup.Escape(e.Line)}[/]", settings);
 
 			// Launch browser
-			WriteConsoleOutput($"  - Launching {Markup.Escape(settings.Browser)} browser...", settings);
+			WriteConsoleOutput($"  - Launching headless Chrome via CDP...", settings);
 			WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
 			if (resultChannel is not null)
@@ -134,7 +128,7 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 				eventStream.ReceiveData(msg + "\n");
 			};
 
-			await browser.LaunchAsync(url, headless: !settings.Headed, browserType: settings.Browser);
+			await browser.LaunchAsync(url, headless: !settings.Headed);
 			WriteConsoleOutput($"    Browser launched, running tests...", settings);
 
 			// Wait for test completion or timeout

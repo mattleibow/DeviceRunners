@@ -173,8 +173,7 @@ app.Configure(config =>
         wasm.AddCommand<WasmTestCommand>("test")
             .WithDescription("Run tests in a WASM application in a browser")
             .WithExample(["wasm", "test", "--app", "path/to/wwwroot"])
-            .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--browser", "chromium"])
-            .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--browser", "firefox", "--headed"])
+            .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--headed"])
             .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--logger", "trx", "--results-directory", "test-results"]);
 
         wasm.AddCommand<WasmServeCommand>("serve")

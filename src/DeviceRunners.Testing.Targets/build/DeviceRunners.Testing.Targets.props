@@ -63,9 +63,6 @@
 
     <!-- WASM: test execution timeout in seconds (default 5 minutes). -->
     <DeviceRunnersWasmTimeout Condition="'$(DeviceRunnersWasmTimeout)' == ''">300</DeviceRunnersWasmTimeout>
-
-    <!-- WASM: browser to use for test execution (chromium, firefox, webkit). -->
-    <DeviceRunnersWasmBrowser Condition="'$(DeviceRunnersWasmBrowser)' == ''" />
   </PropertyGroup>
 
   <!--
