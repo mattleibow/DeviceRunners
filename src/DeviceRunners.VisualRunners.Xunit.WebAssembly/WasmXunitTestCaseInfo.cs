@@ -1,22 +1,18 @@
-using Xunit.Abstractions;
-
 namespace DeviceRunners.VisualRunners.Xunit;
 
 class WasmXunitTestCaseInfo : ITestCaseInfo
 {
-	public WasmXunitTestCaseInfo(WasmXunitAssemblyInfo assembly, ITestCase testCase)
+	public WasmXunitTestCaseInfo(WasmXunitAssemblyInfo assembly, string displayName)
 	{
 		TestAssembly = assembly;
-		XunitTestCase = testCase;
+		DisplayName = displayName;
 	}
 
 	public WasmXunitAssemblyInfo TestAssembly { get; }
 
 	ITestAssemblyInfo ITestCaseInfo.TestAssembly => TestAssembly;
 
-	public string DisplayName => XunitTestCase.DisplayName;
-
-	public ITestCase XunitTestCase { get; }
+	public string DisplayName { get; }
 
 	public ITestResultInfo? Result { get; private set; }
 

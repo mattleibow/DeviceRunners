@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.utility" />
   </ItemGroup>
 
   <ItemGroup>

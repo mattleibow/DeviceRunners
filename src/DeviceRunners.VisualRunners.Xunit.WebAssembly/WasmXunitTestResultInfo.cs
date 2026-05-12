@@ -1,26 +1,23 @@
-using Xunit.Abstractions;
-using Xunit.Sdk;
-
 namespace DeviceRunners.VisualRunners.Xunit;
 
 class WasmXunitTestResultInfo : ITestResultInfo
 {
-	public WasmXunitTestResultInfo(WasmXunitTestCaseInfo testCase, ITestResultMessage testResult, TestResultStatus status)
+	public WasmXunitTestResultInfo(
+		WasmXunitTestCaseInfo testCase,
+		TestResultStatus status,
+		TimeSpan duration,
+		string? output,
+		string? errorMessage,
+		string? errorStackTrace,
+		string? skipReason)
 	{
 		TestCase = testCase;
 		Status = status;
-		Duration = TimeSpan.FromSeconds((double)testResult.ExecutionTime);
-		Output = testResult.Output;
-
-		if (testResult is ITestFailed failure)
-		{
-			ErrorMessage = ExceptionUtility.CombineMessages(failure);
-			ErrorStackTrace = ExceptionUtility.CombineStackTraces(failure);
-		}
-		else if (testResult is ITestSkipped skippedResult)
-		{
-			SkipReason = skippedResult.Reason;
-		}
+		Duration = duration;
+		Output = output;
+		ErrorMessage = errorMessage;
+		ErrorStackTrace = errorStackTrace;
+		SkipReason = skipReason;
 	}
 
 	public WasmXunitTestCaseInfo TestCase { get; }
