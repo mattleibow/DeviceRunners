@@ -28,7 +28,6 @@
     <Project Path="src/DeviceRunners.VisualRunners.WebAssembly/DeviceRunners.VisualRunners.WebAssembly.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Xunit.WebAssembly/DeviceRunners.VisualRunners.Xunit.WebAssembly.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.NUnit.WebAssembly/DeviceRunners.VisualRunners.NUnit.WebAssembly.csproj" />
-    <Project Path="src/DeviceRunners.VisualRunners.Blazor/DeviceRunners.VisualRunners.Blazor.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Maui/DeviceRunners.XHarness.Maui.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Xunit/DeviceRunners.XHarness.Xunit.csproj" />
     <Project Path="src/DeviceRunners.XHarness/DeviceRunners.XHarness.csproj" />
