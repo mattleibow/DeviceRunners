@@ -1,4 +1,4 @@
-name: 'TCP Windows Test'
+name: 'TCP Windows Test (MSIX)'
 description: 'Run TCP-based device tests on Windows (packaged MSIX)'
 
 inputs:
