@@ -36,17 +36,20 @@ runs:
           /bl:./artifacts/logs/msbuild-wasm-publish.binlog
 
     - name: Install Playwright Browsers
-      shell: bash
+      shell: pwsh
       run: |
-        # Playwright .NET uses the playwright.ps1 script to install browser binaries.
-        # Find it in the NuGet package cache and run it.
-        PLAYWRIGHT_PS1=$(find ~/.nuget/packages/microsoft.playwright -name "playwright.ps1" 2>/dev/null | sort -V | tail -1)
-        if [ -n "$PLAYWRIGHT_PS1" ]; then
-          pwsh "$PLAYWRIGHT_PS1" install --with-deps ${{ inputs.browser }}
-        else
-          # Fallback: try npx
-          npx -y playwright install --with-deps ${{ inputs.browser }} 2>/dev/null || echo "Warning: Could not install Playwright browsers"
-        fi
+        $playwrightScript = "$HOME/.nuget/packages/microsoft.playwright/1.52.0/build/playwright.ps1"
+        if (Test-Path $playwrightScript) {
+          & $playwrightScript install --with-deps ${{ inputs.browser }}
+        } else {
+          Write-Host "playwright.ps1 not found at $playwrightScript, searching..."
+          $found = Get-ChildItem -Path "$HOME/.nuget/packages/microsoft.playwright" -Recurse -Filter "playwright.ps1" | Select-Object -Last 1
+          if ($found) {
+            & $found.FullName install --with-deps ${{ inputs.browser }}
+          } else {
+            throw "Could not find Playwright install script"
+          }
+        }
 
     - name: Determine WASM App Path
       id: wasm-path
