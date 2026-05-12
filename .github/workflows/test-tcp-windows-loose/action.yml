@@ -38,6 +38,19 @@ runs:
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
           /bl:./artifacts/logs/msbuild-build-loose.binlog
+    - name: Install Windows App Runtime framework
+      shell: pwsh
+      run: |
+        $arch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64') { 'win10-arm64' } else { 'win10-x64' }
+        $wasdkDir = Get-ChildItem "$env:USERPROFILE/.nuget/packages/microsoft.windowsappsdk" -Directory |
+          Sort-Object Name -Descending | Select-Object -First 1
+        if (-not $wasdkDir) { Write-Error "WindowsAppSDK NuGet package not found"; exit 1 }
+        $msixDir = Join-Path $wasdkDir.FullName "tools/MSIX/$arch"
+        Write-Host "Installing WinAppSDK runtime from: $msixDir"
+        Get-ChildItem "$msixDir/*.msix" | ForEach-Object {
+          Write-Host "  Installing: $($_.Name)"
+          Add-AppxPackage -Path $_.FullName -ErrorAction SilentlyContinue
+        }
     - name: Run Tests with Loose MSIX Layout
       shell: pwsh
       run: |
