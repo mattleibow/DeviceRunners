@@ -13,7 +13,7 @@ inputs:
     default: 'release'
   artifact-name:
     description: 'Artifact name'
-    default: 'Test Results (TCP) - Windows Unpackaged'
+    default: 'Test Results (TCP) - Windows (EXE)'
 
 runs:
   using: 'composite'
