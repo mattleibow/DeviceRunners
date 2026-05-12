@@ -1,75 +1,169 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace DeviceRunners.Cli.Services;
 
+/// <summary>
+/// A lightweight HTTP static file server for serving published WASM bundles.
+/// Uses HttpListener — no ASP.NET Core dependency required.
+/// </summary>
 public class WasmWebServerService : IAsyncDisposable
 {
-	WebApplication? _app;
+	HttpListener? _listener;
+	CancellationTokenSource? _cts;
+	Task? _serverTask;
+	string? _rootPath;
+
+	static readonly Dictionary<string, string> MimeTypes = new(StringComparer.OrdinalIgnoreCase)
+	{
+		[".html"] = "text/html",
+		[".htm"] = "text/html",
+		[".js"] = "application/javascript",
+		[".mjs"] = "application/javascript",
+		[".cjs"] = "text/javascript",
+		[".css"] = "text/css",
+		[".json"] = "application/json",
+		[".wasm"] = "application/wasm",
+		[".dll"] = "application/octet-stream",
+		[".pdb"] = "application/octet-stream",
+		[".dat"] = "application/octet-stream",
+		[".blat"] = "application/octet-stream",
+		[".webcil"] = "application/octet-stream",
+		[".png"] = "image/png",
+		[".jpg"] = "image/jpeg",
+		[".gif"] = "image/gif",
+		[".svg"] = "image/svg+xml",
+		[".ico"] = "image/x-icon",
+		[".woff"] = "font/woff",
+		[".woff2"] = "font/woff2",
+		[".ttf"] = "font/ttf",
+	};
 
 	public string? BaseUrl { get; private set; }
 
-	public async Task StartAsync(string appPath, int port = 0)
+	public Task StartAsync(string appPath, int port = 0)
 	{
-		var fullPath = Path.GetFullPath(appPath);
+		_rootPath = Path.GetFullPath(appPath);
+		if (!Directory.Exists(_rootPath))
+			throw new DirectoryNotFoundException($"WASM app directory not found: {_rootPath}");
 
-		var builder = WebApplication.CreateBuilder();
-		builder.WebHost.UseUrls($"http://127.0.0.1:{port}");
-		builder.Logging.ClearProviders();
+		// HttpListener doesn't support port 0 auto-assign directly,
+		// so find an available port first
+		if (port == 0)
+			port = FindAvailablePort();
 
-		var app = builder.Build();
+		var prefix = $"http://127.0.0.1:{port}/";
 
-		// WASM-specific MIME types
-		var contentTypeProvider = new FileExtensionContentTypeProvider();
-		contentTypeProvider.Mappings[".wasm"] = "application/wasm";
-		contentTypeProvider.Mappings[".dll"] = "application/octet-stream";
-		contentTypeProvider.Mappings[".pdb"] = "application/octet-stream";
-		contentTypeProvider.Mappings[".dat"] = "application/octet-stream";
-		contentTypeProvider.Mappings[".blat"] = "application/octet-stream";
-		contentTypeProvider.Mappings[".webcil"] = "application/octet-stream";
-		contentTypeProvider.Mappings[".cjs"] = "text/javascript";
-		contentTypeProvider.Mappings[".mjs"] = "text/javascript";
+		_listener = new HttpListener();
+		_listener.Prefixes.Add(prefix);
+		_listener.Start();
 
-		// Cross-origin headers for SharedArrayBuffer support
-		app.Use(async (context, next) =>
+		BaseUrl = $"http://127.0.0.1:{port}";
+
+		_cts = new CancellationTokenSource();
+		_serverTask = Task.Run(() => ServeRequestsAsync(_cts.Token));
+
+		return Task.CompletedTask;
+	}
+
+	async Task ServeRequestsAsync(CancellationToken ct)
+	{
+		while (!ct.IsCancellationRequested && _listener?.IsListening == true)
 		{
+			try
+			{
+				var context = await _listener.GetContextAsync().WaitAsync(ct);
+				_ = Task.Run(() => HandleRequestAsync(context), ct);
+			}
+			catch (OperationCanceledException)
+			{
+				break;
+			}
+			catch (HttpListenerException) when (ct.IsCancellationRequested)
+			{
+				break;
+			}
+			catch
+			{
+				// Log and continue
+			}
+		}
+	}
+
+	Task HandleRequestAsync(HttpListenerContext context)
+	{
+		try
+		{
+			var requestPath = Uri.UnescapeDataString(context.Request.Url?.AbsolutePath ?? "/");
+			if (requestPath == "/")
+				requestPath = "/index.html";
+
+			var filePath = Path.Combine(_rootPath!, requestPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+			filePath = Path.GetFullPath(filePath);
+
+			// Security: ensure the path is within the root
+			if (!filePath.StartsWith(_rootPath!, StringComparison.Ordinal))
+			{
+				context.Response.StatusCode = 403;
+				context.Response.Close();
+				return Task.CompletedTask;
+			}
+
+			if (!File.Exists(filePath))
+			{
+				context.Response.StatusCode = 404;
+				context.Response.Close();
+				return Task.CompletedTask;
+			}
+
+			var ext = Path.GetExtension(filePath);
+			var contentType = MimeTypes.GetValueOrDefault(ext, "application/octet-stream");
+
+			context.Response.ContentType = contentType;
+			context.Response.StatusCode = 200;
+
+			// Cross-origin isolation headers for SharedArrayBuffer support
 			context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
 			context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
-			await next();
-		});
 
-		var fileProvider = new PhysicalFileProvider(fullPath);
-
-		app.UseDefaultFiles(new DefaultFilesOptions
+			using var fileStream = File.OpenRead(filePath);
+			fileStream.CopyTo(context.Response.OutputStream);
+			context.Response.Close();
+		}
+		catch
 		{
-			FileProvider = fileProvider
-		});
+			try { context.Response.StatusCode = 500; context.Response.Close(); }
+			catch { }
+		}
 
-		app.UseStaticFiles(new StaticFileOptions
-		{
-			FileProvider = fileProvider,
-			ContentTypeProvider = contentTypeProvider,
-			ServeUnknownFileTypes = true,
-			DefaultContentType = "application/octet-stream"
-		});
+		return Task.CompletedTask;
+	}
 
-		await app.StartAsync();
-
-		// Read the actual assigned URL (handles port 0 → auto-assigned)
-		BaseUrl = app.Urls.FirstOrDefault() ?? $"http://127.0.0.1:{port}";
-		_app = app;
+	static int FindAvailablePort()
+	{
+		var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+		listener.Start();
+		var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+		listener.Stop();
+		return port;
 	}
 
 	public async ValueTask DisposeAsync()
 	{
-		if (_app is not null)
+		_cts?.Cancel();
+
+		if (_listener?.IsListening == true)
 		{
-			await _app.StopAsync();
-			await _app.DisposeAsync();
-			_app = null;
+			_listener.Stop();
+			_listener.Close();
 		}
+
+		if (_serverTask is not null)
+		{
+			try { await _serverTask; }
+			catch { }
+		}
+
+		_cts?.Dispose();
+		_listener = null;
 	}
 }
