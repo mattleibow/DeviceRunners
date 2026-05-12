@@ -38,6 +38,10 @@ runs:
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
           /bl:./artifacts/logs/msbuild-build-loose.binlog
+    - name: Remove any conflicting package registration
+      shell: pwsh
+      run: |
+        Get-AppxPackage -Name "com.companyname.devicetestingkitapp.devicetests" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
     - name: Run Tests with Loose MSIX Layout
       shell: pwsh
       run: |
