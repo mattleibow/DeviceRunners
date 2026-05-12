@@ -37,8 +37,6 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
-          -p:WindowsAppSDKSelfContained=true `
-          -p:RuntimeIdentifier=win-x64 `
           /bl:./artifacts/logs/msbuild-build-loose.binlog
     - name: Remove any conflicting package registration
       shell: pwsh

@@ -18,6 +18,9 @@
     <!-- App Identifier -->
     <ApplicationId>com.companyname.devicetestingkitapp.devicetests</ApplicationId>
 
+    <!-- Bundle WinAppSDK runtime so loose-file MSIX registration works without framework install -->
+    <WindowsAppSDKSelfContained Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">true</WindowsAppSDKSelfContained>
+
     <!-- Versions -->
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
