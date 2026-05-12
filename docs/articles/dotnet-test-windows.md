@@ -42,18 +42,21 @@ For MSIX-packaged apps, the CLI handles installation, certificate management, la
 
 If your project sets `WindowsPackageType=None`, the build produces a plain `.exe`. This is the simplest workflow — no certificate management, no package installation, no cleanup.
 
-### MSIX Packaged Apps
+### MSIX Packaged Apps (Loose Deploy)
 
-> [!NOTE]
-> `dotnet test` does not yet support MSIX-packaged Windows apps. MSIX packaging requires `dotnet publish`, but `dotnet test` uses `Build`. Support is coming in a future release.
->
-> For now, use the [DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md) for MSIX testing.
+When the project uses the default Windows packaging (MSIX), the build output contains an `AppxManifest.xml`. The CLI detects this and uses loose-file MSIX registration via `winapp.exe` to register and launch the app directly from the build output — no `dotnet publish`, no certificate signing, no MSIX packaging needed.
+
+This works automatically with `dotnet test`:
+
+```bash
+dotnet test MyApp.DeviceTests.csproj -f net10.0-windows10.0.19041.0
+```
 
 ## Troubleshooting
 
-### "No .exe or .msix found"
+### "No Windows app found"
 
-Ensure the project targets a Windows TFM and builds successfully. Check the build output directory for the expected artifact.
+Ensure the project targets a Windows TFM and builds successfully. The targets look for either a `.exe` (unpackaged) or an `AppxManifest.xml` (loose MSIX) in the build output.
 
 ### Firewall Prompts
 
