@@ -31,7 +31,7 @@ runs:
       shell: bash
       run: |
         dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+        dotnet tool install --global DeviceRunners.Cli
     - name: Publish App
       shell: bash
       run: |

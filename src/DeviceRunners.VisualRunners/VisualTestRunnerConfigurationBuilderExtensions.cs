@@ -60,4 +60,50 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		builder.AddResultChannel(_ => new FileResultChannel(options));
 		return builder;
 	}
+
+	/// <summary>
+	/// Configures the test runner based on <c>DEVICE_RUNNERS_*</c> environment
+	/// variables. When <c>DEVICE_RUNNERS_AUTORUN=1</c> is set the runner enables
+	/// auto-start and connects back to the host via TCP so results can be
+	/// collected by the CLI tool. When the variable is absent this is a no-op.
+	/// </summary>
+	/// <remarks>
+	/// Supported platforms: Android, iOS, macOS (Catalyst), Windows.
+	/// <para>
+	/// On Android and iOS the variables are baked into the app bundle at build time.
+	/// On macOS and Windows the CLI injects them when launching the app process.
+	/// </para>
+	/// Environment variables read:
+	/// <list type="bullet">
+	/// <item><term>DEVICE_RUNNERS_AUTORUN</term><description>Set to any non-empty value to enable headless mode.</description></item>
+	/// <item><term>DEVICE_RUNNERS_PORT</term><description>TCP port to connect to on the host. Defaults to 16384.</description></item>
+	/// <item><term>DEVICE_RUNNERS_HOST_NAMES</term><description>Semicolon-separated list of host names or IPs to try. Defaults to <c>localhost;10.0.2.2</c>.</description></item>
+	/// </list>
+	/// </remarks>
+	public static TBuilder AddEnvironmentVariables<TBuilder>(this TBuilder builder)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+	{
+		var autorun = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_AUTORUN");
+		if (string.IsNullOrEmpty(autorun))
+			return builder;
+
+		var port = int.TryParse(Environment.GetEnvironmentVariable("DEVICE_RUNNERS_PORT"), out var p) ? p : 16384;
+		var hostNamesRaw = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_HOST_NAMES");
+		var hostNames = string.IsNullOrEmpty(hostNamesRaw)
+			? ["localhost", "10.0.2.2"]
+			: hostNamesRaw.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+		builder.EnableAutoStart(autoTerminate: true);
+		builder.AddTcpResultChannel(new TcpResultChannelOptions
+		{
+			HostNames = hostNames,
+			Port = port,
+			Formatter = new EventStreamFormatter(),
+			Required = false,
+			Retries = 3,
+			RetryTimeout = TimeSpan.FromSeconds(5),
+			Timeout = TimeSpan.FromSeconds(30),
+		});
+		return builder;
+	}
 }

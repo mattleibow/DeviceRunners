@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+    <ProjectReference Include="..\DeviceRunners.VisualRunners.Core\DeviceRunners.VisualRunners.Core.csproj" />
   </ItemGroup>
+
 
 </Project>
