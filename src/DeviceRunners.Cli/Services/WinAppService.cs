@@ -97,7 +97,9 @@ public class WinAppService
 		try
 		{
 			using var doc = JsonDocument.Parse(stdout);
-			if (doc.RootElement.TryGetProperty("pid", out var pidElement))
+			if (doc.RootElement.TryGetProperty("ProcessId", out var pidElement))
+				return pidElement.GetInt32();
+			if (doc.RootElement.TryGetProperty("pid", out pidElement))
 				return pidElement.GetInt32();
 		}
 		catch (JsonException)
