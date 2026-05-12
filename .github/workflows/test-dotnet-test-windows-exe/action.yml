@@ -1,5 +1,5 @@
-name: 'TCP Windows Test (Unpackaged)'
-description: 'Run TCP-based device tests on Windows (unpackaged executable)'
+name: 'dotnet test Windows (EXE)'
+description: 'Run device tests on Windows unpackaged via dotnet test'
 
 inputs:
   test-project:
@@ -13,33 +13,30 @@ inputs:
     default: 'release'
   artifact-name:
     description: 'Artifact name'
-    default: 'Test Results (TCP) - Windows (EXE)'
+    default: 'Test Results (dotnet test) - Windows (EXE)'
 
 runs:
   using: 'composite'
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Build and Install CLI Tool
+    - name: Publish CLI Tool Binaries
+      shell: pwsh
+      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+    - name: Run Tests
       shell: pwsh
       run: |
-        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
-        dotnet tool install --global DeviceRunners.Cli
-    - name: Publish App as Unpackaged Executable
-      shell: pwsh
-      run: |
-        dotnet publish ${{ inputs.test-project }} `
+        dotnet test ${{ inputs.test-project }} `
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
-          -p:TestingMode=NonInteractiveVisual `
           -p:WindowsPackageType=None `
-          --output artifacts/publish `
-          /bl:./artifacts/logs/msbuild-publish-unpackaged.binlog
-    - name: Run Tests with Unpackaged App
+          /bl:./artifacts/logs/msbuild-test.binlog
+    - name: Clean up build artifacts before upload
+      if: always()
       shell: pwsh
       run: |
-        $exe = Get-ChildItem "artifacts/publish/DeviceTestingKitApp.DeviceTests.exe"
-        device-runners windows test --app $exe --results-directory artifacts/test-results --logger trx
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
     - name: Upload Artifacts
       if: always()
       uses: actions/upload-artifact@v4
