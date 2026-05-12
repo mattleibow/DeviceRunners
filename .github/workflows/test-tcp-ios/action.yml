@@ -30,9 +30,11 @@ runs:
         runtime-identifier: ${{ inputs.runtime-identifier }}
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Publish CLI Tool Binaries
+    - name: Build and Install CLI Tool
       shell: bash
-      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
     - name: Create Simulator
       id: simulator
       shell: bash
@@ -45,15 +47,21 @@ runs:
       run: |
         dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait
         sleep 10
-    - name: Build and Test
+    - name: Publish App
       shell: bash
       run: |
-        dotnet test ${{ inputs.test-project }} \
+        dotnet build ${{ inputs.test-project }} \
           -f ${{ inputs.target-framework }} \
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
-          -p:DeviceRunnersDevice=${{ steps.simulator.outputs.udid }} \
+          -p:TestingMode=NonInteractiveVisual \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Run Tests
+      shell: bash
+      run: |
+        app_bundle=$(find artifacts/bin -name "*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found in artifacts/bin"; exit 1; }
+        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results --logger trx
     - name: Cleanup Simulator
       if: always()
       shell: bash

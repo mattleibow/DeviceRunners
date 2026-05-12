@@ -17,42 +17,32 @@ The current testing frameworks supported are:
  - NUnit
     - Visual device runner
 
-## Testing with `dotnet test` (Recommended)
-
-The simplest way to run device tests. Add the `DeviceRunners.Testing.Targets` NuGet package to your test project, then run:
-
-```bash
-dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst
-dotnet test MyApp.DeviceTests.csproj -f net10.0-ios
-dotnet test MyApp.DeviceTests.csproj -f net10.0-android
-dotnet test MyApp.DeviceTests.csproj -f net10.0-windows10.0.19041.0
-```
-
-This builds, deploys, and runs your test app, then collects TRX results automatically. No extra tooling needed.
-
-More information: [Using dotnet test](https://mattleibow.github.io/DeviceRunners/articles/using-dotnet-test.html)
-
 ## Testing with the Visual Runner
 
-Testing using the visual runner is just a matter of running the test app like any other app. This can be done via the CLI or in the IDE. Perfect for debugging individual tests.
+Testing using the visual runner is just a matter of running the test app like any other app. This can be done via the CLI or in the IDE.
 
 | | | |
 |:-:|:-:|:-:|
 |![image](https://github.com/mattleibow/DeviceRunners/assets/1096616/386c00fa-05f3-476c-ae08-2594bf06c211)|![image](https://github.com/mattleibow/DeviceRunners/assets/1096616/6044737c-aaa7-4272-b2e0-07d8e1a31d9d)|![image](https://github.com/mattleibow/DeviceRunners/assets/1096616/c23bd064-e8d5-4a81-832e-9306219a32e9)|
 
-More information: [Visual Runner in the IDE](https://mattleibow.github.io/DeviceRunners/articles/visual-runner-in-the-ide.html)
+More information can be found in the wiki: [Visual Runner in the IDE](https://github.com/mattleibow/DeviceRunners/wiki/Visual-Runner-in-the-IDE)
 
-## Testing with the DeviceRunners CLI (Advanced)
+## Testing with the CLI
 
-For scenarios requiring fine-grained control over deployment, the DeviceRunners CLI tool can be used directly. This is what `dotnet test` uses under the hood.
+Test can also be run on the CLI - both locally and on CI. For tests on Android, iOS and Mac Catalyst, there is the XHarness tool. For Windows, all we need is PowerShell.
 
-More information: [Using DeviceRunners CLI](https://mattleibow.github.io/DeviceRunners/articles/using-devicerunners-cli.html)
+More information can be found in the wiki: 
 
-## Testing with XHarness (Legacy)
+* [Using XHarness](https://github.com/mattleibow/DeviceRunners/wiki/Using-XHarness)
+* [iOS - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-iOS-using-XHarness)   
+* [Android - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Android-using-XHarness)  
+* [Mac Catalyst - XHarness](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Mac-Catalyst-using-XHarness)  
+* [Windows - PowerShell](https://github.com/mattleibow/DeviceRunners/wiki/CLI-Device-Runner-for-Windows-using-PowerShell)  
 
-For legacy CI setups, XHarness is still supported for Android, iOS, and Mac Catalyst.
 
-More information: [Using XHarness](https://mattleibow.github.io/DeviceRunners/articles/using-xharness.html)
+## UI Testing Support
+
+More information can be found in the wiki: [UI Tests](https://github.com/mattleibow/DeviceRunners/wiki/UI-Tests)
 
 ## Credits
 

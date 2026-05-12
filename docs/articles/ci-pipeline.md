@@ -118,33 +118,6 @@ What it does:
 | MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | **Stable** |
 | EXE (unpackaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | N/A | **Stable** — TCP only |
 
-## Using `dotnet test` in CI
-
-The TCP device test workflows use the `DeviceRunners.Testing.Targets` package to run tests via `dotnet test`. This is the recommended approach for CI:
-
-```yaml
-# GitHub Actions example
-- name: Run Device Tests
-  run: |
-    dotnet test sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-      -f net10.0-maccatalyst \
-      -c release
-```
-
-```yaml
-# Azure Pipelines example
-- script: |
-    dotnet test sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj `
-      -f net10.0-android `
-      -c release
-  displayName: 'Run Android Device Tests'
-```
-
-The `DeviceRunners.Testing.Targets` package is included in the test project via `<PackageReference>`. When using in-repo development, the `.props` and `.targets` files are imported directly. For published packages, NuGet handles the import automatically.
-
-> [!NOTE]
-> The TCP test workflows (`test-tcp-*`) in this repository use `dotnet test` under the hood. The XHarness workflows remain as an alternative for scenarios requiring XHarness-specific features.
-
 ## Device Management Patterns
 
 ### Android Emulator (via `dotnet android`)

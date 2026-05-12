@@ -1,4 +1,0 @@
-# The tools/ directory contains published CLI binaries that are regenerated
-# by `dotnet pack` (via the PublishCliTools target). They should not be
-# checked in — CI and local builds populate them on demand.
-tools/

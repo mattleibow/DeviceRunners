@@ -20,17 +20,26 @@ runs:
   steps:
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
-    - name: Publish CLI Tool Binaries
-      shell: pwsh
-      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
-    - name: Run Tests
+    - name: Build and Install CLI Tool
       shell: pwsh
       run: |
-        dotnet test ${{ inputs.test-project }} `
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global --add-source artifacts/package/release DeviceRunners.Cli
+    - name: Publish App as Unpackaged Executable
+      shell: pwsh
+      run: |
+        dotnet publish ${{ inputs.test-project }} `
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
+          -p:TestingMode=NonInteractiveVisual `
           -p:WindowsPackageType=None `
-          /bl:./artifacts/logs/msbuild-test.binlog
+          --output artifacts/publish `
+          /bl:./artifacts/logs/msbuild-publish-unpackaged.binlog
+    - name: Run Tests with Unpackaged App
+      shell: pwsh
+      run: |
+        $exe = Get-ChildItem "artifacts/publish/DeviceTestingKitApp.DeviceTests.exe"
+        device-runners windows test --app $exe --results-directory artifacts/test-results --logger trx
     - name: Upload Artifacts
       if: always()
       uses: actions/upload-artifact@v4
