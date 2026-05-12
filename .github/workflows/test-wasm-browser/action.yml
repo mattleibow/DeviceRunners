@@ -1,0 +1,95 @@
+name: 'WASM Browser Test'
+description: 'Build, publish, and run WASM browser tests using the DeviceRunners CLI'
+
+inputs:
+  test-project:
+    description: 'Path to the WASM test project'
+    default: 'sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  browser:
+    description: 'Browser to use (chromium, firefox, webkit)'
+    default: 'chromium'
+  timeout:
+    description: 'Test execution timeout in seconds'
+    default: '300'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results - WASM Browser'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+
+    - name: Build CLI Tool
+      shell: bash
+      run: dotnet build src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c ${{ inputs.configuration }} -f net10.0
+
+    - name: Publish WASM Test App
+      shell: bash
+      run: |
+        dotnet publish ${{ inputs.test-project }} \
+          -c ${{ inputs.configuration }} \
+          /bl:./artifacts/logs/msbuild-wasm-publish.binlog
+
+    - name: Install Playwright Browsers
+      shell: bash
+      run: |
+        # Playwright .NET ships a CLI tool via its package
+        PLAYWRIGHT_DIR=$(find ./artifacts -path "*/Microsoft.Playwright/*/playwright.sh" -o -path "*/Microsoft.Playwright/*/.playwright/node/*/bin/node" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
+        if [ -z "$PLAYWRIGHT_DIR" ]; then
+          # Fallback: use npx or the dotnet tool directly
+          dotnet tool install --global Microsoft.Playwright.CLI 2>/dev/null || true
+          playwright install --with-deps ${{ inputs.browser }} 2>/dev/null || true
+        fi
+        # Use the PowerShell script approach that works with the .NET package
+        pwsh -Command "& { \$env:PLAYWRIGHT_BROWSERS_PATH='0'; dotnet build ${{ inputs.test-project }} -t:InstallPlaywrightBrowsers 2>&1 }" || true
+        # Direct approach: call the playwright CLI from the NuGet cache
+        npx playwright install --with-deps ${{ inputs.browser }} 2>/dev/null || true
+
+    - name: Determine WASM App Path
+      id: wasm-path
+      shell: bash
+      run: |
+        # Find the published wwwroot directory
+        PUBLISH_DIR=$(find ./artifacts -type d -name "wwwroot" -path "*/publish/*" 2>/dev/null | head -1)
+        if [ -z "$PUBLISH_DIR" ]; then
+          # Fallback: look for publish directory with index.html
+          PUBLISH_DIR=$(find ./artifacts -name "index.html" -path "*/publish/*" 2>/dev/null | head -1 | xargs dirname 2>/dev/null || true)
+        fi
+        if [ -z "$PUBLISH_DIR" ]; then
+          echo "ERROR: Could not find published WASM app directory"
+          find ./artifacts -name "*.html" -o -name "*.wasm" 2>/dev/null | head -20
+          exit 1
+        fi
+        echo "wasm-app-path=$PUBLISH_DIR" >> "$GITHUB_OUTPUT"
+        echo "Found WASM app at: $PUBLISH_DIR"
+
+    - name: Run WASM Browser Tests
+      shell: bash
+      run: |
+        mkdir -p ./artifacts/test-results
+        dotnet run --project src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -- \
+          wasm test \
+          --app "${{ steps.wasm-path.outputs.wasm-app-path }}" \
+          --browser ${{ inputs.browser }} \
+          --timeout ${{ inputs.timeout }} \
+          --logger "trx;LogFileName=test-results.trx" \
+          --results-directory ./artifacts/test-results
+
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

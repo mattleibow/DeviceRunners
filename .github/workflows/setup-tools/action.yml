@@ -33,6 +33,9 @@ runs:
     if: runner.os != 'Linux'
     shell: pwsh
     run: dotnet workload install maui --source https://api.nuget.org/v3/index.json --version 10.0.201
+  - name: Setup .NET WASM Tools
+    shell: pwsh
+    run: dotnet workload install wasm-tools --source https://api.nuget.org/v3/index.json
   - name: Setup Local .NET Tools
     shell: pwsh
     run: dotnet tool restore
