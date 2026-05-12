@@ -49,12 +49,7 @@ public class MacOSTestCommand(IAnsiConsole console) : BaseTestCommand<MacOSTestC
 
             // Start the app, injecting env vars so it auto-configures headless mode.
             WriteConsoleOutput($"  - Starting the application...", settings);
-            var environmentVariables = new Dictionary<string, string>
-            {
-                ["DEVICE_RUNNERS_AUTORUN"] = "1",
-                ["DEVICE_RUNNERS_PORT"] = settings.Port.ToString(),
-                ["DEVICE_RUNNERS_HOST_NAMES"] = "localhost",
-            };
+            var environmentVariables = GetAppEnvironmentVariables(settings);
             macOSService.LaunchApp(settings.App, environmentVariables: environmentVariables);
             WriteConsoleOutput($"    Application started.", settings);
 

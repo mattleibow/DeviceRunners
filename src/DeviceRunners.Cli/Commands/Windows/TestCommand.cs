@@ -85,9 +85,8 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
             WorkingDirectory = Path.GetDirectoryName(settings.App)
         };
 
-        startInfo.EnvironmentVariables["DEVICE_RUNNERS_AUTORUN"] = "1";
-        startInfo.EnvironmentVariables["DEVICE_RUNNERS_PORT"] = settings.Port.ToString();
-        startInfo.EnvironmentVariables["DEVICE_RUNNERS_HOST_NAMES"] = "localhost";
+        foreach (var kvp in GetAppEnvironmentVariables(settings))
+            startInfo.EnvironmentVariables[kvp.Key] = kvp.Value;
 
         var process = Process.Start(startInfo);
         if (process == null)

@@ -32,6 +32,14 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
         [DefaultValue(16384)]
         public int Port { get; set; } = 16384;
 
+        [Description("TCP port the app should connect back to (defaults to --port)")]
+        [CommandOption("--app-port")]
+        public int? AppPort { get; set; }
+
+        [Description("Semicolon-separated host names the app should try connecting to (defaults to localhost)")]
+        [CommandOption("--app-host-names")]
+        public string? AppHostNames { get; set; }
+
         [Description("Connection timeout in seconds")]
         [CommandOption("--connection-timeout")]
         [DefaultValue(120)]
@@ -49,6 +57,17 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
     }
 
     protected abstract Task<int> ExecuteAsync(CommandContext context, TSettings settings);
+
+    /// <summary>
+    /// Builds the environment variables that tell the test app how to connect
+    /// back to the CLI's TCP listener.
+    /// </summary>
+    protected static Dictionary<string, string> GetAppEnvironmentVariables(TSettings settings) => new()
+    {
+        ["DEVICE_RUNNERS_AUTORUN"] = "1",
+        ["DEVICE_RUNNERS_PORT"] = (settings.AppPort ?? settings.Port).ToString(),
+        ["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
+    };
 
     protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed)
     {

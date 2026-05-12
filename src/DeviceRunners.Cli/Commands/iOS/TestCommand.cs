@@ -88,12 +88,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 
             // Start the app
             WriteConsoleOutput($"  - Starting the application...", settings);
-            var envVars = new Dictionary<string, string>
-            {
-                ["DEVICE_RUNNERS_AUTORUN"] = "1",
-                ["DEVICE_RUNNERS_PORT"] = settings.Port.ToString(),
-                ["DEVICE_RUNNERS_HOST_NAMES"] = "localhost",
-            };
+            var envVars = GetAppEnvironmentVariables(settings);
             await iOSService.LaunchAppAsync(appIdentifier, targetDevice, envVars);
             WriteConsoleOutput($"    Application started.", settings);
 
