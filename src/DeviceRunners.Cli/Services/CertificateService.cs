@@ -105,23 +105,22 @@ public class CertificateService
             throw new PlatformNotSupportedException("Certificate installation is only supported on Windows.");
         }
 
-        // Try LocalMachine\TrustedPeople first (requires admin); fall back to
-        // CurrentUser\TrustedPeople which works without elevation and is also
-        // accepted by the Windows App Installer.
+        // Try native C# approach first
         try
         {
-            InstallCertificateNative(certPath, StoreLocation.LocalMachine);
+            InstallCertificateNative(certPath);
         }
         catch
         {
-            InstallCertificateNative(certPath, StoreLocation.CurrentUser);
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Import-Certificate -CertStoreLocation 'Cert:\\LocalMachine\\TrustedPeople' -FilePath '{certPath}'", requiresElevation: true);
         }
     }
 
-    private void InstallCertificateNative(string certPath, StoreLocation location)
+    private void InstallCertificateNative(string certPath)
     {
         var cert = X509CertificateLoader.LoadCertificateFromFile(certPath);
-        using var store = new X509Store(StoreName.TrustedPeople, location);
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
         store.Open(OpenFlags.ReadWrite);
         store.Add(cert);
         store.Close();
@@ -134,14 +133,21 @@ public class CertificateService
             throw new PlatformNotSupportedException("Certificate uninstallation is only supported on Windows.");
         }
 
-        // Remove from both stores (ignore errors for each — the cert may only be in one).
-        try { UninstallCertificateNative(thumbprint, StoreLocation.LocalMachine); } catch { }
-        try { UninstallCertificateNative(thumbprint, StoreLocation.CurrentUser); } catch { }
+        // Try native C# approach first
+        try
+        {
+            UninstallCertificateNative(thumbprint);
+        }
+        catch
+        {
+            // Fall back to PowerShell with elevation
+            _powerShellService.ExecuteCommand($"Remove-Item -Path 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}' -DeleteKey", requiresElevation: true);
+        }
     }
 
-    private void UninstallCertificateNative(string thumbprint, StoreLocation location)
+    private void UninstallCertificateNative(string thumbprint)
     {
-        using var store = new X509Store(StoreName.TrustedPeople, location);
+        using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
         store.Open(OpenFlags.ReadWrite);
         
         var certsToRemove = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
@@ -160,23 +166,28 @@ public class CertificateService
             return false;
         }
 
-        // Check both LocalMachine and CurrentUser TrustedPeople stores.
-        bool CheckStore(StoreLocation location)
+        try
         {
+            // Use native C# approach for checking certificate
+            using var store = new X509Store(StoreName.TrustedPeople, StoreLocation.LocalMachine);
+            store.Open(OpenFlags.ReadOnly);
+            var certs = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false);
+            var found = certs.Count > 0;
+            store.Close();
+            return found;
+        }
+        catch
+        {
+            // Fall back to PowerShell
             try
             {
-                using var store = new X509Store(StoreName.TrustedPeople, location);
-                store.Open(OpenFlags.ReadOnly);
-                var found = store.Certificates.Find(X509FindType.FindByThumbprint, thumbprint, false).Count > 0;
-                store.Close();
-                return found;
+                var exitCode = _powerShellService.ExecuteCommandWithExitCode($"Test-Certificate 'Cert:\\LocalMachine\\TrustedPeople\\{thumbprint}'", out _, out _);
+                return exitCode == 0;
             }
             catch
             {
                 return false;
             }
         }
-
-        return CheckStore(StoreLocation.LocalMachine) || CheckStore(StoreLocation.CurrentUser);
     }
 }
