@@ -20,6 +20,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
 	{
 		var testStartTime = DateTimeOffset.Now;
+		var appName = string.IsNullOrEmpty(settings.App) ? null : Path.GetFileNameWithoutExtension(settings.App);
 
 		try
 		{
@@ -108,7 +109,6 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 			WriteConsoleOutput($"    Application terminated.", settings);
 
 			// Save device log (filtered to app process for managed exception details)
-			var appName = Path.GetFileNameWithoutExtension(settings.App);
 			var deviceLogFile = GetDeviceLogFilePath(settings);
 			WriteConsoleOutput($"  - Saving device log to: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
 			try
@@ -146,7 +146,7 @@ public class iOSTestCommand(IAnsiConsole console) : BaseTestCommand<iOSTestComma
 			try
 			{
 				WriteConsoleOutput($"  - Saving device log due to error: [green]{Markup.Escape(deviceLogFile)}[/]", settings);
-				await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, settings.Device, processName: Path.GetFileNameWithoutExtension(settings.App));
+				await iOSService.SaveDeviceLogAsync(deviceLogFile, testStartTime, settings.Device, processName: appName);
 				WriteConsoleOutput($"    Device log saved.", settings);
 			}
 			catch (Exception logEx)
