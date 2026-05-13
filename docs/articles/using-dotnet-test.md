@@ -35,7 +35,7 @@ public static MauiApp CreateMauiApp()
     var builder = MauiApp.CreateBuilder();
     builder
         .UseVisualTestRunner(conf => conf
-            .AddCliConfiguration()     // Reads env vars set by dotnet test
+            .AddCliConfiguration()     // Reads config injected by dotnet test
             .AddConsoleResultChannel()
             .AddTestAssembly(typeof(MauiProgram).Assembly)
             .AddXunit())
@@ -45,12 +45,12 @@ public static MauiApp CreateMauiApp()
 }
 ```
 
-When `dotnet test` runs your app, the `DEVICE_RUNNERS_AUTORUN` environment variable is set. `AddCliConfiguration()` detects this and:
+When `dotnet test` runs your app, configuration is injected via environment variables (or CLI arguments for MSIX-packaged Windows apps where env vars cannot be forwarded). `AddCliConfiguration()` detects this and:
 - Enables auto-start (runs all tests immediately)
 - Connects back to the CLI tool via TCP to stream results
 - Auto-terminates when complete
 
-When the environment variable is not set (e.g., running from the IDE), the call is a no-op and the visual runner behaves normally.
+When neither environment variables nor CLI arguments are present (e.g., running from the IDE), the call is a no-op and the visual runner behaves normally.
 
 ### 3. Run Tests
 
@@ -121,22 +121,23 @@ dotnet test MyApp.csproj -f net10.0-ios \
 
 The package replaces the standard `VSTest` MSBuild target for device platforms (Android, iOS, macOS Catalyst, Windows). When you run `dotnet test`, the following happens:
 
-1. **Build** — The app is compiled for the target platform (APK, .app bundle, or .exe)
+1. **Build** — The app is compiled for the target platform (APK, .app bundle, .exe, or loose MSIX layout)
 2. **Deploy** — The CLI tool installs the app on the device/simulator
-3. **Launch** — The app is started with environment variables that tell it to auto-run tests and connect back via TCP
+3. **Launch** — The app is started with configuration (env vars or CLI args) that tells it to auto-run tests and connect back via TCP
 4. **Collect** — The CLI listens on a TCP port for NDJSON test events and writes a TRX file
 5. **Report** — Results are parsed and reported in the standard `dotnet test` format
 
-### Environment Variable Injection
+### Configuration Injection
 
-Each platform uses a different mechanism to pass environment variables to the app:
+Each platform uses a different mechanism to pass configuration to the app:
 
 | Platform | Mechanism |
 |----------|-----------|
 | Android | Baked into the APK at build time via `_GenerateEnvironmentFiles` |
 | iOS | Passed via `SimCtl.LaunchAppAsync` (AppleDev 0.8.10+) |
 | macOS Catalyst | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
-| Windows | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
+| Windows (unpackaged) | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
+| Windows (MSIX loose) | CLI arguments via `winapp.exe --args` (env vars cannot be forwarded to packaged apps) |
 
 ### MSBuild Target Chain
 
@@ -156,7 +157,7 @@ For platform-specific setup and prerequisites:
 - [Android](dotnet-test-android.md) — Emulator setup, APK configuration
 - [iOS](dotnet-test-ios.md) — Simulator setup, device logs
 - [macOS Catalyst](dotnet-test-macos.md) — No simulator needed
-- [Windows](dotnet-test-windows.md) — Unpackaged EXE mode
+- [Windows](dotnet-test-windows.md) — Unpackaged EXE and MSIX loose deploy
 
 ## Comparison with Other Approaches
 
@@ -171,7 +172,4 @@ For platform-specific setup and prerequisites:
 | MSIX packaged apps | Yes (loose deploy) | Yes | Yes |
 
 > [!NOTE]
-> `dotnet test` does not yet support MSIX-packaged Windows apps because it uses `Build` (not `Publish`) which doesn't produce MSIX output. For packaged apps, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly. MSIX support is tracked for a future release.
-
-> [!NOTE]
-> For MSIX-packaged Windows apps or scenarios requiring fine-grained control over deployment, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly.
+> For MSIX-packaged Windows apps, `dotnet test` uses loose-file MSIX registration (the app is registered directly from the build output folder via `winapp.exe`). No `dotnet publish`, certificate signing, or MSIX packaging step is needed. For scenarios requiring fine-grained control over deployment, use the [DeviceRunners CLI](using-devicerunners-cli.md) directly.

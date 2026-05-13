@@ -18,7 +18,7 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 | **Android** | ✅ | ✅ | ✅ | ✅ |
 | **iOS** | ✅ | ✅ | ✅ | ✅ |
 | **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ | ✅ |
-| **Windows (WinUI 3)** | ✅ (unpackaged) | ✅ | ✅ | ❌ |
+| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ❌ |
 
 ## Supported Testing Frameworks
 
@@ -295,21 +295,25 @@ The `DeviceRunners.Testing.Targets` NuGet package enables `dotnet test` for devi
 
 1. **Builds** the app for the target platform
 2. **Deploys** it using the bundled DeviceRunners CLI tool
-3. **Launches** the app with environment variables for auto-run and TCP connection
+3. **Launches** the app with configuration for auto-run and TCP connection
 4. **Collects** test results via TCP and writes a TRX file
 5. **Reports** results in the standard `dotnet test` output format
 
 ### Package Structure
 
-The package ships two MSBuild files and a framework-dependent CLI tool:
+The package ships two MSBuild files and self-contained CLI binaries:
 
 ```
 build/
   DeviceRunners.Testing.Targets.props    # Imported early: disables MTP, sets defaults
   DeviceRunners.Testing.Targets.targets  # Imported late: custom VSTest target chain
 tools/
-  DeviceRunners.Cli.dll                  # CLI tool (built at pack time, not checked in)
-  ...                                    # Dependencies
+  osx-arm64/DeviceRunners.Cli            # Self-contained single-file binary (~20 MB)
+  osx-x64/DeviceRunners.Cli
+  win-x64/DeviceRunners.Cli.exe
+  win-arm64/DeviceRunners.Cli.exe
+  linux-x64/DeviceRunners.Cli
+  linux-arm64/DeviceRunners.Cli
 ```
 
 ### MSBuild Target Chain
