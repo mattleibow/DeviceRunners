@@ -6,17 +6,17 @@ using Xunit.Sdk;
 namespace DeviceRunners.VisualRunners.Xunit;
 
 /// <summary>
-/// Xunit test discoverer for browser WASM environments.
+/// Reflection-based xunit test discoverer that works without filesystem access.
 /// Uses xunit's own <see cref="XunitTestFrameworkDiscoverer"/> via
-/// <see cref="WasmXunitDiscoverer"/> for proper discovery of all test types
+/// <see cref="ReflectionXunitDiscoverer"/> for proper discovery of all test types
 /// (Fact, Theory, MemberData, ClassData, etc.) without spawning threads.
 /// </summary>
-public class XunitWasmTestDiscoverer : ITestDiscoverer
+public class XunitReflectionTestDiscoverer : ITestDiscoverer
 {
 	readonly IReadOnlyList<Assembly> _testAssemblies;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public XunitWasmTestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
+	public XunitReflectionTestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_testAssemblies = options.TestAssemblies.ToArray();
 		_diagnosticsManager = diagnosticsManager;
@@ -38,7 +38,7 @@ public class XunitWasmTestDiscoverer : ITestDiscoverer
 				ParallelizeAssembly = false,
 				ParallelizeTestCollections = false,
 				MaxParallelThreads = 1,
-				PreEnumerateTheories = false,
+				PreEnumerateTheories = true,
 			};
 			var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 
@@ -46,7 +46,7 @@ public class XunitWasmTestDiscoverer : ITestDiscoverer
 			{
 				var assemblyInfo = new ReflectionAssemblyInfo(assembly);
 
-				using var discoverer = new WasmXunitDiscoverer(
+				using var discoverer = new ReflectionXunitDiscoverer(
 					assemblyInfo,
 					NullSourceInformationProvider.Instance,
 					NullMessageSink.Instance);
@@ -55,9 +55,9 @@ public class XunitWasmTestDiscoverer : ITestDiscoverer
 
 				if (testCases.Count > 0)
 				{
-					var testAssembly = new XunitWasmTestAssemblyInfo(assemblyFileName, configuration);
+					var testAssembly = new XunitTestAssemblyInfo(assemblyFileName, configuration);
 					testAssembly.TestCases.AddRange(
-						testCases.Select(tc => new XunitWasmTestCaseInfo(testAssembly, tc)));
+						testCases.Select(tc => new XunitTestCaseInfo(testAssembly, tc)));
 					result.Add(testAssembly);
 				}
 			}

@@ -3,16 +3,16 @@ using Xunit.Sdk;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
-#pragma warning disable CS0618 // SynchronousMessageBus is obsolete but required for threadless WASM operation
+#pragma warning disable CS0618 // SynchronousMessageBus is obsolete but required for threadless operation
 
 /// <summary>
 /// Extends <see cref="XunitTestFrameworkDiscoverer"/> to perform test discovery
-/// without spawning threads, which is required for single-threaded WASM environments.
+/// without spawning threads, which is required for single-threaded environments.
 /// Uses <see cref="SynchronousMessageBus"/> to process discovery messages inline.
 /// </summary>
-class WasmXunitDiscoverer : XunitTestFrameworkDiscoverer
+class ReflectionXunitDiscoverer : XunitTestFrameworkDiscoverer
 {
-	public WasmXunitDiscoverer(
+	public ReflectionXunitDiscoverer(
 		IAssemblyInfo assemblyInfo,
 		ISourceInformationProvider sourceProvider,
 		IMessageSink diagnosticMessageSink)

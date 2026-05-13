@@ -61,6 +61,21 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		return builder;
 	}
 
+	public static TBuilder AddResultChannel<TBuilder, TChannel>(this TBuilder builder, Func<IServiceProvider, TChannel> creator)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+		where TChannel : class, IResultChannel
+	{
+		builder.AddResultChannel(creator);
+		return builder;
+	}
+
+	public static TBuilder AddResultChannel<TBuilder>(this TBuilder builder, Func<IServiceProvider, IResultChannel> creator)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+	{
+		builder.AddResultChannel<IResultChannel>(svc => creator(svc));
+		return builder;
+	}
+
 	/// <summary>
 	/// Configures the test runner based on <c>DEVICE_RUNNERS_*</c> environment
 	/// variables. When <c>DEVICE_RUNNERS_AUTORUN=1</c> is set the runner enables

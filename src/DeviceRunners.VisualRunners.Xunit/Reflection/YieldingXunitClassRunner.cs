@@ -5,11 +5,11 @@ namespace DeviceRunners.VisualRunners.Xunit;
 
 /// <summary>
 /// Extends <see cref="XunitTestClassRunner"/> to add cooperative yielding
-/// between test methods for single-threaded WASM environments.
+/// between test methods for single-threaded environments.
 /// </summary>
-class WasmXunitClassRunner : XunitTestClassRunner
+class YieldingXunitClassRunner : XunitTestClassRunner
 {
-	public WasmXunitClassRunner(
+	public YieldingXunitClassRunner(
 		ITestClass testClass,
 		IReflectionTypeInfo @class,
 		IEnumerable<IXunitTestCase> testCases,

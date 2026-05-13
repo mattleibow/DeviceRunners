@@ -5,18 +5,18 @@ using Xunit.Sdk;
 namespace DeviceRunners.VisualRunners.Xunit;
 
 /// <summary>
-/// Xunit test runner for browser WASM environments.
+/// Reflection-based xunit test runner that works without filesystem access.
 /// Uses xunit's own execution engine with cooperative yielding runners
 /// for proper handling of all xunit features (fixtures, lifecycle, etc.)
-/// in single-threaded WASM.
+/// in single-threaded environments.
 /// </summary>
-public class XunitWasmTestRunner : ITestRunner
+public class XunitReflectionTestRunner : ITestRunner
 {
 	readonly IVisualTestRunnerConfiguration _options;
 	readonly IResultChannelManager? _resultChannelManager;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public XunitWasmTestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
+	public XunitReflectionTestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_options = options;
 		_resultChannelManager = resultChannelManager;
@@ -33,11 +33,11 @@ public class XunitWasmTestRunner : ITestRunner
 	{
 		await using var closing = await ResultChannelManagerScope.OpenAsync(_resultChannelManager);
 
-		var wasmCases = testCases.OfType<XunitWasmTestCaseInfo>().ToList();
-		if (wasmCases.Count == 0)
+		var xunitCases = testCases.OfType<XunitTestCaseInfo>().ToList();
+		if (xunitCases.Count == 0)
 			return;
 
-		var grouped = wasmCases.GroupBy(tc => tc.TestAssembly);
+		var grouped = xunitCases.GroupBy(tc => tc.TestAssembly);
 
 		foreach (var group in grouped)
 		{
@@ -49,8 +49,8 @@ public class XunitWasmTestRunner : ITestRunner
 	}
 
 	async Task RunAssemblyTestsAsync(
-		XunitWasmTestAssemblyInfo assemblyInfo,
-		IReadOnlyList<XunitWasmTestCaseInfo> testCases,
+		XunitTestAssemblyInfo assemblyInfo,
+		IReadOnlyList<XunitTestCaseInfo> testCases,
 		CancellationToken cancellationToken)
 	{
 		var xunitTestCases = testCases.ToDictionary(tc => tc.TestCase, tc => tc);
@@ -61,11 +61,11 @@ public class XunitWasmTestRunner : ITestRunner
 		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 		executionOptions.SetSynchronousMessageReporting(true);
 
-		var executionSink = new WasmExecutionSink(xunitTestCases, _resultChannelManager);
+		var executionSink = new DeviceExecutionSink(xunitTestCases, _resultChannelManager);
 
 		try
 		{
-			var assemblyRunner = new WasmXunitAssemblyRunner(
+			var assemblyRunner = new YieldingXunitAssemblyRunner(
 				testAssembly,
 				xunitTestCases.Keys.OfType<IXunitTestCase>(),
 				NullMessageSink.Instance,

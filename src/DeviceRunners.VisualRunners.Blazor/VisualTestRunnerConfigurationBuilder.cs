@@ -2,21 +2,21 @@ using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DeviceRunners.VisualRunners.Blazor;
+namespace DeviceRunners.VisualRunners;
 
 /// <summary>
 /// Configuration builder for Blazor-hosted visual test runners.
-/// Mirrors the MAUI <see cref="VisualTestRunnerConfigurationBuilder"/> but registers
+/// Mirrors the MAUI <c>VisualTestRunnerConfigurationBuilder</c> but registers
 /// services into a plain <see cref="IServiceCollection"/>.
 /// </summary>
-public class BlazorVisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurationBuilder
+public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurationBuilder
 {
 	readonly IServiceCollection _services;
 	readonly List<Assembly> _assemblies = [];
 	bool _autoStart;
 	bool _autoTerminate;
 
-	public BlazorVisualTestRunnerConfigurationBuilder(IServiceCollection services)
+	public VisualTestRunnerConfigurationBuilder(IServiceCollection services)
 	{
 		_services = services;
 	}
