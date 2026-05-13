@@ -7,9 +7,9 @@ namespace DeviceRunners.VisualRunners.Xunit;
 /// Extends <see cref="XunitTestAssemblyRunner"/> to add cooperative yielding
 /// between test collections for single-threaded environments.
 /// </summary>
-class YieldingXunitAssemblyRunner : XunitTestAssemblyRunner
+class XunitYieldingAssemblyRunner : XunitTestAssemblyRunner
 {
-	public YieldingXunitAssemblyRunner(
+	public XunitYieldingAssemblyRunner(
 		ITestAssembly testAssembly,
 		IEnumerable<IXunitTestCase> testCases,
 		IMessageSink diagnosticMessageSink,
@@ -27,7 +27,7 @@ class YieldingXunitAssemblyRunner : XunitTestAssemblyRunner
 	{
 		await Task.Yield();
 
-		var runner = new YieldingXunitCollectionRunner(
+		var runner = new XunitYieldingCollectionRunner(
 			testCollection,
 			testCases,
 			DiagnosticMessageSink,

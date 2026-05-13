@@ -7,9 +7,9 @@ namespace DeviceRunners.VisualRunners.Xunit;
 /// Extends <see cref="XunitTestClassRunner"/> to add cooperative yielding
 /// between test methods for single-threaded environments.
 /// </summary>
-class YieldingXunitClassRunner : XunitTestClassRunner
+class XunitYieldingClassRunner : XunitTestClassRunner
 {
-	public YieldingXunitClassRunner(
+	public XunitYieldingClassRunner(
 		ITestClass testClass,
 		IReflectionTypeInfo @class,
 		IEnumerable<IXunitTestCase> testCases,

@@ -67,7 +67,7 @@ public class XunitReflectionTestRunner : ITestRunner
 
 		try
 		{
-			var assemblyRunner = new YieldingXunitAssemblyRunner(
+			var assemblyRunner = new XunitYieldingAssemblyRunner(
 				testAssembly,
 				xunitTestCases.Keys.OfType<IXunitTestCase>(),
 				diagnosticSink,
