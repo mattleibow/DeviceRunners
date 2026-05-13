@@ -122,10 +122,7 @@ public class XunitTestRunner : ITestRunner
 
 		if (longRunningSeconds > 0)
 		{
-			var diagSink = new DiagnosticMessageSink(
-				d => _diagnosticsManager?.PostDiagnosticMessage(d),
-				assemblyInfo.AssemblyFileName,
-				executionOptions.GetDiagnosticMessagesOrDefault());
+			var diagSink = new DiagnosticMessageSink(_diagnosticsManager);
 
 			resultsSink = new DelegatingLongRunningTestDetectionSink(resultsSink, TimeSpan.FromSeconds(longRunningSeconds), diagSink);
 		}
