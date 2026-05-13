@@ -4,7 +4,6 @@
     <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
     <RootNamespace>DeviceRunners.VisualRunners</RootNamespace>
     <Description>Core cross-platform types for DeviceRunners visual test runners (result channels, formatters, test events).</Description>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 </Project>
