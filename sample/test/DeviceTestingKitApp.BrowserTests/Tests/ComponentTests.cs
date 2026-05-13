@@ -68,24 +68,16 @@ public class ViewModelBindingTests
 	}
 
 	[Theory]
-	[ClassData(typeof(TransformTestData))]
-	public void ComplexTheoryWithClassData(TransformData data)
+	[MemberData(nameof(GetTransformData))]
+	public void ComplexTheoryWithMemberData(string input, string expected)
 	{
-		Assert.Equal(data.Expected, data.Input.ToUpperInvariant());
+		Assert.Equal(expected, input.ToUpperInvariant());
 	}
 
-	public record TransformData(string Input, string Expected);
-
-	class TransformTestData : IEnumerable<object[]>
+	public static IEnumerable<object[]> GetTransformData()
 	{
-		readonly List<object[]> _data =
-		[
-			[new TransformData("hello", "HELLO")],
-			[new TransformData("woRld", "WORLD")],
-		];
-
-		public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+		yield return ["hello", "HELLO"];
+		yield return ["woRld", "WORLD"];
 	}
 }
 
