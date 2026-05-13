@@ -139,6 +139,9 @@ Each platform uses a different mechanism to pass configuration to the app:
 | Windows (unpackaged) | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
 | Windows (MSIX loose) | CLI arguments via `winapp.exe --args` (env vars cannot be forwarded to packaged apps) |
 
+> [!NOTE]
+> On all platforms except Android, the CLI injects configuration at **launch time** — the same built app can be run with different settings without rebuilding. On Android, configuration is embedded into the APK at **build time** because `adb` has no mechanism to pass environment variables when launching an app. This means changing configuration (e.g., the TCP port) requires a rebuild. Launch-time injection via intent extras is tracked in [#123](https://github.com/mattleibow/DeviceRunners/issues/123).
+
 ### MSBuild Target Chain
 
 ```
