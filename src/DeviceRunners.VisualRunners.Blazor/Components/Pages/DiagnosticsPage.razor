@@ -4,9 +4,8 @@
 
 @implements IDisposable
 
-<div class="dr-diagnostics-page">
+<div class="dr-diagnostics">
     <div class="dr-header">
-        <button class="dr-btn dr-btn-back" @onclick="GoBack">← Back</button>
         <h2>Diagnostics</h2>
         @if (DiagnosticsVM is not null)
         {
@@ -18,8 +17,10 @@
 
     @if (DiagnosticsVM is not null)
     {
-        <div class="dr-diagnostics-messages">
-            <pre>@DiagnosticsVM.MessagesString</pre>
+        <div class="dr-diagnostics-log">
+            <div class="dr-diagnostics-messages">
+                <pre>@DiagnosticsVM.MessagesString</pre>
+            </div>
         </div>
     }
     else
@@ -31,9 +32,6 @@
 </div>
 
 @code {
-    [Parameter]
-    public EventCallback OnBackRequested { get; set; }
-
     DiagnosticsViewModel? DiagnosticsVM => ViewModel.Diagnostics;
 
     protected override void OnInitialized()
@@ -47,9 +45,6 @@
 
     void Clear() =>
         DiagnosticsVM?.ClearMessagesCommand.Execute(null);
-
-    async Task GoBack() =>
-        await OnBackRequested.InvokeAsync();
 
     public void Dispose()
     {
