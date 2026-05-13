@@ -22,7 +22,7 @@ runs:
       uses: ./.github/workflows/setup-tools
     - name: Publish CLI Tool Binaries
       shell: pwsh
-      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r win-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/win-x64
     - name: Run Tests
       shell: pwsh
       run: |
