@@ -62,19 +62,8 @@
   </PropertyGroup>
 
   <!--
-    Force assemblies to be embedded directly in the APK for Android.
-
-    In Debug builds, .NET Android uses "Fast Deployment" by default: assemblies are
-    NOT embedded in the APK; instead they are pushed to the device separately via adb.
-    The DeviceRunners CLI installs the APK via `adb install` but does NOT handle the
-    separate Fast Deployment push, so the app would crash at startup with
-    "No assemblies found ... Assuming this is part of Fast Deployment."
-
-    Setting EmbedAssembliesIntoApk=true makes the build produce a self-contained APK
-    (same as Release builds and `dotnet publish`) that the CLI can simply install and run.
+    EmbedAssembliesIntoApk is only needed for test runs — see the .targets file.
+    Normal builds keep .NET Android's default Fast Deployment for faster iteration.
   -->
-  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-    <EmbedAssembliesIntoApk Condition="'$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
-  </PropertyGroup>
 
 </Project>

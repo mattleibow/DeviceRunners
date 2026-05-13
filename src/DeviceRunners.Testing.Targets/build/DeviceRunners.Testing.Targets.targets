@@ -53,12 +53,20 @@
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
 
   <!--
-    Marks this build as a test run so Android env var injection is gated.
-    Runs before Build so the property is visible to _GenerateEnvironmentFiles.
+    Marks this build as a test run so Android env var injection and
+    EmbedAssembliesIntoApk are gated on dotnet test only.
+    Runs before Build so properties are visible to _GenerateEnvironmentFiles
+    and the Android build targets.
+
+    EmbedAssembliesIntoApk is needed because the CLI installs via adb install
+    which does not handle Fast Deployment's separate assembly push. Without it,
+    the app crashes with "No assemblies found."
+    Normal builds keep Fast Deployment for faster iteration.
   -->
   <Target Name="_DeviceRunnersMarkTestRun">
     <PropertyGroup>
       <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
+      <EmbedAssembliesIntoApk Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
     </PropertyGroup>
   </Target>
 

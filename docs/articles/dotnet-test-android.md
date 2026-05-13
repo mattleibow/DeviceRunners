@@ -58,10 +58,9 @@ The following variables are injected:
 
 ### APK Configuration
 
-The package sets `EmbedAssembliesIntoApk=true` by default. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
+When running via `dotnet test`, the package automatically sets `EmbedAssembliesIntoApk=true`. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
 
-> [!NOTE]
-> This makes debug builds slightly slower (same as release builds) but ensures the APK is self-contained.
+Normal builds (`dotnet build`, IDE) are **not affected** — Fast Deployment remains enabled for fast iteration.
 
 ## Troubleshooting
 
@@ -75,7 +74,7 @@ adb reverse tcp:16384 tcp:16384
 
 ### "No assemblies found ... Fast Deployment"
 
-Ensure `EmbedAssembliesIntoApk` is `true` (the Testing.Targets package sets this by default). If you've overridden it in your project, set it back:
+Ensure `EmbedAssembliesIntoApk` is `true` when running via `dotnet test` (the package sets this automatically). If you've overridden it in your project, set it back:
 
 ```xml
 <PropertyGroup>
