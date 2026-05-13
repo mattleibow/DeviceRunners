@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Blazor\DeviceRunners.VisualRunners.Blazor.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary.XunitTests\DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.Library.XunitTests\DeviceTestingKitApp.Library.XunitTests.csproj" />
   </ItemGroup>
 

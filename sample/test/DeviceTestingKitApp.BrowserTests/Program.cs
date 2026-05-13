@@ -11,6 +11,7 @@ builder.UseVisualTestRunner(conf => conf
 	.AddXunit(useReflection: true)
 	.AddTestAssembly(typeof(DeviceTestingKitApp.BrowserTests.UnitTests).Assembly)
 	.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.XunitTests.UnitTests).Assembly)
+	.AddTestAssemblies(typeof(DeviceTestingKitApp.BlazorLibrary.XunitTests.UnitTests).Assembly)
 	.AddConsoleResultChannel());
 
 await builder.Build().RunAsync();
