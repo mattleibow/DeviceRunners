@@ -1,27 +1,21 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 using DeviceRunners.VisualRunners;
-using DeviceRunners.VisualRunners.WebAssembly;
-using DeviceRunners.VisualRunners.Xunit;
+using DeviceRunners.VisualRunners.Blazor;
+using DeviceRunners.VisualRunners.Blazor.Components;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-var host = builder.Build();
+builder.RootComponents.Add<TestRunnerApp>("#app");
 
-// Run tests after the WASM host starts
-_ = Task.Run(async () =>
+builder.Services.AddBlazorVisualTestRunner(conf =>
 {
-	// Small delay to let the Blazor host finish initialization
-	await Task.Delay(500);
-
-	var exitCode = await new WasmTestRunnerBuilder()
-		.AddAssembly(typeof(SampleXunitTests).Assembly)
-		.AddXunit()
-		.UseResultChannel(new ConsoleResultChannel())
-		.Build()
-		.RunAsync();
-
-	Console.WriteLine($"Tests completed with exit code: {exitCode}");
+	conf.AddTestAssembly(typeof(SampleXunitTests).Assembly);
+	conf.AddTestPlatform<
+		DeviceRunners.VisualRunners.Xunit.XunitWasmTestDiscoverer,
+		DeviceRunners.VisualRunners.Xunit.XunitWasmTestRunner>();
+	conf.EnableAutoStart(autoTerminate: true);
+	conf.AddResultChannel(_ => new ConsoleResultChannel(new EventStreamFormatter()));
 });
 
-await host.RunAsync();
+await builder.Build().RunAsync();

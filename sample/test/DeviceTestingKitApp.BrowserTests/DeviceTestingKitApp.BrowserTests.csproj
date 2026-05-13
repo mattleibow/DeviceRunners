@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.WebAssembly\DeviceRunners.VisualRunners.WebAssembly.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit.WebAssembly\DeviceRunners.VisualRunners.Xunit.WebAssembly.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Blazor\DeviceRunners.VisualRunners.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
   </ItemGroup>
 
 </Project>

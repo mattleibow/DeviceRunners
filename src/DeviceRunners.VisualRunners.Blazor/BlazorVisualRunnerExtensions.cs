@@ -15,7 +15,7 @@ public static class BlazorVisualRunnerExtensions
 	/// </summary>
 	public static IServiceCollection AddBlazorVisualTestRunner(
 		this IServiceCollection services,
-		Action<BlazorVisualTestRunnerConfigurationBuilder> configure)
+		Action<IVisualTestRunnerConfigurationBuilder> configure)
 	{
 		var builder = new BlazorVisualTestRunnerConfigurationBuilder(services);
 		configure(builder);

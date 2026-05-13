@@ -1,9 +1,9 @@
 namespace DeviceRunners.VisualRunners.Xunit;
 
-class WasmXunitTestResultInfo : ITestResultInfo
+class XunitWasmTestResultInfo : ITestResultInfo
 {
-	public WasmXunitTestResultInfo(
-		WasmXunitTestCaseInfo testCase,
+	public XunitWasmTestResultInfo(
+		XunitWasmTestCaseInfo testCase,
 		TestResultStatus status,
 		TimeSpan duration,
 		string? output,
@@ -20,7 +20,7 @@ class WasmXunitTestResultInfo : ITestResultInfo
 		SkipReason = skipReason;
 	}
 
-	public WasmXunitTestCaseInfo TestCase { get; }
+	public XunitWasmTestCaseInfo TestCase { get; }
 
 	ITestCaseInfo ITestResultInfo.TestCase => TestCase;
 
