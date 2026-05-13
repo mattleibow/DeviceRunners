@@ -5,6 +5,8 @@
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <IsPackable>true</IsPackable>
+    <!-- CA2255: [ModuleInitializer] is intentionally used to auto-register the MAUI UI thread coordinator -->
+    <NoWarn>CA2255</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

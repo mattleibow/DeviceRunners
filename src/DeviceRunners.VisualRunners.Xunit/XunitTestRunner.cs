@@ -118,7 +118,10 @@ public class XunitTestRunner : ITestRunner
 
 		var deviceExecSink = new DeviceExecutionSink(xunitTestCases, _resultChannelManager);
 
-		IExecutionSink resultsSink = new DelegatingExecutionSummarySink(deviceExecSink, () => cancellationToken.IsCancellationRequested);
+		var sinkOptions = new ExecutionSinkOptions
+		{
+			CancelThunk = () => cancellationToken.IsCancellationRequested,
+		};
 
 		if (longRunningSeconds > 0)
 		{
@@ -127,8 +130,11 @@ public class XunitTestRunner : ITestRunner
 				assemblyInfo.AssemblyFileName,
 				executionOptions.GetDiagnosticMessagesOrDefault());
 
-			resultsSink = new DelegatingLongRunningTestDetectionSink(resultsSink, TimeSpan.FromSeconds(longRunningSeconds), diagSink);
+			sinkOptions.LongRunningTestTime = TimeSpan.FromSeconds(longRunningSeconds);
+			sinkOptions.DiagnosticMessageSink = MessageSinkAdapter.Wrap(diagSink);
 		}
+
+		using var resultsSink = new ExecutionSink(deviceExecSink, sinkOptions);
 
 		var assm = new XunitProjectAssembly { AssemblyFilename = assemblyInfo.AssemblyFileName };
 		deviceExecSink.OnMessage(new TestAssemblyExecutionStarting(assm, executionOptions));
