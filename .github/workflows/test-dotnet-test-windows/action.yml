@@ -27,7 +27,10 @@ runs:
         reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /v AllowAllTrustedApps /t REG_DWORD /d 1 /f
     - name: Publish CLI Tool Binaries
       shell: pwsh
-      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r win-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/win-x64
+    - name: Restore test project (populates NuGet cache for WinAppSDK)
+      shell: pwsh
+      run: dotnet restore ${{ inputs.test-project }}
     - name: Install Windows App Runtime framework
       shell: pwsh
       run: |

@@ -77,33 +77,42 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	}
 
 	/// <summary>
-	/// Configures the test runner based on <c>DEVICE_RUNNERS_*</c> environment
-	/// variables. When <c>DEVICE_RUNNERS_AUTORUN=1</c> is set the runner enables
-	/// auto-start and connects back to the host via TCP so results can be
-	/// collected by the CLI tool. When the variable is absent this is a no-op.
-	/// </summary>
-	/// <remarks>
-	/// Supported platforms: Android, iOS, macOS (Catalyst), Windows.
-	/// <para>
-	/// On Android and iOS the variables are baked into the app bundle at build time.
-	/// On macOS and Windows the CLI injects them when launching the app process.
-	/// </para>
-	/// Environment variables read:
+	/// Configures the test runner from the DeviceRunners CLI.
+	/// Reads configuration from environment variables first, then falls back
+	/// to command-line arguments. This supports all launch mechanisms:
 	/// <list type="bullet">
-	/// <item><term>DEVICE_RUNNERS_AUTORUN</term><description>Set to any non-empty value to enable headless mode.</description></item>
-	/// <item><term>DEVICE_RUNNERS_PORT</term><description>TCP port to connect to on the host. Defaults to 16384.</description></item>
-	/// <item><term>DEVICE_RUNNERS_HOST_NAMES</term><description>Semicolon-separated list of host names or IPs to try. Defaults to <c>localhost;10.0.2.2</c>.</description></item>
+	/// <item>Environment variables: Android (build-time), iOS (SimCtl), macOS/Windows EXE (ProcessStartInfo)</item>
+	/// <item>CLI arguments: Windows MSIX (via winapp.exe --args)</item>
 	/// </list>
-	/// </remarks>
-	public static TBuilder AddEnvironmentVariables<TBuilder>(this TBuilder builder)
+	/// When neither source provides <c>DEVICE_RUNNERS_AUTORUN</c>, this is a no-op.
+	/// </summary>
+	public static TBuilder AddCliConfiguration<TBuilder>(this TBuilder builder)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
+		// Try environment variables first (works for all platforms except MSIX)
 		var autorun = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_AUTORUN");
+		var portStr = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_PORT");
+		var hostNamesRaw = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_HOST_NAMES");
+
+		// Fall back to CLI arguments (for MSIX where env vars are not forwarded)
+		if (string.IsNullOrEmpty(autorun))
+		{
+			var args = Environment.GetCommandLineArgs();
+			for (var i = 0; i < args.Length; i++)
+			{
+				if (args[i] == "--device-runners-autorun")
+					autorun = "1";
+				else if (args[i] == "--device-runners-port" && i + 1 < args.Length)
+					portStr = args[++i];
+				else if (args[i] == "--device-runners-host-names" && i + 1 < args.Length)
+					hostNamesRaw = args[++i];
+			}
+		}
+
 		if (string.IsNullOrEmpty(autorun))
 			return builder;
 
-		var port = int.TryParse(Environment.GetEnvironmentVariable("DEVICE_RUNNERS_PORT"), out var p) ? p : 16384;
-		var hostNamesRaw = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_HOST_NAMES");
+		var port = int.TryParse(portStr, out var p) ? p : 16384;
 		var hostNames = string.IsNullOrEmpty(hostNamesRaw)
 			? ["localhost", "10.0.2.2"]
 			: hostNamesRaw.Split(';', StringSplitOptions.RemoveEmptyEntries);

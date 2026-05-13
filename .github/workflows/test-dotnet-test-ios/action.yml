@@ -37,7 +37,7 @@ runs:
         dotnet apple simulator boot "$UDID" --wait
     - name: Publish CLI Tool Binaries
       shell: bash
-      run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r osx-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/osx-x64
     - name: Run Tests
       shell: bash
       run: |

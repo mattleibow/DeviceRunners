@@ -49,15 +49,8 @@
       2. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
   -->
   <Target Name="VSTest"
-          DependsOnTargets="_DeviceRunnersPreBuild;Build;_DeviceRunnersRunTests"
+          DependsOnTargets="Build;_DeviceRunnersRunTests"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
-
-  <!-- Set properties that Build needs to know about (before Build runs). -->
-  <Target Name="_DeviceRunnersPreBuild">
-    <PropertyGroup>
-      <DeviceRunnersInjectEnvironment>true</DeviceRunnersInjectEnvironment>
-    </PropertyGroup>
-  </Target>
 
   <!-- =[ Orchestrator ]= -->
 
@@ -123,7 +116,7 @@
   <Target Name="_DeviceRunnersiOSArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'ios'">
     <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
     </PropertyGroup>
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
@@ -139,7 +132,7 @@
   <Target Name="_DeviceRunnersMacOSArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'maccatalyst'">
     <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
     </PropertyGroup>
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
@@ -343,16 +336,17 @@
     _GenerateEnvironmentFiles mechanism. The Mono runtime reads the resulting
     KEY=VALUE file (__environment__.txt) at startup.
 
-    Only runs when DeviceRunnersInjectEnvironment=true, which is set by the
-    _DeviceRunnersPrepareArgs target during dotnet test. A plain dotnet build
-    does not inject these variables.
+    Always injects when the Testing.Targets package is referenced. The env vars
+    are harmless when the app is launched manually (AddCliConfiguration is a no-op
+    without a matching TCP listener). This avoids incremental build issues where
+    a prior dotnet build without injection would produce a stale APK.
 
     10.0.2.2 is the Android emulator's gateway address to reach the host machine.
     localhost covers physical devices when port-forwarded or on the same network.
   -->
   <Target Name="_DeviceRunnersAndroidEnvironment"
           BeforeTargets="_GenerateEnvironmentFiles"
-          Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(DeviceRunnersInjectEnvironment)' == 'true'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
     <ItemGroup>
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
