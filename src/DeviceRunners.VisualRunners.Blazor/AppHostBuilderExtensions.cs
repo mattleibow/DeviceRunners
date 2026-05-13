@@ -20,6 +20,18 @@ public static class AppHostBuilderExtensions
 		Action<VisualTestRunnerConfigurationBuilder> configure)
 	{
 		var configBuilder = new VisualTestRunnerConfigurationBuilder(builder.Services);
+
+		// Read current page URL for CLI configuration detection
+		try
+		{
+			var currentUrl = Blazor.BrowserInterop.GetLocationHref();
+			configBuilder.AddCliConfiguration(currentUrl);
+		}
+		catch
+		{
+			// JS interop not available — skip CLI detection
+		}
+
 		configure(configBuilder);
 		var config = configBuilder.Build();
 
@@ -35,14 +47,11 @@ public static class AppHostBuilderExtensions
 
 	/// <summary>
 	/// Configures the test runner from the DeviceRunners CLI for browser WASM.
+	/// Parses the provided URL for <c>device-runners-autorun</c> query parameter.
 	/// When the CLI launches the browser, it navigates to a URL with
 	/// <c>?device-runners-autorun=1</c> to trigger headless mode with NDJSON
 	/// console output. When the parameter is absent (manual browser open),
 	/// this is a no-op and the interactive visual runner is shown.
-	/// <para>
-	/// Pass the current page URL from <c>builder.HostEnvironment.BaseAddress</c>
-	/// combined with JS interop, or use the overload that accepts the URL string.
-	/// </para>
 	/// </summary>
 	public static TBuilder AddCliConfiguration<TBuilder>(this TBuilder builder, string currentUrl)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
