@@ -1,6 +1,6 @@
 using DeviceTestingKitApp.Formatters;
 
-namespace DeviceTestingKitApp.BlazorLibrary.XunitTests;
+namespace DeviceTestingKitApp.BlazorLibrary.XunitTests.Formatters;
 
 public class CounterValueFormatterTests
 {

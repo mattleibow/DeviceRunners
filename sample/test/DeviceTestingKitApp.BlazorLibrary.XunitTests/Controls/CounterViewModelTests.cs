@@ -1,6 +1,6 @@
 using DeviceTestingKitApp.ViewModels;
 
-namespace DeviceTestingKitApp.BlazorLibrary.XunitTests;
+namespace DeviceTestingKitApp.BlazorLibrary.XunitTests.Controls;
 
 public class CounterViewModelTests
 {
