@@ -9,18 +9,20 @@
     <ToolCommandName>device-runners</ToolCommandName>
     <PackageId>DeviceRunners.Cli</PackageId>
     <AssemblyName>DeviceRunners.Cli</AssemblyName>
-    <!-- PublishTrimmed and EnableTrimAnalyzer are safe in the csproj (only active during publish).
-         SelfContained and PublishSingleFile are passed via the command line in PublishCliTools
-         to avoid breaking dotnet pack/tool install. -->
-    <PublishTrimmed>true</PublishTrimmed>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
-    <!-- Spectre.Console.Cli uses reflection to discover command settings types.
-         SuppressTrimAnalysisWarnings keeps the build clean; the TrimmerRootAssembly
-         entries below ensure the needed types survive. -->
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-    <!-- The CLI uses reflection-based JSON and XML serialization for output formatting. -->
     <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <RuntimeIdentifiers>osx-arm64;osx-x64;win-x64;win-arm64;linux-x64;linux-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- When publishing for the Testing.Targets NuGet package, produce a
+       self-contained, trimmed, single-file binary. Pass -p:PublishForTargetsPackage=true
+       from PublishCliTools to activate this. Without it, dotnet pack/tool install
+       produces a normal framework-dependent tool. -->
+  <PropertyGroup Condition="'$(PublishForTargetsPackage)' == 'true'">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
   </PropertyGroup>
 
   <ItemGroup>

@@ -27,7 +27,7 @@ Add `DeviceRunners.Testing.Targets` to your device test project:
 
 ### 2. Configure Your App
 
-In your `MauiProgram.cs`, call `UseTestRunnerEnvironment()` on the visual runner configuration:
+In your `MauiProgram.cs`, call `AddEnvironmentVariables()` on the visual runner configuration:
 
 ```csharp
 public static MauiApp CreateMauiApp()
@@ -35,7 +35,7 @@ public static MauiApp CreateMauiApp()
     var builder = MauiApp.CreateBuilder();
     builder
         .UseVisualTestRunner(conf => conf
-            .UseTestRunnerEnvironment()     // Reads env vars set by dotnet test
+            .AddEnvironmentVariables()     // Reads env vars set by dotnet test
             .AddConsoleResultChannel()
             .AddTestAssembly(typeof(MauiProgram).Assembly)
             .AddXunit())
@@ -45,7 +45,7 @@ public static MauiApp CreateMauiApp()
 }
 ```
 
-When `dotnet test` runs your app, the `DEVICE_RUNNERS_AUTORUN` environment variable is set. `UseTestRunnerEnvironment()` detects this and:
+When `dotnet test` runs your app, the `DEVICE_RUNNERS_AUTORUN` environment variable is set. `AddEnvironmentVariables()` detects this and:
 - Enables auto-start (runs all tests immediately)
 - Connects back to the CLI tool via TCP to stream results
 - Auto-terminates when complete
