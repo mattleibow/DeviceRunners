@@ -38,7 +38,7 @@ public class XunitReflectionTestDiscoverer : ITestDiscoverer
 				ParallelizeAssembly = false,
 				ParallelizeTestCollections = false,
 				MaxParallelThreads = 1,
-				PreEnumerateTheories = true,
+				PreEnumerateTheories = false,
 			};
 			var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 

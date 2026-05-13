@@ -79,6 +79,27 @@ public class ViewModelBindingTests
 		yield return ["hello", "HELLO"];
 		yield return ["woRld", "WORLD"];
 	}
+
+	[Theory]
+	[ClassData(typeof(TransformTestData))]
+	public void ComplexTheoryWithClassData(TransformData data)
+	{
+		Assert.Equal(data.Expected, data.Input.ToUpperInvariant());
+	}
+
+	public record TransformData(string Input, string Expected);
+
+	class TransformTestData : IEnumerable<object[]>
+	{
+		readonly List<object[]> _data =
+		[
+			[new TransformData("hello", "HELLO")],
+			[new TransformData("woRld", "WORLD")],
+		];
+
+		public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+	}
 }
 
 /// <summary>
