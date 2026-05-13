@@ -1,6 +1,6 @@
 namespace DeviceTestingKitApp.DeviceTests;
 
-[Collection("UITests")]
+[Collection("AsyncLifecycle")]
 public class AsyncLifetimeTests : IAsyncLifetime
 {
 	static int _activeInstances;
@@ -35,7 +35,7 @@ public class AsyncLifetimeTests : IAsyncLifetime
 	}
 }
 
-[Collection("UITests")]
+[Collection("AsyncLifecycle")]
 public class AsyncLifetimeTests2 : IAsyncLifetime
 {
 	static int _setupCount;
