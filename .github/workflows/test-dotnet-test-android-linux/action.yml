@@ -39,6 +39,10 @@ runs:
         expected: x64
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
     - name: Publish CLI Tool Binaries
       shell: bash
       run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r linux-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/linux-x64
@@ -49,8 +53,10 @@ runs:
     - name: Set AVD environment variables
       shell: bash
       run: |
-        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> $GITHUB_ENV
-        echo "ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=1" >> $GITHUB_ENV
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=1" >> "$GITHUB_ENV"
     - name: Create Emulator
       shell: bash
       run: dotnet android avd create --name ${{ inputs.emulator-name }} --sdk '${{ inputs.emulator-image }}' --force
@@ -75,6 +81,7 @@ runs:
         dotnet test ${{ inputs.test-project }} \
           -f ${{ inputs.target-framework }} \
           -c ${{ inputs.configuration }} \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Capture Logcat
       if: always()
