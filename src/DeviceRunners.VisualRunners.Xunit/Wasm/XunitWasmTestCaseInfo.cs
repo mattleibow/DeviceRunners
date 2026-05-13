@@ -1,44 +1,30 @@
-using System.Reflection;
+using Xunit.Abstractions;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
 class XunitWasmTestCaseInfo : ITestCaseInfo
 {
-	public XunitWasmTestCaseInfo(
-		XunitWasmTestAssemblyInfo assembly,
-		Type testClass,
-		MethodInfo testMethod,
-		string displayName,
-		string? skipReason,
-		object?[]? arguments)
+	public XunitWasmTestCaseInfo(XunitWasmTestAssemblyInfo assembly, ITestCase testCase)
 	{
-		TestAssembly = assembly;
-		TestClass = testClass;
-		TestMethod = testMethod;
-		DisplayName = displayName;
-		SkipReason = skipReason;
-		Arguments = arguments;
+		TestAssembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
+		TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
 	}
 
 	public XunitWasmTestAssemblyInfo TestAssembly { get; }
 
 	ITestAssemblyInfo ITestCaseInfo.TestAssembly => TestAssembly;
 
-	public Type TestClass { get; }
+	public ITestCase TestCase { get; }
 
-	public MethodInfo TestMethod { get; }
+	public string DisplayName => TestCase.DisplayName;
 
-	public string DisplayName { get; }
+	public XunitWasmTestResultInfo? Result { get; private set; }
 
-	public string? SkipReason { get; }
-
-	public object?[]? Arguments { get; }
-
-	public ITestResultInfo? Result { get; private set; }
+	ITestResultInfo? ITestCaseInfo.Result => Result;
 
 	public event Action<ITestResultInfo>? ResultReported;
 
-	public void ReportResult(ITestResultInfo result)
+	public void ReportResult(XunitWasmTestResultInfo result)
 	{
 		Result = result;
 		ResultReported?.Invoke(result);

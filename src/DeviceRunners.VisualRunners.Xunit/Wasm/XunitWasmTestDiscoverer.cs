@@ -1,13 +1,15 @@
 using System.Reflection;
 
 using Xunit;
+using Xunit.Sdk;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
 /// <summary>
 /// Xunit test discoverer for browser WASM environments.
-/// Uses reflection to find [Fact] and [Theory] methods instead of
-/// XunitFrontController, which requires filesystem access unavailable in WASM.
+/// Uses xunit's own <see cref="XunitTestFrameworkDiscoverer"/> via
+/// <see cref="WasmXunitDiscoverer"/> for proper discovery of all test types
+/// (Fact, Theory, MemberData, ClassData, etc.) without spawning threads.
 /// </summary>
 public class XunitWasmTestDiscoverer : ITestDiscoverer
 {
@@ -30,51 +32,39 @@ public class XunitWasmTestDiscoverer : ITestDiscoverer
 				break;
 
 			var assemblyFileName = assembly.GetName().Name + ".dll";
+			var configuration = new TestAssemblyConfiguration
+			{
+				ShadowCopy = false,
+				ParallelizeAssembly = false,
+				ParallelizeTestCollections = false,
+				MaxParallelThreads = 1,
+				PreEnumerateTheories = false,
+			};
+			var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 
 			try
 			{
-				var testAssembly = new XunitWasmTestAssemblyInfo(assemblyFileName);
-				var testCases = new List<XunitWasmTestCaseInfo>();
+				var assemblyInfo = new ReflectionAssemblyInfo(assembly);
 
-				foreach (var type in assembly.GetExportedTypes())
-				{
-					if (type.IsAbstract || type.IsInterface)
-						continue;
+				using var discoverer = new WasmXunitDiscoverer(
+					assemblyInfo,
+					NullSourceInformationProvider.Instance,
+					NullMessageSink.Instance);
 
-					foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance))
-					{
-						var factAttr = method.GetCustomAttribute<FactAttribute>();
-						if (factAttr is null)
-							continue;
-
-						var inlineDataAttrs = method.GetCustomAttributes<InlineDataAttribute>().ToList();
-
-						if (inlineDataAttrs.Count > 0)
-						{
-							foreach (var inlineData in inlineDataAttrs)
-							{
-								var data = inlineData.GetData(method).First();
-								var displayName = $"{type.FullName}.{method.Name}({string.Join(", ", data.Select(d => d?.ToString() ?? "null"))})";
-								testCases.Add(new XunitWasmTestCaseInfo(testAssembly, type, method, displayName, factAttr.Skip, data));
-							}
-						}
-						else
-						{
-							var displayName = $"{type.FullName}.{method.Name}";
-							testCases.Add(new XunitWasmTestCaseInfo(testAssembly, type, method, displayName, factAttr.Skip, null));
-						}
-					}
-				}
+				var testCases = discoverer.DiscoverTests(discoveryOptions);
 
 				if (testCases.Count > 0)
 				{
-					testAssembly.SetTestCases(testCases);
+					var testAssembly = new XunitWasmTestAssemblyInfo(assemblyFileName, configuration);
+					testAssembly.TestCases.AddRange(
+						testCases.Select(tc => new XunitWasmTestCaseInfo(testAssembly, tc)));
 					result.Add(testAssembly);
 				}
 			}
 			catch (Exception ex)
 			{
-				_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+				_diagnosticsManager?.PostDiagnosticMessage(
+					$"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
 			}
 		}
 

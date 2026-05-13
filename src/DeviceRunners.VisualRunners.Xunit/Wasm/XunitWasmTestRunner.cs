@@ -1,11 +1,14 @@
-using System.Diagnostics;
-using System.Reflection;
+using Xunit;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
 /// <summary>
 /// Xunit test runner for browser WASM environments.
-/// Executes tests via reflection instead of XunitFrontController.
+/// Uses xunit's own execution engine with cooperative yielding runners
+/// for proper handling of all xunit features (fixtures, lifecycle, etc.)
+/// in single-threaded WASM.
 /// </summary>
 public class XunitWasmTestRunner : ITestRunner
 {
@@ -28,67 +31,53 @@ public class XunitWasmTestRunner : ITestRunner
 
 	async Task RunAsync(IEnumerable<ITestCaseInfo> testCases, CancellationToken cancellationToken)
 	{
+		await using var closing = await ResultChannelManagerScope.OpenAsync(_resultChannelManager);
+
 		var wasmCases = testCases.OfType<XunitWasmTestCaseInfo>().ToList();
 		if (wasmCases.Count == 0)
 			return;
 
-		foreach (var testCase in wasmCases)
+		var grouped = wasmCases.GroupBy(tc => tc.TestAssembly);
+
+		foreach (var group in grouped)
 		{
 			if (cancellationToken.IsCancellationRequested)
 				break;
 
-			await RunSingleTestAsync(testCase);
+			await RunAssemblyTestsAsync(group.Key, group.ToList(), cancellationToken);
 		}
 	}
 
-	async Task RunSingleTestAsync(XunitWasmTestCaseInfo testCase)
+	async Task RunAssemblyTestsAsync(
+		XunitWasmTestAssemblyInfo assemblyInfo,
+		IReadOnlyList<XunitWasmTestCaseInfo> testCases,
+		CancellationToken cancellationToken)
 	{
-		if (testCase.SkipReason is not null)
-		{
-			var skipResult = new XunitWasmTestResultInfo(testCase, TestResultStatus.Skipped, TimeSpan.Zero, null, null, null, testCase.SkipReason);
-			testCase.ReportResult(skipResult);
-			_resultChannelManager?.RecordResult(skipResult);
-			return;
-		}
+		var xunitTestCases = testCases.ToDictionary(tc => tc.TestCase, tc => tc);
 
-		var sw = Stopwatch.StartNew();
+		// Get the xunit ITestAssembly from the discovered test cases
+		var testAssembly = testCases[0].TestCase.TestMethod.TestClass.TestCollection.TestAssembly;
+
+		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
+		executionOptions.SetSynchronousMessageReporting(true);
+
+		var executionSink = new WasmExecutionSink(xunitTestCases, _resultChannelManager);
+
 		try
 		{
-			var instance = Activator.CreateInstance(testCase.TestClass)!;
+			var assemblyRunner = new WasmXunitAssemblyRunner(
+				testAssembly,
+				xunitTestCases.Keys.OfType<IXunitTestCase>(),
+				NullMessageSink.Instance,
+				executionSink,
+				executionOptions);
 
-			try
-			{
-				var result = testCase.TestMethod.Invoke(instance, testCase.Arguments);
-				if (result is Task task)
-					await task;
-
-				sw.Stop();
-				var passResult = new XunitWasmTestResultInfo(testCase, TestResultStatus.Passed, sw.Elapsed, null, null, null, null);
-				testCase.ReportResult(passResult);
-				_resultChannelManager?.RecordResult(passResult);
-			}
-			finally
-			{
-				if (instance is IAsyncDisposable asyncDisposable)
-					await asyncDisposable.DisposeAsync();
-				else if (instance is IDisposable disposable)
-					disposable.Dispose();
-			}
-		}
-		catch (TargetInvocationException tie)
-		{
-			sw.Stop();
-			var ex = tie.InnerException ?? tie;
-			var failResult = new XunitWasmTestResultInfo(testCase, TestResultStatus.Failed, sw.Elapsed, null, ex.Message, ex.StackTrace, null);
-			testCase.ReportResult(failResult);
-			_resultChannelManager?.RecordResult(failResult);
+			await assemblyRunner.RunAsync();
 		}
 		catch (Exception ex)
 		{
-			sw.Stop();
-			var failResult = new XunitWasmTestResultInfo(testCase, TestResultStatus.Failed, sw.Elapsed, null, ex.Message, ex.StackTrace, null);
-			testCase.ReportResult(failResult);
-			_resultChannelManager?.RecordResult(failResult);
+			_diagnosticsManager?.PostDiagnosticMessage(
+				$"Exception running tests in assembly '{assemblyInfo.AssemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
 		}
 	}
 }

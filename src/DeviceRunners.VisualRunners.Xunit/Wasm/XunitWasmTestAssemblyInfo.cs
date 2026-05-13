@@ -1,22 +1,22 @@
-using System.Reflection;
+using Xunit;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
 class XunitWasmTestAssemblyInfo : ITestAssemblyInfo
 {
-	List<XunitWasmTestCaseInfo> _testCases = [];
-
-	public XunitWasmTestAssemblyInfo(string assemblyFileName)
+	public XunitWasmTestAssemblyInfo(string assemblyFileName, TestAssemblyConfiguration configuration)
 	{
 		AssemblyFileName = assemblyFileName;
+		Configuration = configuration;
 	}
 
 	public string AssemblyFileName { get; }
 
-	public ITestAssemblyConfiguration? Configuration => null;
+	public TestAssemblyConfiguration Configuration { get; }
 
-	public IReadOnlyList<ITestCaseInfo> TestCases => _testCases;
+	ITestAssemblyConfiguration? ITestAssemblyInfo.Configuration => new XunitTestAssemblyConfiguration(Configuration);
 
-	internal void SetTestCases(List<XunitWasmTestCaseInfo> testCases) =>
-		_testCases = testCases;
+	public List<XunitWasmTestCaseInfo> TestCases { get; } = [];
+
+	IReadOnlyList<ITestCaseInfo> ITestAssemblyInfo.TestCases => TestCases;
 }

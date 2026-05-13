@@ -10,10 +10,8 @@ builder.RootComponents.Add<TestRunnerApp>("#app");
 
 builder.Services.AddBlazorVisualTestRunner(conf =>
 {
+	conf.AddXunitWasm();
 	conf.AddTestAssembly(typeof(SampleXunitTests).Assembly);
-	conf.AddTestPlatform<
-		DeviceRunners.VisualRunners.Xunit.XunitWasmTestDiscoverer,
-		DeviceRunners.VisualRunners.Xunit.XunitWasmTestRunner>();
 	conf.EnableAutoStart(autoTerminate: true);
 	conf.AddResultChannel(_ => new ConsoleResultChannel(new EventStreamFormatter()));
 });
