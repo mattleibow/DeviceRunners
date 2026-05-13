@@ -25,6 +25,10 @@
     Exec definition. The CLI csproj must NOT have RuntimeIdentifiers set to
     avoid cross-RID evaluation during each publish.
 
+    The tools/ files are added to the package dynamically AFTER publish
+    completes (static <None Include="tools\**"> would evaluate at project load
+    time before the files exist).
+
     When packing the NuGet package, this target runs automatically before GenerateNuspec.
     To populate the tools/ folder for in-repo use without packing:
       dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools -c release
@@ -35,15 +39,18 @@
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for %(_CliTargetRid.Identity)..." />
     <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
+    <!-- Add published files to the package dynamically, after they exist on disk. -->
+    <ItemGroup>
+      <_PackageFiles Include="$(_CliToolsDir)**\*" PackagePath="tools\" />
+    </ItemGroup>
   </Target>
 
   <!--
-    Include all files from build/ and tools/ in the NuGet package.
-    The tools/<rid>/ binaries are populated by PublishCliTools above.
+    Include build/ files in the NuGet package.
+    These are static assets checked into source so a static glob is fine.
   -->
   <ItemGroup>
     <None Include="build\**" Pack="true" PackagePath="build\" />
-    <None Include="tools\**" Pack="true" PackagePath="tools\" />
   </ItemGroup>
 
 </Project>
