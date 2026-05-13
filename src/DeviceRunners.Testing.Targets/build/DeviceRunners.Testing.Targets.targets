@@ -183,7 +183,7 @@
     the exit code is forwarded to _DeviceRunnersReportResults for clean reporting.
   -->
   <Target Name="_DeviceRunnersExecTests">
-    <Exec Command="$(_DeviceRunnersCommand) $(_DeviceRunnersCliArgs)"
+    <Exec Command="&quot;$(_DeviceRunnersCommand)&quot; $(_DeviceRunnersCliArgs)"
           IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
     </Exec>
