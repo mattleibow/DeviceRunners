@@ -11,12 +11,6 @@
     <AssemblyName>DeviceRunners.Cli</AssemblyName>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
-    <!-- Trim analysis warnings (IL2026, IL2090) are expected: Spectre.Console.Cli and
-         System.Text.Json reflection usage are not trim-safe. These are suppressed during
-         publish via SuppressTrimAnalysisWarnings, but TreatWarningsAsErrors would still
-         promote them to errors during normal builds. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2026;IL2090</WarningsNotAsErrors>
   </PropertyGroup>
 
   <!-- When publishing for the Testing.Targets NuGet package, produce a

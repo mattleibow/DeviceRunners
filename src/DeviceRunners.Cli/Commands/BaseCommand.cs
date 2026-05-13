@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 using System.Xml.Serialization;
 
 using DeviceRunners.Cli.Models;
@@ -21,7 +23,7 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
     protected bool ShouldSuppressConsoleOutput(TSettings settings) =>
         settings.OutputFormat != OutputFormat.Default;
 
-    protected void WriteResult<TResult>(TResult result, TSettings settings)
+    protected void WriteResult<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TResult>(TResult result, TSettings settings)
         where TResult : CommandResult
     {
         if (ShouldSuppressConsoleOutput(settings))
@@ -62,7 +64,7 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
         }
     }
 
-    protected void WriteOutput<T>(T result, OutputFormat format)
+    protected void WriteOutput<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(T result, OutputFormat format)
         where T : CommandResult
     {
         switch (format)
@@ -77,7 +79,6 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
                 WriteText(result);
                 break;
             case OutputFormat.Default:
-                // Do nothing - normal console output is handled by the command
                 break;
         }
     }
@@ -85,15 +86,23 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
     private void WriteJson<T>(T result)
         where T : CommandResult
     {
-        var options = new JsonSerializerOptions
+        var typeInfo = CliJsonContext.Default.GetTypeInfo(typeof(T)) as JsonTypeInfo<T>;
+        string json;
+        if (typeInfo != null)
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-        var json = JsonSerializer.Serialize(result, options);
+            json = JsonSerializer.Serialize(result, typeInfo);
+        }
+        else
+        {
+            // Fallback for types not registered in CliJsonContext
+#pragma warning disable IL2026
+            json = JsonSerializer.Serialize(result, CliJsonContext.Default.Options);
+#pragma warning restore IL2026
+        }
         console.WriteLine(json);
     }
 
+#pragma warning disable IL2026 // XML serialization is inherently reflection-based; no source-gen alternative exists
     private void WriteXml<T>(T result)
         where T : CommandResult
     {
@@ -102,18 +111,17 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
         serializer.Serialize(writer, result);
         console.WriteLine(writer.ToString());
     }
+#pragma warning restore IL2026
 
-    private void WriteText<T>(T result)
+    private void WriteText<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(T result)
         where T : CommandResult
     {
-        // Simple key=value format
         console.WriteLine($"Success={result.Success}");
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
             console.WriteLine($"ErrorMessage={result.ErrorMessage}");
         }
 
-        // Use reflection to write all properties
         var properties = typeof(T).GetProperties()
             .Where(p => p.Name != nameof(CommandResult.Success) && p.Name != nameof(CommandResult.ErrorMessage));
 
