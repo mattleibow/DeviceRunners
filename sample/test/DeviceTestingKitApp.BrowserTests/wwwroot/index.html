@@ -11,6 +11,10 @@
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
     </div>
+    <script>
+        // Helper for .NET JSImport to read the current URL
+        globalThis.getLocationHref = () => globalThis.location.href;
+    </script>
     <script src="_framework/blazor.webassembly.js" autostart="true"></script>
 </body>
 </html>

@@ -128,7 +128,8 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 				eventStream.ReceiveData(msg + "\n");
 			};
 
-			await browser.LaunchAsync(url, headless: !settings.Headed);
+			var testUrl = $"{url}?device-runners-autorun=1";
+			await browser.LaunchAsync(testUrl, headless: !settings.Headed);
 			WriteConsoleOutput($"    Browser launched, running tests...", settings);
 
 			// Wait for test completion or timeout
