@@ -115,12 +115,4 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		});
 		return builder;
 	}
-
-	/// <summary>
-	/// Alias for <see cref="AddCliConfiguration{TBuilder}"/> for backward compatibility.
-	/// </summary>
-	[Obsolete("Use AddCliConfiguration() instead.")]
-	public static TBuilder AddEnvironmentVariables<TBuilder>(this TBuilder builder)
-		where TBuilder : IVisualTestRunnerConfigurationBuilder
-		=> builder.AddCliConfiguration();
 }
