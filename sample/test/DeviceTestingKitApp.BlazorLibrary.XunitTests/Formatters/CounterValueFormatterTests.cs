@@ -24,4 +24,12 @@ public class CounterValueFormatterTests
 	{
 		Assert.Equal(expected, CounterValueFormatter.Format(count));
 	}
+
+	[Theory]
+	[InlineData(-1, "Clicked -1 times")]
+	[InlineData(2147483647, "Clicked 2147483647 times")]
+	public void Format_EdgeCases_ReturnsPlural(int count, string expected)
+	{
+		Assert.Equal(expected, CounterValueFormatter.Format(count));
+	}
 }

@@ -33,7 +33,7 @@ public class UnitTests
 	[Fact]
 	public async Task LongRunningSuccess()
 	{
-		await Task.Delay(500); // shorter than MAUI's 2s since WASM is slower
+		await Task.Delay(2000);
 		Assert.True(true);
 	}
 
@@ -41,7 +41,7 @@ public class UnitTests
 	[Fact]
 	public async Task LongRunningFail()
 	{
-		await Task.Delay(500);
+		await Task.Delay(2000);
 		throw new Exception("This is meant to fail.");
 	}
 #endif
