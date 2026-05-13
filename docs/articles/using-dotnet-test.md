@@ -35,7 +35,7 @@ public static MauiApp CreateMauiApp()
     var builder = MauiApp.CreateBuilder();
     builder
         .UseVisualTestRunner(conf => conf
-            .AddCliConfiguration()     // Reads config injected by dotnet test
+            .AddCliConfiguration()     // Reads config from DeviceRunners CLI or dotnet test
             .AddConsoleResultChannel()
             .AddTestAssembly(typeof(MauiProgram).Assembly)
             .AddXunit())

@@ -62,14 +62,15 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 	}
 
 	/// <summary>
-	/// Configures the test runner from the DeviceRunners CLI.
+	/// Configures the test runner from the DeviceRunners CLI or <c>dotnet test</c>.
 	/// Reads configuration from environment variables first, then falls back
 	/// to command-line arguments. This supports all launch mechanisms:
 	/// <list type="bullet">
 	/// <item>Environment variables: Android (build-time), iOS (SimCtl), macOS/Windows EXE (ProcessStartInfo)</item>
 	/// <item>CLI arguments: Windows MSIX (via winapp.exe --args)</item>
 	/// </list>
-	/// When neither source provides <c>DEVICE_RUNNERS_AUTORUN</c>, this is a no-op.
+	/// When neither source provides <c>DEVICE_RUNNERS_AUTORUN</c>, this is a no-op
+	/// and the visual runner behaves normally (e.g., when launched from the IDE).
 	/// </summary>
 	public static TBuilder AddCliConfiguration<TBuilder>(this TBuilder builder)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
