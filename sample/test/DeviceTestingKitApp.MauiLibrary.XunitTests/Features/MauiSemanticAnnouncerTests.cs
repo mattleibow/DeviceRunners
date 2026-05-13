@@ -5,6 +5,12 @@ namespace DeviceTestingKitApp.MauiLibrary.XunitTests.Features;
 public class MauiSemanticAnnouncerTests
 {
 	[Fact]
+	public void NullScreenReaderThrows()
+	{
+		Assert.Throws<ArgumentNullException>(() => new MauiSemanticAnnouncer(null!));
+	}
+
+	[Fact]
 	public void AnnounceInvokesPlatformSemanticScreenReader()
 	{
 		// Arrange

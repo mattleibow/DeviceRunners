@@ -6,6 +6,7 @@ public class MauiSemanticAnnouncer : ISemanticAnnouncer
 
 	public MauiSemanticAnnouncer(ISemanticScreenReader platformScreenReader)
 	{
+		ArgumentNullException.ThrowIfNull(platformScreenReader);
 		_platformScreenReader = platformScreenReader;
 	}
 

@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="AndroidSdk" Version="0.35.1" />
+    <PackageVersion Include="bunit" Version="1.36.0" />
     <PackageVersion Include="AppleDev" Version="0.8.10" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26259.3" />
