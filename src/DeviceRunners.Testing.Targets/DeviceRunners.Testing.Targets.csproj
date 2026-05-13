@@ -30,12 +30,12 @@
   -->
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tools..." />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r osx-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)osx-arm64&amp;quot;" />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r osx-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)osx-x64&amp;quot;" />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r win-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)win-x64&amp;quot;" />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r win-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)win-arm64&amp;quot;" />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r linux-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)linux-x64&amp;quot;" />
-    <Exec Command="dotnet publish &amp;quot;$(_CliProjectPath)&amp;quot; -f net10.0 -r linux-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &amp;quot;$(_CliToolsDir)linux-arm64&amp;quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r osx-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)osx-arm64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r osx-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)osx-x64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r win-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)win-x64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r win-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)win-arm64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r linux-x64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)linux-x64&quot;" />
+    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r linux-arm64 -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)linux-arm64&quot;" />
   </Target>
 
   <!--
