@@ -79,6 +79,7 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
                 WriteText(result);
                 break;
             case OutputFormat.Default:
+                // Do nothing - normal console output is handled by the command
                 break;
         }
     }
@@ -86,19 +87,8 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
     private void WriteJson<T>(T result)
         where T : CommandResult
     {
-        var typeInfo = CliJsonContext.Default.GetTypeInfo(typeof(T)) as JsonTypeInfo<T>;
-        string json;
-        if (typeInfo != null)
-        {
-            json = JsonSerializer.Serialize(result, typeInfo);
-        }
-        else
-        {
-            // Fallback for types not registered in CliJsonContext
-#pragma warning disable IL2026
-            json = JsonSerializer.Serialize(result, CliJsonContext.Default.Options);
-#pragma warning restore IL2026
-        }
+        var typeInfo = (JsonTypeInfo<T>)CliJsonContext.Default.GetTypeInfo(typeof(T))!;
+        var json = JsonSerializer.Serialize(result, typeInfo);
         console.WriteLine(json);
     }
 
@@ -116,12 +106,14 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
     private void WriteText<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] T>(T result)
         where T : CommandResult
     {
+        // Simple key=value format
         console.WriteLine($"Success={result.Success}");
         if (!string.IsNullOrEmpty(result.ErrorMessage))
         {
             console.WriteLine($"ErrorMessage={result.ErrorMessage}");
         }
 
+        // Use reflection to write all properties
         var properties = typeof(T).GetProperties()
             .Where(p => p.Name != nameof(CommandResult.Success) && p.Name != nameof(CommandResult.ErrorMessage));
 

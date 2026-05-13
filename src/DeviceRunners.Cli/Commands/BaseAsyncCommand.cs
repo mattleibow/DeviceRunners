@@ -69,19 +69,8 @@ public abstract class BaseAsyncCommand<TSettings>(IAnsiConsole console) : Comman
         switch (format)
         {
             case OutputFormat.Json:
-                var typeInfo = CliJsonContext.Default.GetTypeInfo(typeof(TResult)) as JsonTypeInfo<TResult>;
-                string json;
-                if (typeInfo != null)
-                {
-                    json = JsonSerializer.Serialize(result, typeInfo);
-                }
-                else
-                {
-                    // Fallback for types not registered in CliJsonContext
-#pragma warning disable IL2026
-                    json = JsonSerializer.Serialize(result, CliJsonContext.Default.Options);
-#pragma warning restore IL2026
-                }
+                var typeInfo = (JsonTypeInfo<TResult>)CliJsonContext.Default.GetTypeInfo(typeof(TResult))!;
+                var json = JsonSerializer.Serialize(result, typeInfo);
                 console.WriteLine(json);
                 break;
 
