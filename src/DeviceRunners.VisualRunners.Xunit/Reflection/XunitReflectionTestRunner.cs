@@ -61,6 +61,8 @@ public class XunitReflectionTestRunner : ITestRunner
 		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 		executionOptions.SetSynchronousMessageReporting(true);
 
+		var diagnosticSink = new ConsoleDiagnosticMessageSink(_diagnosticsManager);
+
 		var executionSink = new DeviceExecutionSink(xunitTestCases, _resultChannelManager);
 
 		try
@@ -68,7 +70,7 @@ public class XunitReflectionTestRunner : ITestRunner
 			var assemblyRunner = new YieldingXunitAssemblyRunner(
 				testAssembly,
 				xunitTestCases.Keys.OfType<IXunitTestCase>(),
-				NullMessageSink.Instance,
+				diagnosticSink,
 				executionSink,
 				executionOptions);
 

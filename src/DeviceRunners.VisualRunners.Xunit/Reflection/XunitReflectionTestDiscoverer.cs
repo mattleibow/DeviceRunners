@@ -8,7 +8,7 @@ namespace DeviceRunners.VisualRunners.Xunit;
 /// <summary>
 /// Reflection-based xunit test discoverer that works without filesystem access.
 /// Uses xunit's own <see cref="XunitTestFrameworkDiscoverer"/> via
-/// <see cref="ReflectionXunitDiscoverer"/> for proper discovery of all test types
+/// <see cref="XunitReflectionDiscoverer"/> for proper discovery of all test types
 /// (Fact, Theory, MemberData, ClassData, etc.) without spawning threads.
 /// </summary>
 public class XunitReflectionTestDiscoverer : ITestDiscoverer
@@ -46,10 +46,12 @@ public class XunitReflectionTestDiscoverer : ITestDiscoverer
 			{
 				var assemblyInfo = new ReflectionAssemblyInfo(assembly);
 
-				using var discoverer = new ReflectionXunitDiscoverer(
+				var diagnosticSink = new ConsoleDiagnosticMessageSink(_diagnosticsManager);
+
+				using var discoverer = new XunitReflectionDiscoverer(
 					assemblyInfo,
-					NullSourceInformationProvider.Instance,
-					NullMessageSink.Instance);
+					EmptySourceInformationProvider.Instance,
+					diagnosticSink);
 
 				var testCases = discoverer.DiscoverTests(discoveryOptions);
 

@@ -10,9 +10,9 @@ namespace DeviceRunners.VisualRunners.Xunit;
 /// without spawning threads, which is required for single-threaded environments.
 /// Uses <see cref="SynchronousMessageBus"/> to process discovery messages inline.
 /// </summary>
-class ReflectionXunitDiscoverer : XunitTestFrameworkDiscoverer
+class XunitReflectionDiscoverer : XunitTestFrameworkDiscoverer
 {
-	public ReflectionXunitDiscoverer(
+	public XunitReflectionDiscoverer(
 		IAssemblyInfo assemblyInfo,
 		ISourceInformationProvider sourceProvider,
 		IMessageSink diagnosticMessageSink)

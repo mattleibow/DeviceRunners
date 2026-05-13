@@ -1,18 +1,13 @@
 namespace DeviceRunners.VisualRunners;
 
 /// <summary>
-/// An <see cref="IResultChannel"/> implementation that streams test events to <see cref="Console.Out"/>.
-/// Useful for headless/CI scenarios and browser WASM where filesystem access is unavailable.
+/// An <see cref="IResultChannel"/> that writes test results to <see cref="Console.Out"/>.
+/// Defaults to human-readable text format; pass a different formatter for NDJSON or other formats.
 /// </summary>
 public class ConsoleResultChannel : TextWriterResultChannel
 {
-	public ConsoleResultChannel()
-		: base(new EventStreamFormatter())
-	{
-	}
-
-	public ConsoleResultChannel(IResultChannelFormatter formatter)
-		: base(formatter)
+	public ConsoleResultChannel(IResultChannelFormatter? formatter = null)
+		: base(formatter ?? new TextResultChannelFormatter())
 	{
 	}
 

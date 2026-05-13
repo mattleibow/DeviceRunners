@@ -1,12 +1,16 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 
 namespace DeviceRunners.VisualRunners;
 
-class DebugResultChannel : TextWriterResultChannel
+/// <summary>
+/// An <see cref="IResultChannel"/> that writes test results to <see cref="Debug.WriteLine"/>.
+/// Defaults to human-readable text format; pass a different formatter for NDJSON or other formats.
+/// </summary>
+public class DebugResultChannel : TextWriterResultChannel
 {
-	public DebugResultChannel()
-		: base(new TextResultChannelFormatter())
+	public DebugResultChannel(IResultChannelFormatter? formatter = null)
+		: base(formatter ?? new TextResultChannelFormatter())
 	{
 	}
 
