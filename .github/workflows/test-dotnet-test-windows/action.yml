@@ -28,6 +28,9 @@ runs:
     - name: Publish CLI Tool Binaries
       shell: pwsh
       run: dotnet pack src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj -c release
+    - name: Restore test project (populates NuGet cache for WinAppSDK)
+      shell: pwsh
+      run: dotnet restore ${{ inputs.test-project }}
     - name: Install Windows App Runtime framework
       shell: pwsh
       run: |
