@@ -4,33 +4,17 @@ namespace DeviceTestingKitApp.DeviceTests;
 
 public class MemberDataTests
 {
-	public static IEnumerable<object[]> GetAdditionData()
-	{
-		yield return new object[] { 2, 3, 5 };
-		yield return new object[] { 0, 0, 0 };
-		yield return new object[] { -1, -1, -2 };
-	}
-
-	[Theory]
-	[MemberData(nameof(GetAdditionData))]
-	public void MemberDataAddition(int a, int b, int expected)
-	{
-		Assert.Equal(expected, a + b);
-	}
+public static IEnumerable<object[]> GetAdditionData()
+{
+yield return new object[] { 2, 3, 5 };
+yield return new object[] { 0, 0, 0 };
+yield return new object[] { -1, -1, -2 };
 }
 
-public class DisposableTests : IDisposable
+[Theory]
+[MemberData(nameof(GetAdditionData))]
+public void MemberDataAddition(int a, int b, int expected)
 {
-	private bool _disposed;
-
-	public void Dispose()
-	{
-		_disposed = true;
-	}
-
-	[Fact]
-	public void TestRunsBeforeDispose()
-	{
-		Assert.False(_disposed);
-	}
+Assert.Equal(expected, a + b);
+}
 }

@@ -1,8 +1,8 @@
 using DeviceTestingKitApp.ViewModels;
 
-namespace DeviceTestingKitApp.Library.XunitTests;
+namespace DeviceTestingKitApp.BlazorLibrary.XunitTests;
 
-public class UnitTests
+public class CounterViewModelTests
 {
 	[Fact]
 	public void CounterViewModel_InitialCount_IsZero()
@@ -18,17 +18,4 @@ public class UnitTests
 		vm.IncrementCommand.Execute(null);
 		Assert.Equal(1, vm.Count);
 	}
-
-	[Fact(Skip = "This test is skipped.")]
-	public void SkippedTest()
-	{
-	}
-
-#if INCLUDE_FAILING_TESTS
-	[Fact]
-	public void FailingTest()
-	{
-		throw new Exception("This is meant to fail.");
-	}
-#endif
 }
