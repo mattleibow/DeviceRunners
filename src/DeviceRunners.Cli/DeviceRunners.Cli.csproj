@@ -43,6 +43,12 @@
     <ProjectReference Include="..\DeviceRunners.VisualRunners.Core\DeviceRunners.VisualRunners.Core.csproj" />
   </ItemGroup>
 
+  <!-- Root assemblies that rely on reflection and are not trim-safe. -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Spectre.Console.Cli" />
+    <TrimmerRootAssembly Include="DeviceRunners.Cli" />
+  </ItemGroup>
+
   <!-- Copy both winapp.exe architectures into CLI output so the correct one is used at runtime -->
   <ItemGroup>
     <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-x64\winapp.exe"
@@ -54,6 +60,5 @@
           Link="winapp\win-arm64\winapp.exe"
           Visible="false" />
   </ItemGroup>
-
 
 </Project>

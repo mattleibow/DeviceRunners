@@ -53,8 +53,8 @@
   <!-- Prevent the iOS/Android linker from stripping referenced test assemblies.
        Test classes are discovered via reflection, so the linker can't trace them. -->
   <ItemGroup>
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" RootMode="all" />
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" RootMode="all" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" />
   </ItemGroup>
 
   <ItemGroup>

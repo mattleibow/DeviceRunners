@@ -154,20 +154,32 @@
   <!-- =[ Windows args ]= -->
 
   <!--
-    Windows currently supports unpackaged (.exe) mode only via dotnet test.
-    MSIX support is planned for a future release (requires dotnet publish integration).
-    For MSIX testing, use the DeviceRunners CLI directly.
+    Detects the Windows build output and assembles CLI arguments:
+    - Unpackaged (.exe): WindowsPackageType=None produces a plain executable
+    - Loose MSIX layout: default packaging produces a folder with AppxManifest.xml
+      which the CLI registers via winapp.exe (no dotnet publish needed)
   -->
   <Target Name="_DeviceRunnersWindowsArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'windows'">
     <PropertyGroup>
-      <_DeviceRunnersWindowsApp>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersWindowsApp>
+      <_DeviceRunnersWindowsExe>$(OutputPath)$(AssemblyName).exe</_DeviceRunnersWindowsExe>
+      <_DeviceRunnersWindowsManifest>$(OutputPath)AppxManifest.xml</_DeviceRunnersWindowsManifest>
     </PropertyGroup>
-    <Error Text="Executable not found at '$(_DeviceRunnersWindowsApp)'. dotnet test currently only supports unpackaged Windows apps (WindowsPackageType=None). For MSIX packaged apps, use the DeviceRunners CLI directly."
-           Condition="!Exists('$(_DeviceRunnersWindowsApp)')" />
-    <PropertyGroup>
-      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsApp)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+
+    <!-- Unpackaged: use the .exe directly -->
+    <PropertyGroup Condition="Exists('$(_DeviceRunnersWindowsExe)') And !Exists('$(_DeviceRunnersWindowsManifest)')">
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(_DeviceRunnersWindowsExe)&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersWindowsApp>$(_DeviceRunnersWindowsExe)</_DeviceRunnersWindowsApp>
     </PropertyGroup>
+
+    <!-- Loose MSIX layout: point CLI at the output folder (it finds AppxManifest.xml) -->
+    <PropertyGroup Condition="Exists('$(_DeviceRunnersWindowsManifest)')">
+      <_DeviceRunnersCliArgs>windows test --app &quot;$(OutputPath).&quot; $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersWindowsApp>$(OutputPath)</_DeviceRunnersWindowsApp>
+    </PropertyGroup>
+
+    <Error Text="No Windows app found in '$(OutputPath)'. Expected either an .exe (WindowsPackageType=None) or a folder with AppxManifest.xml."
+           Condition="'$(_DeviceRunnersWindowsApp)' == ''" />
     <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersWindowsApp)" />
   </Target>
 
