@@ -209,6 +209,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-dotnet-test-ios
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test iOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   dotnet-test-macos:
     name: dotnet test macOS (x64)
@@ -216,6 +223,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-dotnet-test-macos
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test macOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   dotnet-test-windows:
     name: dotnet test Windows (MSIX)
@@ -223,6 +237,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-dotnet-test-windows
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test Windows MSIX)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   dotnet-test-windows-exe:
     name: dotnet test Windows (EXE)
@@ -230,6 +251,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/test-dotnet-test-windows-exe
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test Windows EXE)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
 
   # ── XHarness Device Tests ──────────────────────────────────
 

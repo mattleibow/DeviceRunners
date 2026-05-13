@@ -31,7 +31,7 @@ public static class MauiProgram
 				.AddXunit())
 #endif
 			.UseVisualTestRunner(conf => conf
-				.AddEnvironmentVariables()
+				.AddCliConfiguration()
 #if MODE_NON_INTERACTIVE_VISUAL
 				.EnableAutoStart(true)
 				.AddTcpResultChannel(new TcpResultChannelOptions

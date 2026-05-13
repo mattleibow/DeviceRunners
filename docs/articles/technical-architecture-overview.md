@@ -316,7 +316,7 @@ tools/
 
 ```
 VSTest  (entry point, replaces SDK default)
-  -> _DeviceRunnersCheckCli       (verify CLI tool exists)
+
   -> Build                        (compile the app)
   -> _DeviceRunnersRunTests       (orchestrator)
        -> _DeviceRunnersPrepareArgs    (common + platform-specific CLI args)

@@ -167,7 +167,8 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 		int pid;
 		try
 		{
-			pid = await winAppService.RunDetachedAsync(inputFolder, manifestPath, appArgs: null);
+			var appArgs = $"--device-runners-autorun --device-runners-port {settings.Port} --device-runners-host-names localhost";
+			pid = await winAppService.RunDetachedAsync(inputFolder, manifestPath, appArgs: appArgs);
 		}
 		catch (Exception ex)
 		{
