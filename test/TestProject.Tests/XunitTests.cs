@@ -35,6 +35,6 @@ public class XunitTests : IDisposable
 	[InlineData(3)]
 	public void DataTest(int number)
 	{
-		Assert.True(true);
+		Assert.True(number > 0);
 	}
 }

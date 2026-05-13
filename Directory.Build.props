@@ -13,6 +13,13 @@
 
     <!-- Skip Xcode version validation so minor Xcode updates don't break builds -->
     <ValidateXcodeVersion>false</ValidateXcodeVersion>
+
+    <!-- Treat all warnings as errors -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- .NET 11 preview SDK flags net9.0 workloads as EOL -->
+    <CheckEolWorkloads>false</CheckEolWorkloads>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
 </Project>

@@ -4,6 +4,7 @@
              xmlns:vr="clr-namespace:DeviceRunners.VisualRunners;assembly=DeviceRunners.VisualRunners"
              xmlns:local="using:DeviceRunners.VisualRunners.Maui"
              x:Class="DeviceRunners.VisualRunners.Maui.Pages.TestAssemblyPage"
+             x:DataType="vr:TestAssemblyViewModel"
              Title="{Binding DisplayName}">
 
     <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,Auto,Auto"
@@ -46,13 +47,12 @@
         <!-- assembly list -->
         <CollectionView x:Name="testsList"
                         ItemsSource="{Binding TestCases}"
+                        SelectedItem="{Binding SelectedTestCase, Mode=TwoWay}"
                         SelectionMode="Single"
-                        SelectionChangedCommand="{Binding NavigateToResultCommand}"
-                        SelectionChangedCommandParameter="{Binding SelectedItem, Source={Reference testsList}}"
                         AutomationId="TestCasesList"
                         Margin="-20,0" Grid.Row="2" Grid.ColumnSpan="3">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="vr:TestCaseViewModel">
                     <StackLayout Padding="20,10" Spacing="5">
                         <Label Text="{Binding DisplayName}" />
                         <Label Text="{Binding Message}" TextColor="{Binding ResultStatus, Converter={StaticResource RunStatusToColorConverter}}" />

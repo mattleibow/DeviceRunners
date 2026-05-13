@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
@@ -112,6 +113,7 @@ public class BrowserService : IAsyncDisposable
 		throw new TimeoutException("Chrome did not output a DevTools URL within the timeout period.");
 	}
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Chrome DevTools JSON protocol uses dynamic types")]
 	static async Task<string> GetPageWebSocketUrl(string debugUrl)
 	{
 		using var http = new HttpClient();
@@ -145,6 +147,7 @@ public class BrowserService : IAsyncDisposable
 		throw new TimeoutException("Could not find a Chrome page to connect to.");
 	}
 
+	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "CDP command serialization uses anonymous types")]
 	async Task SendCdpCommandAsync(string method, object? parameters = null)
 	{
 		if (_webSocket is null || _webSocket.State != WebSocketState.Open)

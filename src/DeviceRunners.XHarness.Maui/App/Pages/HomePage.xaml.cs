@@ -29,6 +29,7 @@ partial class HomePage : ContentPage
 
 		first = false;
 
-		await ViewModel.RunTestsAsync();
+		if (ViewModel is not null)
+			await ViewModel.RunTestsAsync();
 	}
 }

@@ -66,14 +66,14 @@
                 <Setter Property="Background" Value="#CCFFFFFF" />
                 <Setter Property="InputTransparent" Value="False" />
                 <Setter Property="ControlTemplate">
-                    <DataTemplate>
+                    <ControlTemplate x:DataType="ContentView">
                         <Grid>
                             <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="20">
                                 <Label Text="Working..." />
-                                <ActivityIndicator IsRunning="{Binding Source={RelativeSource AncestorType={x:Type ContentView}}, Path=IsVisible}" />
+                                <ActivityIndicator IsRunning="{TemplateBinding IsVisible}" />
                             </StackLayout>
                         </Grid>
-                    </DataTemplate>
+                    </ControlTemplate>
                 </Setter>
             </Style>
 

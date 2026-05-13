@@ -112,8 +112,8 @@
 
     void SelectTest(TestCaseViewModel testCase)
     {
-        // Run the test and navigate to the result (matches MAUI behavior)
-        Assembly.NavigateToResultCommand.Execute(testCase);
+        // Set the selected test case — the ViewModel will run it and fire TestResultSelected
+        Assembly.SelectedTestCase = testCase;
     }
 
     void OnTestResultSelected(object? sender, TestResultViewModel result)

@@ -41,7 +41,12 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-android \
 
 ### Environment Variables
 
-On Android, environment variables cannot be set at launch time. Instead, the Testing.Targets package injects them at **build time** using the `_GenerateEnvironmentFiles` MSBuild mechanism. The Mono runtime reads these from `__environment__.txt` inside the APK at startup.
+On Android, environment variables cannot be set at launch time via `adb`. Instead, the Testing.Targets package injects them at **build time** using the `_GenerateEnvironmentFiles` MSBuild mechanism. The Mono runtime reads these from `__environment__.txt` inside the APK at startup.
+
+This is unlike all other platforms where the CLI injects configuration at launch time, meaning the same built app can be reused with different settings. On Android, changing the TCP port or host names requires a rebuild.
+
+> [!TIP]
+> Launch-time injection via Android intent extras is planned for a future release. See [#123](https://github.com/mattleibow/DeviceRunners/issues/123).
 
 The following variables are injected:
 

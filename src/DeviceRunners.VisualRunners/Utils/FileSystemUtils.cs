@@ -32,7 +32,8 @@ public class FileSystemUtils
 		// Android: We can only check the assets folder
 		try
 		{
-			return Application.Context.Assets.Open(filename);
+			var assets = Application.Context.Assets ?? throw new InvalidOperationException("Android AssetManager is not available.");
+			return assets.Open(filename);
 		}
 		catch (Java.IO.FileNotFoundException)
 		{
@@ -91,7 +92,7 @@ public class FileSystemUtils
 		return Path.Combine(root, filename);
 #elif ANDROID
 		// this is required to exist (although not actually used) so we create a dummy file
-		var root = Android.App.Application.Context.CacheDir.AbsolutePath;
+		var root = Android.App.Application.Context.CacheDir?.AbsolutePath ?? throw new InvalidOperationException("Android CacheDir is not available.");
 		var path = Path.Combine(root, filename);
 		if (!File.Exists(path))
 			File.Create(path).Close();

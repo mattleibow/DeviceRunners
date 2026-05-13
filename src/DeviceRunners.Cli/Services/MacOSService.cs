@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
+using DeviceRunners.Cli.Models;
+
 namespace DeviceRunners.Cli.Services;
 
 public class MacOSService
@@ -174,7 +176,7 @@ public class MacOSService
 
 		try
 		{
-			var plistData = JsonSerializer.Deserialize<Dictionary<string, object>>(output);
+			var plistData = JsonSerializer.Deserialize(output, CliJsonContext.Default.DictionaryStringObject);
 			if (plistData != null && plistData.TryGetValue(key, out var value))
 				return value.ToString();
 		}
