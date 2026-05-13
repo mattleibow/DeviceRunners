@@ -16,6 +16,7 @@ public class HomeViewModel : AbstractBaseViewModel
 
 	bool _isLoaded;
 	bool _isBusy;
+	TestAssemblyViewModel? _selectedTestAssembly;
 
 	public HomeViewModel(
 		IVisualTestRunnerConfiguration options,
@@ -36,7 +37,6 @@ public class HomeViewModel : AbstractBaseViewModel
 		Diagnostics = diagnosticsViewModel;
 
 		RunEverythingCommand = new Command(RunEverythingExecute, () => !_isBusy);
-		NavigateToTestAssemblyCommand = new Command<TestAssemblyViewModel?>(NavigateToTestAssemblyExecute);
 	}
 
 	public DiagnosticsViewModel? Diagnostics { get; }
@@ -45,7 +45,17 @@ public class HomeViewModel : AbstractBaseViewModel
 
 	public ICommand RunEverythingCommand { get; }
 
-	public ICommand NavigateToTestAssemblyCommand { get; }
+	public TestAssemblyViewModel? SelectedTestAssembly
+	{
+		get => _selectedTestAssembly;
+		set
+		{
+			if (Set(ref _selectedTestAssembly, value) && value is not null)
+			{
+				TestAssemblySelected?.Invoke(this, value);
+			}
+		}
+	}
 
 	public event EventHandler<TestAssemblyViewModel>? TestAssemblySelected;
 
@@ -126,13 +136,5 @@ public class HomeViewModel : AbstractBaseViewModel
 	async void RunEverythingExecute()
 	{
 		await RunEverythingAsync();
-	}
-
-	void NavigateToTestAssemblyExecute(TestAssemblyViewModel? vm)
-	{
-		if (vm is null)
-			return;
-
-		TestAssemblySelected?.Invoke(this, vm);
 	}
 }

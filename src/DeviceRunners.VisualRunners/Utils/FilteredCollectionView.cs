@@ -36,7 +36,7 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		get { return filterArgument; }
 		set
 		{
-			if (filterArgument.Equals(value))
+			if (EqualityComparer<TFilterArg>.Default.Equals(filterArgument, value))
 			{
 				return;
 			}
@@ -58,7 +58,7 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		filteredList.Clear();
 	}
 
-	int IList.Add(object value)
+	int IList.Add(object? value)
 	{
 		throw new NotSupportedException();
 	}
@@ -68,24 +68,24 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		throw new NotSupportedException();
 	}
 
-	bool IList.Contains(object value)
+	bool IList.Contains(object? value)
 	{
-		return Contains((T)value);
+		return Contains((T)value!);
 	}
 
-	int IList.IndexOf(object value)
+	int IList.IndexOf(object? value)
 	{
-		return IndexOf((T)value);
+		return IndexOf((T)value!);
 	}
 
-	void IList.Insert(int index, object value)
+	void IList.Insert(int index, object? value)
 	{
 		throw new NotSupportedException();
 	}
 
 	bool IList.IsFixedSize => false;
 
-	void IList.Remove(object value)
+	void IList.Remove(object? value)
 	{
 		throw new NotSupportedException();
 	}
@@ -95,7 +95,7 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		throw new NotSupportedException();
 	}
 
-	object IList.this[int index]
+	object? IList.this[int index]
 	{
 		get { return this[index]; }
 		set { throw new NotSupportedException(); }
@@ -197,26 +197,26 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		switch (e.Action)
 		{
 			case NotifyCollectionChangedAction.Add:
-				foreach (T item in e.NewItems)
+				foreach (T item in e.NewItems!)
 				{
 					OnAdded(item);
 				}
 
 				break;
 			case NotifyCollectionChangedAction.Remove:
-				foreach (T item in e.OldItems)
+				foreach (T item in e.OldItems!)
 				{
 					OnRemoved(item);
 				}
 
 				break;
 			case NotifyCollectionChangedAction.Replace:
-				foreach (T item in e.OldItems)
+				foreach (T item in e.OldItems!)
 				{
 					OnRemoved(item);
 				}
 
-				foreach (T item in e.NewItems)
+				foreach (T item in e.NewItems!)
 				{
 					OnAdded(item);
 				}
@@ -227,9 +227,9 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 		}
 	}
 
-	void DataSource_ItemChanged(object sender, PropertyChangedEventArgs e)
+	void DataSource_ItemChanged(object? sender, PropertyChangedEventArgs e)
 	{
-		var item = (T)sender;
+		var item = (T)sender!;
 		var index = filteredList.IndexOf(item);
 		if (filter(item, FilterArgument))
 		{

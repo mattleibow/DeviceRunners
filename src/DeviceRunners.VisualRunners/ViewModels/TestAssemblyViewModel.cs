@@ -12,6 +12,7 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 	readonly List<TestCaseViewModel> _results;
 
 	CancellationTokenSource? _filterCancellationTokenSource;
+	TestCaseViewModel? _selectedTestCase;
 	TestState _result;
 	TestState _resultFilter;
 	TestResultStatus _runStatus;
@@ -34,7 +35,6 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 
 		RunAllTestsCommand = new Command(RunAllTestsExecute, () => !_isBusy);
 		RunFilteredTestsCommand = new Command(RunFilteredTestsExecute, () => !_isBusy);
-		NavigateToResultCommand = new Command<TestCaseViewModel?>(NavigateToResultExecute, tc => !_isBusy);
 
 		DisplayName = Path.GetFileNameWithoutExtension(testAssembly.AssemblyFileName);
 
@@ -85,7 +85,17 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 
 	public ICommand RunFilteredTestsCommand { get; }
 
-	public ICommand NavigateToResultCommand { get; }
+	public TestCaseViewModel? SelectedTestCase
+	{
+		get => _selectedTestCase;
+		set
+		{
+			if (Set(ref _selectedTestCase, value) && value is not null)
+			{
+				NavigateToResultExecute(value);
+			}
+		}
+	}
 
 	public event EventHandler<TestResultViewModel>? TestResultSelected;
 
@@ -231,11 +241,8 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 		}
 	}
 
-	async void NavigateToResultExecute(TestCaseViewModel? testCase)
+	async void NavigateToResultExecute(TestCaseViewModel testCase)
 	{
-		if (testCase == null)
-			return;
-
 		await _runner.RunTestsAsync(testCase.TestCaseInfo);
 
 		TestResultSelected?.Invoke(this, testCase.TestResult);
