@@ -84,7 +84,7 @@ jobs:
       run: |
         $VERSION="0.999-ci.$env:GITHUB_RUN_ID"
         echo "PACKAGE VERSION: $VERSION"
-        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog /nodeReuse:false /p:BuildInParallel=false /p:UseSharedCompilation=false
+        dotnet pack --output ./artifacts/nugets --configuration release -p:PackageVersion=$VERSION /bl:./artifacts/logs/msbuild-pack.binlog /nodeReuse:false
     - uses: actions/upload-artifact@v4
       with:
         name: NuGet
