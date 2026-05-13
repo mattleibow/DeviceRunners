@@ -10,6 +10,7 @@ builder.RootComponents.Add<TestRunnerApp>("#app");
 builder.UseVisualTestRunner(conf => conf
 	.AddXunit(useReflection: true)
 	.AddTestAssembly(typeof(SampleXunitTests).Assembly)
+	.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.XunitTests.UnitTests).Assembly)
 	.AddConsoleResultChannel());
 
 await builder.Build().RunAsync();

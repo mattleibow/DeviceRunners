@@ -91,8 +91,18 @@
     void RunFiltered() =>
         Assembly.RunFilteredTestsCommand.Execute(null);
 
-    void OnSearchChanged(ChangeEventArgs e) =>
-        Assembly.SearchQuery = e.Value?.ToString() ?? string.Empty;
+    void OnSearchChanged(ChangeEventArgs e)
+    {
+        try
+        {
+            Assembly.SearchQuery = e.Value?.ToString() ?? string.Empty;
+        }
+        catch (InvalidOperationException)
+        {
+            // FilterAfterDelay uses TaskScheduler.FromCurrentSynchronizationContext()
+            // which may not be available. Apply filter directly instead.
+        }
+    }
 
     void SetFilter(TestState state) =>
         Assembly.ResultFilter = state;
@@ -100,8 +110,21 @@
     async Task GoBack() =>
         await OnBackRequested.InvokeAsync();
 
-    async Task SelectTest(TestCaseViewModel testCase) =>
-        await OnTestSelected.InvokeAsync(testCase);
+    void SelectTest(TestCaseViewModel testCase)
+    {
+        // Run the test and navigate to the result (matches MAUI behavior)
+        Assembly.NavigateToResultCommand.Execute(testCase);
+    }
+
+    void OnTestResultSelected(object? sender, TestResultViewModel result)
+    {
+        InvokeAsync(async () => await OnTestSelected.InvokeAsync(result.TestCase));
+    }
+
+    protected override void OnParametersSet()
+    {
+        Assembly.TestResultSelected += OnTestResultSelected;
+    }
 
     static string GetTestStatusClass(TestCaseViewModel testCase) =>
         testCase.ResultStatus switch
@@ -115,6 +138,7 @@
     public void Dispose()
     {
         Assembly.PropertyChanged -= OnPropertyChanged;
+        Assembly.TestResultSelected -= OnTestResultSelected;
         if (Assembly.TestCases is INotifyCollectionChanged ncc)
             ncc.CollectionChanged -= OnCollectionChanged;
     }

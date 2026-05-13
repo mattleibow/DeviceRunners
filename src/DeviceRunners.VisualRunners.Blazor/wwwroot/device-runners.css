@@ -1,6 +1,11 @@
 /* DeviceRunners Blazor Visual Test Runner Styles */
 /* Include via: <link href="_content/DeviceRunners.VisualRunners.Blazor/device-runners.css" rel="stylesheet" /> */
 
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 .dr-app {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: #1a1a2e;
