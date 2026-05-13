@@ -41,6 +41,7 @@ public static class AppHostBuilderExtensions
 		builder.Services.AddSingleton<IResultChannelManager, DefaultResultChannelManager>();
 		builder.Services.AddSingleton<HomeViewModel>();
 		builder.Services.AddSingleton<DiagnosticsViewModel>();
+		builder.Services.AddSingleton<CreditsViewModel>();
 
 		return builder;
 	}

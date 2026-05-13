@@ -1,0 +1,19 @@
+@inject CreditsViewModel ViewModel
+
+<div class="dr-credits">
+    <div class="dr-header">
+        <button class="dr-btn dr-btn-back" @onclick="GoBack">← Back</button>
+        <h2>Credits</h2>
+    </div>
+
+    <div class="dr-credits-content">
+        @((MarkupString)ViewModel.CreditsHtml)
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnBackRequested { get; set; }
+
+    async Task GoBack() => await OnBackRequested.InvokeAsync();
+}

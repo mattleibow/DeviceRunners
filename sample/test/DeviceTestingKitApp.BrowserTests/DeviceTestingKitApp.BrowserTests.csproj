@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">INCLUDE_FAILING_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

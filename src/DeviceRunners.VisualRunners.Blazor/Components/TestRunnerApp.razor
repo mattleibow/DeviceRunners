@@ -5,6 +5,7 @@
         <span class="dr-nav-brand">DeviceRunners</span>
         <button class="dr-nav-link" @onclick="NavigateHome">Home</button>
         <button class="dr-nav-link" @onclick="NavigateDiagnostics">Diagnostics</button>
+        <button class="dr-nav-link" @onclick="NavigateCredits">Credits</button>
     </nav>
 
     <main class="dr-main">
@@ -28,12 +29,16 @@
             case View.Diagnostics:
                 <DiagnosticsPage OnBackRequested="NavigateHome" />
                 break;
+
+            case View.Credits:
+                <CreditsPage OnBackRequested="NavigateHome" />
+                break;
         }
     </main>
 </div>
 
 @code {
-    enum View { Home, Assembly, TestResult, Diagnostics }
+    enum View { Home, Assembly, TestResult, Diagnostics, Credits }
 
     View _currentView = View.Home;
     TestAssemblyViewModel? _selectedAssembly;
@@ -61,6 +66,11 @@
     void NavigateDiagnostics()
     {
         _currentView = View.Diagnostics;
+    }
+
+    void NavigateCredits()
+    {
+        _currentView = View.Credits;
     }
 
     void NavigateBackFromResult()
