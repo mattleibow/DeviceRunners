@@ -9,7 +9,7 @@ public class TestViewModel : BindableObject
 
 	public TestViewModel()
 	{
-		LoginCommand = new Command(OnLogin, CanLogin);
+		LoginCommand = new Command(OnLogin);
 	}
 
 	public string? Username
@@ -19,7 +19,6 @@ public class TestViewModel : BindableObject
 		{
 			_username = value;
 			OnPropertyChanged();
-			((Command)LoginCommand).ChangeCanExecute();
 		}
 	}
 
@@ -30,13 +29,10 @@ public class TestViewModel : BindableObject
 		{
 			_password = value;
 			OnPropertyChanged();
-			((Command)LoginCommand).ChangeCanExecute();
 		}
 	}
 
 	public ICommand LoginCommand { get; }
-
-	bool CanLogin() => !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password);
 
 	void OnLogin()
 	{

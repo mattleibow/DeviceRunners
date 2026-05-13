@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="using:DeviceTestingKitApp.DeviceTests"
              x:Class="DeviceTestingKitApp.DeviceTests.TestPage"
-             x:DataType="local:TestViewModel"
              Shell.PresentationMode="ModalAnimated">
 
     <ContentPage.BindingContext>
@@ -27,8 +26,22 @@
 
             <Button x:Name="loginButton"
                     Text="Login"
-                    Command="{Binding LoginCommand}"
-                    MaximumWidthRequest="100" />
+                    MaximumWidthRequest="100">
+                <Button.Triggers>
+                    <!-- disable the button if the username is empty -->
+                    <DataTrigger TargetType="Button"
+                                 Binding="{Binding Source={x:Reference usernameEntry}, Path=Text.Length}"
+                                 Value="0">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                    <!-- disable the button if the password is empty -->
+                    <DataTrigger TargetType="Button"
+                                 Binding="{Binding Source={x:Reference passwordEntry}, Path=Text.Length}"
+                                 Value="0">
+                        <Setter Property="IsEnabled" Value="False" />
+                    </DataTrigger>
+                </Button.Triggers>
+            </Button>
 
         </VerticalStackLayout>
 

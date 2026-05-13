@@ -24,6 +24,9 @@
 
     <!-- The MAUI app defines its own Program.Main; disable the auto-generated testing platform entry point -->
     <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+
+    <!-- Test pages intentionally use Source= bindings (e.g. x:Reference in DataTriggers) for demonstration purposes -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0025</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
