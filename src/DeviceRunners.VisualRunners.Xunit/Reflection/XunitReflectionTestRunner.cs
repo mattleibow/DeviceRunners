@@ -61,7 +61,7 @@ public class XunitReflectionTestRunner : ITestRunner
 		var executionOptions = TestFrameworkOptions.ForExecution(assemblyInfo.Configuration);
 		executionOptions.SetSynchronousMessageReporting(true);
 
-		var diagnosticSink = new ConsoleDiagnosticMessageSink(_diagnosticsManager);
+		var diagnosticSink = new DiagnosticMessageSink(_diagnosticsManager);
 
 		var executionSink = new DeviceExecutionSink(xunitTestCases, _resultChannelManager);
 

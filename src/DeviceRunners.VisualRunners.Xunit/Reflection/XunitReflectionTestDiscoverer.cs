@@ -46,7 +46,7 @@ public class XunitReflectionTestDiscoverer : ITestDiscoverer
 			{
 				var assemblyInfo = new ReflectionAssemblyInfo(assembly);
 
-				var diagnosticSink = new ConsoleDiagnosticMessageSink(_diagnosticsManager);
+				var diagnosticSink = new DiagnosticMessageSink(_diagnosticsManager);
 
 				using var discoverer = new XunitReflectionDiscoverer(
 					assemblyInfo,
