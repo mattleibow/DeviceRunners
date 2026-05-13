@@ -53,6 +53,9 @@ public class HomeViewModel : AbstractBaseViewModel
 			if (Set(ref _selectedTestAssembly, value) && value is not null)
 			{
 				TestAssemblySelected?.Invoke(this, value);
+				// Clear selection so re-entering the page doesn't re-navigate
+				_selectedTestAssembly = null;
+				RaisePropertyChanged(nameof(SelectedTestAssembly));
 			}
 		}
 	}

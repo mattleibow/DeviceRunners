@@ -92,7 +92,11 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 		{
 			if (Set(ref _selectedTestCase, value) && value is not null)
 			{
-				NavigateToResultExecute(value);
+				if (!_isBusy)
+					NavigateToResultExecute(value);
+				// Clear selection so re-entering the page doesn't re-navigate
+				_selectedTestCase = null;
+				RaisePropertyChanged(nameof(SelectedTestCase));
 			}
 		}
 	}
