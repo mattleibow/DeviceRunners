@@ -77,4 +77,4 @@ dotnet test MyApp.csproj -f net10.0-ios \
 
 ### App crashes with partial results
 
-If you see `(incomplete: app crashed)` in the output, check the device log at `<results-directory>/ios-device-log.txt` for the full managed exception stack trace. Common causes:
+If you see `(incomplete: app crashed)` in the output, check the device log at `<results-directory>/ios-device-log.txt` for the full managed exception stack trace. Common causes include unhandled exceptions on the UI thread, missing platform features, or linker stripping required assemblies.

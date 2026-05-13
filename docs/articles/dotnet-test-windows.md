@@ -22,7 +22,7 @@ The MSBuild targets automatically detect what the build produced and adapt:
 | Build Output | `WindowsPackageType` | How Tests Run |
 |-------------|---------------------|---------------|
 | `.exe` (unpackaged) | `None` | CLI launches the `.exe` directly with environment variables |
-| `.msix` (packaged) | _(default/MSIX)_ | CLI installs and launches the MSIX package |
+| `AppxManifest.xml` (loose MSIX layout) | _(default/MSIX)_ | CLI registers the app via `winapp.exe` and launches it with CLI arguments |
 
 You don't need to set `WindowsPackageType` — the targets find whichever artifact exists.
 
@@ -36,7 +36,7 @@ For unpackaged apps, environment variables are injected directly into the proces
 | `DEVICE_RUNNERS_PORT` | `16384` (default) | TCP port to connect to on the host |
 | `DEVICE_RUNNERS_HOST_NAMES` | `localhost` | Host address |
 
-For MSIX-packaged apps, the CLI handles installation, certificate management, launching, and cleanup.
+For loose MSIX apps, the same configuration is passed as CLI arguments (`--device-runners-autorun`, `--device-runners-port`, `--device-runners-host-names`) via `winapp.exe --args`, because environment variables cannot be forwarded to packaged app processes.
 
 ### Unpackaged Mode
 

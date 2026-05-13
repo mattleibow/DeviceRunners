@@ -29,7 +29,7 @@ On macOS Catalyst, the CLI launches the `.app` bundle directly as a child proces
 
 ### App Bundle Discovery
 
-The MSBuild targets locate the `.app` bundle in the build output directory using `Directory.GetDirectories('$(OutputPath)', '*.app')`. Standard MSBuild glob patterns (`*.app/`) do not reliably match directories on macOS, so the targets use the .NET `System.IO.Directory` API instead.
+The MSBuild targets locate the `.app` bundle in the build output directory using `Directory.GetDirectories('$(OutputPath)', '$(AssemblyName).app')`. Standard MSBuild glob patterns (`*.app/`) do not reliably match directories on macOS, so the targets use the .NET `System.IO.Directory` API instead.
 
 ### Why Direct Launch Instead of `open`
 
