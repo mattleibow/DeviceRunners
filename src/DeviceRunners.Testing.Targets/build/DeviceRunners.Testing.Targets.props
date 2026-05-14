@@ -61,10 +61,4 @@
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
   </PropertyGroup>
 
-  <!--
-    Android: EmbedAssembliesIntoApk is NOT set here. The dotnet test targets
-    use the platform's Install target (which handles Fast Deployment) instead
-    of having the CLI do adb install. See the .targets file for details.
-  -->
-
 </Project>
