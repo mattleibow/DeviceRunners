@@ -105,7 +105,8 @@
           Outputs="%(_DeviceRunnersTemplateFile.Destination)">
 
     <PropertyGroup>
-      <_DeviceRunnersIntermediateOutputPath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)bootstrap/%(_DeviceRunnersTemplateFile.Destination)'))</_DeviceRunnersIntermediateOutputPath>
+      <_DeviceRunnersBootstrapDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap', '$(TargetFramework)'))</_DeviceRunnersBootstrapDir>
+      <_DeviceRunnersIntermediateOutputPath>$([System.IO.Path]::Combine('$(_DeviceRunnersBootstrapDir)', '%(_DeviceRunnersTemplateFile.Destination)'))</_DeviceRunnersIntermediateOutputPath>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersIntermediateOutputPath)'))" />
@@ -132,6 +133,11 @@
       <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
     </CreateItem>
 
+  </Target>
+
+  <!-- Clean up generated bootstrap files -->
+  <Target Name="_DeviceRunnersCleanBootstrap" BeforeTargets="Clean">
+    <RemoveDir Directories="$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap'))" />
   </Target>
 
   <!-- Remove xunit.runner.visualstudio files from Windows app packages -->
