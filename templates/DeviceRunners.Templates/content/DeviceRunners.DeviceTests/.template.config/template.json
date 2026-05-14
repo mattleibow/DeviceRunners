@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "DeviceRunners Contributors",
+  "classifications": [
+    "MAUI",
+    "Test",
+    "Device",
+    "Xunit"
+  ],
+  "identity": "DeviceRunners.DeviceTests.CSharp",
+  "groupIdentity": "DeviceRunners.DeviceTests",
+  "name": "DeviceRunners Device Tests",
+  "description": "A project for running xUnit device tests on Android, iOS, macOS, and Windows using the DeviceRunners visual test runner with TCP result streaming.",
+  "shortName": "devicerunners",
+  "defaultName": "DeviceTests",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "DeviceRunners.DeviceTests",
+  "preferNameDirectory": true,
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target .NET version for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "net9.0",
+          "description": ".NET 9.0"
+        },
+        {
+          "choice": "net10.0",
+          "description": ".NET 10.0"
+        }
+      ],
+      "defaultValue": "net9.0",
+      "replaces": "DOTNET_TFM"
+    },
+    "applicationId": {
+      "type": "parameter",
+      "description": "The application identifier for the project.",
+      "datatype": "string",
+      "defaultValue": "com.companyname.devicetests",
+      "replaces": "com.companyname.devicerunners.devicetests"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "DeviceRunners.DeviceTests.csproj"
+    }
+  ],
+  "postActions": [
+    {
+      "condition": "",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}
