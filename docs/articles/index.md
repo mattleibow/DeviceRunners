@@ -13,7 +13,7 @@ DeviceRunners provides multiple ways to run tests for .NET MAUI applications:
 The simplest way to run device tests. Add a NuGet package, run `dotnet test`, and get TRX results. Works with standard CI/CD pipelines out of the box.
 
 - **[Using dotnet test](using-dotnet-test.md)** - Setup, configuration, and usage
-- Platform guides: [Android](dotnet-test-android.md) | [iOS](dotnet-test-ios.md) | [macOS Catalyst](dotnet-test-macos.md) | [Windows](dotnet-test-windows.md)
+- Platform guides: [Android](dotnet-test-android.md) | [iOS](dotnet-test-ios.md) | [macOS Catalyst](dotnet-test-macos.md) | [Windows](dotnet-test-windows.md) | [Browser (WASM)](dotnet-test-wasm.md)
 
 ### Visual Test Runners
 Interactive test execution within the IDE for development and debugging. Perfect for manual testing and development workflows.
@@ -30,6 +30,7 @@ The CLI tool that `dotnet test` uses under the hood. Use it directly when you ne
 - **[Windows CLI Testing](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing
 - **[macOS CLI Testing](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst testing
 - **[iOS CLI Testing](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator testing
+- **[WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
 
 #### XHarness (Legacy)
 Platform-specific tools for specialized scenarios:

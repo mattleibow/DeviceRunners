@@ -22,6 +22,7 @@ The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applica
 | **Android** | `install`, `uninstall`, `launch`, `test` | APK packages |
 | **macOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Mac Catalyst) |
 | **iOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Simulator) |
+| **WASM** | `test`, `serve` | Published Blazor WebAssembly apps |
 
 ## Output Formats
 
@@ -55,6 +56,7 @@ For detailed platform-specific instructions, see:
 - **[Windows - DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing  
 - **[macOS - DeviceRunners CLI](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst .app testing
 - **[iOS - DeviceRunners CLI](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator .app testing
+- **[WASM - DeviceRunners CLI](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
 
 ## Common Command Patterns
 
@@ -131,6 +133,24 @@ device-runners listen --port 16384 --results-file results.txt --non-interactive
 ```
 
 ## Additional Resources
+
+### WASM Browser Testing
+
+The CLI supports running tests in a headless browser for Blazor WebAssembly apps:
+
+```bash
+# Run tests in headless Chrome
+device-runners wasm test --app <path/to/wwwroot> --timeout 300 --logger "trx;LogFileName=test-results.trx" --results-directory results
+
+# Serve for interactive testing
+device-runners wasm serve --app <path/to/wwwroot> --port 5000
+```
+
+The `test` command serves the published `wwwroot` directory, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file. Use `--headed` to see the browser window during test execution.
+
+The `serve` command starts a local web server only, without launching Chrome. This is useful for opening the app manually in a browser to interact with the visual test runner UI.
+
+For more details, see **[WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)**.
 
 For more detailed information about the internal workflow and architecture:
 

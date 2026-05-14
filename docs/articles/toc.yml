@@ -24,6 +24,8 @@
       href: dotnet-test-macos.md
     - name: Windows
       href: dotnet-test-windows.md
+    - name: Browser (WASM)
+      href: dotnet-test-wasm.md
 
 - name: Visual Runners
   items:
@@ -42,6 +44,8 @@
       href: cli-device-runner-for-macos-using-devicerunners-cli.md
     - name: iOS
       href: cli-device-runner-for-ios-using-devicerunners-cli.md
+    - name: WASM
+      href: cli-device-runner-for-wasm-using-devicerunners-cli.md
     - name: CLI Test Workflow
       href: devicerunners-cli-test-workflow.md
 
