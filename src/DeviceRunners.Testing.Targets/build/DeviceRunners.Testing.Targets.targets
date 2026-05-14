@@ -105,17 +105,18 @@
 
   <!-- =[ Android args ]= -->
 
+  <!--
+    Android uses the platform's Install target to deploy the APK (which handles
+    both regular install and Fast Deployment). The CLI then launches the app
+    by package name (no adb install needed) and listens for TCP results.
+  -->
   <Target Name="_DeviceRunnersAndroidArgs"
-          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android'"
+          DependsOnTargets="Install">
     <PropertyGroup>
-      <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
+      <_DeviceRunnersCliArgs>android test --package &quot;$(ApplicationId)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
-    <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
-           Condition="!Exists('$(_DeviceRunnersApkPath)')" />
-    <PropertyGroup>
-      <_DeviceRunnersCliArgs>android test --app &quot;$(_DeviceRunnersApkPath)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
-    </PropertyGroup>
-    <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
+    <Message Importance="high" Text="DeviceRunners: running Android tests for $(ApplicationId)" />
   </Target>
 
   <!-- =[ iOS args ]= -->
