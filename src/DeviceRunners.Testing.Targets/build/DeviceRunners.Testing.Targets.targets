@@ -97,16 +97,34 @@
   -->
   <Target Name="_DeviceRunnersCommonArgs">
     <PropertyGroup>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <!-- GetDirectoryName strips the trailing separator that $(TestResultsDirectory) always carries. -->
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersTrxFile)'))</_DeviceRunnersResultsDir>
+      <!--
+        Use VSTestResultsDirectory (set by "dotnet test ‑‑results-directory") when
+        available; otherwise fall back to the project-level default.
+      -->
+      <_DeviceRunnersResultsDir Condition="'$(VSTestResultsDirectory)' != ''">$(VSTestResultsDirectory)</_DeviceRunnersResultsDir>
+      <_DeviceRunnersResultsDir Condition="'$(_DeviceRunnersResultsDir)' == ''">$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
+
+      <!--
+        Expected TRX path for the report phase. The CLI writes TRX to the
+        results directory with the filename from the logger arg. We use a
+        default name so the report target knows where to look.
+      -->
+      <_DeviceRunnersTrxFile>$([System.IO.Path]::Combine('$(_DeviceRunnersResultsDir)', 'test-results.trx'))</_DeviceRunnersTrxFile>
 
       <!-- Optional device flag; expands to empty string when DeviceRunnersDevice is unset. -->
       <_DeviceRunnersDeviceArg />
       <_DeviceRunnersDeviceArg Condition="'$(DeviceRunnersDevice)' != ''"> --device &quot;$(DeviceRunnersDevice)&quot;</_DeviceRunnersDeviceArg>
 
+      <!--
+        Forward the logger setting from "dotnet test ‑‑logger" ($(VSTestLogger))
+        when present. When no logger is specified, match "dotnet test" default
+        behaviour and omit the flag entirely (no TRX produced).
+      -->
+      <_DeviceRunnersLoggerArg />
+      <_DeviceRunnersLoggerArg Condition="'$(VSTestLogger)' != ''"> --logger &quot;$(VSTestLogger)&quot;</_DeviceRunnersLoggerArg>
+
       <!-- Flags shared by every platform sub-command. -->
-      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;</_DeviceRunnersCommonCliArgs>
+      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout)$(_DeviceRunnersLoggerArg)</_DeviceRunnersCommonCliArgs>
     </PropertyGroup>
     <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
   </Target>
@@ -218,7 +236,7 @@
            Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
     <PropertyGroup>
       <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
-      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --logger &quot;trx;LogFileName=test-results.trx&quot; --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>
