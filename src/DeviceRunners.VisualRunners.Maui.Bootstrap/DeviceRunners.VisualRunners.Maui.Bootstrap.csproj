@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" Pack="true" PackagePath="build\" />
+    <None Include="build\DeviceRunners.VisualRunners.Maui.Bootstrap.props" Pack="true" PackagePath="build\" />
+    <None Include="build\templates\**\*" Pack="true" PackagePath="build\templates\" />
+  </ItemGroup>
+
+</Project>

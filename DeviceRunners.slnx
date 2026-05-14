@@ -24,6 +24,7 @@
     <Project Path="src/DeviceRunners.VisualRunners/DeviceRunners.VisualRunners.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Maui/DeviceRunners.XHarness.Maui.csproj" />
     <Project Path="src/DeviceRunners.XHarness.Xunit/DeviceRunners.XHarness.Xunit.csproj" />
+    <Project Path="src/DeviceRunners.VisualRunners.Maui.Bootstrap/DeviceRunners.VisualRunners.Maui.Bootstrap.csproj" />
     <Project Path="src/DeviceRunners.XHarness/DeviceRunners.XHarness.csproj" />
   </Folder>
   <Folder Name="/test/">

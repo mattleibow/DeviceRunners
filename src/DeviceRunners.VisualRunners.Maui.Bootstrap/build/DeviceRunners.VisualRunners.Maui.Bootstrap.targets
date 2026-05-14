@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <ItemGroup>
+
+    <!-- Android -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template">
+      <Destination>Platforms/Android/MainActivity.cs</Destination>
+      <Platform>android</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template">
+      <Destination>Platforms/Android/MainApplication.cs</Destination>
+      <Platform>android</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/AndroidManifest.xml.template">
+      <Destination>Platforms/Android/AndroidManifest.xml</Destination>
+      <Platform>android</Platform>
+      <BuildAction>AndroidManifest</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- iOS -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template">
+      <Destination>Platforms/iOS/Program.cs</Destination>
+      <Platform>ios</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template">
+      <Destination>Platforms/iOS/AppDelegate.cs</Destination>
+      <Platform>ios</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Info.plist.template">
+      <Destination>Platforms/iOS/Info.plist</Destination>
+      <Platform>ios</Platform>
+      <BuildAction>PartialAppManifest</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- Mac Catalyst -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template">
+      <Destination>Platforms/MacCatalyst/Program.cs</Destination>
+      <Platform>maccatalyst</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template">
+      <Destination>Platforms/MacCatalyst/AppDelegate.cs</Destination>
+      <Platform>maccatalyst</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Info.plist.template">
+      <Destination>Platforms/MacCatalyst/Info.plist</Destination>
+      <Platform>maccatalyst</Platform>
+      <BuildAction>PartialAppManifest</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- Windows -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template">
+      <Destination>Platforms/Windows/App.xaml.cs</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.template">
+      <Destination>Platforms/Windows/App.xaml</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>ApplicationDefinition</BuildAction>
+      <AdditionalMetadata>Generator=MSBuild:Compile;XamlRuntime=$(DefaultXamlRuntime)</AdditionalMetadata>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
+      <Destination>Platforms/Windows/app.manifest</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>ApplicationManifest</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/Package.appxmanifest.template">
+      <Destination>Platforms/Windows/Package.appxmanifest</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>AppxManifest</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+  </ItemGroup>
+
+  <!-- Hook into build pipeline early enough for Windows pre-build checks and Resizetize -->
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+    <CoreCompileDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_DeviceRunnersBeforeResizetizeCollectItems"
+          BeforeTargets="ResizetizeCollectItems"
+          DependsOnTargets="_DeviceRunnersProcessAllTemplates" />
+
+  <!--
+    Process all template files: read template, replace placeholders, write to intermediate output,
+    and add to the build with the correct build action for the current platform.
+  -->
+  <Target Name="_DeviceRunnersProcessAllTemplates"
+          BeforeTargets="ResizetizeCollectItems"
+          Inputs="@(_DeviceRunnersTemplateFile)"
+          Outputs="%(_DeviceRunnersTemplateFile.Destination)">
+
+    <PropertyGroup>
+      <_DeviceRunnersIntermediateOutputPath>$(IntermediateOutputPath)bootstrap/%(_DeviceRunnersTemplateFile.Destination)</_DeviceRunnersIntermediateOutputPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersIntermediateOutputPath)'))" />
+
+    <PropertyGroup>
+      <_TemplateContent>$([System.IO.File]::ReadAllText('%(_DeviceRunnersTemplateFile.Identity)'))</_TemplateContent>
+      <_ProcessedContent>$(_TemplateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_DeviceRunnersIntermediateOutputPath)"
+                      Lines="$(_ProcessedContent)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_DeviceRunnersIntermediateOutputPath)" />
+    </ItemGroup>
+
+    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)"
+                AdditionalMetadata="%(_DeviceRunnersTemplateFile.AdditionalMetadata)"
+                Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
+      <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
+    </CreateItem>
+
+  </Target>
+
+  <!-- Remove xunit.runner.visualstudio files from Windows app packages -->
+  <Target Name="_DeviceRunnersRemoveVisualStudioTestRunner"
+          BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)"
+                                    Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Exclude runtimeconfig.json files from referenced test library projects that the platform SDK cannot classify -->
+  <Target Name="_DeviceRunnersExcludeTestLibraryRuntimeConfigs"
+          BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Default app icon and splash screen -->
+  <ItemGroup>
+    <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg"
+              ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg"
+              Color="#512BD4" />
+    <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg"
+                      Color="#512BD4"
+                      BaseSize="128,128" />
+  </ItemGroup>
+
+</Project>
