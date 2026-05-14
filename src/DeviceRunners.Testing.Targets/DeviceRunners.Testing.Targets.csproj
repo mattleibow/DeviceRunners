@@ -40,7 +40,7 @@
   </ItemGroup>
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for %(_CliTargetRid.Identity)..." />
-    <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
+    <Exec Command="&quot;$(DotNetHostPath)&quot; publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
     <!-- Add published files to the package dynamically, after they exist on disk. -->
     <ItemGroup>
       <_PackageFiles Include="$(_CliToolsDir)**\*" PackagePath="tools\" />

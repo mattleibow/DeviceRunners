@@ -87,7 +87,8 @@ public abstract class BaseCommand<TSettings>(IAnsiConsole console) : Command<TSe
     private void WriteJson<T>(T result)
         where T : CommandResult
     {
-        var typeInfo = (JsonTypeInfo<T>)CliJsonContext.Default.GetTypeInfo(typeof(T))!;
+        var typeInfo = CliJsonContext.Default.GetTypeInfo(typeof(T)) as JsonTypeInfo<T>
+            ?? throw new InvalidOperationException($"Type '{typeof(T).Name}' is not registered in CliJsonContext. Add [JsonSerializable(typeof({typeof(T).Name}))] to the context.");
         var json = JsonSerializer.Serialize(result, typeInfo);
         console.WriteLine(json);
     }

@@ -48,8 +48,8 @@
     <TrimmerRootAssembly Include="DeviceRunners.Cli" />
   </ItemGroup>
 
-  <!-- Copy both winapp.exe architectures into CLI output so the correct one is used at runtime -->
-  <ItemGroup>
+  <!-- Copy winapp.exe into CLI output only for Windows publishes (not needed on macOS/Linux) -->
+  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win'))">
     <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-x64\winapp.exe"
           CopyToOutputDirectory="PreserveNewest"
           Link="winapp\win-x64\winapp.exe"
