@@ -42,9 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="0.1.0-*" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="0.1.0-*" />
-    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="0.1.0-*" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="*-*" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="*-*" />
+    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="*-*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />

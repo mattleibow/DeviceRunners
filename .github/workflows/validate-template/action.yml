@@ -35,6 +35,10 @@ runs:
         mkdir -p ./artifacts/template-test
         cd ./artifacts/template-test
         dotnet new devicerunners -n TemplateValidation --Framework ${{ inputs.target-framework }}
+        # Isolate from the repo's Directory.Build.props (central package management, artifacts output)
+        echo '<Project />' > Directory.Build.props
+        echo '<Project />' > Directory.Build.targets
+        echo '<Project />' > Directory.Packages.props
 
     # ── macOS: build Mac Catalyst app and run tests ────────────
     - name: 'macOS: Build App'
