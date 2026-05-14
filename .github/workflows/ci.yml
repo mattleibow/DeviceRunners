@@ -95,6 +95,29 @@ jobs:
         name: Pack Logs
         path: ./artifacts/logs
 
+  # ── Template Validation ──────────────────────────────────────
+
+  validate-template:
+    name: Template - ${{ matrix.os-name }}
+    needs: pack
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - runner: windows-2025
+          os-name: Windows
+          target-framework: net9.0
+        - runner: macos-15-intel
+          os-name: macOS
+          target-framework: net9.0
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/validate-template
+      with:
+        runner-os: ${{ matrix.os-name }}
+        target-framework: ${{ matrix.target-framework }}
+
   # ── TCP Device Tests ───────────────────────────────────────
 
   tcp-android:
