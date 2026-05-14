@@ -61,7 +61,7 @@ runs:
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        app_bundle=$(find artifacts/template-test -path "*/publish/*.app" -type d | head -1)
+        app_bundle=$(find artifacts/template-test -path "*/bin/*.app" -type d | head -1)
         [ -n "$app_bundle" ] || { echo "::error::No .app bundle found"; exit 1; }
         device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results --logger trx
 
