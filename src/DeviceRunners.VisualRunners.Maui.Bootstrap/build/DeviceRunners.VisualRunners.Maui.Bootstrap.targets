@@ -105,7 +105,7 @@
           Outputs="%(_DeviceRunnersTemplateFile.Destination)">
 
     <PropertyGroup>
-      <_DeviceRunnersIntermediateOutputPath>$(IntermediateOutputPath)bootstrap/%(_DeviceRunnersTemplateFile.Destination)</_DeviceRunnersIntermediateOutputPath>
+      <_DeviceRunnersIntermediateOutputPath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)bootstrap/%(_DeviceRunnersTemplateFile.Destination)'))</_DeviceRunnersIntermediateOutputPath>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersIntermediateOutputPath)'))" />
@@ -141,15 +141,6 @@
       <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)"
                                     Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
       <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
-    </ItemGroup>
-  </Target>
-
-  <!-- Exclude runtimeconfig.json files from referenced test library projects that the platform SDK cannot classify -->
-  <Target Name="_DeviceRunnersExcludeTestLibraryRuntimeConfigs"
-          BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
-    <ItemGroup>
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json'))" />
     </ItemGroup>
   </Target>
 

@@ -5,6 +5,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>

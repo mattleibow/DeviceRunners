@@ -71,4 +71,12 @@
   <!-- Import targets at the bottom -->
   <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Maui.Bootstrap\build\DeviceRunners.VisualRunners.Maui.Bootstrap.targets" />
 
+  <!-- Exclude runtimeconfig.json files from referenced test library projects that the platform SDK cannot classify -->
+  <Target Name="_ExcludeTestLibraryRuntimeConfigs" BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')))" />
+    </ItemGroup>
+  </Target>
+
 </Project>
