@@ -6,24 +6,15 @@
 ## Prerequisites
 
 - **Chrome or Chromium** installed (pre-installed on most CI runners including `ubuntu-24.04`, `windows-2025`, and `macos-15`)
+- The project must reference `DeviceRunners.Testing.Targets` (or import the `.props`/`.targets` files directly for in-repo usage)
 
-## Current Status
-
-> [!NOTE]
-> Full `dotnet test` integration for WASM is a stretch goal and is not yet supported. For now, use the DeviceRunners CLI directly. See [WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md) for the recommended workflow.
-
-## Running Tests via CLI
+## Running Tests
 
 ```bash
-# Publish the Blazor WebAssembly app
-dotnet publish MyApp.BrowserTests.csproj -c Release
-
-# Locate the wwwroot output
-wwwroot=$(find artifacts/publish -type d -name "wwwroot" | head -1)
-
-# Run tests
-device-runners wasm test --app "$wwwroot" --results-directory artifacts/test-results
+dotnet test MyApp.BrowserTests.csproj
 ```
+
+This automatically publishes the Blazor WebAssembly app, starts a local web server, launches headless Chrome, captures test results via the Chrome DevTools Protocol, and reports them back to the `dotnet test` infrastructure.
 
 ## How It Works
 

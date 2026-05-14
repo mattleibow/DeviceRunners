@@ -78,6 +78,7 @@ What it does:
 | `test-dotnet-test-macos/action.yml` | Composite action | `dotnet test` Mac Catalyst tests |
 | `test-dotnet-test-windows/action.yml` | Composite action | `dotnet test` Windows (loose MSIX) tests |
 | `test-dotnet-test-windows-exe/action.yml` | Composite action | `dotnet test` Windows (unpackaged EXE) tests |
+| `test-dotnet-test-wasm/action.yml` | Composite action | `dotnet test` WASM browser tests on Linux |
 | `test-wasm-browser/action.yml` | Composite action | WASM browser tests on Linux |
 
 ### Azure Pipelines (`.azure/`)
@@ -102,6 +103,7 @@ What it does:
 | `templates/test-dotnet-test-macos.yml` | Job template | `dotnet test` Mac Catalyst tests |
 | `templates/test-dotnet-test-windows.yml` | Job template | `dotnet test` Windows (loose MSIX) tests |
 | `templates/test-dotnet-test-windows-exe.yml` | Job template | `dotnet test` Windows (unpackaged EXE) tests |
+| `templates/test-dotnet-test-wasm.yml` | Job template | `dotnet test` WASM browser tests on Linux |
 | `templates/test-wasm-browser.yml` | Job template | WASM browser tests on Linux |
 
 ## Supported Platform Matrix

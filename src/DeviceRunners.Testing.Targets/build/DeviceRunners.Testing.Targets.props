@@ -24,7 +24,8 @@
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
-                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'">
+                          Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'
+                          Or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
     <VSTestTargets Condition="'$(VSTestTargets)' == ''">$(MSBuildThisFileDirectory)DeviceRunners.Testing.Targets.VSTest.targets.disabled</VSTestTargets>
     <!--
       Skip the default VSTest build step — our custom VSTest target already has

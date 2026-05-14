@@ -121,10 +121,15 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			if (resultChannel is not null)
 				await resultChannel.OpenChannel();
 
+			// Set up console log capture (like logcat.txt for Android or ios-device-log.txt for iOS)
+			var consoleLogPath = Path.Combine(settings.ResultsDirectory, "browser-console.log");
+			await using var consoleLog = new StreamWriter(consoleLogPath, append: false) { AutoFlush = true };
+
 			await using var browser = new BrowserService();
 
 			browser.ConsoleMessageReceived += (_, msg) =>
 			{
+				consoleLog.WriteLine(msg);
 				eventStream.ReceiveData(msg + "\n");
 			};
 
@@ -154,6 +159,8 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 
 			if (resultsFile is not null)
 				WriteConsoleOutput($"  - Generated results file: [green]{Markup.Escape(resultsFile)}[/]", settings);
+
+			WriteConsoleOutput($"  - Browser console log: [green]{Markup.Escape(consoleLogPath)}[/]", settings);
 
 			WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 

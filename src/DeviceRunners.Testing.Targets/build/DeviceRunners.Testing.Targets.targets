@@ -32,6 +32,12 @@
   -->
   <PropertyGroup>
     <_DeviceRunnersPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DeviceRunnersPlatform>
+    <!--
+      Blazor WebAssembly projects use plain net9.0/net10.0 (no -browser TFM), so
+      GetTargetPlatformIdentifier returns empty. Detect them via the SDK property
+      UsingMicrosoftNETSdkBlazorWebAssembly which the BlazorWebAssembly SDK sets.
+    -->
+    <_DeviceRunnersPlatform Condition="'$(_DeviceRunnersPlatform)' == '' And '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">browser</_DeviceRunnersPlatform>
     <_DeviceRunnersIsSupportedPlatform Condition="'$(_DeviceRunnersPlatform)' == 'android'
                                                Or '$(_DeviceRunnersPlatform)' == 'ios'
                                                Or '$(_DeviceRunnersPlatform)' == 'maccatalyst'

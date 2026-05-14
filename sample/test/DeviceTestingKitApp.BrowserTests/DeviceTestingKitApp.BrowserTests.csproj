@@ -1,5 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
+  <!--
+    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
+  -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -17,5 +23,8 @@
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary.XunitTests\DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
   </ItemGroup>
+
+  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
 
 </Project>
