@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
 using System.Text;
@@ -86,7 +85,7 @@ public class BrowserService : IAsyncDisposable
 
 		// Navigate to the test URL
 		await SendCdpCommandAsync("Page.enable");
-		await SendCdpCommandAsync("Page.navigate", new { url });
+		await SendCdpCommandAsync("Page.navigate", new CdpNavigateParams { Url = url });
 	}
 
 	static async Task<string> ReadDevToolsUrlAsync(Process process, TimeSpan timeout)
@@ -113,7 +112,6 @@ public class BrowserService : IAsyncDisposable
 		throw new TimeoutException("Chrome did not output a DevTools URL within the timeout period.");
 	}
 
-	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Chrome DevTools JSON protocol uses dynamic types")]
 	static async Task<string> GetPageWebSocketUrl(string debugUrl)
 	{
 		using var http = new HttpClient();
@@ -123,16 +121,16 @@ public class BrowserService : IAsyncDisposable
 		{
 			try
 			{
-				var pages = await http.GetFromJsonAsync<JsonElement[]>($"{debugUrl}/json");
+				var pages = await http.GetFromJsonAsync(
+					$"{debugUrl}/json",
+					BrowserJsonContext.Default.ChromeDebugPageArray);
+
 				if (pages is not null)
 				{
 					foreach (var page in pages)
 					{
-						if (page.TryGetProperty("type", out var type) && type.GetString() == "page" &&
-						    page.TryGetProperty("webSocketDebuggerUrl", out var wsUrl))
-						{
-							return wsUrl.GetString()!;
-						}
+						if (page.Type == "page" && page.WebSocketDebuggerUrl is not null)
+							return page.WebSocketDebuggerUrl;
 					}
 				}
 			}
@@ -147,19 +145,26 @@ public class BrowserService : IAsyncDisposable
 		throw new TimeoutException("Could not find a Chrome page to connect to.");
 	}
 
-	[UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "CDP command serialization uses anonymous types")]
-	async Task SendCdpCommandAsync(string method, object? parameters = null)
+	async Task SendCdpCommandAsync(string method)
 	{
 		if (_webSocket is null || _webSocket.State != WebSocketState.Open)
 			return;
 
 		var id = Interlocked.Increment(ref _cdpId);
-		var msg = parameters is not null
-			? JsonSerializer.Serialize(new { id, method, @params = parameters })
-			: JsonSerializer.Serialize(new { id, method });
+		var command = new CdpCommand { Id = id, Method = method };
+		var msg = JsonSerializer.Serialize(command, BrowserJsonContext.Default.CdpCommand);
+		await _webSocket.SendAsync(Encoding.UTF8.GetBytes(msg), WebSocketMessageType.Text, true, CancellationToken.None);
+	}
 
-		var bytes = Encoding.UTF8.GetBytes(msg);
-		await _webSocket.SendAsync(bytes, WebSocketMessageType.Text, true, CancellationToken.None);
+	async Task SendCdpCommandAsync(string method, CdpNavigateParams parameters)
+	{
+		if (_webSocket is null || _webSocket.State != WebSocketState.Open)
+			return;
+
+		var id = Interlocked.Increment(ref _cdpId);
+		var command = new CdpCommandWithParams<CdpNavigateParams> { Id = id, Method = method, Params = parameters };
+		var msg = JsonSerializer.Serialize(command, BrowserJsonContext.Default.CdpCommandWithParamsCdpNavigateParams);
+		await _webSocket.SendAsync(Encoding.UTF8.GetBytes(msg), WebSocketMessageType.Text, true, CancellationToken.None);
 	}
 
 	async Task ReadCdpMessagesAsync(CancellationToken ct)
@@ -206,38 +211,24 @@ public class BrowserService : IAsyncDisposable
 	{
 		try
 		{
-			using var doc = JsonDocument.Parse(json);
-			var root = doc.RootElement;
-
-			// We're looking for Runtime.consoleAPICalled events
-			if (!root.TryGetProperty("method", out var method))
+			var evt = JsonSerializer.Deserialize(json, BrowserJsonContext.Default.CdpEvent);
+			if (evt is null || evt.Method != "Runtime.consoleAPICalled")
 				return;
 
-			if (method.GetString() != "Runtime.consoleAPICalled")
-				return;
-
-			if (!root.TryGetProperty("params", out var parameters))
-				return;
-
-			if (!parameters.TryGetProperty("args", out var args))
+			var args = evt.Params?.Args;
+			if (args is null)
 				return;
 
 			// Build the console message from all arguments
 			var parts = new List<string>();
-			foreach (var arg in args.EnumerateArray())
+			foreach (var arg in args)
 			{
-				if (arg.TryGetProperty("value", out var value))
-				{
-					parts.Add(value.ToString());
-				}
-				else if (arg.TryGetProperty("description", out var desc))
-				{
-					parts.Add(desc.GetString() ?? "");
-				}
-				else if (arg.TryGetProperty("unserializableValue", out var unserializable))
-				{
-					parts.Add(unserializable.GetString() ?? "");
-				}
+				if (arg.Value is not null)
+					parts.Add(arg.Value.ToString()!);
+				else if (arg.Description is not null)
+					parts.Add(arg.Description);
+				else if (arg.UnserializableValue is not null)
+					parts.Add(arg.UnserializableValue);
 			}
 
 			if (parts.Count > 0)
