@@ -35,12 +35,17 @@
     To populate the tools/ folder for in-repo use without packing:
       dotnet msbuild DeviceRunners.Testing.Targets.csproj -t:PublishCliTools -c release
   -->
+  <PropertyGroup>
+    <_DotNetCommand Condition="'$(DotNetHostPath)' != ''">$(DotNetHostPath)</_DotNetCommand>
+    <_DotNetCommand Condition="'$(_DotNetCommand)' == ''">dotnet</_DotNetCommand>
+  </PropertyGroup>
+
   <ItemGroup>
     <_CliTargetRid Include="osx-arm64;osx-x64;win-x64;win-arm64;linux-x64;linux-arm64" />
   </ItemGroup>
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for %(_CliTargetRid.Identity)..." />
-    <Exec Command="&quot;$(DotNetHostPath)&quot; publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
+    <Exec Command="&quot;$(_DotNetCommand)&quot; publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
     <!-- Add published files to the package dynamically, after they exist on disk. -->
     <ItemGroup>
       <_PackageFiles Include="$(_CliToolsDir)**\*" PackagePath="tools\" />
