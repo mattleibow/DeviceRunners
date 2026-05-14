@@ -28,6 +28,8 @@ runs:
     - name: Publish App
       shell: pwsh
       run: |
+        dotnet msbuild ${{ inputs.test-project }} -t:Restore -p:TargetFramework=${{ inputs.target-framework }} -p:Configuration=${{ inputs.configuration }}
+        dotnet msbuild ${{ inputs.test-project }} -t:_DeviceRunnersProcessAllTemplates -p:TargetFramework=${{ inputs.target-framework }} -p:Configuration=${{ inputs.configuration }}
         $certResult = device-runners windows cert install --project ${{ inputs.test-project }} --output Json
         $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
         dotnet publish ${{ inputs.test-project }} `
