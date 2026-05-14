@@ -101,7 +101,11 @@ public class WasmWebServerService : IAsyncDisposable
 			filePath = Path.GetFullPath(filePath);
 
 			// Security: ensure the path is within the root
-			if (!filePath.StartsWith(_rootPath!, StringComparison.Ordinal))
+			var rootPrefix = _rootPath!.EndsWith(Path.DirectorySeparatorChar)
+				? _rootPath
+				: _rootPath + Path.DirectorySeparatorChar;
+			if (!filePath.Equals(_rootPath, StringComparison.Ordinal) &&
+				!filePath.StartsWith(rootPrefix, StringComparison.Ordinal))
 			{
 				context.Response.StatusCode = 403;
 				context.Response.Close();
@@ -129,8 +133,10 @@ public class WasmWebServerService : IAsyncDisposable
 			fileStream.CopyTo(context.Response.OutputStream);
 			context.Response.Close();
 		}
-		catch
+		catch (Exception ex)
 		{
+			System.Diagnostics.Debug.WriteLine($"WasmWebServerService request error: {ex}");
+			Console.Error.WriteLine($"WasmWebServerService request error: {ex.Message}");
 			try { context.Response.StatusCode = 500; context.Response.Close(); }
 			catch { }
 		}

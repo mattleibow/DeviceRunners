@@ -75,6 +75,7 @@
     protected override void OnInitialized()
     {
         Assembly.PropertyChanged += OnPropertyChanged;
+        Assembly.TestResultSelected += OnTestResultSelected;
         if (Assembly.TestCases is INotifyCollectionChanged ncc)
             ncc.CollectionChanged += OnCollectionChanged;
     }
@@ -119,11 +120,6 @@
     void OnTestResultSelected(object? sender, TestResultViewModel result)
     {
         InvokeAsync(async () => await OnTestSelected.InvokeAsync(result.TestCase));
-    }
-
-    protected override void OnParametersSet()
-    {
-        Assembly.TestResultSelected += OnTestResultSelected;
     }
 
     static string GetTestStatusClass(TestCaseViewModel testCase) =>

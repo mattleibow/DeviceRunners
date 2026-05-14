@@ -145,7 +145,7 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			{
 				await testRunEnded.Task;
 			}
-			catch (TaskCanceledException)
+			catch (OperationCanceledException)
 			{
 				WriteConsoleOutput($"    [yellow]Test execution timed out after {settings.Timeout}s[/]", settings);
 			}

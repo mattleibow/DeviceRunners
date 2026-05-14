@@ -18,6 +18,7 @@ public class BrowserService : IAsyncDisposable
 	CancellationTokenSource? _readCts;
 	Task? _readTask;
 	int _cdpId;
+	string? _userDataDir;
 
 	public event EventHandler<string>? ConsoleMessageReceived;
 
@@ -29,13 +30,13 @@ public class BrowserService : IAsyncDisposable
 				"Could not find Chrome/Chromium. Install Chrome or set the CHROME_PATH environment variable.");
 
 		// Launch Chrome with remote debugging on an auto-assigned port
-		var userDataDir = Path.Combine(Path.GetTempPath(), "device-runners-chrome-" + Guid.NewGuid().ToString("N")[..8]);
-		Directory.CreateDirectory(userDataDir);
+		_userDataDir = Path.Combine(Path.GetTempPath(), "device-runners-chrome-" + Guid.NewGuid().ToString("N")[..8]);
+		Directory.CreateDirectory(_userDataDir);
 
 		var args = new List<string>
 		{
 			"--remote-debugging-port=0",
-			$"--user-data-dir={userDataDir}",
+			$"--user-data-dir={_userDataDir}",
 			"--no-first-run",
 			"--no-default-browser-check",
 			"--disable-extensions",
@@ -92,12 +93,15 @@ public class BrowserService : IAsyncDisposable
 	{
 		using var cts = new CancellationTokenSource(timeout);
 		var stderr = process.StandardError;
+		var stderrLines = new List<string>();
 
 		while (!cts.IsCancellationRequested)
 		{
 			var line = await stderr.ReadLineAsync(cts.Token);
 			if (line is null)
 				break;
+
+			stderrLines.Add(line);
 
 			// Chrome outputs: "DevTools listening on ws://127.0.0.1:PORT/devtools/browser/GUID"
 			if (line.Contains("DevTools listening on"))
@@ -109,7 +113,15 @@ public class BrowserService : IAsyncDisposable
 			}
 		}
 
-		throw new TimeoutException("Chrome did not output a DevTools URL within the timeout period.");
+		var message = "Chrome did not output a DevTools URL within the timeout period.";
+
+		if (process.HasExited)
+			message += $" Process exited with code {process.ExitCode}.";
+
+		if (stderrLines.Count > 0)
+			message += $" Stderr output:{Environment.NewLine}{string.Join(Environment.NewLine, stderrLines)}";
+
+		throw new TimeoutException(message);
 	}
 
 	static async Task<string> GetPageWebSocketUrl(string debugUrl)
@@ -331,6 +343,13 @@ public class BrowserService : IAsyncDisposable
 			catch { }
 			_chromeProcess.Dispose();
 			_chromeProcess = null;
+		}
+
+		if (_userDataDir is not null)
+		{
+			try { Directory.Delete(_userDataDir, recursive: true); }
+			catch { }
+			_userDataDir = null;
 		}
 
 		_readCts?.Dispose();

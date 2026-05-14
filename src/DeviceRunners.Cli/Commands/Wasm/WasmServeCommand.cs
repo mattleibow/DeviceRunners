@@ -40,11 +40,12 @@ public class WasmServeCommand(IAnsiConsole console) : BaseAsyncCommand<WasmServe
 		WriteConsoleOutput($"  Press Ctrl+C to stop.", settings);
 
 		using var cts = new CancellationTokenSource();
-		Console.CancelKeyPress += (_, e) =>
+		ConsoleCancelEventHandler cancelHandler = (_, e) =>
 		{
 			e.Cancel = true;
 			cts.Cancel();
 		};
+		Console.CancelKeyPress += cancelHandler;
 
 		try
 		{
@@ -52,6 +53,10 @@ public class WasmServeCommand(IAnsiConsole console) : BaseAsyncCommand<WasmServe
 		}
 		catch (OperationCanceledException)
 		{
+		}
+		finally
+		{
+			Console.CancelKeyPress -= cancelHandler;
 		}
 
 		WriteConsoleOutput($"[green]Server stopped.[/]", settings);
