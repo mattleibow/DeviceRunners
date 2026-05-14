@@ -1,17 +1,21 @@
 name: 'Validate Template'
-description: 'Install the DeviceRunners template from CI packages and build a project from it'
+description: 'Install the DeviceRunners template from CI packages, create a project, build it, and run tests on-device using the CLI'
 
 inputs:
   runner-os:
-    description: 'Runner OS (Linux, macOS, Windows)'
+    description: 'Runner OS (macOS or Windows)'
     required: true
   target-framework:
-    description: 'Target framework to build for'
+    description: 'The base target framework (e.g. net9.0)'
+    required: true
+  artifact-name:
+    description: 'Artifact name for uploaded results'
     required: true
 
 runs:
   using: 'composite'
   steps:
+    # ── Setup ──────────────────────────────────────────────────
     - name: Setup Required Tools
       uses: ./.github/workflows/setup-tools
     - name: Download NuGet Packages
@@ -19,32 +23,83 @@ runs:
       with:
         name: NuGet
         path: ./artifacts/nugets
-    - name: Install Template
+
+    # ── Install template & CLI from CI packages ────────────────
+    - name: Install Template and CLI Tool
       shell: bash
       run: |
         ls -la ./artifacts/nugets/
         dotnet new install ./artifacts/nugets/DeviceRunners.Templates.*.nupkg
+        dotnet tool install --global --add-source ./artifacts/nugets DeviceRunners.Cli
+
+    # ── Create project from template ───────────────────────────
     - name: Create Project from Template
       shell: bash
       run: |
         mkdir -p ./artifacts/template-test
         cd ./artifacts/template-test
         dotnet new devicerunners -n TemplateValidation --Framework ${{ inputs.target-framework }}
-    - name: Build Template Project
+
+    # ── macOS: publish Mac Catalyst app and run tests ──────────
+    - name: Validate Architecture
+      if: runner.os == 'macOS'
+      uses: ./.github/workflows/validate-arch
+      with:
+        runtime-identifier: maccatalyst-x64
+    - name: 'macOS: Publish App'
+      if: runner.os == 'macOS'
       shell: bash
       run: |
-        cd ./artifacts/template-test/TemplateValidation
-        dotnet build --source ../../../artifacts/nugets --source https://api.nuget.org/v3/index.json \
-          /bl:../../logs/msbuild-template-build.binlog
-    - name: Clean up
+        dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
+          -f ${{ inputs.target-framework }}-maccatalyst \
+          -r maccatalyst-x64 \
+          -c release \
+          --source ./artifacts/nugets --source https://api.nuget.org/v3/index.json \
+          /bl:./artifacts/logs/msbuild-template-publish.binlog
+    - name: 'macOS: Run Tests'
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        app_bundle=$(find artifacts -name "*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found"; exit 1; }
+        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results --logger trx
+
+    # ── Windows: publish MSIX and run tests ────────────────────
+    - name: 'Windows: Publish App'
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $certResult = device-runners windows cert install --project ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj --output Json
+        $fingerprint = ($certResult | ConvertFrom-Json).Thumbprint
+        dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj `
+          -f ${{ inputs.target-framework }}-windows10.0.19041.0 `
+          -c release `
+          --source ./artifacts/nugets --source https://api.nuget.org/v3/index.json `
+          -p:AppxPackageSigningEnabled=true `
+          -p:PackageCertificateThumbprint=$fingerprint `
+          -p:PackageCertificateKeyFile="" `
+          /bl:./artifacts/logs/msbuild-template-publish.binlog
+        device-runners windows cert uninstall --fingerprint $fingerprint
+    - name: 'Windows: Run Tests'
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
+        if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
+        device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
+
+    # ── Cleanup & upload ───────────────────────────────────────
+    - name: Clean up build artifacts before upload
       if: always()
       shell: bash
       run: |
         rm -rf ./artifacts/template-test
         rm -rf ./artifacts/nugets
-    - name: Upload Logs
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: Logs - Template Validation (${{ inputs.runner-os }})
-        path: ./artifacts/logs
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts
