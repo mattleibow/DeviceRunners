@@ -56,12 +56,11 @@ The following variables are injected:
 | `DEVICE_RUNNERS_PORT` | `16384` (default) | TCP port to connect to on the host |
 | `DEVICE_RUNNERS_HOST_NAMES` | `localhost;10.0.2.2` | Host addresses to try (`10.0.2.2` is the emulator gateway to the host) |
 
-### APK Configuration
+### Deployment
 
-The package sets `EmbedAssembliesIntoApk=true` for all Android builds. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
+The `dotnet test` targets use the Android SDK's own `Install` MSBuild target to deploy the app. This handles both regular APK installation and .NET Android's "Fast Deployment" (where assemblies are pushed separately in debug builds). The DeviceRunners CLI then launches the app by package name and listens for TCP results — it does not do `adb install` itself.
 
-> [!NOTE]
-> This makes debug builds slightly slower (same as release builds) but ensures the APK is self-contained. A future improvement ([#125](https://github.com/mattleibow/DeviceRunners/issues/125)) will use the platform's Run/Install targets instead, eliminating this override.
+This means **debug builds stay fast** — Fast Deployment works normally, and there's no need to set `EmbedAssembliesIntoApk=true`.
 
 ## Troubleshooting
 
@@ -71,14 +70,4 @@ The app uses `10.0.2.2` to reach the host machine from the Android emulator. If 
 
 ```bash
 adb reverse tcp:16384 tcp:16384
-```
-
-### "No assemblies found ... Fast Deployment"
-
-Ensure `EmbedAssembliesIntoApk` is `true` when running via `dotnet test` (the package sets this automatically). If you've overridden it in your project, set it back:
-
-```xml
-<PropertyGroup>
-  <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
-</PropertyGroup>
 ```
