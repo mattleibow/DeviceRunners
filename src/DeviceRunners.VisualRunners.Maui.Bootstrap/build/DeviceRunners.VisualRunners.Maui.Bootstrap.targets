@@ -19,6 +19,11 @@
       <Platform>android</Platform>
       <BuildAction>AndroidManifest</BuildAction>
     </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/Resources/values/colors.xml.template">
+      <Destination>Platforms/Android/Resources/values/colors.xml</Destination>
+      <Platform>android</Platform>
+      <BuildAction>AndroidResource</BuildAction>
+    </_DeviceRunnersTemplateFile>
 
     <!-- iOS -->
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template">
