@@ -58,9 +58,10 @@ The following variables are injected:
 
 ### APK Configuration
 
-When running via `dotnet test`, the package automatically sets `EmbedAssembliesIntoApk=true`. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
+The package sets `EmbedAssembliesIntoApk=true` for all Android builds. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
 
-Normal builds (`dotnet build`, IDE) are **not affected** — Fast Deployment remains enabled for fast iteration.
+> [!NOTE]
+> This makes debug builds slightly slower (same as release builds) but ensures the APK is self-contained. A future improvement ([#125](https://github.com/mattleibow/DeviceRunners/issues/125)) will use the platform's Run/Install targets instead, eliminating this override.
 
 ## Troubleshooting
 
