@@ -48,10 +48,8 @@
     <TrimmerRootAssembly Include="DeviceRunners.Cli" />
   </ItemGroup>
 
-  <!-- Copy winapp.exe into CLI output for Windows builds.
-       When publishing per-RID for the NuGet package, only include for win-* RIDs.
-       When building without a RID (dotnet build / dotnet tool install), include on Windows. -->
-  <ItemGroup Condition="$(RuntimeIdentifier.StartsWith('win')) Or ('$(RuntimeIdentifier)' == '' And $([MSBuild]::IsOSPlatform('windows')))">
+  <!-- Copy both winapp.exe architectures into CLI output so the correct one is used at runtime -->
+  <ItemGroup>
     <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-x64\winapp.exe"
           CopyToOutputDirectory="PreserveNewest"
           Link="winapp\win-x64\winapp.exe"
