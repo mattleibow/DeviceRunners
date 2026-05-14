@@ -47,12 +47,12 @@ runs:
         echo '<Project />' > Directory.Build.targets
         dotnet new devicerunners -n TemplateValidation --Framework ${{ inputs.target-framework }}
 
-    # ── macOS: build Mac Catalyst app and run tests ────────────
-    - name: 'macOS: Build App'
+    # ── macOS: publish Mac Catalyst app and run tests ────────────
+    - name: 'macOS: Publish App'
       if: runner.os == 'macOS'
       shell: bash
       run: |
-        dotnet build ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
+        dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
           -f ${{ inputs.target-framework }}-maccatalyst \
           -c release \
           /bl:./artifacts/logs/msbuild-template-build.binlog
