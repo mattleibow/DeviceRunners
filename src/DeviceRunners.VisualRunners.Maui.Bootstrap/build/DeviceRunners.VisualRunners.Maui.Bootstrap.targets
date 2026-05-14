@@ -14,11 +14,6 @@
       <Platform>android</Platform>
       <BuildAction>Compile</BuildAction>
     </_DeviceRunnersTemplateFile>
-    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/AndroidManifest.xml.template">
-      <Destination>Platforms/Android/AndroidManifest.xml</Destination>
-      <Platform>android</Platform>
-      <BuildAction>None</BuildAction>
-    </_DeviceRunnersTemplateFile>
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/Resources/values/colors.xml.template">
       <Destination>Platforms/Android/Resources/values/colors.xml</Destination>
       <Platform>android</Platform>
@@ -101,6 +96,7 @@
     <AndroidManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap', '$(TargetFramework)', 'Platforms', 'Android', 'AndroidManifest.xml'))</AndroidManifest>
   </PropertyGroup>
 
+
   <Target Name="_DeviceRunnersBeforeResizetizeCollectItems"
           BeforeTargets="ResizetizeCollectItems"
           DependsOnTargets="_DeviceRunnersProcessAllTemplates" />
@@ -168,6 +164,11 @@
     <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg"
                       Color="#512BD4"
                       BaseSize="128,128" />
+  </ItemGroup>
+
+  <!-- Android manifest overlay for network permissions -->
+  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android'">
+    <AndroidManifestOverlay Include="$(MSBuildThisFileDirectory)AndroidManifestOverlay.xml" />
   </ItemGroup>
 
 </Project>
