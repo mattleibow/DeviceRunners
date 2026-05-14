@@ -16,21 +16,27 @@ public class WinAppService
 	/// </summary>
 	internal static string GetWinAppPath()
 	{
+		var cliDir = AppContext.BaseDirectory;
+
+		// Self-contained per-RID publish: winapp.exe next to the CLI exe
+		var directPath = Path.Combine(cliDir, "winapp.exe");
+		if (File.Exists(directPath))
+			return directPath;
+
+		// Framework-dependent dotnet tool: winapp/<arch>/winapp.exe (both architectures, pick at runtime)
 		var arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture switch
 		{
 			System.Runtime.InteropServices.Architecture.Arm64 => "win-arm64",
 			_ => "win-x64",
 		};
 
-		var cliDir = AppContext.BaseDirectory;
-		var winappPath = Path.Combine(cliDir, "winapp", arch, "winapp.exe");
+		var archPath = Path.Combine(cliDir, "winapp", arch, "winapp.exe");
+		if (File.Exists(archPath))
+			return archPath;
 
-		if (!File.Exists(winappPath))
-			throw new FileNotFoundException(
-				$"winapp.exe not found at '{winappPath}'. The Microsoft.Windows.SDK.BuildTools.WinApp package may not be installed.",
-				winappPath);
-
-		return winappPath;
+		throw new FileNotFoundException(
+			$"winapp.exe not found. Checked '{directPath}' and '{archPath}'.",
+			directPath);
 	}
 
 	/// <summary>
