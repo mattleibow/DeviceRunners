@@ -43,7 +43,7 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-android \
 
 On Android, environment variables cannot be set at launch time via `adb`. Instead, the Testing.Targets package injects them at **build time** using the `_GenerateEnvironmentFiles` MSBuild mechanism. The Mono runtime reads these from `__environment__.txt` inside the APK at startup.
 
-This is unlike all other platforms where the CLI injects configuration at launch time, meaning the same built app can be reused with different settings. On Android, changing the TCP port or host names requires a rebuild.
+The injection only happens during `dotnet test` — normal `dotnet build` or IDE builds do NOT inject the env vars, so the app behaves as a normal visual runner. This is unlike all other platforms where the CLI injects configuration at launch time, meaning the same built app can be reused with different settings. On Android, changing the TCP port or host names requires a rebuild via `dotnet test`.
 
 > [!TIP]
 > Launch-time injection via Android intent extras is planned for a future release. See [#123](https://github.com/mattleibow/DeviceRunners/issues/123).
@@ -58,10 +58,9 @@ The following variables are injected:
 
 ### APK Configuration
 
-The package sets `EmbedAssembliesIntoApk=true` by default. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
+When running via `dotnet test`, the package automatically sets `EmbedAssembliesIntoApk=true`. This is required because the DeviceRunners CLI installs the APK via `adb install`, which doesn't handle .NET Android's "Fast Deployment" separate assembly push. Without this, the app crashes at startup with "No assemblies found."
 
-> [!NOTE]
-> This makes debug builds slightly slower (same as release builds) but ensures the APK is self-contained.
+Normal builds (`dotnet build`, IDE) are **not affected** — Fast Deployment remains enabled for fast iteration.
 
 ## Troubleshooting
 
@@ -75,7 +74,7 @@ adb reverse tcp:16384 tcp:16384
 
 ### "No assemblies found ... Fast Deployment"
 
-Ensure `EmbedAssembliesIntoApk` is `true` (the Testing.Targets package sets this by default). If you've overridden it in your project, set it back:
+Ensure `EmbedAssembliesIntoApk` is `true` when running via `dotnet test` (the package sets this automatically). If you've overridden it in your project, set it back:
 
 ```xml
 <PropertyGroup>

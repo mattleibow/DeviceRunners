@@ -45,12 +45,31 @@
     VSTest - invoked by "dotnet test".
 
     Replaces the default VSTest behaviour for device platforms:
-      1. Build                   - compile the app (APK / .app / .exe).
-      2. _DeviceRunnersRunTests  - prepare args, exec CLI, report results.
+      1. _DeviceRunnersMarkTestRun - set DeviceRunnersTestRun=true for env injection
+      2. Build                      - compile the app (APK / .app / .exe)
+      3. _DeviceRunnersRunTests     - prepare args, exec CLI, report results
   -->
   <Target Name="VSTest"
-          DependsOnTargets="Build;_DeviceRunnersRunTests"
+          DependsOnTargets="_DeviceRunnersMarkTestRun;Build;_DeviceRunnersRunTests"
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
+
+  <!--
+    Marks this build as a test run so Android env var injection and
+    EmbedAssembliesIntoApk are gated on dotnet test only.
+    Runs before Build so properties are visible to _GenerateEnvironmentFiles
+    and the Android build targets.
+
+    EmbedAssembliesIntoApk is needed because the CLI installs via adb install
+    which does not handle Fast Deployment's separate assembly push. Without it,
+    the app crashes with "No assemblies found."
+    Normal builds keep Fast Deployment for faster iteration.
+  -->
+  <Target Name="_DeviceRunnersMarkTestRun">
+    <PropertyGroup>
+      <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
+      <EmbedAssembliesIntoApk Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
+    </PropertyGroup>
+  </Target>
 
   <!-- =[ Orchestrator ]= -->
 
@@ -211,7 +230,7 @@
     the exit code is forwarded to _DeviceRunnersReportResults for clean reporting.
   -->
   <Target Name="_DeviceRunnersExecTests">
-    <Exec Command="$(_DeviceRunnersCommand) $(_DeviceRunnersCliArgs)"
+    <Exec Command="&quot;$(_DeviceRunnersCommand)&quot; $(_DeviceRunnersCliArgs)"
           IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="_DeviceRunnersExitCode" />
     </Exec>
@@ -336,17 +355,19 @@
     _GenerateEnvironmentFiles mechanism. The Mono runtime reads the resulting
     KEY=VALUE file (__environment__.txt) at startup.
 
-    Always injects when the Testing.Targets package is referenced. The env vars
-    are harmless when the app is launched manually (AddCliConfiguration is a no-op
-    without a matching TCP listener). This avoids incremental build issues where
-    a prior dotnet build without injection would produce a stale APK.
+    Only injects when dotnet test is running (DeviceRunnersTestRun=true).
+    When the app is built normally (dotnet build / IDE), the env vars are
+    NOT injected, so the app behaves as a normal visual runner.
+
+    Pass -p:DeviceRunnersTestRun=true to inject for manual CLI testing, or
+    let the VSTest target set it automatically.
 
     10.0.2.2 is the Android emulator's gateway address to reach the host machine.
     localhost covers physical devices when port-forwarded or on the same network.
   -->
   <Target Name="_DeviceRunnersAndroidEnvironment"
           BeforeTargets="_GenerateEnvironmentFiles"
-          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(DeviceRunnersTestRun)' == 'true'">
     <ItemGroup>
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
