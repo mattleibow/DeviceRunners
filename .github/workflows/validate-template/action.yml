@@ -54,6 +54,7 @@ runs:
       run: |
         dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
           -f ${{ inputs.target-framework }}-maccatalyst \
+          -r maccatalyst-x64 \
           -c release \
           /bl:./artifacts/logs/msbuild-template-build.binlog
     - name: 'macOS: Run Tests'
