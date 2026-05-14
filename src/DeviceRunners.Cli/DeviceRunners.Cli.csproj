@@ -48,8 +48,13 @@
     <TrimmerRootAssembly Include="DeviceRunners.Cli" />
   </ItemGroup>
 
-  <!-- Copy both winapp.exe architectures into CLI output so the correct one is used at runtime -->
-  <ItemGroup>
+  <!-- winapp.exe: used for loose-file MSIX registration on Windows.
+       No RID (dotnet tool install): copy both architectures to winapp/<arch>/ subfolders,
+         runtime selects the correct one via RuntimeInformation.ProcessArchitecture.
+       Windows RID (self-contained publish): copy only the matching one as winapp/winapp.exe,
+         since the process architecture is fixed at publish time.
+       Non-Windows RID: no copy needed. -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == ''">
     <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-x64\winapp.exe"
           CopyToOutputDirectory="PreserveNewest"
           Link="winapp\win-x64\winapp.exe"
@@ -57,6 +62,18 @@
     <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-arm64\winapp.exe"
           CopyToOutputDirectory="PreserveNewest"
           Link="winapp\win-arm64\winapp.exe"
+          Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64'">
+    <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-x64\winapp.exe"
+          CopyToOutputDirectory="PreserveNewest"
+          Link="winapp\winapp.exe"
+          Visible="false" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-arm64'">
+    <None Include="$(PkgMicrosoft_Windows_SDK_BuildTools_WinApp)\tools\win-arm64\winapp.exe"
+          CopyToOutputDirectory="PreserveNewest"
+          Link="winapp\winapp.exe"
           Visible="false" />
   </ItemGroup>
 
