@@ -41,6 +41,9 @@
   <Target Name="PublishCliTools" BeforeTargets="GenerateNuspec">
     <Message Importance="high" Text="DeviceRunners.Testing.Targets: publishing CLI tool for %(_CliTargetRid.Identity)..." />
     <Exec Command="dotnet publish &quot;$(_CliProjectPath)&quot; -f net10.0 -r %(_CliTargetRid.Identity) -c $(Configuration) -p:PublishForTargetsPackage=true -p:SatelliteResourceLanguages=en -o &quot;$(_CliToolsDir)%(_CliTargetRid.Identity)&quot;" />
+    <!-- winapp.exe is only needed by Windows RIDs but dotnet publish copies it
+         to every RID folder. Remove from non-Windows folders to save ~190MB. -->
+    <RemoveDir Directories="$(_CliToolsDir)osx-arm64\winapp;$(_CliToolsDir)osx-x64\winapp;$(_CliToolsDir)linux-x64\winapp;$(_CliToolsDir)linux-arm64\winapp" />
     <!-- Add published files to the package dynamically, after they exist on disk. -->
     <ItemGroup>
       <_PackageFiles Include="$(_CliToolsDir)**\*" PackagePath="tools\" />
