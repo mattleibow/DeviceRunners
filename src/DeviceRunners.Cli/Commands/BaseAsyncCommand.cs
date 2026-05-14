@@ -69,7 +69,8 @@ public abstract class BaseAsyncCommand<TSettings>(IAnsiConsole console) : Comman
         switch (format)
         {
             case OutputFormat.Json:
-                var typeInfo = (JsonTypeInfo<TResult>)CliJsonContext.Default.GetTypeInfo(typeof(TResult))!;
+                var typeInfo = CliJsonContext.Default.GetTypeInfo(typeof(TResult)) as JsonTypeInfo<TResult>
+                    ?? throw new InvalidOperationException($"Type '{typeof(TResult).Name}' is not registered in CliJsonContext. Add [JsonSerializable(typeof({typeof(TResult).Name}))] to the context.");
                 var json = JsonSerializer.Serialize(result, typeInfo);
                 console.WriteLine(json);
                 break;

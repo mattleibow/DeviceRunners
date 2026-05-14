@@ -129,8 +129,8 @@ What it does:
 
 | Packaging | RID | Runner (GH) | Pool (Azure) | `dotnet test` | TCP (CLI) | XHarness | Status |
 |---|---|---|---|---|---|---|---|
-| MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | ✅ | **Stable** |
-| Loose MSIX (folder) | win10-x64 | windows-2025 | windows-2025 | N/A | ✅ | N/A | **Stable** — requires Developer Mode |
+| MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | N/A | ✅ | ✅ | **Stable** |
+| Loose MSIX (folder) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | N/A | **Stable** — requires Developer Mode |
 | EXE (unpackaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | N/A | **Stable** — TCP only |
 
 ## Using `dotnet test` in CI

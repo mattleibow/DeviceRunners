@@ -33,10 +33,12 @@ The MSBuild targets locate the `.app` bundle in the build output directory using
 
 ### Why Direct Launch Instead of `open`
 
-The CLI launches the app directly (via `ProcessStartInfo`) rather than using the macOS `open` command. While `open --env KEY=VALUE` does support environment variables, direct launch is preferred because:
-- The CLI retains the process handle and can monitor the app's lifecycle
-- Exit codes are captured directly
+The CLI launches the `.app` bundle directly (via `Process.Start`) rather than using the macOS `open` command. While `open --env KEY=VALUE` does support environment variables, direct launch is preferred because:
+- Environment variables can be injected via `ProcessStartInfo`
 - No dependency on Launch Services behavior
+
+> [!NOTE]
+> The CLI does not currently retain the process handle after launch — the app is expected to auto-terminate via `AddCliConfiguration()` after tests complete. If the app hangs, it must be terminated manually.
 
 ## Troubleshooting
 
@@ -44,4 +46,3 @@ The CLI launches the app directly (via `ProcessStartInfo`) rather than using the
 
 Check the build output to ensure the `.app` bundle was produced. If using `debug` configuration, the app should run without code signing issues on macOS Catalyst.
 
-If the app crashes with a managed exception, check the console output — on macOS Catalyst, stdout/stderr from the app process is captured directly by the CLI.

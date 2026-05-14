@@ -54,20 +54,14 @@
           Condition="'$(_DeviceRunnersIsSupportedPlatform)' == 'true'" />
 
   <!--
-    Marks this build as a test run so Android env var injection and
-    EmbedAssembliesIntoApk are gated on dotnet test only.
-    Runs before Build so properties are visible to _GenerateEnvironmentFiles
-    and the Android build targets.
-
-    EmbedAssembliesIntoApk is needed because the CLI installs via adb install
-    which does not handle Fast Deployment's separate assembly push. Without it,
-    the app crashes with "No assemblies found."
-    Normal builds keep Fast Deployment for faster iteration.
+    Marks this build as a test run so Android env var injection is gated
+    on dotnet test only. Runs before Build so the property is visible to
+    _GenerateEnvironmentFiles in the Android inner build.
   -->
   <Target Name="_DeviceRunnersMarkTestRun">
     <PropertyGroup>
       <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
-      <EmbedAssembliesIntoApk Condition="'$(_DeviceRunnersPlatform)' == 'android' And '$(EmbedAssembliesIntoApk)' == ''">true</EmbedAssembliesIntoApk>
+      <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
     </PropertyGroup>
   </Target>
 
@@ -113,17 +107,18 @@
 
   <!-- =[ Android args ]= -->
 
+  <!--
+    Android uses the platform's Install target to deploy the APK (which handles
+    both regular install and Fast Deployment). The CLI then launches the app
+    by package name (no adb install needed) and listens for TCP results.
+  -->
   <Target Name="_DeviceRunnersAndroidArgs"
-          Condition="'$(_DeviceRunnersPlatform)' == 'android'">
+          Condition="'$(_DeviceRunnersPlatform)' == 'android'"
+          DependsOnTargets="Install">
     <PropertyGroup>
-      <_DeviceRunnersApkPath>$(OutputPath)$(ApplicationId)-Signed.apk</_DeviceRunnersApkPath>
+      <_DeviceRunnersCliArgs>android test --package &quot;$(ApplicationId)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
-    <Error Text="Signed APK not found at '$(_DeviceRunnersApkPath)'. Make sure the project builds successfully."
-           Condition="!Exists('$(_DeviceRunnersApkPath)')" />
-    <PropertyGroup>
-      <_DeviceRunnersCliArgs>android test --app &quot;$(_DeviceRunnersApkPath)&quot;$(_DeviceRunnersDeviceArg) $(_DeviceRunnersCommonCliArgs)</_DeviceRunnersCliArgs>
-    </PropertyGroup>
-    <Message Importance="high" Text="DeviceRunners: running Android tests from $(_DeviceRunnersApkPath)" />
+    <Message Importance="high" Text="DeviceRunners: running Android tests for $(ApplicationId)" />
   </Target>
 
   <!-- =[ iOS args ]= -->
@@ -221,6 +216,7 @@
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>
+
 
   <!-- =[ Phase 2: Execute tests ]= -->
 

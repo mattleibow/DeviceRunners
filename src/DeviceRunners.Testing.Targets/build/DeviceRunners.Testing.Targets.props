@@ -65,9 +65,5 @@
     <DeviceRunnersWasmTimeout Condition="'$(DeviceRunnersWasmTimeout)' == ''">300</DeviceRunnersWasmTimeout>
   </PropertyGroup>
 
-  <!--
-    EmbedAssembliesIntoApk is only needed for test runs — see the .targets file.
-    Normal builds keep .NET Android's default Fast Deployment for faster iteration.
-  -->
 
 </Project>
