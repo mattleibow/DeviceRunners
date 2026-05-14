@@ -18,8 +18,8 @@ public class WinAppService
 	{
 		var cliDir = AppContext.BaseDirectory;
 
-		// Self-contained per-RID publish: winapp/winapp.exe (single matching architecture)
-		var directPath = Path.Combine(cliDir, "winapp", "winapp.exe");
+		// Self-contained per-RID publish: winapp.exe next to the CLI exe
+		var directPath = Path.Combine(cliDir, "winapp.exe");
 		if (File.Exists(directPath))
 			return directPath;
 
