@@ -26,7 +26,9 @@ runs:
       shell: bash
       run: |
         dotnet new install ./artifacts/nugets/DeviceRunners.Templates.*.nupkg
-        dotnet tool install --global --add-source ./artifacts/nugets DeviceRunners.Cli
+        mkdir -p artifacts/package/release
+        cp ./artifacts/nugets/*.nupkg artifacts/package/release/
+        dotnet tool install --global DeviceRunners.Cli --prerelease
     - name: Create Project from Template
       shell: bash
       run: |
@@ -42,7 +44,6 @@ runs:
         dotnet build ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
           -f ${{ inputs.target-framework }}-maccatalyst \
           -c release \
-          --source ./artifacts/nugets --source https://api.nuget.org/v3/index.json \
           /bl:./artifacts/logs/msbuild-template-build.binlog
     - name: 'macOS: Run Tests'
       if: runner.os == 'macOS'
@@ -60,7 +61,6 @@ runs:
         dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj `
           -f ${{ inputs.target-framework }}-windows10.0.19041.0 `
           -c release `
-          --source ./artifacts/nugets --source https://api.nuget.org/v3/index.json `
           -p:WindowsPackageType=None `
           --output artifacts/publish `
           /bl:./artifacts/logs/msbuild-template-build.binlog
@@ -79,6 +79,7 @@ runs:
         rm -rf ./artifacts/template-test
         rm -rf ./artifacts/nugets
         rm -rf ./artifacts/publish
+        rm -rf ./artifacts/package
         rm -rf ./artifacts/bin
         rm -rf ./artifacts/obj
     - name: Upload Artifacts
