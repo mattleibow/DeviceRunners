@@ -1,0 +1,50 @@
+name: 'Validate Template'
+description: 'Install the DeviceRunners template from CI packages and build a project from it'
+
+inputs:
+  runner-os:
+    description: 'Runner OS (Linux, macOS, Windows)'
+    required: true
+  target-framework:
+    description: 'Target framework to build for'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Download NuGet Packages
+      uses: actions/download-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - name: Install Template
+      shell: bash
+      run: |
+        ls -la ./artifacts/nugets/
+        dotnet new install ./artifacts/nugets/DeviceRunners.Templates.*.nupkg
+    - name: Create Project from Template
+      shell: bash
+      run: |
+        mkdir -p ./artifacts/template-test
+        cd ./artifacts/template-test
+        dotnet new devicerunners -n TemplateValidation --Framework ${{ inputs.target-framework }}
+    - name: Build Template Project
+      shell: bash
+      run: |
+        cd ./artifacts/template-test/TemplateValidation
+        dotnet build --source ../../../artifacts/nugets --source https://api.nuget.org/v3/index.json \
+          /bl:../../logs/msbuild-template-build.binlog
+    - name: Clean up
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/template-test
+        rm -rf ./artifacts/nugets
+    - name: Upload Logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: Logs - Template Validation (${{ inputs.runner-os }})
+        path: ./artifacts/logs
