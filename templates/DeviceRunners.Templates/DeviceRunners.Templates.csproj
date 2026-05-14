@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageId>DeviceRunners.Templates</PackageId>
+    <Title>DeviceRunners Project Templates</Title>
+    <Description>Templates for creating device test projects using DeviceRunners visual test runner with TCP result streaming.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <!-- Template pack projects don't compile C#; disable features inherited from Directory.Build.props -->
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="content/**/*" Exclude="content/**/bin/**;content/**/obj/**" />
+    <Compile Remove="content/**/*" />
+  </ItemGroup>
+
+</Project>
