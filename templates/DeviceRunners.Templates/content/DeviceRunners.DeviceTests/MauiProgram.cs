@@ -13,7 +13,7 @@ public static class MauiProgram
 		builder
 			.ConfigureUITesting()
 			.UseVisualTestRunner(conf => conf
-				.AddEnvironmentVariables()
+				.AddCliConfiguration()
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddXunit());

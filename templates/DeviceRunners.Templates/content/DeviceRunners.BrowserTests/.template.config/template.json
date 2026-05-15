@@ -2,22 +2,22 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "DeviceRunners Contributors",
   "classifications": [
-    "MAUI",
+    "Blazor",
+    "WebAssembly",
     "Test",
-    "Device",
     "Xunit"
   ],
-  "identity": "DeviceRunners.DeviceTests.CSharp",
-  "groupIdentity": "DeviceRunners.DeviceTests",
-  "name": "DeviceRunners Device Tests",
-  "description": "A project for running xUnit device tests on Android, iOS, macOS, and Windows using the DeviceRunners visual test runner. Supports dotnet test for CI/CD.",
-  "shortName": "devicerunners",
-  "defaultName": "DeviceTests",
+  "identity": "DeviceRunners.BrowserTests.CSharp",
+  "groupIdentity": "DeviceRunners.BrowserTests",
+  "name": "DeviceRunners Browser Tests (Blazor WASM)",
+  "description": "A Blazor WebAssembly project for running xUnit tests in the browser using the DeviceRunners visual test runner.",
+  "shortName": "devicerunners-browser",
+  "defaultName": "BrowserTests",
   "tags": {
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "DeviceRunners.DeviceTests",
+  "sourceName": "DeviceRunners.BrowserTests",
   "preferNameDirectory": true,
   "symbols": {
     "Framework": {
@@ -36,18 +36,11 @@
       ],
       "defaultValue": "net9.0",
       "replaces": "DOTNET_TFM"
-    },
-    "applicationId": {
-      "type": "parameter",
-      "description": "The application identifier for the project.",
-      "datatype": "string",
-      "defaultValue": "com.companyname.devicetests",
-      "replaces": "com.companyname.devicerunners.devicetests"
     }
   },
   "primaryOutputs": [
     {
-      "path": "DeviceRunners.DeviceTests.csproj"
+      "path": "DeviceRunners.BrowserTests.csproj"
     }
   ],
   "postActions": [
