@@ -5,7 +5,7 @@ namespace DeviceRunners.VisualRunners;
 /// <summary>
 /// MAUI-specific CLI configuration extensions for the visual test runner.
 /// </summary>
-public static class MauiCliConfigurationExtensions
+public static class VisualTestRunnerConfigurationBuilderExtensions
 {
 	/// <summary>
 	/// Configures the test runner from the DeviceRunners CLI or <c>dotnet test</c>.

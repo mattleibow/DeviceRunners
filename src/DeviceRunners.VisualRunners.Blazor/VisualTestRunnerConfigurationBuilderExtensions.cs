@@ -3,7 +3,7 @@ namespace DeviceRunners.VisualRunners;
 /// <summary>
 /// Blazor-specific CLI configuration extensions for the visual test runner.
 /// </summary>
-public static class BlazorCliConfigurationExtensions
+public static class VisualTestRunnerConfigurationBuilderExtensions
 {
 	/// <summary>
 	/// Configures the test runner from a URL containing query parameters.
