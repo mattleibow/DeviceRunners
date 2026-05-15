@@ -7,7 +7,7 @@ The DeviceRunners CLI is a cross-platform .NET tool that provides comprehensive 
 
 The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applications with:
 
-- **Cross-Platform Support**: Works on Windows and macOS (Android commands also work on Linux)
+- **Cross-Platform Support**: Works on Windows and macOS (Android and WASM commands also work on Linux)
 - **Multiple Output Formats**: Human-readable, JSON, XML, and text formats
 - **Automatic Resource Management**: Handles installation, cleanup, and certificates
 - **TCP Result Streaming**: Real-time test result communication
@@ -76,6 +76,12 @@ device-runners android test --app path/to/app.apk --results-directory results
 
 # macOS
 device-runners macos test --app path/to/app.app --results-directory results
+
+# iOS
+device-runners ios test --app path/to/app.app --results-directory results
+
+# WASM
+device-runners wasm test --app path/to/wwwroot --logger "trx;LogFileName=test-results.trx" --results-directory results
 ```
 
 ### Application Management
@@ -87,17 +93,23 @@ Install, launch, and uninstall applications:
 device-runners windows install --app app.msix
 device-runners android install --app app.apk
 device-runners macos install --app app.app
+device-runners ios install --app app.app
 
 # Launch applications
 device-runners windows launch --identity "MyApp"
 device-runners android launch --package com.example.app
 device-runners macos launch --app app.app
+device-runners ios launch --app app.app
 
 # Uninstall applications
 device-runners windows uninstall --identity "MyApp"
 device-runners android uninstall --package com.example.app
 device-runners macos uninstall --app app.app
+device-runners ios uninstall --app app.app
 ```
+
+> [!NOTE]
+> WASM has no `install`, `launch`, or `uninstall` commands. Use `wasm test` to run tests and `wasm serve` for interactive browser testing.
 
 ## Network Configuration
 

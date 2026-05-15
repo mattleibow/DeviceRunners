@@ -18,7 +18,7 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 | **Android** | ✅ | ✅ | ✅ | ✅ |
 | **iOS** | ✅ | ✅ | ✅ | ✅ |
 | **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ | ✅ |
-| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ❌ |
+| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ✅ |
 | **Browser (WASM)** | ✅ | ✅ | ✅ | ❌ |
 
 ## Supported Testing Frameworks

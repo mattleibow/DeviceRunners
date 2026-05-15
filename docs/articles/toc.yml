@@ -38,13 +38,13 @@
       href: using-devicerunners-cli.md
     - name: Android
       href: cli-device-runner-for-android-using-devicerunners-cli.md
-    - name: Windows
-      href: cli-device-runner-for-windows-using-devicerunners-cli.md
-    - name: macOS
-      href: cli-device-runner-for-macos-using-devicerunners-cli.md
     - name: iOS
       href: cli-device-runner-for-ios-using-devicerunners-cli.md
-    - name: WASM
+    - name: macOS
+      href: cli-device-runner-for-macos-using-devicerunners-cli.md
+    - name: Windows
+      href: cli-device-runner-for-windows-using-devicerunners-cli.md
+    - name: Browser (WASM)
       href: cli-device-runner-for-wasm-using-devicerunners-cli.md
     - name: CLI Test Workflow
       href: devicerunners-cli-test-workflow.md

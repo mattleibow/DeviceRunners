@@ -14,6 +14,9 @@
 dotnet test MyApp.BrowserTests.csproj
 ```
 
+> [!NOTE]
+> Unlike other platforms, Blazor WebAssembly projects target plain `net9.0`/`net10.0` (no `-browser` TFM), so no `-f` flag is needed.
+
 This automatically publishes the Blazor WebAssembly app, starts a local web server, launches headless Chrome, captures test results via the Chrome DevTools Protocol, and reports them back to the `dotnet test` infrastructure.
 
 ## How It Works
@@ -56,6 +59,14 @@ WASM apps use `AddXunit(useReflection: true)` which registers the `XunitReflecti
 
 Blazor WebAssembly runs on a single thread. To keep the UI responsive during test execution, the xunit runners use cooperative yielding (`XunitYieldingAssemblyRunner`, `XunitYieldingCollectionRunner`, `XunitYieldingClassRunner`) which call `Task.Yield()` between test classes and collections to give the browser event loop a chance to process rendering updates.
 
+## Configuration
+
+To change the test execution timeout, set `DeviceRunnersWasmTimeout` (default: 300 seconds):
+
+```bash
+dotnet test MyApp.BrowserTests.csproj -p:DeviceRunnersWasmTimeout=600
+```
+
 ## Troubleshooting
 
 ### Chrome not found
@@ -68,4 +79,8 @@ If the app fails to boot, check the Blazor WebAssembly publish output to ensure 
 
 ### Console output is empty
 
-Ensure the test app calls `AddConsoleResultChannel()` or uses `AddCliConfiguration()` (which adds a console channel with `EventStreamFormatter` automatically when `device-runners-autorun=1` is detected).
+When using `UseVisualTestRunner` on `WebAssemblyHostBuilder`, CLI configuration is automatically injected — the `EventStreamFormatter` console output is enabled when `?device-runners-autorun=1` is in the URL. If you're building a custom setup, ensure `AddConsoleResultChannel()` is called.
+
+## See Also
+
+- [WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)

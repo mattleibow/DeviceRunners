@@ -14,7 +14,7 @@ The DeviceRunners CLI tool provides a test workflow for WASM apps that publishes
 
 2. Run the tests:
    ```
-   device-runners wasm test --app <path/to/wwwroot> --results-directory <path/to/output>
+   device-runners wasm test --app <path/to/wwwroot> --logger "trx;LogFileName=test-results.trx" --results-directory <path/to/output>
    ```
 
 3. View test results in the output directory:

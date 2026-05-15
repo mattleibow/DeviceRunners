@@ -27,10 +27,10 @@ Automated command-line test execution for advanced scenarios requiring fine-grai
 The CLI tool that `dotnet test` uses under the hood. Use it directly when you need more control:
 - **[Using DeviceRunners CLI](using-devicerunners-cli.md)** - Overview and installation
 - **[Android CLI Testing](cli-device-runner-for-android-using-devicerunners-cli.md)** - Android APK testing
-- **[Windows CLI Testing](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing
-- **[macOS CLI Testing](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst testing
 - **[iOS CLI Testing](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator testing
-- **[WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
+- **[macOS CLI Testing](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst testing
+- **[Windows CLI Testing](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing
+- **[Browser (WASM) CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
 
 #### XHarness (Legacy)
 Platform-specific tools for specialized scenarios:
