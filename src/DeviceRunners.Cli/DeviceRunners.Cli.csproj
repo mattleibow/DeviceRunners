@@ -35,6 +35,7 @@
 
   <!-- Bundle winapp.exe for loose-file MSIX registration on Windows -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" VersionOverride="10.0.8" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.WinApp" PrivateAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
