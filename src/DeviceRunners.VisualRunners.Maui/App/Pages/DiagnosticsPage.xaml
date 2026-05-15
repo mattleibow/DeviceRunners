@@ -1,8 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vr="clr-namespace:DeviceRunners.VisualRunners;assembly=DeviceRunners.VisualRunners"
              xmlns:local="using:DeviceRunners.VisualRunners.Maui"
              x:Class="DeviceRunners.VisualRunners.Maui.Pages.DiagnosticsPage"
+             x:DataType="vr:DiagnosticsViewModel"
              Title="Diagnostics">
 
     <ContentPage.ToolbarItems>

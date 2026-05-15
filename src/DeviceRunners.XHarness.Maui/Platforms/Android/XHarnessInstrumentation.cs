@@ -14,10 +14,11 @@ public class XHarnessInstrumentation : XHarnessInstrumentationBase
 
 	protected override HomeViewModel GetHomeViewModel(Android.App.Application app)
 	{
-		if (app is not MauiApplication mauiApp)
+		if (app is not MauiApplication)
 			throw new InvalidOperationException("The .NET MAUI instrumentation implementation only supports MauiApplication.");
 
-		var services = mauiApp.Services;
+		var services = IPlatformApplication.Current?.Services
+			?? throw new InvalidOperationException("Platform application services are not available.");
 		return services.GetRequiredService<HomeViewModel>();
 	}
 }
