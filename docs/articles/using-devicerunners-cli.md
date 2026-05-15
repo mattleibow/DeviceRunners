@@ -113,7 +113,7 @@ device-runners ios uninstall --app app.app
 
 ## Network Configuration
 
-All platforms support TCP-based test result communication:
+All native platforms support TCP-based test result communication. WASM uses browser console output via Chrome DevTools Protocol instead — see [WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md) for details.
 
 ### Default Configuration
 - **Port**: 16384
@@ -142,20 +142,6 @@ device-runners listen --port 16384 --non-interactive --connection-timeout 60 --d
 
 # Save results to file
 device-runners listen --port 16384 --results-file results.txt --non-interactive
-```
-
-## Additional Resources
-
-### WASM Browser Testing
-
-The CLI supports running tests in a headless browser for Blazor WebAssembly apps:
-
-```bash
-# Run tests in headless Chrome
-device-runners wasm test --app <path/to/wwwroot> --timeout 300 --logger "trx;LogFileName=test-results.trx" --results-directory results
-
-# Serve for interactive testing
-device-runners wasm serve --app <path/to/wwwroot> --port 5000
 ```
 
 The `test` command serves the published `wwwroot` directory, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file. Use `--headed` to see the browser window during test execution.

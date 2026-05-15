@@ -403,3 +403,4 @@ FodyWeavers.xsd
 
 # DocFX output
 docs/_site/
+*.lscache
