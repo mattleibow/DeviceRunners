@@ -1,33 +1,23 @@
 # DeviceRunners Project Templates
 
-Project templates for creating device test projects using the [DeviceRunners](https://github.com/mattleibow/DeviceRunners) visual test runner with TCP result streaming.
+Project templates for creating device test projects using the [DeviceRunners](https://github.com/mattleibow/DeviceRunners) visual test runner.
 
 ## Installation
 
-### Install the Template
+### Install the Templates
 
 ```bash
 dotnet new install DeviceRunners.Templates
 ```
 
-### Install the CLI Tool
+This installs two templates:
 
-The DeviceRunners CLI tool (`device-runners`) is used to run device tests from the command line, listen for TCP test results, and manage app deployment on Windows.
+| Template | Short Name | Description |
+|----------|-----------|-------------|
+| DeviceRunners Device Tests | `devicerunners` | .NET MAUI app for testing on Android, iOS, macOS, and Windows |
+| DeviceRunners Browser Tests | `devicerunners-browser` | Blazor WebAssembly app for testing in the browser |
 
-**As a local tool (recommended for projects):**
-
-```bash
-dotnet new tool-manifest   # if you don't already have one
-dotnet tool install DeviceRunners.Cli --local
-```
-
-**As a global tool:**
-
-```bash
-dotnet tool install --global DeviceRunners.Cli
-```
-
-## Quick Start
+## Quick Start — Device Tests (MAUI)
 
 ### 1. Create a Device Tests Project
 
@@ -35,7 +25,7 @@ dotnet tool install --global DeviceRunners.Cli
 dotnet new devicerunners -n MyApp.DeviceTests
 ```
 
-This creates a .NET MAUI app configured as a device test runner with xUnit and TCP result streaming.
+This creates a .NET MAUI app configured as a device test runner with xUnit.
 
 **Template options:**
 
@@ -44,13 +34,6 @@ This creates a .NET MAUI app configured as a device test runner with xUnit and T
 | `-n`, `--name`      | Project name                         | `DeviceTests`                      |
 | `--Framework`       | Target .NET version (`net9.0`/`net10.0`) | `net9.0`                       |
 | `--applicationId`   | Application identifier               | `com.companyname.devicetests`      |
-
-**Examples:**
-
-```bash
-# .NET 10.0 project with custom app ID
-dotnet new devicerunners -n MyApp.DeviceTests --Framework net10.0 --applicationId com.mycompany.myapp.tests
-```
 
 ### 2. Write Your Tests
 
@@ -86,113 +69,153 @@ dotnet build -t:Run -f net9.0-maccatalyst
 dotnet build -t:Run -f net9.0-windows10.0.19041.0
 ```
 
-### 4. Run Tests in CI/CD (TCP Mode)
+### 4. Run Tests in CI/CD
 
-For automated testing, the CLI tool listens for TCP results while the app runs tests in headless mode.
+**Recommended: `dotnet test`**
 
-**macOS / Mac Catalyst:**
+The template includes `DeviceRunners.Testing.Targets` which hooks into the standard `dotnet test` workflow:
 
 ```bash
-# Terminal 1: Start the TCP listener
-dotnet device-runners listen --port 16384 --non-interactive --results-file results.txt
-
-# Terminal 2: Run the app with environment variables to enable auto-run
-DEVICE_RUNNERS_AUTORUN=1 DEVICE_RUNNERS_PORT=16384 dotnet build -t:Run -f net9.0-maccatalyst
+# Run on each platform — that's it!
+dotnet test MyApp.DeviceTests.csproj -f net9.0-android
+dotnet test MyApp.DeviceTests.csproj -f net9.0-ios
+dotnet test MyApp.DeviceTests.csproj -f net9.0-maccatalyst
+dotnet test MyApp.DeviceTests.csproj -f net9.0-windows10.0.19041.0
 ```
 
-**Windows:**
+This automatically builds, deploys, launches the app, collects results via TCP, and produces a TRX file.
 
-The CLI tool can handle the full test workflow on Windows (install, launch, listen, cleanup):
+**Alternative: DeviceRunners CLI**
+
+For more control, use the CLI tool directly:
 
 ```bash
-# Build the MSIX package first
-dotnet publish -f net9.0-windows10.0.19041.0
+# Install the CLI tool
+dotnet tool install --global DeviceRunners.Cli
 
-# Run the full test workflow
-dotnet device-runners windows test --app path/to/app.msix
+# macOS: publish and run
+dotnet publish -f net9.0-maccatalyst -c release
+device-runners macos test --app path/to/MyApp.app --results-directory results --logger trx
+
+# Windows (unpackaged EXE):
+dotnet publish -f net9.0-windows10.0.19041.0 -c release -p:WindowsPackageType=None --output publish
+device-runners windows test --app publish/MyApp.exe --results-directory results --logger trx
+
+# Windows (MSIX):
+dotnet publish -f net9.0-windows10.0.19041.0 -c release
+device-runners windows test --app path/to/app.msix --results-directory results --logger trx
 ```
 
-**Android (using adb port forwarding):**
+## Quick Start — Browser Tests (Blazor WASM)
+
+### 1. Create a Browser Tests Project
 
 ```bash
-# Forward the TCP port to the emulator/device
-adb reverse tcp:16384 tcp:16384
+dotnet new devicerunners-browser -n MyApp.BrowserTests
+```
 
-# Terminal 1: Start the TCP listener
-dotnet device-runners listen --port 16384 --non-interactive --results-file results.txt
+This creates a Blazor WebAssembly app configured as a browser test runner with xUnit.
 
-# Terminal 2: Run the app
-dotnet build -t:Run -f net9.0-android
+**Template options:**
+
+| Option              | Description                          | Default          |
+|---------------------|--------------------------------------|------------------|
+| `-n`, `--name`      | Project name                         | `BrowserTests`   |
+| `--Framework`       | Target .NET version (`net9.0`/`net10.0`) | `net9.0`     |
+
+### 2. Write Your Tests
+
+```csharp
+public class MyBrowserTests
+{
+    [Fact]
+    public void TestInBrowser()
+    {
+        // This test runs in the browser via WebAssembly
+        Assert.True(true);
+    }
+}
+```
+
+### 3. Run Tests Interactively
+
+```bash
+dotnet run
+```
+
+Open the URL in your browser to see the visual test runner UI.
+
+### 4. Run Tests in CI/CD
+
+```bash
+# Using dotnet test (recommended — launches headless Chrome automatically)
+dotnet test MyApp.BrowserTests.csproj
+
+# Or using the CLI tool
+dotnet tool install --global DeviceRunners.Cli
+dotnet publish -c release
+device-runners wasm test --app bin/release/net9.0/publish/wwwroot
 ```
 
 ## How It Works
 
+### Device Tests (MAUI)
+
 The template creates a .NET MAUI app that uses the DeviceRunners visual test runner:
 
 - **Interactive mode (default):** Shows a UI for browsing and running tests on the device.
-- **CI/CD mode:** When the `DEVICE_RUNNERS_AUTORUN` environment variable is set, the app automatically runs all tests and streams results over TCP to the CLI listener.
+- **CI/CD mode:** When launched by `dotnet test` or the DeviceRunners CLI, the app detects configuration (via environment variables or CLI arguments) and automatically runs all tests, streaming results over TCP.
 
-### Environment Variables
+The `AddCliConfiguration()` method in `MauiProgram.cs` handles this detection — it's a no-op when running interactively.
 
-| Variable                    | Description                                        | Default              |
-|-----------------------------|----------------------------------------------------|----------------------|
-| `DEVICE_RUNNERS_AUTORUN`    | Set to any value to enable headless auto-run mode  | _(unset)_            |
-| `DEVICE_RUNNERS_PORT`       | TCP port to stream results to                      | `16384`              |
-| `DEVICE_RUNNERS_HOST_NAMES` | Semicolon-separated host names to try              | `localhost;10.0.2.2` |
+### Browser Tests (Blazor WASM)
 
-### CLI Commands
+The template creates a Blazor WebAssembly app:
+
+- **Interactive mode (default):** Shows a browser-based UI for browsing and running tests.
+- **CI/CD mode:** When launched by `dotnet test` or the CLI, a headless Chrome instance navigates to the app with `?device-runners-autorun=1` in the URL, test results are captured from the browser console.
+
+## Configuration
+
+When using `dotnet test`, configure via MSBuild properties:
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `DeviceRunnersPort` | `16384` | TCP port for test result collection |
+| `DeviceRunnersConnectionTimeout` | `120` | Seconds to wait for the app to connect |
+| `DeviceRunnersDataTimeout` | `30` | Seconds of silence before assuming the run ended |
+| `DeviceRunnersDevice` | _(auto)_ | Target device ID (Android emulator serial, iOS simulator UDID) |
+| `DeviceRunnersWasmTimeout` | `300` | WASM: test execution timeout in seconds |
+
+Example:
 
 ```bash
-# Listen for TCP test results (cross-platform)
-dotnet device-runners listen --port 16384 --non-interactive --results-file results.txt
-
-# Windows: Full test workflow (install, launch, listen, cleanup)
-dotnet device-runners windows test --app path/to/app.msix
-
-# Windows: Individual commands
-dotnet device-runners windows install --app path/to/app.msix
-dotnet device-runners windows launch --app path/to/app.msix
-dotnet device-runners windows uninstall --app path/to/app.msix
-
-# Windows: Certificate management
-dotnet device-runners windows cert install --publisher "CN=MyCompany"
-dotnet device-runners windows cert uninstall --fingerprint "ABCD1234..."
-```
-
-## Project Structure
-
-After running `dotnet new devicerunners -n MyApp.DeviceTests`, you get:
-
-```
-MyApp.DeviceTests/
-├── MauiProgram.cs              # Test runner configuration
-├── SampleTests.cs              # Example test class
-├── Usings.cs                   # Global usings
-├── MyApp.DeviceTests.csproj    # Project file
-├── Properties/
-│   └── launchSettings.json
-├── Platforms/
-│   ├── Android/                # Android platform files
-│   ├── iOS/                    # iOS platform files
-│   ├── MacCatalyst/            # macOS Catalyst platform files
-│   └── Windows/                # Windows platform files
-└── Resources/
-    ├── AppIcon/                # App icons
-    ├── Images/                 # Image assets
-    └── Splash/                 # Splash screen
+dotnet test MyApp.csproj -f net9.0-ios -p:DeviceRunnersDevice=ABCD1234
 ```
 
 ## Adding Test Assemblies from Other Projects
 
-To run tests from other projects (e.g., a shared test library), add a project reference and register the assembly in `MauiProgram.cs`:
+To run tests from other projects, add a project reference and register the assembly:
+
+**MAUI (`MauiProgram.cs`):**
 
 ```csharp
 builder.UseVisualTestRunner(conf => conf
-    .AddEnvironmentVariables()
+    .AddCliConfiguration()
     .AddConsoleResultChannel()
     .AddTestAssembly(typeof(MauiProgram).Assembly)
     .AddTestAssemblies(typeof(MyLibrary.Tests.SomeTestClass).Assembly)
     .AddXunit());
+```
+
+**Blazor WASM (`Program.cs`):**
+
+```csharp
+builder.UseVisualTestRunner(conf => conf
+    .AddXunit(useReflection: true)
+    .AddTestAssembly(typeof(Program).Assembly)
+    .AddTestAssemblies(typeof(MyLibrary.Tests.SomeTestClass).Assembly)
+    .AddConsoleResultChannel());
 ```
 
 Don't forget to add a `TrimmerRootAssembly` entry in the `.csproj` to prevent the linker from stripping test classes:
