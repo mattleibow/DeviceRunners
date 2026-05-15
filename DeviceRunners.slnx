@@ -36,4 +36,7 @@
     <Project Path="test/DeviceRunners.VisualRunners.Tests/DeviceRunners.VisualRunners.Tests.csproj" />
     <Project Path="test/TestProject.Tests/TestProject.Tests.csproj" />
   </Folder>
+  <Folder Name="/templates/">
+    <Project Path="templates/DeviceRunners.Templates/DeviceRunners.Templates.csproj" />
+  </Folder>
 </Solution>

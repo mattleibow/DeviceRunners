@@ -1,0 +1,102 @@
+name: 'Validate Template'
+description: 'Install the DeviceRunners template from CI packages, create a project, and run tests using the CLI'
+
+inputs:
+  runner-os:
+    description: 'Runner OS (macOS or Windows)'
+    required: true
+  target-framework:
+    description: 'The base target framework (e.g. net9.0)'
+    required: true
+  artifact-name:
+    description: 'Artifact name for uploaded results'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Download NuGet Packages
+      uses: actions/download-artifact@v4
+      with:
+        name: NuGet
+        path: ./artifacts/nugets
+    - name: Install Template and CLI Tool
+      shell: bash
+      run: |
+        dotnet new install ./artifacts/nugets/DeviceRunners.Templates.*.nupkg
+        mkdir -p artifacts/package/release
+        cp ./artifacts/nugets/*.nupkg artifacts/package/release/
+        dotnet tool install --global DeviceRunners.Cli --prerelease
+    - name: Create Project from Template
+      shell: bash
+      run: |
+        mkdir -p ./artifacts/template-test
+        cd ./artifacts/template-test
+        # Isolate from the repo's Directory.Build.props (central package management, artifacts output)
+        cat > Directory.Build.props << 'EOF'
+        <Project>
+          <PropertyGroup>
+            <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+            <CheckEolWorkloads>false</CheckEolWorkloads>
+            <CheckEolTargetFramework>false</CheckEolTargetFramework>
+          </PropertyGroup>
+        </Project>
+        EOF
+        echo '<Project />' > Directory.Build.targets
+        dotnet new devicerunners -n TemplateValidation --Framework ${{ inputs.target-framework }}
+
+    # ── macOS: publish Mac Catalyst app and run tests ────────────
+    - name: 'macOS: Publish App'
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj \
+          -f ${{ inputs.target-framework }}-maccatalyst \
+          -r maccatalyst-x64 \
+          -c release \
+          /bl:./artifacts/logs/msbuild-template-build.binlog
+    - name: 'macOS: Run Tests'
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        app_bundle=$(find artifacts/template-test -path "*/bin/*.app" -type d | head -1)
+        [ -n "$app_bundle" ] || { echo "::error::No .app bundle found"; exit 1; }
+        device-runners macos test --app "$app_bundle" --results-directory artifacts/test-results --logger trx
+
+    # ── Windows: build unpackaged EXE and run tests ────────────
+    - name: 'Windows: Build App (Unpackaged)'
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        dotnet publish ./artifacts/template-test/TemplateValidation/TemplateValidation.csproj `
+          -f ${{ inputs.target-framework }}-windows10.0.19041.0 `
+          -c release `
+          -p:WindowsPackageType=None `
+          --output artifacts/publish `
+          /bl:./artifacts/logs/msbuild-template-build.binlog
+    - name: 'Windows: Run Tests'
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $exe = Get-ChildItem "artifacts/publish/TemplateValidation.exe"
+        device-runners windows test --app $exe --results-directory artifacts/test-results --logger trx
+
+    # ── Cleanup & upload ───────────────────────────────────────
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/template-test
+        rm -rf ./artifacts/nugets
+        rm -rf ./artifacts/publish
+        rm -rf ./artifacts/package
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts
