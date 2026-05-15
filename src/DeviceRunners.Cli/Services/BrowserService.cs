@@ -69,7 +69,7 @@ public class BrowserService : IAsyncDisposable
 		_chromeProcess.Start();
 
 		// Chrome prints the DevTools URL to stderr: "DevTools listening on ws://..."
-		var debugUrl = await ReadDevToolsUrlAsync(_chromeProcess, TimeSpan.FromSeconds(15));
+		var debugUrl = await ReadDevToolsUrlAsync(_chromeProcess, TimeSpan.FromSeconds(30));
 
 		// Connect to the browser's CDP WebSocket
 		var wsUrl = await GetPageWebSocketUrl(debugUrl);
@@ -95,22 +95,29 @@ public class BrowserService : IAsyncDisposable
 		var stderr = process.StandardError;
 		var stderrLines = new List<string>();
 
-		while (!cts.IsCancellationRequested)
+		try
 		{
-			var line = await stderr.ReadLineAsync(cts.Token);
-			if (line is null)
-				break;
-
-			stderrLines.Add(line);
-
-			// Chrome outputs: "DevTools listening on ws://127.0.0.1:PORT/devtools/browser/GUID"
-			if (line.Contains("DevTools listening on"))
+			while (!cts.IsCancellationRequested)
 			{
-				var wsUrl = line.Substring(line.IndexOf("ws://", StringComparison.Ordinal));
-				// Extract the HTTP base URL from the WebSocket URL
-				var uri = new Uri(wsUrl);
-				return $"http://{uri.Host}:{uri.Port}";
+				var line = await stderr.ReadLineAsync(cts.Token);
+				if (line is null)
+					break;
+
+				stderrLines.Add(line);
+
+				// Chrome outputs: "DevTools listening on ws://127.0.0.1:PORT/devtools/browser/GUID"
+				if (line.Contains("DevTools listening on"))
+				{
+					var wsUrl = line.Substring(line.IndexOf("ws://", StringComparison.Ordinal));
+					// Extract the HTTP base URL from the WebSocket URL
+					var uri = new Uri(wsUrl);
+					return $"http://{uri.Host}:{uri.Port}";
+				}
 			}
+		}
+		catch (OperationCanceledException)
+		{
+			// Timeout expired — fall through to build a descriptive error
 		}
 
 		var message = "Chrome did not output a DevTools URL within the timeout period.";
