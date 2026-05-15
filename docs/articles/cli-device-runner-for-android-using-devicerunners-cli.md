@@ -13,7 +13,7 @@ The DeviceRunners CLI tool provides a comprehensive test workflow that handles i
 
 1. Build the app package for testing:  
    ```bash
-   dotnet publish <path/to/app.csproj> -r <runtime-identifier> -f net9.0-android -c Release
+   dotnet publish <path/to/app.csproj> -r <runtime-identifier> -f net10.0-android -c Release
    ```
    Common runtime identifiers: `android-arm64` (physical devices, Apple Silicon emulators), `android-x64` (Intel emulators)
 
@@ -35,13 +35,13 @@ To build and test the app at the path `sample/test/DeviceTestingKitApp.DeviceTes
 ```bash
 # Build the test app
 dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-  -f net9.0-android \
+  -f net10.0-android \
   -r android-arm64 \
   -c Release
 
 # Run tests
 device-runners android test \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net9.0-android/android-arm64/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
+  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net10.0-android/android-arm64/publish/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
   --results-directory artifacts/test-results
 
 # Test result files will be:

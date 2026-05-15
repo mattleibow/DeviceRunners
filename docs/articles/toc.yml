@@ -12,27 +12,44 @@
     - name: Preview Packages
       href: preview-packages.md
 
+- name: "dotnet test (Recommended)"
+  items:
+    - name: Using dotnet test
+      href: using-dotnet-test.md
+    - name: Android
+      href: dotnet-test-android.md
+    - name: iOS
+      href: dotnet-test-ios.md
+    - name: macOS Catalyst
+      href: dotnet-test-macos.md
+    - name: Windows
+      href: dotnet-test-windows.md
+    - name: Browser (WASM)
+      href: dotnet-test-wasm.md
+
 - name: Visual Runners
   items:
     - name: Visual Runner in the IDE
       href: visual-runner-in-the-ide.md
 
-- name: "CLI Runners \u2013 DeviceRunners CLI (Recommended)"
+- name: "DeviceRunners CLI (Advanced)"
   items:
     - name: Using DeviceRunners CLI
       href: using-devicerunners-cli.md
     - name: Android
       href: cli-device-runner-for-android-using-devicerunners-cli.md
-    - name: Windows
-      href: cli-device-runner-for-windows-using-devicerunners-cli.md
-    - name: macOS
-      href: cli-device-runner-for-macos-using-devicerunners-cli.md
     - name: iOS
       href: cli-device-runner-for-ios-using-devicerunners-cli.md
+    - name: macOS
+      href: cli-device-runner-for-macos-using-devicerunners-cli.md
+    - name: Windows
+      href: cli-device-runner-for-windows-using-devicerunners-cli.md
+    - name: Browser (WASM)
+      href: cli-device-runner-for-wasm-using-devicerunners-cli.md
     - name: CLI Test Workflow
       href: devicerunners-cli-test-workflow.md
 
-- name: "CLI Runners \u2013 XHarness (Legacy)"
+- name: "XHarness (Legacy)"
   items:
     - name: Using XHarness
       href: using-xharness.md

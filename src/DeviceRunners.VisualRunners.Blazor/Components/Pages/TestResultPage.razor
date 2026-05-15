@@ -1,0 +1,69 @@
+<div class="dr-result-page">
+    <div class="dr-header">
+        <button class="dr-btn dr-btn-back" @onclick="GoBack">← Back</button>
+        <h2>Test Result</h2>
+    </div>
+
+    <div class="dr-result-detail">
+        <div class="dr-result-name">@TestCase.DisplayName</div>
+
+        <div class="dr-result-badge">
+            <StatusBadge Status="TestCase.ResultStatus" />
+        </div>
+
+        @if (Result is not null)
+        {
+            <div class="dr-result-duration">
+                Duration: @Result.Duration.TotalMilliseconds.ToString("F1") ms
+            </div>
+
+            @if (Result.ResultStatus == TestResultStatus.Failed)
+            {
+                <div class="dr-result-section dr-result-error">
+                    <h3>Error Message</h3>
+                    <pre>@Result.ErrorMessage</pre>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Result.ErrorStackTrace))
+                {
+                    <div class="dr-result-section dr-result-stacktrace">
+                        <h3>Stack Trace</h3>
+                        <pre>@Result.ErrorStackTrace</pre>
+                    </div>
+                }
+            }
+            else if (Result.ResultStatus == TestResultStatus.Skipped)
+            {
+                <div class="dr-result-section dr-result-skip">
+                    <h3>Skip Reason</h3>
+                    <p>@Result.SkipReason</p>
+                </div>
+            }
+
+            @if (Result.HasOutput)
+            {
+                <div class="dr-result-section dr-result-output">
+                    <h3>Output</h3>
+                    <pre>@Result.Output</pre>
+                </div>
+            }
+        }
+        else
+        {
+            <p>This test has not been run yet.</p>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public TestCaseViewModel TestCase { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback OnBackRequested { get; set; }
+
+    TestResultViewModel? Result => TestCase.TestResult;
+
+    async Task GoBack() =>
+        await OnBackRequested.InvokeAsync();
+}

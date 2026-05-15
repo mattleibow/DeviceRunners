@@ -4,10 +4,13 @@ namespace DeviceRunners.VisualRunners;
 
 public static class VisualTestRunnerConfigurationBuilderExtensions
 {
-	public static TBuilder AddXunit<TBuilder>(this TBuilder builder)
+	public static TBuilder AddXunit<TBuilder>(this TBuilder builder, bool useReflection = false)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
-		builder.AddTestPlatform<XunitTestDiscoverer, XunitTestRunner>();
+		if (useReflection)
+			builder.AddTestPlatform<XunitReflectionTestDiscoverer, XunitReflectionTestRunner>();
+		else
+			builder.AddTestPlatform<XunitTestDiscoverer, XunitTestRunner>();
 		return builder;
 	}
 }

@@ -9,21 +9,28 @@ Use the table of contents to navigate and find answers to your questions. You ca
 
 DeviceRunners provides multiple ways to run tests for .NET MAUI applications:
 
+### `dotnet test` (Recommended)
+The simplest way to run device tests. Add a NuGet package, run `dotnet test`, and get TRX results. Works with standard CI/CD pipelines out of the box.
+
+- **[Using dotnet test](using-dotnet-test.md)** - Setup, configuration, and usage
+- Platform guides: [Android](dotnet-test-android.md) | [iOS](dotnet-test-ios.md) | [macOS Catalyst](dotnet-test-macos.md) | [Windows](dotnet-test-windows.md) | [Browser (WASM)](dotnet-test-wasm.md)
+
 ### Visual Test Runners
 Interactive test execution within the IDE for development and debugging. Perfect for manual testing and development workflows.
 
 - **[Visual Runner in the IDE](visual-runner-in-the-ide.md)** - Run tests interactively within your development environment
 
 ### CLI Test Runners
-Automated command-line test execution for CI/CD and scripted testing scenarios.
+Automated command-line test execution for advanced scenarios requiring fine-grained control over deployment and execution.
 
-#### DeviceRunners CLI (Recommended)
-The modern, unified CLI tool that replaces platform-specific scripts:
+#### DeviceRunners CLI (Advanced)
+The CLI tool that `dotnet test` uses under the hood. Use it directly when you need more control:
 - **[Using DeviceRunners CLI](using-devicerunners-cli.md)** - Overview and installation
 - **[Android CLI Testing](cli-device-runner-for-android-using-devicerunners-cli.md)** - Android APK testing
-- **[Windows CLI Testing](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing
-- **[macOS CLI Testing](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst testing
 - **[iOS CLI Testing](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator testing
+- **[macOS CLI Testing](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst testing
+- **[Windows CLI Testing](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing
+- **[Browser (WASM) CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
 
 #### XHarness (Legacy)
 Platform-specific tools for specialized scenarios:

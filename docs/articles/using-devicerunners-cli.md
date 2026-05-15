@@ -7,7 +7,7 @@ The DeviceRunners CLI is a cross-platform .NET tool that provides comprehensive 
 
 The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applications with:
 
-- **Cross-Platform Support**: Works on Windows and macOS (Android commands also work on Linux)
+- **Cross-Platform Support**: Works on Windows and macOS (Android and WASM commands also work on Linux)
 - **Multiple Output Formats**: Human-readable, JSON, XML, and text formats
 - **Automatic Resource Management**: Handles installation, cleanup, and certificates
 - **TCP Result Streaming**: Real-time test result communication
@@ -22,6 +22,7 @@ The DeviceRunners CLI tool streamlines the testing process for .NET MAUI applica
 | **Android** | `install`, `uninstall`, `launch`, `test` | APK packages |
 | **macOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Mac Catalyst) |
 | **iOS** | `install`, `uninstall`, `launch`, `test` | .app bundles (Simulator) |
+| **WASM** | `test`, `serve` | Published Blazor WebAssembly apps |
 
 ## Output Formats
 
@@ -55,6 +56,7 @@ For detailed platform-specific instructions, see:
 - **[Windows - DeviceRunners CLI](cli-device-runner-for-windows-using-devicerunners-cli.md)** - Windows MSIX and EXE testing  
 - **[macOS - DeviceRunners CLI](cli-device-runner-for-macos-using-devicerunners-cli.md)** - Mac Catalyst .app testing
 - **[iOS - DeviceRunners CLI](cli-device-runner-for-ios-using-devicerunners-cli.md)** - iOS Simulator .app testing
+- **[WASM - DeviceRunners CLI](cli-device-runner-for-wasm-using-devicerunners-cli.md)** - Blazor WebAssembly browser testing
 
 ## Common Command Patterns
 
@@ -74,6 +76,12 @@ device-runners android test --app path/to/app.apk --results-directory results
 
 # macOS
 device-runners macos test --app path/to/app.app --results-directory results
+
+# iOS
+device-runners ios test --app path/to/app.app --results-directory results
+
+# WASM
+device-runners wasm test --app path/to/wwwroot --logger "trx;LogFileName=test-results.trx" --results-directory results
 ```
 
 ### Application Management
@@ -85,21 +93,27 @@ Install, launch, and uninstall applications:
 device-runners windows install --app app.msix
 device-runners android install --app app.apk
 device-runners macos install --app app.app
+device-runners ios install --app app.app
 
 # Launch applications
 device-runners windows launch --identity "MyApp"
 device-runners android launch --package com.example.app
 device-runners macos launch --app app.app
+device-runners ios launch --app app.app
 
 # Uninstall applications
 device-runners windows uninstall --identity "MyApp"
 device-runners android uninstall --package com.example.app
 device-runners macos uninstall --app app.app
+device-runners ios uninstall --app app.app
 ```
+
+> [!NOTE]
+> WASM has no `install`, `launch`, or `uninstall` commands. Use `wasm test` to run tests and `wasm serve` for interactive browser testing.
 
 ## Network Configuration
 
-All platforms support TCP-based test result communication:
+All native platforms support TCP-based test result communication. WASM uses browser console output via Chrome DevTools Protocol instead — see [WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md) for details.
 
 ### Default Configuration
 - **Port**: 16384
@@ -130,7 +144,11 @@ device-runners listen --port 16384 --non-interactive --connection-timeout 60 --d
 device-runners listen --port 16384 --results-file results.txt --non-interactive
 ```
 
-## Additional Resources
+The `test` command serves the published `wwwroot` directory, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file. Use `--headed` to see the browser window during test execution.
+
+The `serve` command starts a local web server only, without launching Chrome. This is useful for opening the app manually in a browser to interact with the visual test runner UI.
+
+For more details, see **[WASM CLI Testing](cli-device-runner-for-wasm-using-devicerunners-cli.md)**.
 
 For more detailed information about the internal workflow and architecture:
 

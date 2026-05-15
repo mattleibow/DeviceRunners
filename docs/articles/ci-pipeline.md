@@ -73,6 +73,13 @@ What it does:
 | `test-xharness-ios/action.yml` | Composite action | XHarness iOS simulator tests |
 | `test-xharness-maccatalyst/action.yml` | Composite action | XHarness Mac Catalyst tests |
 | `test-xharness-windows/action.yml` | Composite action | XHarness Windows tests |
+| `test-dotnet-test-android-linux/action.yml` | Composite action | `dotnet test` Android tests on Linux |
+| `test-dotnet-test-ios/action.yml` | Composite action | `dotnet test` iOS simulator tests |
+| `test-dotnet-test-macos/action.yml` | Composite action | `dotnet test` Mac Catalyst tests |
+| `test-dotnet-test-windows/action.yml` | Composite action | `dotnet test` Windows (loose MSIX) tests |
+| `test-dotnet-test-windows-exe/action.yml` | Composite action | `dotnet test` Windows (unpackaged EXE) tests |
+| `test-dotnet-test-wasm/action.yml` | Composite action | `dotnet test` WASM browser tests on Linux |
+| `test-wasm-browser/action.yml` | Composite action | WASM browser tests on Linux |
 
 ### Azure Pipelines (`.azure/`)
 
@@ -91,35 +98,69 @@ What it does:
 | `templates/test-xharness-ios.yml` | Job template | XHarness iOS simulator tests |
 | `templates/test-xharness-maccatalyst.yml` | Job template | XHarness Mac Catalyst tests |
 | `templates/test-xharness-windows.yml` | Job template | XHarness Windows tests |
+| `templates/test-dotnet-test-android.yml` | Job template | `dotnet test` Android tests (Linux) |
+| `templates/test-dotnet-test-ios.yml` | Job template | `dotnet test` iOS simulator tests |
+| `templates/test-dotnet-test-macos.yml` | Job template | `dotnet test` Mac Catalyst tests |
+| `templates/test-dotnet-test-windows.yml` | Job template | `dotnet test` Windows (loose MSIX) tests |
+| `templates/test-dotnet-test-windows-exe.yml` | Job template | `dotnet test` Windows (unpackaged EXE) tests |
+| `templates/test-dotnet-test-wasm.yml` | Job template | `dotnet test` WASM browser tests on Linux |
+| `templates/test-wasm-browser.yml` | Job template | WASM browser tests on Linux |
 
 ## Supported Platform Matrix
 
 ### Android
 
-| Host OS | Host Arch | API Level | Emulator Arch | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
-|---|---|---|---|---|---|---|---|---|
-| Linux | x64 | 36 | x86_64 | ubuntu-24.04 | ubuntu-24.04 | ✅ | ✅ | **Stable** — KVM hardware accel |
-| macOS | arm64 | any | arm64-v8a | — | — | ❌ | ❌ | **Blocked** — HVF not available on CI runners |
+| Host OS | Host Arch | API Level | Emulator Arch | Runner (GH) | Pool (Azure) | `dotnet test` | TCP (CLI) | XHarness | Status |
+|---|---|---|---|---|---|---|---|---|---|
+| Linux | x64 | 36 | x86_64 | ubuntu-24.04 | ubuntu-24.04 | ✅ | ✅ | ✅ | **Stable** — KVM hardware accel |
+| macOS | arm64 | any | arm64-v8a | — | — | ❌ | ❌ | ❌ | **Blocked** — HVF not available on CI runners |
 
 ### iOS (Simulator)
 
-| Host Arch | RID | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
-|---|---|---|---|---|---|---|
-| x64 | iossimulator-x64 | macos-15-intel | macOS-15 | ✅ | ✅ | **Stable** — Rosetta translation |
+| Host Arch | RID | Runner (GH) | Pool (Azure) | `dotnet test` | TCP (CLI) | XHarness | Status |
+|---|---|---|---|---|---|---|---|
+| x64 | iossimulator-x64 | macos-15-intel | macOS-15 | ✅ | ✅ | ✅ | **Stable** — Rosetta translation |
 
 ### Mac Catalyst
 
-| Host Arch | RID | Config | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
-|---|---|---|---|---|---|---|---|
-| x64 | maccatalyst-x64 | release | macos-15-intel | macOS-15 | ✅ | ✅ | **Stable** |
+| Host Arch | RID | Config | Runner (GH) | Pool (Azure) | `dotnet test` | TCP (CLI) | XHarness | Status |
+|---|---|---|---|---|---|---|---|---|
+| x64 | maccatalyst-x64 | release | macos-15-intel | macOS-15 | ✅ | ✅ | ✅ | **Stable** |
 
 ### Windows
 
-| Packaging | RID | Runner (GH) | Pool (Azure) | TCP | XHarness | Status |
-|---|---|---|---|---|---|---|
-| MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | **Stable** |
-| Loose MSIX (folder) | win10-x64 | windows-2025 | windows-2025 | ✅ | N/A | **Stable** — requires Developer Mode |
-| EXE (unpackaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | N/A | **Stable** — TCP only |
+| Packaging | RID | Runner (GH) | Pool (Azure) | `dotnet test` | TCP (CLI) | XHarness | Status |
+|---|---|---|---|---|---|---|---|
+| MSIX (packaged) | win10-x64 | windows-2025 | windows-2025 | N/A | ✅ | ✅ | **Stable** |
+| Loose MSIX (folder) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | N/A | **Stable** — requires Developer Mode |
+| EXE (unpackaged) | win10-x64 | windows-2025 | windows-2025 | ✅ | ✅ | N/A | **Stable** — TCP only |
+
+## Using `dotnet test` in CI
+
+The `dotnet test` device test workflows (`test-dotnet-test-*`) use the `DeviceRunners.Testing.Targets` package to run tests via `dotnet test`. This is the recommended approach for new CI setups:
+
+```yaml
+# GitHub Actions example
+- name: Run Device Tests
+  run: |
+    dotnet test sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+      -f net10.0-maccatalyst \
+      -c release
+```
+
+```yaml
+# Azure Pipelines example
+- script: |
+    dotnet test sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
+      -f net10.0-android \
+      -c release
+  displayName: 'Run Android Device Tests'
+```
+
+The `DeviceRunners.Testing.Targets` package is included in the test project via `<PackageReference>`. When using in-repo development, the `.props` and `.targets` files are imported directly. For published packages, NuGet handles the import automatically.
+
+> [!NOTE]
+> The `dotnet test` workflows (`test-dotnet-test-*`) run tests via `dotnet test` and the `DeviceRunners.Testing.Targets` package. The TCP workflows (`test-tcp-*`) use the DeviceRunners CLI directly for scenarios requiring more control. The XHarness workflows remain as a legacy alternative.
 
 ## Device Management Patterns
 
@@ -194,6 +235,55 @@ dotnet xharness apple test \
 ```
 
 > **Important**: XHarness `--verbosity` must use `=` syntax (`--verbosity=Debug`), not space-separated (`--verbosity Debug`), due to GNU-style optional value parsing.
+
+## WASM Browser Tests
+
+WASM browser tests run the Blazor WebAssembly test app in headless Chrome. Unlike other platforms, there is no device or emulator — only a published `wwwroot` directory and a browser.
+
+### Flow
+
+1. `dotnet pack` the DeviceRunners CLI and `dotnet tool install --global` it
+2. `dotnet publish` the Blazor WASM test project
+3. `device-runners wasm test --app <wwwroot>` — serves the app, launches headless Chrome, captures console NDJSON, writes TRX
+
+### GitHub Actions
+
+The `wasm-browser` job in `ci.yml` uses the `test-wasm-browser` composite action:
+
+| File | Type | Description |
+|---|---|---|
+| `test-wasm-browser/action.yml` | Composite action | WASM browser tests on Linux |
+
+```yaml
+wasm-browser:
+  name: WASM Browser (Linux)
+  runs-on: ubuntu-24.04
+  steps:
+  - uses: actions/checkout@v4
+  - uses: ./.github/workflows/test-wasm-browser
+```
+
+### Azure DevOps
+
+The `WASM_Browser_Tests` stage uses the `test-wasm-browser.yml` template:
+
+| File | Type | Description |
+|---|---|---|
+| `templates/test-wasm-browser.yml` | Job template | WASM browser tests on Linux |
+
+```yaml
+- stage: WASM_Browser_Tests
+  displayName: 'WASM Browser Tests'
+  dependsOn: []
+  jobs:
+    - template: templates/test-wasm-browser.yml
+```
+
+### Platform Matrix
+
+| Host OS | Runner (GH) | Pool (Azure) | CLI | Status |
+|---|---|---|---|---|
+| Linux | ubuntu-24.04 | ubuntu-24.04 | ✅ | **Stable** — Chrome pre-installed |
 
 ## Runner Image Reference
 

@@ -5,29 +5,41 @@ This page provides a comprehensive technical overview of all DeviceRunners compo
 
 ## Overview
 
-DeviceRunners is a comprehensive testing framework for .NET MAUI applications that supports multiple testing approaches across different platforms. The project consists of two main testing strategies:
+DeviceRunners is a comprehensive testing framework for .NET MAUI applications that supports multiple testing approaches across different platforms. The project consists of three main testing strategies:
 
-1. **Visual Test Runners** - Interactive UI-based test execution for development and manual testing
-2. **CLI Test Runners** - Automated command-line test execution for CI/CD and scripted testing
+1. **`dotnet test` Integration** - Standard .NET test workflow via the `DeviceRunners.Testing.Targets` NuGet package (recommended)
+2. **Visual Test Runners** - Interactive UI-based test execution for development and manual testing
+3. **CLI Test Runners** - Automated command-line test execution for advanced scenarios
 
 ## Supported Platforms
 
-| Platform | Visual Runner | CLI Runner (XHarness) | CLI Runner (New Tool) |
-|----------|---------------|----------------------|----------------------|
-| **Android** | ✅ | ✅ | ✅ |
-| **iOS** | ✅ | ✅ | ✅ |
-| **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ |
-| **Windows (WinUI 3)** | ✅ | ❌ | ✅ |
+| Platform | `dotnet test` | Visual Runner | CLI Runner | XHarness (Legacy) |
+|----------|:---:|:---:|:---:|:---:|
+| **Android** | ✅ | ✅ | ✅ | ✅ |
+| **iOS** | ✅ | ✅ | ✅ | ✅ |
+| **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ | ✅ |
+| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ✅ |
+| **Browser (WASM)** | ✅ | ✅ | ✅ | ❌ |
 
 ## Supported Testing Frameworks
 
-| Framework | Visual Runner | XHarness Runner | New CLI Tool |
-|-----------|---------------|-----------------|--------------|
-| **Xunit** | ✅ | ✅ | ✅ (any) |
-| **NUnit** | ✅ | ❌ | ✅ (any) |
+| Framework | Visual Runner | `dotnet test` / CLI | XHarness Runner |
+|-----------|:---:|:---:|:---:|
+| **Xunit** | ✅ | ✅ (any) | ✅ |
+| **NUnit** | ✅ | ✅ (any) | ❌ |
 
 > [!NOTE]
-> The CLI tool is framework-agnostic — it launches the test app and collects results via TCP. It works with any testing framework that the app supports.
+> Both `dotnet test` and the CLI tool are framework-agnostic — they launch the test app and collect results via TCP. They work with any testing framework that the app supports.
+
+## Browser (WASM) Architecture
+
+The WASM platform uses a fundamentally different architecture from the native platforms:
+
+- **Blazor WebAssembly host**: The test app is a Blazor WebAssembly app built with `WebAssemblyHostBuilder` and `UseVisualTestRunner()`. It shares the same ViewModels (`HomeViewModel`, `TestAssemblyViewModel`, etc.) as the MAUI visual runner, with Blazor Razor components providing the UI.
+- **Reflection-based discovery**: The standard `XunitFrontController` requires filesystem access to locate assemblies. In the browser, `XunitReflectionTestDiscoverer` scans assemblies already loaded in memory via reflection (`AddXunit(useReflection: true)`).
+- **Cooperative yielding**: Blazor WebAssembly is single-threaded. The xunit runners (`XunitYieldingAssemblyRunner`, `XunitYieldingCollectionRunner`, `XunitYieldingClassRunner`) call `Task.Yield()` between test classes to give the browser event loop time for rendering.
+- **Console output via EventStreamFormatter**: Since TCP sockets are not available from WebAssembly, test results are written as NDJSON lines to `console.log` using `EventStreamFormatter`. The DeviceRunners CLI captures this output through the Chrome DevTools Protocol (`Runtime.consoleAPICalled`).
+- **CLI orchestration**: The `device-runners wasm test` command serves the published `wwwroot`, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file.
 
 ## Core Architecture Components
 
@@ -106,6 +118,10 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 - `ios uninstall` - Uninstall applications from simulator
 - `ios launch` - Launch applications on simulator
 - `ios test` - Run tests on simulator
+
+**WASM Commands:**
+- `wasm test` - Serve WASM app, run tests in headless Chrome, produce TRX results
+- `wasm serve` - Serve WASM app for interactive browser testing
 
 **Network Commands:**
 - `listen` - Start TCP port listener for test results
@@ -284,8 +300,60 @@ The repository includes comprehensive sample projects demonstrating:
 - Multi-framework test projects (Xunit + NUnit)
 - UI testing patterns
 - Visual and XHarness runner configurations
+- `dotnet test` integration via `DeviceRunners.Testing.Targets`
 - Platform-specific implementations
 - MAUI library testing
+
+## DeviceRunners.Testing.Targets Package
+
+The `DeviceRunners.Testing.Targets` NuGet package enables `dotnet test` for device platforms by replacing the standard VSTest MSBuild target with a custom implementation that:
+
+1. **Builds** the app for the target platform
+2. **Deploys** it using the bundled DeviceRunners CLI tool
+3. **Launches** the app with configuration for auto-run and TCP connection
+4. **Collects** test results via TCP and writes a TRX file
+5. **Reports** results in the standard `dotnet test` output format
+
+### Package Structure
+
+The package ships two MSBuild files and self-contained CLI binaries:
+
+```
+build/
+  DeviceRunners.Testing.Targets.props    # Imported early: disables MTP, sets defaults
+  DeviceRunners.Testing.Targets.targets  # Imported late: custom VSTest target chain
+tools/
+  osx-arm64/DeviceRunners.Cli            # Self-contained single-file binary (~20 MB)
+  osx-x64/DeviceRunners.Cli
+  win-x64/DeviceRunners.Cli.exe
+  win-arm64/DeviceRunners.Cli.exe
+  linux-x64/DeviceRunners.Cli
+  linux-arm64/DeviceRunners.Cli
+```
+
+### MSBuild Target Chain
+
+```
+VSTest  (entry point, replaces SDK default)
+
+  -> Build                        (compile the app)
+  -> _DeviceRunnersRunTests       (orchestrator)
+       -> _DeviceRunnersPrepareArgs    (common + platform-specific CLI args)
+       -> _DeviceRunnersExecTests      (single Exec, captures exit code)
+       -> _DeviceRunnersReportResults  (parse TRX, emit summary)
+```
+
+Platform detection uses `$(_DeviceRunnersPlatform)` computed once from `GetTargetPlatformIdentifier`. Each platform has its own args target that assembles the CLI command. The `_DeviceRunnersExecTests` target runs a single `Exec` with `IgnoreExitCode="true"` and captures the exit code for clean error reporting.
+
+### Exit Code Protocol
+
+| Code | Meaning | MSBuild Output |
+|------|---------|----------------|
+| 0 | All tests passed | No error |
+| 1 | Test failures | `error TESTERROR: Test summary: ...` |
+| 2 | App crashed | `error TESTERROR: Test summary: ... (incomplete: app crashed)` |
+
+For more details, see [Using dotnet test](using-dotnet-test.md).
 
 ## Future Architecture Considerations
 

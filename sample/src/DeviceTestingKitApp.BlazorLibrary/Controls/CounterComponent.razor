@@ -1,0 +1,19 @@
+@using DeviceTestingKitApp.ViewModels
+@using DeviceTestingKitApp.Formatters
+
+<div class="counter-component">
+    <button @onclick="OnClick" class="counter-button">
+        @CounterValueFormatter.Format(ViewModel.Count)
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public CounterViewModel ViewModel { get; set; } = new();
+
+    void OnClick()
+    {
+        ViewModel.IncrementCommand.Execute(null);
+        StateHasChanged();
+    }
+}
