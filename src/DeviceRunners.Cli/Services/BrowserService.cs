@@ -45,7 +45,6 @@ public class BrowserService : IAsyncDisposable
 			"--disable-translate",
 			"--metrics-recording-only",
 			"--safebrowsing-disable-auto-update",
-			"--disable-gpu",
 		};
 
 		if (headless)

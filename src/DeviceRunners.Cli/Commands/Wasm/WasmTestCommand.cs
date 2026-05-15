@@ -165,7 +165,7 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
 			if (eventStream.TotalCount == 0)
-				WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
+				WriteConsoleOutput($"    [red]No test results received. This usually means the browser failed to navigate, the app didn't boot, or the autorun query parameter was not detected. Check browser-console.log for details.[/]", settings);
 
 			var result = new TestStartResult
 			{
@@ -173,7 +173,8 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 				AppPath = settings.App,
 				ResultsDirectory = settings.ResultsDirectory,
 				TestFailures = eventStream.FailedCount,
-				TestResults = resultsFile
+				TestResults = resultsFile,
+				ErrorMessage = eventStream.TotalCount == 0 ? "No test results received — check browser-console.log" : null
 			};
 			WriteResult(result, settings);
 

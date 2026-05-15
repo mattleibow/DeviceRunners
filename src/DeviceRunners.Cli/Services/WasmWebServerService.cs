@@ -89,7 +89,7 @@ public class WasmWebServerService : IAsyncDisposable
 		}
 	}
 
-	Task HandleRequestAsync(HttpListenerContext context)
+	async Task HandleRequestAsync(HttpListenerContext context)
 	{
 		try
 		{
@@ -109,14 +109,14 @@ public class WasmWebServerService : IAsyncDisposable
 			{
 				context.Response.StatusCode = 403;
 				context.Response.Close();
-				return Task.CompletedTask;
+				return;
 			}
 
 			if (!File.Exists(filePath))
 			{
 				context.Response.StatusCode = 404;
 				context.Response.Close();
-				return Task.CompletedTask;
+				return;
 			}
 
 			var ext = Path.GetExtension(filePath);
@@ -129,8 +129,8 @@ public class WasmWebServerService : IAsyncDisposable
 			context.Response.Headers["Cross-Origin-Embedder-Policy"] = "require-corp";
 			context.Response.Headers["Cross-Origin-Opener-Policy"] = "same-origin";
 
-			using var fileStream = File.OpenRead(filePath);
-			fileStream.CopyTo(context.Response.OutputStream);
+			await using var fileStream = File.OpenRead(filePath);
+			await fileStream.CopyToAsync(context.Response.OutputStream);
 			context.Response.Close();
 		}
 		catch (Exception ex)
@@ -140,8 +140,6 @@ public class WasmWebServerService : IAsyncDisposable
 			try { context.Response.StatusCode = 500; context.Response.Close(); }
 			catch { }
 		}
-
-		return Task.CompletedTask;
 	}
 
 	static int FindAvailablePort()

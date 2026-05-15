@@ -67,7 +67,6 @@
   <Target Name="_DeviceRunnersMarkTestRun">
     <PropertyGroup>
       <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
-      <DeviceRunnersTestRun>true</DeviceRunnersTestRun>
     </PropertyGroup>
   </Target>
 
