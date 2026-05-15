@@ -1,0 +1,11 @@
+@inject CreditsViewModel ViewModel
+
+<div class="dr-credits">
+    <div class="dr-header">
+        <h2>Credits</h2>
+    </div>
+
+    <div class="dr-credits-content">
+        @((MarkupString)ViewModel.CreditsHtml)
+    </div>
+</div>

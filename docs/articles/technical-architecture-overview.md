@@ -18,7 +18,8 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 | **Android** | ✅ | ✅ | ✅ | ✅ |
 | **iOS** | ✅ | ✅ | ✅ | ✅ |
 | **macOS (Mac Catalyst)** | ✅ | ✅ | ✅ | ✅ |
-| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ❌ |
+| **Windows (WinUI 3)** | ✅ | ✅ | ✅ | ✅ |
+| **Browser (WASM)** | ✅ | ✅ | ✅ | ❌ |
 
 ## Supported Testing Frameworks
 
@@ -29,6 +30,16 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 
 > [!NOTE]
 > Both `dotnet test` and the CLI tool are framework-agnostic — they launch the test app and collect results via TCP. They work with any testing framework that the app supports.
+
+## Browser (WASM) Architecture
+
+The WASM platform uses a fundamentally different architecture from the native platforms:
+
+- **Blazor WebAssembly host**: The test app is a Blazor WebAssembly app built with `WebAssemblyHostBuilder` and `UseVisualTestRunner()`. It shares the same ViewModels (`HomeViewModel`, `TestAssemblyViewModel`, etc.) as the MAUI visual runner, with Blazor Razor components providing the UI.
+- **Reflection-based discovery**: The standard `XunitFrontController` requires filesystem access to locate assemblies. In the browser, `XunitReflectionTestDiscoverer` scans assemblies already loaded in memory via reflection (`AddXunit(useReflection: true)`).
+- **Cooperative yielding**: Blazor WebAssembly is single-threaded. The xunit runners (`XunitYieldingAssemblyRunner`, `XunitYieldingCollectionRunner`, `XunitYieldingClassRunner`) call `Task.Yield()` between test classes to give the browser event loop time for rendering.
+- **Console output via EventStreamFormatter**: Since TCP sockets are not available from WebAssembly, test results are written as NDJSON lines to `console.log` using `EventStreamFormatter`. The DeviceRunners CLI captures this output through the Chrome DevTools Protocol (`Runtime.consoleAPICalled`).
+- **CLI orchestration**: The `device-runners wasm test` command serves the published `wwwroot`, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file.
 
 ## Core Architecture Components
 
@@ -107,6 +118,10 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 - `ios uninstall` - Uninstall applications from simulator
 - `ios launch` - Launch applications on simulator
 - `ios test` - Run tests on simulator
+
+**WASM Commands:**
+- `wasm test` - Serve WASM app, run tests in headless Chrome, produce TRX results
+- `wasm serve` - Serve WASM app for interactive browser testing
 
 **Network Commands:**
 - `listen` - Start TCP port listener for test results

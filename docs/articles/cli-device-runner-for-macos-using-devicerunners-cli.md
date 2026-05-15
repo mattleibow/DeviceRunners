@@ -9,7 +9,7 @@ The DeviceRunners CLI tool provides a comprehensive test workflow for Mac Cataly
 
 1. Build the app bundle for testing:  
    ```
-   dotnet publish <path/to/app.csproj> -f net9.0-maccatalyst -r <runtime-identifier> -c Release
+   dotnet publish <path/to/app.csproj> -f net10.0-maccatalyst -r <runtime-identifier> -c Release
    ```
 
 2. Run the tests:  
@@ -29,13 +29,13 @@ To build and test the app at the path `sample/test/DeviceTestingKitApp.DeviceTes
 ```bash
 # Build the test app
 dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-  -f net9.0-maccatalyst \
+  -f net10.0-maccatalyst \
   -r maccatalyst-arm64 \
   -c Release
 
 # Run tests
 device-runners macos test \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net9.0-maccatalyst/maccatalyst-arm64/publish/DeviceTestingKitApp.DeviceTests.app \
+  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net10.0-maccatalyst/maccatalyst-arm64/publish/DeviceTestingKitApp.DeviceTests.app \
   --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

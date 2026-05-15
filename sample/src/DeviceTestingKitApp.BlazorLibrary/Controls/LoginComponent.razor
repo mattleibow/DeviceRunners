@@ -1,0 +1,20 @@
+@using DeviceTestingKitApp.ViewModels
+
+<div class="login-form">
+    <input id="username" @bind="ViewModel.Username" @bind:event="oninput" />
+    <input id="password" type="password" @bind="ViewModel.Password" @bind:event="oninput" />
+    <button id="loginButton" class="login-button" disabled="@(!ViewModel.CanLogin)" @onclick="OnLogin">
+        Log in
+    </button>
+</div>
+
+@code {
+    [Parameter]
+    public LoginViewModel ViewModel { get; set; } = new();
+
+    void OnLogin()
+    {
+        ViewModel.LoginCommand.Execute(null);
+        StateHasChanged();
+    }
+}

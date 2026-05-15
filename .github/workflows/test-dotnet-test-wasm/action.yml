@@ -1,0 +1,41 @@
+name: 'dotnet test WASM Browser'
+description: 'Run Blazor WebAssembly tests via dotnet test in headless Chrome'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (dotnet test) - WASM Browser'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish CLI Tool Binaries
+      shell: bash
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r linux-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/linux-x64
+    - name: Run Tests
+      shell: bash
+      run: |
+        dotnet test ${{ inputs.test-project }} \
+          -c ${{ inputs.configuration }} \
+          --logger "trx;LogFileName=test-results.trx" \
+          /bl:./artifacts/logs/msbuild-test.binlog
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

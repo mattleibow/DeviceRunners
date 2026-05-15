@@ -1,0 +1,55 @@
+name: 'WASM Browser Test'
+description: 'Build, publish, and run WASM browser tests using the DeviceRunners CLI'
+
+inputs:
+  test-project:
+    description: 'Path to the WASM test project'
+    default: 'sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  timeout:
+    description: 'Test execution timeout in seconds'
+    default: '300'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results - WASM Browser'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Build and Install CLI Tool
+      shell: bash
+      run: |
+        dotnet pack src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -c release
+        dotnet tool install --global DeviceRunners.Cli
+    - name: Publish WASM Test App
+      shell: bash
+      run: |
+        dotnet publish ${{ inputs.test-project }} \
+          -c ${{ inputs.configuration }} \
+          /bl:./artifacts/logs/msbuild-wasm-publish.binlog
+    - name: Run Tests
+      shell: bash
+      run: |
+        wwwroot=$(find artifacts/publish -type d -name "wwwroot" | head -1)
+        [ -n "$wwwroot" ] || { echo "::error::No wwwroot found in artifacts/publish"; exit 1; }
+        device-runners wasm test \
+          --app "$wwwroot" \
+          --timeout ${{ inputs.timeout }} \
+          --logger "trx;LogFileName=test-results.trx" \
+          --results-directory artifacts/test-results
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

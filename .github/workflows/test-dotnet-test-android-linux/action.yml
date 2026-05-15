@@ -82,6 +82,7 @@ runs:
           -f ${{ inputs.target-framework }} \
           -c ${{ inputs.configuration }} \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+          --logger "trx;LogFileName=test-results.trx" \
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Capture Logcat
       if: always()

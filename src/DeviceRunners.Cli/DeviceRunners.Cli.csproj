@@ -43,6 +43,7 @@
   </ItemGroup>
 
   <!-- Root assemblies that rely on reflection and are not trim-safe. -->
+
   <ItemGroup>
     <TrimmerRootAssembly Include="Spectre.Console.Cli" />
     <TrimmerRootAssembly Include="DeviceRunners.Cli" />

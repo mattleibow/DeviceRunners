@@ -32,10 +32,17 @@
   -->
   <PropertyGroup>
     <_DeviceRunnersPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DeviceRunnersPlatform>
+    <!--
+      Blazor WebAssembly projects use plain net9.0/net10.0 (no -browser TFM), so
+      GetTargetPlatformIdentifier returns empty. Detect them via the SDK property
+      UsingMicrosoftNETSdkBlazorWebAssembly which the BlazorWebAssembly SDK sets.
+    -->
+    <_DeviceRunnersPlatform Condition="'$(_DeviceRunnersPlatform)' == '' And '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">browser</_DeviceRunnersPlatform>
     <_DeviceRunnersIsSupportedPlatform Condition="'$(_DeviceRunnersPlatform)' == 'android'
                                                Or '$(_DeviceRunnersPlatform)' == 'ios'
                                                Or '$(_DeviceRunnersPlatform)' == 'maccatalyst'
-                                               Or '$(_DeviceRunnersPlatform)' == 'windows'">true</_DeviceRunnersIsSupportedPlatform>
+                                               Or '$(_DeviceRunnersPlatform)' == 'windows'
+                                               Or '$(_DeviceRunnersPlatform)' == 'browser'">true</_DeviceRunnersIsSupportedPlatform>
   </PropertyGroup>
 
   <!-- =[ Entry point ]= -->
@@ -81,7 +88,7 @@
     Properties set here flow into _DeviceRunnersExecTests and _DeviceRunnersReportResults.
   -->
   <Target Name="_DeviceRunnersPrepareArgs"
-          DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs" />
+          DependsOnTargets="_DeviceRunnersCommonArgs;_DeviceRunnersAndroidArgs;_DeviceRunnersiOSArgs;_DeviceRunnersMacOSArgs;_DeviceRunnersWindowsArgs;_DeviceRunnersWasmArgs" />
 
   <!--
     Shared setup: TRX output path, results directory, optional device flag,
@@ -89,16 +96,34 @@
   -->
   <Target Name="_DeviceRunnersCommonArgs">
     <PropertyGroup>
-      <_DeviceRunnersTrxFile>$(TestResultsDirectory)test-results.trx</_DeviceRunnersTrxFile>
-      <!-- GetDirectoryName strips the trailing separator that $(TestResultsDirectory) always carries. -->
-      <_DeviceRunnersResultsDir>$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersTrxFile)'))</_DeviceRunnersResultsDir>
+      <!--
+        Use VSTestResultsDirectory (set by "dotnet test ‑‑results-directory") when
+        available; otherwise fall back to the project-level default.
+      -->
+      <_DeviceRunnersResultsDir Condition="'$(VSTestResultsDirectory)' != ''">$(VSTestResultsDirectory)</_DeviceRunnersResultsDir>
+      <_DeviceRunnersResultsDir Condition="'$(_DeviceRunnersResultsDir)' == ''">$([System.IO.Path]::GetDirectoryName('$(TestResultsDirectory)test-results.trx'))</_DeviceRunnersResultsDir>
+
+      <!--
+        Expected TRX path for the report phase. The CLI writes TRX to the
+        results directory with the filename from the logger arg. We use a
+        default name so the report target knows where to look.
+      -->
+      <_DeviceRunnersTrxFile>$([System.IO.Path]::Combine('$(_DeviceRunnersResultsDir)', 'test-results.trx'))</_DeviceRunnersTrxFile>
 
       <!-- Optional device flag; expands to empty string when DeviceRunnersDevice is unset. -->
       <_DeviceRunnersDeviceArg />
       <_DeviceRunnersDeviceArg Condition="'$(DeviceRunnersDevice)' != ''"> --device &quot;$(DeviceRunnersDevice)&quot;</_DeviceRunnersDeviceArg>
 
+      <!--
+        Forward the logger setting from "dotnet test ‑‑logger" ($(VSTestLogger))
+        when present. When no logger is specified, match "dotnet test" default
+        behaviour and omit the flag entirely (no TRX produced).
+      -->
+      <_DeviceRunnersLoggerArg />
+      <_DeviceRunnersLoggerArg Condition="'$(VSTestLogger)' != ''"> --logger &quot;$(VSTestLogger)&quot;</_DeviceRunnersLoggerArg>
+
       <!-- Flags shared by every platform sub-command. -->
-      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout) --logger &quot;trx;LogFileName=test-results.trx&quot;</_DeviceRunnersCommonCliArgs>
+      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout)$(_DeviceRunnersLoggerArg)</_DeviceRunnersCommonCliArgs>
     </PropertyGroup>
     <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
   </Target>
@@ -187,6 +212,34 @@
            Condition="'$(_DeviceRunnersWindowsApp)' == ''" />
     <Message Importance="high" Text="DeviceRunners: running Windows tests from $(_DeviceRunnersWindowsApp)" />
   </Target>
+
+  <!-- =[ WASM (browser) args ]= -->
+
+  <!--
+    For browser WASM projects, "dotnet test" publishes the app then invokes
+    the CLI's "wasm test" command which starts a web server, launches a
+    headless browser, captures console output (NDJSON), and produces TRX.
+    
+    The publish output is at $(PublishDir) which contains the wwwroot/ with
+    index.html, the .wasm/.dll files, and the Blazor framework files.
+  -->
+  <Target Name="_DeviceRunnersWasmArgs"
+          Condition="'$(_DeviceRunnersPlatform)' == 'browser'"
+          DependsOnTargets="Publish">
+    <PropertyGroup>
+      <!-- Look for wwwroot inside publish output; if not found, use publish dir directly -->
+      <_DeviceRunnersWasmDir Condition="Exists('$(PublishDir)wwwroot')">$(PublishDir)wwwroot</_DeviceRunnersWasmDir>
+      <_DeviceRunnersWasmDir Condition="'$(_DeviceRunnersWasmDir)' == ''">$(PublishDir)</_DeviceRunnersWasmDir>
+    </PropertyGroup>
+    <Error Text="Published WASM output not found at '$(PublishDir)'. Make sure the project publishes successfully."
+           Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
+    <PropertyGroup>
+      <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+    </PropertyGroup>
+    <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
+  </Target>
+
 
   <!-- =[ Phase 2: Execute tests ]= -->
 

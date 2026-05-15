@@ -23,6 +23,16 @@ public class CounterValueConverterTests
 		Assert.Equal(expectedValue, converted);
 	}
 
+	[Theory]
+	[InlineData(-1, "Clicked -1 times")]
+	[InlineData(int.MaxValue, "Clicked 2147483647 times")]
+	public void ConvertEdgeCases(int value, string expected)
+	{
+		var converter = new CounterValueConverter();
+		var result = converter.Convert(value, typeof(string), null, CultureInfo.InvariantCulture);
+		Assert.Equal(expected, result);
+	}
+
 	[Fact]
 	public void InvalidTargetTypeThrows()
 	{

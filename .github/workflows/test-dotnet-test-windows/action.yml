@@ -50,6 +50,7 @@ runs:
         dotnet test ${{ inputs.test-project }} `
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
+          --logger "trx;LogFileName=test-results.trx" `
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Clean up build artifacts before upload
       if: always()

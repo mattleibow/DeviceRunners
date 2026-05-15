@@ -1,14 +1,24 @@
-﻿using Xunit;
+using Xunit;
+using Xunit.Abstractions;
 
 namespace DeviceRunners.VisualRunners.Xunit;
 
-class DiagnosticMessageSink : DiagnosticEventSink
+class DiagnosticMessageSink : DiagnosticEventSink, IMessageSink
 {
-	public DiagnosticMessageSink(Action<string> logger, string assemblyDisplayName, bool showDiagnostics)
+	public DiagnosticMessageSink(IDiagnosticsManager? diagnosticsManager)
 	{
-		if (showDiagnostics && logger != null)
+		if (diagnosticsManager is not null)
 		{
-			DiagnosticMessageEvent += args => logger($"{assemblyDisplayName}: {args.Message.Message}");
+			DiagnosticMessageEvent += args => diagnosticsManager.PostDiagnosticMessage(args.Message.Message);
 		}
+	}
+
+	public bool OnMessage(IMessageSinkMessage message)
+	{
+		if (message is IDiagnosticMessage)
+		{
+			return ((IMessageSinkWithTypes)this).OnMessageWithTypes(message, null!);
+		}
+		return true;
 	}
 }

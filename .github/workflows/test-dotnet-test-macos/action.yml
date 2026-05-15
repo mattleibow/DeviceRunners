@@ -33,6 +33,7 @@ runs:
           -f ${{ inputs.target-framework }} \
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
+          --logger "trx;LogFileName=test-results.trx" \
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Clean up build artifacts before upload
       if: always()

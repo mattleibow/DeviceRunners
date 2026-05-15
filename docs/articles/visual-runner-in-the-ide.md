@@ -38,6 +38,33 @@ builder
         }));
 ```
 
+## Blazor WebAssembly Visual Runner
+
+The visual runner also works in the browser as a Blazor WebAssembly app. It uses the same ViewModels (`HomeViewModel`, `TestAssemblyViewModel`, etc.) as the MAUI runner, with Blazor Razor components (`HomePage.razor`, `TestAssemblyPage.razor`, `TestResultPage.razor`) providing the UI.
+
+### Setup
+
+Add the visual runner to your Blazor WebAssembly test app's `Program.cs`:
+
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.RootComponents.Add<TestRunnerApp>("#app");
+
+builder.UseVisualTestRunner(conf => conf
+    .AddXunit(useReflection: true)
+    .AddTestAssembly(typeof(MyTests).Assembly)
+    .AddConsoleResultChannel());
+
+await builder.Build().RunAsync();
+```
+
+Key differences from the MAUI runner:
+- Uses `WebAssemblyHostBuilder` instead of `MauiApp.CreateBuilder()`
+- Requires `useReflection: true` for xunit since `XunitFrontController` needs filesystem access
+- The `UseVisualTestRunner` extension automatically calls `AddCliConfiguration()` which parses the page URL for `?device-runners-autorun=1` to support headless CLI execution
+- No TCP result channel — uses console output with `EventStreamFormatter` for CLI integration
+
 ## See Also
 
 - **[Technical Architecture Overview](technical-architecture-overview.md)** - Full details on the visual runner architecture

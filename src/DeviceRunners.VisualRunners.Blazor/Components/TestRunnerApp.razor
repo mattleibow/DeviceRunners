@@ -1,0 +1,81 @@
+@inject HomeViewModel ViewModel
+
+<div class="dr-app">
+    <nav class="dr-nav">
+        <span class="dr-nav-brand">DeviceRunners</span>
+        <button class="dr-nav-link" @onclick="NavigateHome">Home</button>
+        <button class="dr-nav-link" @onclick="NavigateDiagnostics">Diagnostics</button>
+        <button class="dr-nav-link" @onclick="NavigateCredits">Credits</button>
+    </nav>
+
+    <main class="dr-main">
+        @switch (_currentView)
+        {
+            case View.Home:
+                <HomePage OnAssemblySelected="OnAssemblySelected" />
+                break;
+
+            case View.Assembly when _selectedAssembly is not null:
+                <TestAssemblyPage Assembly="_selectedAssembly"
+                                  OnBackRequested="NavigateHome"
+                                  OnTestSelected="OnTestSelected" />
+                break;
+
+            case View.TestResult when _selectedTestCase is not null:
+                <TestResultPage TestCase="_selectedTestCase"
+                                OnBackRequested="NavigateBackFromResult" />
+                break;
+
+            case View.Diagnostics:
+                <DiagnosticsPage />
+                break;
+
+            case View.Credits:
+                <CreditsPage />
+                break;
+        }
+    </main>
+</div>
+
+@code {
+    enum View { Home, Assembly, TestResult, Diagnostics, Credits }
+
+    View _currentView = View.Home;
+    TestAssemblyViewModel? _selectedAssembly;
+    TestCaseViewModel? _selectedTestCase;
+
+    void OnAssemblySelected(TestAssemblyViewModel assembly)
+    {
+        _selectedAssembly = assembly;
+        _currentView = View.Assembly;
+    }
+
+    void OnTestSelected(TestCaseViewModel testCase)
+    {
+        _selectedTestCase = testCase;
+        _currentView = View.TestResult;
+    }
+
+    void NavigateHome()
+    {
+        _selectedAssembly = null;
+        _selectedTestCase = null;
+        _currentView = View.Home;
+    }
+
+    void NavigateDiagnostics()
+    {
+        _currentView = View.Diagnostics;
+    }
+
+    void NavigateCredits()
+    {
+        _currentView = View.Credits;
+    }
+
+    void NavigateBackFromResult()
+    {
+        _selectedTestCase = null;
+        _currentView = View.Assembly;
+    }
+}

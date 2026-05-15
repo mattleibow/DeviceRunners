@@ -187,6 +187,23 @@ jobs:
         reporter: dotnet-trx
         fail-on-empty: 'false'
 
+  # ── WASM Browser Tests ──────────────────────────────────────
+
+  wasm-browser:
+    name: WASM Browser (Linux)
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-wasm-browser
+    - name: Test Report
+      uses: dorny/test-reporter@v2
+      if: (always() && !cancelled())
+      with:
+        name: Test Results (WASM Browser)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
   # ── dotnet test Device Tests ────────────────────────────────
 
   dotnet-test-android:
@@ -255,6 +272,20 @@ jobs:
       if: always()
       with:
         name: Test Results (dotnet test Windows EXE)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
+  dotnet-test-wasm:
+    name: dotnet test WASM Browser (Linux)
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-wasm
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test WASM Browser)
         path: ./artifacts/test-results/*.trx
         reporter: dotnet-trx
         fail-on-empty: 'false'
