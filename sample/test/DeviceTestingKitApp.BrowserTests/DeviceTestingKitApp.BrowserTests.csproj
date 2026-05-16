@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!--
+    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
+  -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">INCLUDE_FAILING_TESTS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Blazor\DeviceRunners.VisualRunners.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary.XunitTests\DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
+  </ItemGroup>
+
+  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
+
+</Project>

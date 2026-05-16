@@ -13,6 +13,7 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-android
 dotnet test MyApp.DeviceTests.csproj -f net10.0-ios
 dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst
 dotnet test MyApp.DeviceTests.csproj -f net10.0-windows10.0.19041.0
+dotnet test MyApp.BrowserTests.csproj  # Blazor WASM (no -f needed)
 ```
 
 ## Setup
@@ -107,6 +108,7 @@ All settings are MSBuild properties that can be set in your `.csproj` or passed 
 | `DeviceRunnersDataTimeout` | `30` | Seconds of silence before assuming the run ended |
 | `DeviceRunnersDevice` | _(auto)_ | Target device ID (Android emulator serial, iOS simulator UDID) |
 | `DeviceRunnersBin` | _(bundled)_ | Override the CLI tool path (for using a globally installed tool) |
+| `DeviceRunnersWasmTimeout` | `300` | WASM: test execution timeout in seconds |
 
 Example:
 
@@ -119,7 +121,7 @@ dotnet test MyApp.csproj -f net10.0-ios \
 
 ## How It Works
 
-The package replaces the standard `VSTest` MSBuild target for device platforms (Android, iOS, macOS Catalyst, Windows). When you run `dotnet test`, the following happens:
+The package replaces the standard `VSTest` MSBuild target for device platforms (Android, iOS, macOS Catalyst, Windows, Browser (WASM)). When you run `dotnet test`, the following happens:
 
 1. **Build** — The app is compiled for the target platform (APK, .app bundle, .exe, or loose MSIX layout)
 2. **Deploy** — The CLI tool installs the app on the device/simulator
@@ -138,6 +140,7 @@ Each platform uses a different mechanism to pass configuration to the app:
 | macOS Catalyst | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
 | Windows (unpackaged) | `ProcessStartInfo.EnvironmentVariables` (direct process launch) |
 | Windows (MSIX loose) | CLI arguments via `winapp.exe --args` (env vars cannot be forwarded to packaged apps) |
+| Browser (WASM) | URL query string (`?device-runners-autorun=1`) | Set by CLI when launching Chrome |
 
 > [!NOTE]
 > On all platforms except Android, the CLI injects configuration at **launch time** — the same built app can be run with different settings without rebuilding. On Android, configuration is embedded into the APK at **build time** because `adb` has no mechanism to pass environment variables when launching an app. This means changing configuration (e.g., the TCP port) requires a rebuild. Launch-time injection via intent extras is tracked in [#123](https://github.com/mattleibow/DeviceRunners/issues/123).
@@ -161,6 +164,7 @@ For platform-specific setup and prerequisites:
 - [iOS](dotnet-test-ios.md) — Simulator setup, device logs
 - [macOS Catalyst](dotnet-test-macos.md) — No simulator needed
 - [Windows](dotnet-test-windows.md) — Unpackaged EXE and MSIX loose deploy
+- [Browser (WASM)](dotnet-test-wasm.md) — Blazor WebAssembly browser testing
 
 ## Comparison with Other Approaches
 

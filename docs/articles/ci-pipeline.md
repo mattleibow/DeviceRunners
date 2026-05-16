@@ -78,6 +78,8 @@ What it does:
 | `test-dotnet-test-macos/action.yml` | Composite action | `dotnet test` Mac Catalyst tests |
 | `test-dotnet-test-windows/action.yml` | Composite action | `dotnet test` Windows (loose MSIX) tests |
 | `test-dotnet-test-windows-exe/action.yml` | Composite action | `dotnet test` Windows (unpackaged EXE) tests |
+| `test-dotnet-test-wasm/action.yml` | Composite action | `dotnet test` WASM browser tests on Linux |
+| `test-wasm-browser/action.yml` | Composite action | WASM browser tests on Linux |
 
 ### Azure Pipelines (`.azure/`)
 
@@ -101,6 +103,8 @@ What it does:
 | `templates/test-dotnet-test-macos.yml` | Job template | `dotnet test` Mac Catalyst tests |
 | `templates/test-dotnet-test-windows.yml` | Job template | `dotnet test` Windows (loose MSIX) tests |
 | `templates/test-dotnet-test-windows-exe.yml` | Job template | `dotnet test` Windows (unpackaged EXE) tests |
+| `templates/test-dotnet-test-wasm.yml` | Job template | `dotnet test` WASM browser tests on Linux |
+| `templates/test-wasm-browser.yml` | Job template | WASM browser tests on Linux |
 
 ## Supported Platform Matrix
 
@@ -231,6 +235,55 @@ dotnet xharness apple test \
 ```
 
 > **Important**: XHarness `--verbosity` must use `=` syntax (`--verbosity=Debug`), not space-separated (`--verbosity Debug`), due to GNU-style optional value parsing.
+
+## WASM Browser Tests
+
+WASM browser tests run the Blazor WebAssembly test app in headless Chrome. Unlike other platforms, there is no device or emulator — only a published `wwwroot` directory and a browser.
+
+### Flow
+
+1. `dotnet pack` the DeviceRunners CLI and `dotnet tool install --global` it
+2. `dotnet publish` the Blazor WASM test project
+3. `device-runners wasm test --app <wwwroot>` — serves the app, launches headless Chrome, captures console NDJSON, writes TRX
+
+### GitHub Actions
+
+The `wasm-browser` job in `ci.yml` uses the `test-wasm-browser` composite action:
+
+| File | Type | Description |
+|---|---|---|
+| `test-wasm-browser/action.yml` | Composite action | WASM browser tests on Linux |
+
+```yaml
+wasm-browser:
+  name: WASM Browser (Linux)
+  runs-on: ubuntu-24.04
+  steps:
+  - uses: actions/checkout@v4
+  - uses: ./.github/workflows/test-wasm-browser
+```
+
+### Azure DevOps
+
+The `WASM_Browser_Tests` stage uses the `test-wasm-browser.yml` template:
+
+| File | Type | Description |
+|---|---|---|
+| `templates/test-wasm-browser.yml` | Job template | WASM browser tests on Linux |
+
+```yaml
+- stage: WASM_Browser_Tests
+  displayName: 'WASM Browser Tests'
+  dependsOn: []
+  jobs:
+    - template: templates/test-wasm-browser.yml
+```
+
+### Platform Matrix
+
+| Host OS | Runner (GH) | Pool (Azure) | CLI | Status |
+|---|---|---|---|---|
+| Linux | ubuntu-24.04 | ubuntu-24.04 | ✅ | **Stable** — Chrome pre-installed |
 
 ## Runner Image Reference
 

@@ -11,9 +11,9 @@ public abstract class TestDiscovererTests
 {
 	public abstract ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration);
 
-	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
+	protected virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
 
-	public virtual int ExpectedTestCount => Constants.TestCount;
+	protected virtual int ExpectedTestCount => Constants.TestCount;
 
 	[Fact]
 	public async Task DiscoverAsyncCanFindAllTests()

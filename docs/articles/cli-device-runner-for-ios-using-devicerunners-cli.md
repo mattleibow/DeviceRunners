@@ -9,7 +9,7 @@ The DeviceRunners CLI tool provides a comprehensive test workflow for iOS Simula
 
 1. Build the app bundle for testing:  
    ```
-   dotnet build <path/to/app.csproj> -f net9.0-ios -r <runtime-identifier> -c Debug
+   dotnet build <path/to/app.csproj> -f net10.0-ios -r <runtime-identifier> -c Debug
    ```
 
 2. Run the tests:  
@@ -29,13 +29,13 @@ To build and test the app at the path `sample/test/DeviceTestingKitApp.DeviceTes
 ```bash
 # Build the test app
 dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj \
-  -f net9.0-ios \
+  -f net10.0-ios \
   -r iossimulator-arm64 \
   -c Debug
 
 # Run tests
 device-runners ios test \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-ios/iossimulator-arm64/DeviceTestingKitApp.DeviceTests.app \
+  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net10.0-ios/iossimulator-arm64/DeviceTestingKitApp.DeviceTests.app \
   --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

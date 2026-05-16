@@ -1,0 +1,54 @@
+@using System.ComponentModel
+
+@inject HomeViewModel ViewModel
+
+@implements IDisposable
+
+<div class="dr-diagnostics">
+    <div class="dr-header">
+        <h2>Diagnostics</h2>
+        @if (DiagnosticsVM is not null)
+        {
+            <div class="dr-actions">
+                <button class="dr-btn dr-btn-secondary" @onclick="Clear">Clear</button>
+            </div>
+        }
+    </div>
+
+    @if (DiagnosticsVM is not null)
+    {
+        <div class="dr-diagnostics-log">
+            <div class="dr-diagnostics-messages">
+                <pre>@DiagnosticsVM.MessagesString</pre>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dr-empty">
+            <p>Diagnostics not available.</p>
+        </div>
+    }
+</div>
+
+@code {
+    DiagnosticsViewModel? DiagnosticsVM => ViewModel.Diagnostics;
+
+    protected override void OnInitialized()
+    {
+        if (DiagnosticsVM is not null)
+            DiagnosticsVM.PropertyChanged += OnPropertyChanged;
+    }
+
+    void OnPropertyChanged(object? sender, PropertyChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    void Clear() =>
+        DiagnosticsVM?.ClearMessagesCommand.Execute(null);
+
+    public void Dispose()
+    {
+        if (DiagnosticsVM is not null)
+            DiagnosticsVM.PropertyChanged -= OnPropertyChanged;
+    }
+}

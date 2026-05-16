@@ -45,3 +45,4 @@ The CLI launches the `.app` bundle directly (via `Process.Start`) rather than us
 ### App crashes immediately
 
 Check the build output to ensure the `.app` bundle was produced. If using `debug` configuration, the app should run without code signing issues on macOS Catalyst.
+

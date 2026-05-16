@@ -8,7 +8,7 @@ namespace VisualRunnerTests.Testing;
 
 public class Xunit3TestDiscovererTests : TestDiscovererTests
 {
-public override Assembly TestAssembly => typeof(TestProject.Xunit3Tests.Xunit3Tests).Assembly;
+	protected override Assembly TestAssembly => typeof(TestProject.Xunit3Tests.Xunit3Tests).Assembly;
 
 
 public override ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration) =>

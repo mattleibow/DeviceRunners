@@ -1,0 +1,26 @@
+<span class="dr-badge @GetBadgeClass(Status)">@GetBadgeText(Status)</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public TestResultStatus Status { get; set; }
+
+    static string GetBadgeClass(TestResultStatus status) =>
+        status switch
+        {
+            TestResultStatus.Passed => "dr-badge-passed",
+            TestResultStatus.Failed => "dr-badge-failed",
+            TestResultStatus.Skipped => "dr-badge-skipped",
+            TestResultStatus.NoTests => "dr-badge-notrun",
+            _ => "dr-badge-notrun",
+        };
+
+    static string GetBadgeText(TestResultStatus status) =>
+        status switch
+        {
+            TestResultStatus.Passed => "Passed",
+            TestResultStatus.Failed => "Failed",
+            TestResultStatus.Skipped => "Skipped",
+            TestResultStatus.NoTests => "No Tests",
+            _ => "Not Run",
+        };
+}

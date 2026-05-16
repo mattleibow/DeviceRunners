@@ -1,0 +1,106 @@
+@using System.ComponentModel
+
+@inject HomeViewModel ViewModel
+
+@implements IDisposable
+
+<div class="dr-home">
+    <div class="dr-header">
+        <h1>Device Test Runner</h1>
+        <div class="dr-actions">
+            <button class="dr-btn dr-btn-primary" @onclick="RunAll" disabled="@ViewModel.IsBusy">
+                @if (ViewModel.IsBusy)
+                {
+                    <span>Running...</span>
+                }
+                else
+                {
+                    <span>Run All Tests</span>
+                }
+            </button>
+        </div>
+    </div>
+
+    @if (!ViewModel.IsLoaded)
+    {
+        <div class="dr-loading">
+            <p>Discovering tests...</p>
+        </div>
+    }
+    else if (ViewModel.TestAssemblies.Count == 0)
+    {
+        <div class="dr-empty">
+            <p>No test assemblies found.</p>
+        </div>
+    }
+    else
+    {
+        <div class="dr-assembly-list">
+            @foreach (var assembly in ViewModel.TestAssemblies)
+            {
+                <div class="dr-assembly-card @GetAssemblyStatusClass(assembly)" @onclick="() => SelectAssembly(assembly)">
+                    <div class="dr-assembly-name">@assembly.DisplayName</div>
+                    <div class="dr-assembly-detail">@assembly.DetailText</div>
+                    <div class="dr-assembly-stats">
+                        <span class="dr-stat dr-stat-total">@assembly.TestAssemblyInfo.TestCases.Count tests</span>
+                        @if (assembly.Passed > 0)
+                        {
+                            <span class="dr-stat dr-stat-passed">✓ @assembly.Passed</span>
+                        }
+                        @if (assembly.Failed > 0)
+                        {
+                            <span class="dr-stat dr-stat-failed">✗ @assembly.Failed</span>
+                        }
+                        @if (assembly.Skipped > 0)
+                        {
+                            <span class="dr-stat dr-stat-skipped">⊘ @assembly.Skipped</span>
+                        }
+                        @if (assembly.NotRun > 0)
+                        {
+                            <span class="dr-stat dr-stat-notrun">○ @assembly.NotRun</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback<TestAssemblyViewModel> OnAssemblySelected { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        ViewModel.TestAssemblies.CollectionChanged += OnCollectionChanged;
+        await ViewModel.StartAssemblyScanAsync();
+    }
+
+    void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    void OnCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) =>
+        InvokeAsync(StateHasChanged);
+
+    void RunAll() =>
+        ViewModel.RunEverythingCommand.Execute(null);
+
+    async Task SelectAssembly(TestAssemblyViewModel assembly) =>
+        await OnAssemblySelected.InvokeAsync(assembly);
+
+    static string GetAssemblyStatusClass(TestAssemblyViewModel assembly) =>
+        assembly.ResultStatus switch
+        {
+            TestResultStatus.Passed => "dr-status-passed",
+            TestResultStatus.Failed => "dr-status-failed",
+            TestResultStatus.Skipped => "dr-status-skipped",
+            _ => "dr-status-notrun",
+        };
+
+    public void Dispose()
+    {
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        ViewModel.TestAssemblies.CollectionChanged -= OnCollectionChanged;
+    }
+}

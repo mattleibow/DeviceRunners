@@ -407,3 +407,4 @@ docs/_site/
 # Code coverage results
 artifacts/coverage/
 decompile.csx
+*.lscache

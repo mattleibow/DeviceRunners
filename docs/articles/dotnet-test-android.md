@@ -71,3 +71,4 @@ The app uses `10.0.2.2` to reach the host machine from the Android emulator. If 
 ```bash
 adb reverse tcp:16384 tcp:16384
 ```
+

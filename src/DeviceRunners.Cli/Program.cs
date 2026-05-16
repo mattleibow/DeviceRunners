@@ -13,6 +13,7 @@ app.Configure(config =>
     config.AddExample(["android", "test", "--app", "MyTests.apk", "--results-directory", "results"]);
     config.AddExample(["macos", "test", "--app", "MyTests.app", "--results-directory", "results"]);
     config.AddExample(["ios", "test", "--app", "MyTests.app", "--results-directory", "results"]);
+    config.AddExample(["wasm", "test", "--app", "path/to/wwwroot", "--results-directory", "results"]);
     config.AddExample(["android", "install", "--app", "path/to/app.apk", "--device", "emulator-5554"]);
     config.AddExample(["listen", "--port", "16384", "--non-interactive"]);
 
@@ -162,6 +163,23 @@ app.Configure(config =>
             .WithExample(["ios", "test", "--app", "path/to/app.app", "--port", "8080"])
             .WithExample(["ios", "test", "--app", "path/to/app.app", "--results-directory", "test-results"])
             .WithExample(["ios", "test", "--app", "path/to/app.app", "--connection-timeout", "60", "--data-timeout", "45"]);
+    });
+
+    // WASM-specific commands
+    config.AddBranch("wasm", wasm =>
+    {
+        wasm.SetDescription("WebAssembly (WASM) browser-specific commands for test management");
+
+        wasm.AddCommand<WasmTestCommand>("test")
+            .WithDescription("Run tests in a WASM application in a browser")
+            .WithExample(["wasm", "test", "--app", "path/to/wwwroot"])
+            .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--headed"])
+            .WithExample(["wasm", "test", "--app", "path/to/wwwroot", "--logger", "trx", "--results-directory", "test-results"]);
+
+        wasm.AddCommand<WasmServeCommand>("serve")
+            .WithDescription("Start a web server for a published WASM application")
+            .WithExample(["wasm", "serve", "--app", "path/to/wwwroot"])
+            .WithExample(["wasm", "serve", "--app", "path/to/wwwroot", "--port", "8080"]);
     });
 });
 
