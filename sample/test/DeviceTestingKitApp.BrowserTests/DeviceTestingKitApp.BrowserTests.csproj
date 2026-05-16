@@ -21,7 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Blazor\DeviceRunners.VisualRunners.Blazor.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary.XunitTests\DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.BlazorLibrary.Xunit3Tests\DeviceTestingKitApp.BlazorLibrary.Xunit3Tests.csproj" />
   </ItemGroup>
 
   <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
