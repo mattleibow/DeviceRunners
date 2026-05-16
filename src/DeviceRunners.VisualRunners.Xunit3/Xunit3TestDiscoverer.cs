@@ -31,7 +31,9 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 				if (cancellationToken.IsCancellationRequested)
 					break;
 
-				var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
+				// Use logical name (not file path) so discovery works on
+			// platforms without filesystem access such as WASM.
+			var assemblyFileName = assm.GetName().Name + ".dll";
 
 				try
 				{

@@ -57,9 +57,11 @@ public class Xunit3TestRunner : ITestRunner
 
 		var assemblyFileName = assemblyInfo.AssemblyFileName;
 
+		// Match by logical name so it works on WASM where
+		// Assembly.Location returns empty string.
 		var assembly = _options.TestAssemblies
 		.FirstOrDefault(a => string.Equals(
-		FileSystemUtils.GetAssemblyFileName(a),
+		a.GetName().Name + ".dll",
 		assemblyFileName,
 		StringComparison.OrdinalIgnoreCase));
 
