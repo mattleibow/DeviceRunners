@@ -77,7 +77,25 @@
       <BuildAction>AppxManifest</BuildAction>
     </_DeviceRunnersTemplateFile>
 
+    <!-- Browser / Blazor WebAssembly -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/wwwroot/index.html.template">
+      <Destination>wwwroot/index.html</Destination>
+      <Platform>browser</Platform>
+      <BuildAction>Content</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
   </ItemGroup>
+
+  <!--
+    Blazor WebAssembly projects use plain net9.0/net10.0 (no -browser TFM), so
+    GetTargetPlatformIdentifier returns empty. Detect them via the SDK property
+    UsingMicrosoftNETSdkBlazorWebAssembly which the BlazorWebAssembly SDK sets.
+    Map this to the virtual platform 'browser' that our templates use.
+  -->
+  <PropertyGroup>
+    <_DeviceRunnersBootstrapPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DeviceRunnersBootstrapPlatform>
+    <_DeviceRunnersBootstrapPlatform Condition="'$(_DeviceRunnersBootstrapPlatform)' == '' And '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">browser</_DeviceRunnersBootstrapPlatform>
+  </PropertyGroup>
 
   <!-- Hook into build pipeline early enough for Windows pre-build checks and Resizetize -->
   <PropertyGroup>
@@ -91,10 +109,6 @@
     </CoreCompileDependsOn>
   </PropertyGroup>
 
-  <!-- Set the Android manifest path to the generated file (the SDK uses this property, not an item) -->
-  <PropertyGroup Condition="'$(TargetPlatformIdentifier)' == 'android' and '$(AndroidManifest)' == ''">
-    <AndroidManifest>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap', '$(TargetFramework)', 'Platforms', 'Android', 'AndroidManifest.xml'))</AndroidManifest>
-  </PropertyGroup>
 
 
   <Target Name="_DeviceRunnersBeforeResizetizeCollectItems"
@@ -135,7 +149,7 @@
 
     <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)"
                 AdditionalMetadata="%(_DeviceRunnersTemplateFile.AdditionalMetadata)"
-                Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(TargetPlatformIdentifier)'">
+                Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(_DeviceRunnersBootstrapPlatform)'">
       <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
     </CreateItem>
 
@@ -156,8 +170,8 @@
     </ItemGroup>
   </Target>
 
-  <!-- Default app icon and splash screen -->
-  <ItemGroup>
+  <!-- Default app icon and splash screen (MAUI apps only, not browser/WASM) -->
+  <ItemGroup Condition="'$(_DeviceRunnersBootstrapPlatform)' != 'browser'">
     <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg"
               ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg"
               Color="#512BD4" />
@@ -167,7 +181,7 @@
   </ItemGroup>
 
   <!-- Android manifest overlay for network permissions -->
-  <ItemGroup Condition="'$(TargetPlatformIdentifier)' == 'android'">
+  <ItemGroup Condition="'$(_DeviceRunnersBootstrapPlatform)' == 'android'">
     <AndroidManifestOverlay Include="$(MSBuildThisFileDirectory)AndroidManifestOverlay.xml" />
   </ItemGroup>
 
