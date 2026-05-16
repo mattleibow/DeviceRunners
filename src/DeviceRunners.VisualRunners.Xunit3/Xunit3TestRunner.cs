@@ -57,60 +57,46 @@ public class Xunit3TestRunner : ITestRunner
 
 		var assemblyFileName = assemblyInfo.AssemblyFileName;
 
-		// Match by logical name so it works on WASM where
-		// Assembly.Location returns empty string.
+		// Match by logical name so it works on platforms where
+		// Assembly.Location returns empty string (Android, iOS, WASM).
 		var assembly = _options.TestAssemblies
-		.FirstOrDefault(a => string.Equals(
-		a.GetName().Name + ".dll",
-		assemblyFileName,
-		StringComparison.OrdinalIgnoreCase));
+			.FirstOrDefault(a => string.Equals(
+				a.GetName().Name + ".dll",
+				assemblyFileName,
+				StringComparison.OrdinalIgnoreCase));
 
 		if (assembly is null)
 			return;
 
 		var testCaseLookup = assemblyInfo.TestCases
-		.ToDictionary(tc => tc.TestCaseUniqueID, tc => tc);
+			.ToDictionary(tc => tc.TestCaseUniqueID, tc => tc);
 
-		var testCaseIdsToRun = new HashSet<string>(assemblyInfo.TestCases.Select(tc => tc.TestCaseUniqueID));
+		// Use cached ITestCase objects from discovery — no re-discovery needed.
+		var testCasesToRun = assemblyInfo.TestCases
+			.Select(tc => tc.TestCase)
+			.ToList();
+
+		if (testCasesToRun.Count == 0)
+			return;
 
 		Xunit3DiagnosticMessageSink? diagnosticSink = null;
 		if (_diagnosticsManager is not null)
 		{
 			diagnosticSink = new Xunit3DiagnosticMessageSink(
-			d => _diagnosticsManager.PostDiagnosticMessage(d),
-			Path.GetFileNameWithoutExtension(assemblyFileName));
+				d => _diagnosticsManager.PostDiagnosticMessage(d),
+				Path.GetFileNameWithoutExtension(assemblyFileName));
 		}
 
 		var hasDiagnostics = diagnosticSink is not null;
 		TestContext.SetForInitialization(
-		diagnosticMessageSink: diagnosticSink,
-		diagnosticMessages: hasDiagnostics,
-		internalDiagnosticMessages: hasDiagnostics);
+			diagnosticMessageSink: diagnosticSink,
+			diagnosticMessages: hasDiagnostics,
+			internalDiagnosticMessages: hasDiagnostics);
 
 		var testFramework = CreateTestFramework(assembly);
 		await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
-		// Use configuration from discovery if available
 		var configuration = assemblyInfo.Configuration;
-
-		// Discover to get ITestCase objects, then run selected ones
-		var frameworkDiscoverer = testFramework.GetDiscoverer(assembly);
-		var discoveredTestCases = new List<ITestCase>();
-
-		var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
-		discoveryOptions.SetSynchronousMessageReporting(true);
-		discoveryOptions.SetPreEnumerateTheories(true);
-
-		await frameworkDiscoverer.Find(testCase =>
-		{
-			if (testCaseIdsToRun.Contains(testCase.UniqueID))
-				discoveredTestCases.Add(testCase);
-			return new ValueTask<bool>(true);
-		}, discoveryOptions, cancellationToken: cancellationToken);
-
-		if (discoveredTestCases.Count == 0)
-			return;
-
 		var executor = testFramework.GetExecutor(assembly);
 
 		var executionOptions = TestFrameworkOptions.ForExecution(configuration);
@@ -118,19 +104,9 @@ public class Xunit3TestRunner : ITestRunner
 
 		var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
 
-		await executor.RunTestCases(discoveredTestCases, resultSink, executionOptions, cancellationToken);
+		await executor.RunTestCases(testCasesToRun, resultSink, executionOptions, cancellationToken);
 	}
 
-	/// <summary>
-	/// Creates a test framework, using an in-memory variant when
-	/// <see cref="System.Reflection.Assembly.Location"/> is empty
-	/// (Android, iOS, WASM — assemblies loaded from streams/bundles).
-	/// </summary>
-	static ITestFramework CreateTestFramework(Assembly assembly)
-	{
-		if (string.IsNullOrEmpty(assembly.Location))
-			return new InMemoryXunit3TestFramework();
-
-		return ExtensibilityPointFactory.GetTestFramework(assembly);
-	}
+	static ITestFramework CreateTestFramework(Assembly assembly) =>
+		InMemoryXunit3TestFramework.CreateForAssembly(assembly);
 }

@@ -16,6 +16,11 @@ namespace DeviceRunners.VisualRunners.Xunit3;
 /// the runtime re-maps the interface dispatch for <c>AssemblyPath</c>
 /// to our override that returns the logical name.
 /// </summary>
+/// <remarks>
+/// This is a workaround for <c>AssemblyPath</c> not being virtual on
+/// <see cref="XunitTestAssembly"/>. Tracked upstream:
+/// https://github.com/xunit/xunit/issues/3577
+/// </remarks>
 class InMemoryXunit3TestAssembly : XunitTestAssembly, IXunitTestAssembly
 {
 	readonly string _logicalAssemblyPath;

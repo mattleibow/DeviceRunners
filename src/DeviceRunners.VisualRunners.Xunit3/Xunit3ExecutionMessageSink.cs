@@ -49,12 +49,14 @@ class Xunit3ExecutionMessageSink : IMessageSink
 					break;
 
 				case ITestSkipped testSkipped:
+					EnsureTestMapping(testSkipped.TestUniqueID, testSkipped.TestCaseUniqueID);
 					RecordResult(testSkipped.TestUniqueID, TestResultStatus.Skipped,
-					skipReason: testSkipped.Reason);
+						skipReason: testSkipped.Reason);
 					break;
 
-				case ITestNotRun:
-					RecordResult(((ITestNotRun)message).TestUniqueID, TestResultStatus.NotRun);
+				case ITestNotRun testNotRun:
+					EnsureTestMapping(testNotRun.TestUniqueID, testNotRun.TestCaseUniqueID);
+					RecordResult(testNotRun.TestUniqueID, TestResultStatus.NotRun);
 					break;
 
 				case ITestFinished testFinished:
@@ -104,6 +106,16 @@ class Xunit3ExecutionMessageSink : IMessageSink
 		}
 
 		return !_cancellationToken.IsCancellationRequested;
+	}
+
+	/// <summary>
+	/// Ensures a test-unique-ID → test-case-unique-ID mapping exists.
+	/// Normally set by ITestStarting, but ITestNotRun and ITestSkipped
+	/// may fire without ITestStarting when tests are filtered or never started.
+	/// </summary>
+	void EnsureTestMapping(string testUniqueID, string testCaseUniqueID)
+	{
+		_testUniqueIdToTestCaseId.TryAdd(testUniqueID, testCaseUniqueID);
 	}
 
 	void RecordResult(string testUniqueID, TestResultStatus status, string? errorMessage = null, string? errorStackTrace = null, string? skipReason = null)

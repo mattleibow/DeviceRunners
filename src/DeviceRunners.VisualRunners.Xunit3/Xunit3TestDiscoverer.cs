@@ -1,7 +1,5 @@
 using System.Reflection;
 
-using Microsoft.Extensions.Logging;
-
 using Xunit;
 using Xunit.Runner.Common;
 using Xunit.Sdk;
@@ -14,7 +12,7 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 	readonly IDiagnosticsManager? _diagnosticsManager;
 	readonly IReadOnlyList<Assembly> _testAssemblies;
 
-	public Xunit3TestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null, ILogger<Xunit3TestDiscoverer>? logger = null)
+	public Xunit3TestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_diagnosticsManager = diagnosticsManager;
 		_testAssemblies = options.TestAssemblies.ToArray();
@@ -32,8 +30,8 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 					break;
 
 				// Use logical name (not file path) so discovery works on
-			// platforms without filesystem access such as WASM.
-			var assemblyFileName = assm.GetName().Name + ".dll";
+				// platforms without filesystem access such as WASM.
+				var assemblyFileName = assm.GetName().Name + ".dll";
 
 				try
 				{
@@ -66,13 +64,8 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 
 					var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
 					var testCases = discoveredTestCases
-					.Select(tc => new Xunit3TestCaseInfo(
-					testAssembly,
-					tc.UniqueID,
-					tc.TestCaseDisplayName,
-					tc.TestClassName,
-					tc.TestMethodName))
-					.ToList();
+						.Select(tc => new Xunit3TestCaseInfo(testAssembly, tc))
+						.ToList();
 
 					if (testCases.Count > 0)
 					{
@@ -132,16 +125,6 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 		return null;
 	}
 
-	/// <summary>
-	/// Creates a test framework, using an in-memory variant when
-	/// <see cref="System.Reflection.Assembly.Location"/> is empty
-	/// (Android, iOS, WASM — assemblies loaded from streams/bundles).
-	/// </summary>
-	static ITestFramework CreateTestFramework(Assembly assembly)
-	{
-		if (string.IsNullOrEmpty(assembly.Location))
-			return new InMemoryXunit3TestFramework();
-
-		return ExtensibilityPointFactory.GetTestFramework(assembly);
-	}
+	static ITestFramework CreateTestFramework(Assembly assembly) =>
+		InMemoryXunit3TestFramework.CreateForAssembly(assembly);
 }

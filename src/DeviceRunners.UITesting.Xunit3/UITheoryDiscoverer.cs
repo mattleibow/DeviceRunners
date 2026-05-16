@@ -38,7 +38,7 @@ public class UITheoryDiscoverer : TheoryDiscoverer
 		sourceLineNumber: details.SourceLineNumber,
 		timeout: details.Timeout);
 
-		return new(new[] { (IXunitTestCase)testCase });
+		return new([(IXunitTestCase)testCase]);
 	}
 
 	protected override ValueTask<IReadOnlyCollection<IXunitTestCase>> CreateTestCasesForTheory(
@@ -79,6 +79,6 @@ public class UITheoryDiscoverer : TheoryDiscoverer
 		sourceLineNumber: details.SourceLineNumber,
 		timeout: details.Timeout);
 
-		return new(new[] { testCase });
+		return new([testCase]);
 	}
 }
