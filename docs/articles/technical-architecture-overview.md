@@ -25,7 +25,8 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 
 | Framework | Visual Runner | `dotnet test` / CLI | XHarness Runner |
 |-----------|:---:|:---:|:---:|
-| **Xunit** | ✅ | ✅ (any) | ✅ |
+| **Xunit v2** | ✅ | ✅ (any) | ✅ |
+| **Xunit v3** | ✅ | ✅ (any) | ❌ |
 | **NUnit** | ✅ | ✅ (any) | ❌ |
 
 > [!NOTE]
@@ -36,7 +37,8 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 The WASM platform uses a fundamentally different architecture from the native platforms:
 
 - **Blazor WebAssembly host**: The test app is a Blazor WebAssembly app built with `WebAssemblyHostBuilder` and `UseVisualTestRunner()`. It shares the same ViewModels (`HomeViewModel`, `TestAssemblyViewModel`, etc.) as the MAUI visual runner, with Blazor Razor components providing the UI.
-- **Reflection-based discovery**: The standard `XunitFrontController` requires filesystem access to locate assemblies. In the browser, `XunitReflectionTestDiscoverer` scans assemblies already loaded in memory via reflection (`AddXunit(useReflection: true)`).
+- **Reflection-based discovery (xUnit v2)**: The standard `XunitFrontController` requires filesystem access to locate assemblies. In the browser, `XunitReflectionTestDiscoverer` scans assemblies already loaded in memory via reflection (`AddXunit(useReflection: true)`).
+- **Automatic WASM support (xUnit v3)**: xUnit v3 uses `Assembly.Location` for assembly identification, which is empty on WASM. `WasmXunit3TestAssembly` provides a logical path, and `WasmXunit3TestFramework` auto-detects WASM — no special flags needed (just `AddXunit3()`). See [xUnit v3 Support](xunit-v3-support.md#wasm--blazor-browser-support) for details.
 - **Cooperative yielding**: Blazor WebAssembly is single-threaded. The xunit runners (`XunitYieldingAssemblyRunner`, `XunitYieldingCollectionRunner`, `XunitYieldingClassRunner`) call `Task.Yield()` between test classes to give the browser event loop time for rendering.
 - **Console output via EventStreamFormatter**: Since TCP sockets are not available from WebAssembly, test results are written as NDJSON lines to `console.log` using `EventStreamFormatter`. The DeviceRunners CLI captures this output through the Chrome DevTools Protocol (`Runtime.consoleAPICalled`).
 - **CLI orchestration**: The `device-runners wasm test` command serves the published `wwwroot`, launches headless Chrome via CDP, navigates to `?device-runners-autorun=1`, captures console NDJSON events, and writes a TRX results file.
@@ -59,7 +61,8 @@ The WASM platform uses a fundamentally different architecture from the native pl
 - **IVisualTestRunnerConfiguration** - Configuration management
 
 #### Framework-Specific Visual Runners
-- **DeviceRunners.VisualRunners.Xunit** - Xunit test runner and discoverer
+- **DeviceRunners.VisualRunners.Xunit** - Xunit v2 test runner and discoverer
+- **DeviceRunners.VisualRunners.Xunit3** - Xunit v3 test runner and discoverer (with automatic WASM support)
 - **DeviceRunners.VisualRunners.NUnit** - NUnit test runner and discoverer
 
 #### MAUI Integration (`DeviceRunners.VisualRunners.Maui`)
@@ -142,10 +145,14 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
 - Cross-platform UI thread abstraction
 
 #### UI Testing Framework Integration
-- **DeviceRunners.UITesting.Xunit** - Xunit UI testing support
+- **DeviceRunners.UITesting.Xunit** - Xunit v2 UI testing support
   - `UIFact` and `UITheory` attributes
   - `UITestRunner`, `UITestCaseRunner` - Custom test execution
   - `UIFactDiscoverer`, `UITheoryDiscoverer` - Test discovery
+- **DeviceRunners.UITesting.Xunit3** - Xunit v3 UI testing support
+  - `UIFact` and `UITheory` attributes (xUnit v3 compatible)
+  - `DeviceTest` base class with `IDeviceTestApp` injection
+  - Extension methods: `UseXunit3DeviceRunner()` and `AddDeviceTestApp()`
 
 #### UI Testing MAUI Integration (`DeviceRunners.UITesting.Maui`)
 - MAUI-specific UI thread coordination
@@ -160,6 +167,7 @@ builder.UseVisualTestRunner(conf => conf
     .EnableAutoStart(true)
     .AddTestAssembly(typeof(MyTests).Assembly)
     .AddXunit()
+    .AddXunit3()
     .AddNUnit()
     .AddConsoleResultChannel()
     .AddFileResultChannel(new FileResultChannelOptions { Directory = "test-results" })
@@ -297,12 +305,13 @@ The visual runner system provides a unified approach that replaces framework-spe
 ## Sample Projects
 
 The repository includes comprehensive sample projects demonstrating:
-- Multi-framework test projects (Xunit + NUnit)
+- Multi-framework test projects (Xunit v2 + Xunit v3 + NUnit)
 - UI testing patterns
 - Visual and XHarness runner configurations
 - `dotnet test` integration via `DeviceRunners.Testing.Targets`
 - Platform-specific implementations
 - MAUI library testing
+- Blazor WebAssembly browser testing (with all three frameworks)
 
 ## DeviceRunners.Testing.Targets Package
 

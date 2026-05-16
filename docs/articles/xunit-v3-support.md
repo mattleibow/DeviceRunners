@@ -137,6 +137,59 @@ public class MyUITests
 }
 ```
 
+## WASM / Blazor Browser Support
+
+xUnit v3 works on WebAssembly (Blazor) with automatic platform detection — no special flags needed. Just use `.AddXunit3()`:
+
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+builder.RootComponents.Add<TestRunnerApp>("#app");
+
+builder.UseVisualTestRunner(conf => conf
+    .AddXunit(useReflection: true)   // xUnit v2 needs reflection mode
+    .AddXunit3()                      // xUnit v3 works automatically
+    .AddTestAssembly(typeof(MyXunit2Tests).Assembly)
+    .AddTestAssemblies(typeof(MyXunit3Tests).Assembly)
+    .AddConsoleResultChannel());
+
+await builder.Build().RunAsync();
+```
+
+### How It Works on WASM
+
+On WebAssembly, `Assembly.Location` returns an empty string because there is no filesystem. xUnit v3's `XunitTestAssembly` uses `Assembly.Location` as its `AssemblyPath`, which causes `TestAssemblyRunner.OnTestAssemblyStarting` to crash (it calls `Path.GetFileNameWithoutExtension(AssemblyPath)` on the empty string).
+
+DeviceRunners detects this automatically and uses WASM-safe replacements:
+
+- **`WasmXunit3TestAssembly`** — Subclass of `XunitTestAssembly` that re-implements the `IXunitTestAssembly` interface, providing a logical assembly path (`AssemblyName + ".dll"`) instead of the empty `Assembly.Location`. The interface must be re-declared on the subclass to force C# interface dispatch remapping, since `XunitTestAssembly.AssemblyPath` is not virtual.
+- **`WasmXunit3TestFramework`** — Subclass of `XunitTestFramework` that overrides `CreateDiscoverer` and `CreateExecutor` to use `WasmXunit3TestAssembly` when on WASM.
+
+The `Xunit3TestDiscoverer` and `Xunit3TestRunner` both use a `CreateTestFramework()` helper that checks `Assembly.Location` at runtime:
+- **Empty** → creates `WasmXunit3TestFramework` (WASM path)
+- **Non-empty** → uses `ExtensibilityPointFactory.GetTestFramework()` (standard path)
+
+### Desktop vs WASM Differences
+
+| Aspect | Desktop / Device (MAUI) | WASM (Blazor) |
+|---|---|---|
+| **Setup** | `.AddXunit3()` | `.AddXunit3()` (same) |
+| **Assembly location** | `Assembly.Location` returns file path | `Assembly.Location` is empty string |
+| **Test framework** | Standard `XunitTestFramework` via `ExtensibilityPointFactory` | `WasmXunit3TestFramework` (auto-detected) |
+| **Test assembly** | `XunitTestAssembly` | `WasmXunit3TestAssembly` (provides logical path) |
+| **Threading** | Multi-threaded, tests run on thread pool | Single-threaded, cooperative execution |
+| **Result output** | TCP socket + console | Console NDJSON via `EventStreamFormatter` |
+| **Configuration** | `xunit.runner.json` from file system | `xunit.runner.json` from app package resources |
+| **`[TestFramework]` attribute** | Supported (via `ExtensibilityPointFactory`) | Not supported (bypassed on WASM) |
+
+> **Note:** Unlike xUnit v2 which requires `useReflection: true` on WASM (because `XunitFrontController` needs filesystem access), xUnit v3 works with plain `.AddXunit3()` on all platforms. The WASM workaround is internal and transparent.
+
+### Comparison with xUnit v2 WASM Approach
+
+xUnit v2 on WASM requires a completely different discoverer (`XunitReflectionTestDiscoverer`) and runner (`XunitReflectionTestRunner`) because `XunitFrontController` depends on file paths to load assemblies. The reflection-based approach bypasses `XunitFrontController` entirely and scans assemblies already loaded in memory.
+
+xUnit v3 takes a different approach: the same discoverer and runner work on all platforms. Only the `IXunitTestAssembly` instance is swapped to provide a logical path, and the `ITestFramework` creation is redirected to avoid `ExtensibilityPointFactory` (which also uses file paths internally). This is a smaller and more targeted workaround.
+
 ## Differences from xUnit v2
 
 | Feature | xUnit v2 (`AddXunit()`) | xUnit v3 (`AddXunit3()`) |
@@ -148,4 +201,5 @@ public class MyUITests
 | Selective execution | `ITestCase` object references | Re-discover + filter by unique ID |
 | Configuration | Loads `xunit.runner.json` | Loads `xunit.runner.json` |
 | UI testing attributes | `DeviceRunners.UITesting.Xunit` | `DeviceRunners.UITesting.Xunit3` |
+| WASM support | Requires `useReflection: true` | Automatic (transparent WASM detection) |
 | `IAsyncLifetime` | Returns `Task` | Returns `ValueTask` |
