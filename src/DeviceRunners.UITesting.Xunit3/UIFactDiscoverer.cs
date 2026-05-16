@@ -11,26 +11,26 @@ namespace DeviceRunners.UITesting.Xunit3;
 /// </summary>
 public class UIFactDiscoverer : FactDiscoverer
 {
-protected override IXunitTestCase CreateTestCase(
-ITestFrameworkDiscoveryOptions discoveryOptions,
-IXunitTestMethod testMethod,
-IFactAttribute factAttribute)
-{
-var details = TestIntrospectionHelper.GetTestCaseDetails(discoveryOptions, testMethod, factAttribute);
+	protected override IXunitTestCase CreateTestCase(
+	ITestFrameworkDiscoveryOptions discoveryOptions,
+	IXunitTestMethod testMethod,
+	IFactAttribute factAttribute)
+	{
+		var details = TestIntrospectionHelper.GetTestCaseDetails(discoveryOptions, testMethod, factAttribute);
 
-return new UITestCase(
-details.ResolvedTestMethod,
-details.TestCaseDisplayName,
-details.UniqueID,
-details.Explicit,
-details.SkipExceptions,
-details.SkipReason,
-details.SkipType,
-details.SkipUnless,
-details.SkipWhen,
-TraitsHelper.ToReadWrite(testMethod.Traits),
-sourceFilePath: details.SourceFilePath,
-sourceLineNumber: details.SourceLineNumber,
-timeout: details.Timeout);
-}
+		return new UITestCase(
+		details.ResolvedTestMethod,
+		details.TestCaseDisplayName,
+		details.UniqueID,
+		details.Explicit,
+		details.SkipExceptions,
+		details.SkipReason,
+		details.SkipType,
+		details.SkipUnless,
+		details.SkipWhen,
+		TraitsHelper.ToReadWrite(testMethod.Traits),
+		sourceFilePath: details.SourceFilePath,
+		sourceLineNumber: details.SourceLineNumber,
+		timeout: details.Timeout);
+	}
 }
