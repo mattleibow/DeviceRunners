@@ -38,5 +38,6 @@
     <Project Path="test/DeviceRunners.Cli.Tests/DeviceRunners.Cli.Tests.csproj" />
     <Project Path="test/DeviceRunners.VisualRunners.Tests/DeviceRunners.VisualRunners.Tests.csproj" />
     <Project Path="test/TestProject.Tests/TestProject.Tests.csproj" />
+    <Project Path="test/TestProject.Xunit3Tests/TestProject.Xunit3Tests.csproj" />
   </Folder>
 </Solution>
