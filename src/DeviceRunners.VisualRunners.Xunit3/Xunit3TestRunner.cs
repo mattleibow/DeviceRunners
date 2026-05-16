@@ -87,7 +87,7 @@ public class Xunit3TestRunner : ITestRunner
 		diagnosticMessages: hasDiagnostics,
 		internalDiagnosticMessages: hasDiagnostics);
 
-		var testFramework = ExtensibilityPointFactory.GetTestFramework(assembly);
+		var testFramework = CreateTestFramework(assembly);
 		await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
 		// Use configuration from discovery if available
@@ -119,5 +119,17 @@ public class Xunit3TestRunner : ITestRunner
 		var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
 
 		await executor.RunTestCases(discoveredTestCases, resultSink, executionOptions, cancellationToken);
+	}
+
+	/// <summary>
+	/// Creates a test framework, using a WASM-safe variant when
+	/// <see cref="System.Reflection.Assembly.Location"/> is empty.
+	/// </summary>
+	static ITestFramework CreateTestFramework(Assembly assembly)
+	{
+		if (string.IsNullOrEmpty(assembly.Location))
+			return new WasmXunit3TestFramework();
+
+		return ExtensibilityPointFactory.GetTestFramework(assembly);
 	}
 }

@@ -47,7 +47,7 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 
 					var configuration = GetConfiguration(Path.GetFileNameWithoutExtension(assemblyFileName));
 
-					var testFramework = ExtensibilityPointFactory.GetTestFramework(assm);
+					var testFramework = CreateTestFramework(assm);
 					await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
 					var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
@@ -130,5 +130,17 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 			return stream;
 
 		return null;
+	}
+
+	/// <summary>
+	/// Creates a test framework, using a WASM-safe variant when
+	/// <see cref="System.Reflection.Assembly.Location"/> is empty.
+	/// </summary>
+	static ITestFramework CreateTestFramework(Assembly assembly)
+	{
+		if (string.IsNullOrEmpty(assembly.Location))
+			return new WasmXunit3TestFramework();
+
+		return ExtensibilityPointFactory.GetTestFramework(assembly);
 	}
 }
