@@ -100,7 +100,7 @@ Each framework's discoverer will only find and run tests from its own framework.
 
 DeviceRunners.VisualRunners.Xunit3 uses xUnit v3's in-process extensibility APIs directly:
 
-1. **Discovery**: Uses `ExtensibilityPointFactory.GetTestFramework(assembly)` to obtain the xUnit v3 framework, then calls `ITestFrameworkDiscoverer.Find()` with a callback to collect discovered test cases
+1. **Discovery**: Uses `ExtensibilityPointFactory.GetTestFramework(assembly)` (or `InMemoryXunit3TestFramework` on platforms where `Assembly.Location` is empty) to obtain the xUnit v3 framework, then calls `ITestFrameworkDiscoverer.Find()` with a callback to collect discovered test cases
 2. **Execution**: Uses `ITestFrameworkExecutor.RunTestCases()` with the previously discovered `ITestCase` objects filtered to the selected tests
 3. **Results**: Implements `IMessageSink` to receive `ITestPassed`, `ITestFailed`, `ITestSkipped`, and `ITestNotRun` messages and map them to DeviceRunners' result model
 4. **Diagnostics**: Framework diagnostic messages are forwarded to `IDiagnosticsManager` when available
@@ -137,58 +137,72 @@ public class MyUITests
 }
 ```
 
-## WASM / Blazor Browser Support
+## Platform Compatibility (In-Memory Assembly Handling)
 
-xUnit v3 works on WebAssembly (Blazor) with automatic platform detection — no special flags needed. Just use `.AddXunit3()`:
+xUnit v3 works on **all platforms** with automatic detection — no special flags needed. Just use `.AddXunit3()`:
 
 ```csharp
-var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-builder.RootComponents.Add<TestRunnerApp>("#app");
-
+// MAUI (Android, iOS, macOS, Windows)
 builder.UseVisualTestRunner(conf => conf
-    .AddXunit(useReflection: true)   // xUnit v2 needs reflection mode
-    .AddXunit3()                      // xUnit v3 works automatically
+    .AddXunit3()
+    .AddTestAssembly(typeof(MyTests).Assembly));
+
+// Blazor WebAssembly
+builder.UseVisualTestRunner(conf => conf
+    .AddXunit(useReflection: true)   // xUnit v2 needs reflection mode on WASM
+    .AddXunit3()                      // xUnit v3 works automatically everywhere
     .AddTestAssembly(typeof(MyXunit2Tests).Assembly)
     .AddTestAssemblies(typeof(MyXunit3Tests).Assembly)
     .AddConsoleResultChannel());
-
-await builder.Build().RunAsync();
 ```
 
-### How It Works on WASM
+### The `Assembly.Location` Problem
 
-On WebAssembly, `Assembly.Location` returns an empty string because there is no filesystem. xUnit v3's `XunitTestAssembly` uses `Assembly.Location` as its `AssemblyPath`, which causes `TestAssemblyRunner.OnTestAssemblyStarting` to crash (it calls `Path.GetFileNameWithoutExtension(AssemblyPath)` on the empty string).
+On several platforms, `Assembly.Location` returns an **empty string** because assemblies are loaded from streams or bundles rather than from disk files:
 
-DeviceRunners detects this automatically and uses WASM-safe replacements:
+| Platform | `Assembly.Location` | Why |
+|---|---|---|
+| **Windows** | ✅ File path | DLLs on disk |
+| **macOS (Catalyst)** | ✅ File path | DLLs in app bundle |
+| **Android** | ❌ Empty string | DLLs inside APK (zip stream) |
+| **iOS** | ❌ Empty string | DLLs in app bundle (AOT/stream) |
+| **WASM** | ❌ Empty string | DLLs loaded as byte arrays |
 
-- **`WasmXunit3TestAssembly`** — Subclass of `XunitTestAssembly` that re-implements the `IXunitTestAssembly` interface, providing a logical assembly path (`AssemblyName + ".dll"`) instead of the empty `Assembly.Location`. The interface must be re-declared on the subclass to force C# interface dispatch remapping, since `XunitTestAssembly.AssemblyPath` is not virtual.
-- **`WasmXunit3TestFramework`** — Subclass of `XunitTestFramework` that overrides `CreateDiscoverer` and `CreateExecutor` to use `WasmXunit3TestAssembly` when on WASM.
+xUnit v3's `XunitTestAssembly` uses `Assembly.Location` as its `AssemblyPath`, which causes `TestAssemblyRunner.OnTestAssemblyStarting` to crash when it's empty (it calls `Path.GetFileNameWithoutExtension(AssemblyPath)` on the empty string).
+
+### How DeviceRunners Handles This
+
+DeviceRunners detects `Assembly.Location` at runtime and automatically uses in-memory replacements:
+
+- **`InMemoryXunit3TestAssembly`** — Subclass of `XunitTestAssembly` that re-implements the `IXunitTestAssembly` interface, providing a logical assembly path (`AssemblyName + ".dll"`) instead of the empty `Assembly.Location`. The interface must be re-declared on the subclass to force C# interface dispatch remapping, since `XunitTestAssembly.AssemblyPath` is not virtual.
+- **`InMemoryXunit3TestFramework`** — Subclass of `XunitTestFramework` that overrides `CreateDiscoverer` and `CreateExecutor` to use `InMemoryXunit3TestAssembly` when `Assembly.Location` is empty.
 
 The `Xunit3TestDiscoverer` and `Xunit3TestRunner` both use a `CreateTestFramework()` helper that checks `Assembly.Location` at runtime:
-- **Empty** → creates `WasmXunit3TestFramework` (WASM path)
-- **Non-empty** → uses `ExtensibilityPointFactory.GetTestFramework()` (standard path)
+- **Empty** → creates `InMemoryXunit3TestFramework` (in-memory path — Android, iOS, WASM)
+- **Non-empty** → uses `ExtensibilityPointFactory.GetTestFramework()` (standard path — Windows, macOS)
 
-### Desktop vs WASM Differences
+### Desktop vs Device/WASM Differences
 
-| Aspect | Desktop / Device (MAUI) | WASM (Blazor) |
+| Aspect | Desktop (Windows, macOS) | Device / WASM (Android, iOS, WASM) |
 |---|---|---|
 | **Setup** | `.AddXunit3()` | `.AddXunit3()` (same) |
 | **Assembly location** | `Assembly.Location` returns file path | `Assembly.Location` is empty string |
-| **Test framework** | Standard `XunitTestFramework` via `ExtensibilityPointFactory` | `WasmXunit3TestFramework` (auto-detected) |
-| **Test assembly** | `XunitTestAssembly` | `WasmXunit3TestAssembly` (provides logical path) |
-| **Threading** | Multi-threaded, tests run on thread pool | Single-threaded, cooperative execution |
-| **Result output** | TCP socket + console | Console NDJSON via `EventStreamFormatter` |
-| **Configuration** | `xunit.runner.json` from file system | `xunit.runner.json` from app package resources |
-| **`[TestFramework]` attribute** | Supported (via `ExtensibilityPointFactory`) | Not supported (bypassed on WASM) |
+| **Test framework** | `XunitTestFramework` via `ExtensibilityPointFactory` | `InMemoryXunit3TestFramework` (auto-detected) |
+| **Test assembly** | `XunitTestAssembly` | `InMemoryXunit3TestAssembly` (logical path) |
+| **`[TestFramework]` attribute** | Supported (via `ExtensibilityPointFactory`) | Not supported (bypassed when in-memory) |
+| **Threading** | Multi-threaded | Multi-threaded (MAUI) / Single-threaded (WASM) |
+| **Result output** | TCP socket + console | TCP (MAUI) / Console NDJSON (WASM) |
 
-> **Note:** Unlike xUnit v2 which requires `useReflection: true` on WASM (because `XunitFrontController` needs filesystem access), xUnit v3 works with plain `.AddXunit3()` on all platforms. The WASM workaround is internal and transparent.
+> **Note:** Unlike xUnit v2 which requires `useReflection: true` on platforms without filesystem access (because `XunitFrontController` needs file paths), xUnit v3 works with plain `.AddXunit3()` everywhere. The in-memory workaround is internal and transparent.
 
-### Comparison with xUnit v2 WASM Approach
+### Comparison with xUnit v2 Approach
 
-xUnit v2 on WASM requires a completely different discoverer (`XunitReflectionTestDiscoverer`) and runner (`XunitReflectionTestRunner`) because `XunitFrontController` depends on file paths to load assemblies. The reflection-based approach bypasses `XunitFrontController` entirely and scans assemblies already loaded in memory.
+xUnit v2 handles the `Assembly.Location` problem differently per platform:
 
-xUnit v3 takes a different approach: the same discoverer and runner work on all platforms. Only the `IXunitTestAssembly` instance is swapped to provide a logical path, and the `ITestFramework` creation is redirected to avoid `ExtensibilityPointFactory` (which also uses file paths internally). This is a smaller and more targeted workaround.
+- **Android**: `FileSystemUtils.GetAssemblyFileName()` creates a **dummy file** on disk so `XunitFrontController` has a valid path to open. This is wasteful but functional.
+- **WASM**: A completely different discoverer (`XunitReflectionTestDiscoverer`) and runner (`XunitReflectionTestRunner`) bypass `XunitFrontController` entirely, using xUnit's internal reflection APIs to scan assemblies in memory.
+
+xUnit v3 takes a cleaner approach: the **same discoverer and runner work on all platforms**. Only the `IXunitTestAssembly` instance is swapped to provide a logical path, and the `ITestFramework` creation is redirected to avoid `ExtensibilityPointFactory` (which also uses file paths internally). No dummy files, no alternate code paths.
 
 ## Differences from xUnit v2
 
@@ -201,5 +215,5 @@ xUnit v3 takes a different approach: the same discoverer and runner work on all 
 | Selective execution | `ITestCase` object references | Re-discover + filter by unique ID |
 | Configuration | Loads `xunit.runner.json` | Loads `xunit.runner.json` |
 | UI testing attributes | `DeviceRunners.UITesting.Xunit` | `DeviceRunners.UITesting.Xunit3` |
-| WASM support | Requires `useReflection: true` | Automatic (transparent WASM detection) |
+| WASM support | Requires `useReflection: true` | Automatic (transparent in-memory detection) |
 | `IAsyncLifetime` | Returns `Task` | Returns `ValueTask` |

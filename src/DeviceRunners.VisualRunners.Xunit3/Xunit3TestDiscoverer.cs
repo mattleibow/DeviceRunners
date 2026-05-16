@@ -133,13 +133,14 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 	}
 
 	/// <summary>
-	/// Creates a test framework, using a WASM-safe variant when
-	/// <see cref="System.Reflection.Assembly.Location"/> is empty.
+	/// Creates a test framework, using an in-memory variant when
+	/// <see cref="System.Reflection.Assembly.Location"/> is empty
+	/// (Android, iOS, WASM — assemblies loaded from streams/bundles).
 	/// </summary>
 	static ITestFramework CreateTestFramework(Assembly assembly)
 	{
 		if (string.IsNullOrEmpty(assembly.Location))
-			return new WasmXunit3TestFramework();
+			return new InMemoryXunit3TestFramework();
 
 		return ExtensibilityPointFactory.GetTestFramework(assembly);
 	}

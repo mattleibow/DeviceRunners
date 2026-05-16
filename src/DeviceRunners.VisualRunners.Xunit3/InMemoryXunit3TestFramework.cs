@@ -6,12 +6,13 @@ using Xunit.v3;
 namespace DeviceRunners.VisualRunners.Xunit3;
 
 /// <summary>
-/// A test framework that creates WASM-safe <see cref="IXunitTestAssembly"/> instances
-/// when <see cref="Assembly.Location"/> is empty (as is the case on WASM/Blazor).
-/// Falls back to standard <see cref="XunitTestAssembly"/> on platforms where
-/// <c>Assembly.Location</c> is available.
+/// A test framework that creates <see cref="InMemoryXunit3TestAssembly"/> instances
+/// when <see cref="Assembly.Location"/> is empty. This happens on platforms where
+/// assemblies are loaded from streams or bundles rather than from disk (Android,
+/// iOS, WASM). Falls back to standard <see cref="XunitTestAssembly"/> on platforms
+/// where <c>Assembly.Location</c> is available (Windows, macOS desktop).
 /// </summary>
-class WasmXunit3TestFramework : XunitTestFramework
+class InMemoryXunit3TestFramework : XunitTestFramework
 {
 	protected override ITestFrameworkDiscoverer CreateDiscoverer(Assembly assembly)
 	{
@@ -33,6 +34,6 @@ class WasmXunit3TestFramework : XunitTestFramework
 			return new XunitTestAssembly(assembly, null, version);
 
 		var logicalPath = assembly.GetName().Name + ".dll";
-		return new WasmXunit3TestAssembly(assembly, null, version, logicalPath);
+		return new InMemoryXunit3TestAssembly(assembly, null, version, logicalPath);
 	}
 }
