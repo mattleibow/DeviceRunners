@@ -12,6 +12,7 @@
     <Project Path="sample/test/DeviceTestingKitApp.Library.NUnitTests/DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.BlazorLibrary.NUnitTests/DeviceTestingKitApp.BlazorLibrary.NUnitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.BlazorLibrary.XunitTests/DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
   </Folder>
   <Folder Name="/src/">
