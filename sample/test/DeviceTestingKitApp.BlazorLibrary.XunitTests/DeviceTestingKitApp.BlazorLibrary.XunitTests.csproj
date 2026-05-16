@@ -7,7 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit" />
-    <PackageReference Include="bunit" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceTestingKitApp.BlazorLibrary\DeviceTestingKitApp.BlazorLibrary.csproj" />
