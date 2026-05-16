@@ -121,21 +121,11 @@ public class WindowCertificateCreateCommand(IAnsiConsole console) : BaseCommand<
 
         WriteConsoleOutput($"    No manifest was provided, trying to use the project '[green]{Markup.Escape(settings.Project)}[/]'...", settings);
 
-        var possiblePaths = new List<string>
+        var possiblePaths = new[]
         {
             Path.Combine(settings.Project, "..", "Package.appxmanifest"),
             Path.Combine(settings.Project, "..", "Platforms", "Windows", "Package.appxmanifest")
         };
-
-        // Also search in Bootstrap-generated output (obj/devicerunners-bootstrap/<tfm>/...)
-        var bootstrapDir = Path.Combine(settings.Project, "..", "obj", "devicerunners-bootstrap");
-        if (Directory.Exists(bootstrapDir))
-        {
-            foreach (var tfmDir in Directory.GetDirectories(bootstrapDir))
-            {
-                possiblePaths.Add(Path.Combine(tfmDir, "Platforms", "Windows", "Package.appxmanifest"));
-            }
-        }
 
         foreach (var possible in possiblePaths)
         {

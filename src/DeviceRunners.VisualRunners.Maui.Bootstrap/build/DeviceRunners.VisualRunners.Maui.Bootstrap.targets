@@ -31,11 +31,6 @@
       <Platform>ios</Platform>
       <BuildAction>Compile</BuildAction>
     </_DeviceRunnersTemplateFile>
-    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Info.plist.template">
-      <Destination>Platforms/iOS/Info.plist</Destination>
-      <Platform>ios</Platform>
-      <BuildAction>PartialAppManifest</BuildAction>
-    </_DeviceRunnersTemplateFile>
 
     <!-- Mac Catalyst -->
     <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template">
@@ -47,11 +42,6 @@
       <Destination>Platforms/MacCatalyst/AppDelegate.cs</Destination>
       <Platform>maccatalyst</Platform>
       <BuildAction>Compile</BuildAction>
-    </_DeviceRunnersTemplateFile>
-    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Info.plist.template">
-      <Destination>Platforms/MacCatalyst/Info.plist</Destination>
-      <Platform>maccatalyst</Platform>
-      <BuildAction>PartialAppManifest</BuildAction>
     </_DeviceRunnersTemplateFile>
 
     <!-- Windows -->
@@ -65,16 +55,6 @@
       <Platform>windows</Platform>
       <BuildAction>ApplicationDefinition</BuildAction>
       <AdditionalMetadata>Generator=MSBuild:Compile;XamlRuntime=$(DefaultXamlRuntime)</AdditionalMetadata>
-    </_DeviceRunnersTemplateFile>
-    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/app.manifest.template">
-      <Destination>Platforms/Windows/app.manifest</Destination>
-      <Platform>windows</Platform>
-      <BuildAction>ApplicationManifest</BuildAction>
-    </_DeviceRunnersTemplateFile>
-    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/Package.appxmanifest.template">
-      <Destination>Platforms/Windows/Package.appxmanifest</Destination>
-      <Platform>windows</Platform>
-      <BuildAction>AppxManifest</BuildAction>
     </_DeviceRunnersTemplateFile>
 
     <!-- Browser / Blazor WebAssembly -->

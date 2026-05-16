@@ -30,13 +30,6 @@ if (-not $Publisher) {
       # .NET MAUI single project
       (Join-Path $Project '..\Platforms\Windows\Package.appxmanifest')
     )
-    # Also search in Bootstrap-generated output (obj/devicerunners-bootstrap/<tfm>/...)
-    $bootstrapDir = Join-Path $Project '..\obj\devicerunners-bootstrap'
-    if (Test-Path $bootstrapDir) {
-      foreach ($tfmDir in (Get-ChildItem -Directory $bootstrapDir)) {
-        $possibleManifestPaths += (Join-Path $tfmDir.FullName 'Platforms\Windows\Package.appxmanifest')
-      }
-    }
     foreach ($possible in $possibleManifestPaths) {
       if (Test-Path $possible) {
         $Manifest = Resolve-Path $possible

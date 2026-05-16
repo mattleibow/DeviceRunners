@@ -23,8 +23,6 @@ runs:
     - name: Publish App
       shell: pwsh
       run: |
-        dotnet msbuild ${{ inputs.test-project }} -t:Restore -p:TargetFramework=${{ inputs.target-framework }} -p:Configuration=${{ inputs.configuration }}
-        dotnet msbuild ${{ inputs.test-project }} -t:_DeviceRunnersProcessAllTemplates -p:TargetFramework=${{ inputs.target-framework }} -p:Configuration=${{ inputs.configuration }}
         $fingerprint = ./scripts/New-Certificate.ps1 -Project ${{ inputs.test-project }}
         dotnet publish ${{ inputs.test-project }} `
           -f ${{ inputs.target-framework }} `
