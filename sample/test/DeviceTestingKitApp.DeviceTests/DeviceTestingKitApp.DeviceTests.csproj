@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
+    which causes NuGet to auto-import the same .props and .targets files.
+  -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
+
   <PropertyGroup>
     <TargetFrameworks>net10.0-android</TargetFrameworks>
     <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
@@ -94,5 +101,8 @@
           Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')))" />
     </ItemGroup>
   </Target>
+
+  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
 
 </Project>

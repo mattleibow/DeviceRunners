@@ -187,6 +187,78 @@ jobs:
         reporter: dotnet-trx
         fail-on-empty: 'false'
 
+  # ── dotnet test Device Tests ────────────────────────────────
+
+  dotnet-test-android:
+    name: dotnet test Android (Linux)
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-android-linux
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test Android)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
+  dotnet-test-ios:
+    name: dotnet test iOS (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-ios
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test iOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
+  dotnet-test-macos:
+    name: dotnet test macOS (x64)
+    runs-on: macos-15-intel
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-macos
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test macOS)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
+  dotnet-test-windows:
+    name: dotnet test Windows (MSIX)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-windows
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test Windows MSIX)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
+  dotnet-test-windows-exe:
+    name: dotnet test Windows (EXE)
+    runs-on: windows-2025
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ./.github/workflows/test-dotnet-test-windows-exe
+    - uses: dorny/test-reporter@v2
+      if: always()
+      with:
+        name: Test Results (dotnet test Windows EXE)
+        path: ./artifacts/test-results/*.trx
+        reporter: dotnet-trx
+        fail-on-empty: 'false'
+
   # ── XHarness Device Tests ──────────────────────────────────
 
   xharness-android:

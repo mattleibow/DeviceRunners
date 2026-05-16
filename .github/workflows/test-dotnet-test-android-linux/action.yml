@@ -1,0 +1,105 @@
+name: 'dotnet test Android (Linux)'
+description: 'Run device tests on Android Emulator via dotnet test'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-android'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  emulator-image:
+    description: 'Android system image'
+    default: 'system-images;android-36;google_apis;x86_64'
+  emulator-name:
+    description: 'Emulator AVD name'
+    default: 'DotnetTestEmulator'
+  gpu:
+    description: 'Emulator GPU mode'
+    default: 'swiftshader_indirect'
+  cpu-threshold:
+    description: 'CPU threshold for boot detection'
+    default: '3'
+  response-threshold:
+    description: 'Max response time in seconds for stability probes'
+    default: '5'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (dotnet test) - Android'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate Architecture
+      uses: ./.github/workflows/validate-arch
+      with:
+        expected: x64
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'microsoft'
+        java-version: '21'
+    - name: Publish CLI Tool Binaries
+      shell: bash
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r linux-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/linux-x64
+    - name: Install Android SDK Packages
+      shell: bash
+      run: |
+        dotnet android sdk install --package 'platform-tools' --package 'emulator' --package '${{ inputs.emulator-image }}'
+    - name: Set AVD environment variables
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.android/avd"
+        echo "ANDROID_AVD_HOME=$HOME/.android/avd" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_HOME=$HOME/.android" >> "$GITHUB_ENV"
+        echo "ANDROID_EMULATOR_WAIT_TIME_BEFORE_KILL=1" >> "$GITHUB_ENV"
+    - name: Create Emulator
+      shell: bash
+      run: dotnet android avd create --name ${{ inputs.emulator-name }} --sdk '${{ inputs.emulator-image }}' --force
+    - name: Enable KVM
+      shell: bash
+      run: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+    - name: Start Emulator
+      shell: bash
+      run: |
+        dotnet android avd start -p 5554 --name ${{ inputs.emulator-name }} --no-window --gpu ${{ inputs.gpu }} --no-snapshot --no-audio --no-boot-anim --wait --no-animations --cpu-threshold ${{ inputs.cpu-threshold }} --response-threshold ${{ inputs.response-threshold }}
+        dotnet android device list
+    - name: Display Android Tool Logs
+      if: always()
+      shell: bash
+      run: cat "$HOME/.android_sdk_tool/logs/"*.log 2>/dev/null || true
+    - name: Run Tests
+      shell: bash
+      run: |
+        dotnet test ${{ inputs.test-project }} \
+          -f ${{ inputs.target-framework }} \
+          -c ${{ inputs.configuration }} \
+          -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
+          /bl:./artifacts/logs/msbuild-test.binlog
+    - name: Capture Logcat
+      if: always()
+      shell: bash
+      run: dotnet android device logcat --output ./artifacts/test-results/logcat.txt 2>/dev/null || true
+    - name: Delete Emulator
+      if: always()
+      shell: bash
+      run: dotnet android avd delete --name ${{ inputs.emulator-name }} --force 2>/dev/null || true
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: bash
+      run: |
+        rm -rf ./artifacts/bin
+        rm -rf ./artifacts/obj
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

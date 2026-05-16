@@ -1,0 +1,45 @@
+name: 'dotnet test Windows (EXE)'
+description: 'Run device tests on Windows unpackaged via dotnet test'
+
+inputs:
+  test-project:
+    description: 'Path to the test project'
+    default: 'sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj'
+  target-framework:
+    description: 'Target framework'
+    default: 'net10.0-windows10.0.19041.0'
+  configuration:
+    description: 'Build configuration'
+    default: 'release'
+  artifact-name:
+    description: 'Artifact name'
+    default: 'Test Results (dotnet test) - Windows (EXE)'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Required Tools
+      uses: ./.github/workflows/setup-tools
+    - name: Publish CLI Tool Binaries
+      shell: pwsh
+      run: dotnet publish src/DeviceRunners.Cli/DeviceRunners.Cli.csproj -f net10.0 -r win-x64 -p:PublishForTargetsPackage=true -o src/DeviceRunners.Testing.Targets/tools/win-x64
+    - name: Run Tests
+      shell: pwsh
+      run: |
+        dotnet test ${{ inputs.test-project }} `
+          -f ${{ inputs.target-framework }} `
+          -c ${{ inputs.configuration }} `
+          -p:WindowsPackageType=None `
+          /bl:./artifacts/logs/msbuild-test.binlog
+    - name: Clean up build artifacts before upload
+      if: always()
+      shell: pwsh
+      run: |
+        Remove-Item -Recurse -Force ./artifacts/bin -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force ./artifacts/obj -ErrorAction SilentlyContinue
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ./artifacts

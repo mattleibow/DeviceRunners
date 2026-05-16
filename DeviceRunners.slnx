@@ -15,6 +15,7 @@
   <Folder Name="/src/">
     <Project Path="src/DeviceRunners.Cli/DeviceRunners.Cli.csproj" />
     <Project Path="src/DeviceRunners.Core/DeviceRunners.Core.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Maui/DeviceRunners.UITesting.Maui.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Xunit/DeviceRunners.UITesting.Xunit.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Xunit3/DeviceRunners.UITesting.Xunit3.csproj" />
