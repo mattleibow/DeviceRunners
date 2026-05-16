@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+
+  <ItemGroup>
+
+    <!-- Android -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainActivity.cs.template">
+      <Destination>Platforms/Android/MainActivity.cs</Destination>
+      <Platform>android</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/MainApplication.cs.template">
+      <Destination>Platforms/Android/MainApplication.cs</Destination>
+      <Platform>android</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Android/Resources/values/colors.xml.template">
+      <Destination>Platforms/Android/Resources/values/colors.xml</Destination>
+      <Platform>android</Platform>
+      <BuildAction>AndroidResource</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- iOS -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/Program.cs.template">
+      <Destination>Platforms/iOS/Program.cs</Destination>
+      <Platform>ios</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/iOS/AppDelegate.cs.template">
+      <Destination>Platforms/iOS/AppDelegate.cs</Destination>
+      <Platform>ios</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- Mac Catalyst -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/Program.cs.template">
+      <Destination>Platforms/MacCatalyst/Program.cs</Destination>
+      <Platform>maccatalyst</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/MacCatalyst/AppDelegate.cs.template">
+      <Destination>Platforms/MacCatalyst/AppDelegate.cs</Destination>
+      <Platform>maccatalyst</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- Windows -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.cs.template">
+      <Destination>Platforms/Windows/App.xaml.cs</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>Compile</BuildAction>
+    </_DeviceRunnersTemplateFile>
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/Platforms/Windows/App.xaml.template">
+      <Destination>Platforms/Windows/App.xaml</Destination>
+      <Platform>windows</Platform>
+      <BuildAction>ApplicationDefinition</BuildAction>
+      <AdditionalMetadata>Generator=MSBuild:Compile;XamlRuntime=$(DefaultXamlRuntime)</AdditionalMetadata>
+    </_DeviceRunnersTemplateFile>
+
+    <!-- Browser / Blazor WebAssembly -->
+    <_DeviceRunnersTemplateFile Include="$(MSBuildThisFileDirectory)templates/wwwroot/index.html.template">
+      <Destination>wwwroot/index.html</Destination>
+      <Platform>browser</Platform>
+      <BuildAction>Content</BuildAction>
+    </_DeviceRunnersTemplateFile>
+
+  </ItemGroup>
+
+  <!--
+    Blazor WebAssembly projects use plain net9.0/net10.0 (no -browser TFM), so
+    GetTargetPlatformIdentifier returns empty. Detect them via the SDK property
+    UsingMicrosoftNETSdkBlazorWebAssembly which the BlazorWebAssembly SDK sets.
+    Map this to the virtual platform 'browser' that our templates use.
+  -->
+  <PropertyGroup>
+    <_DeviceRunnersBootstrapPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DeviceRunnersBootstrapPlatform>
+    <_DeviceRunnersBootstrapPlatform Condition="'$(_DeviceRunnersBootstrapPlatform)' == '' And '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">browser</_DeviceRunnersBootstrapPlatform>
+  </PropertyGroup>
+
+  <!-- Hook into build pipeline early enough for Windows pre-build checks and Resizetize -->
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(PrepareForBuildDependsOn);
+    </PrepareForBuildDependsOn>
+    <CoreCompileDependsOn>
+      _DeviceRunnersProcessAllTemplates;
+      $(CoreCompileDependsOn);
+    </CoreCompileDependsOn>
+  </PropertyGroup>
+
+
+
+  <Target Name="_DeviceRunnersBeforeResizetizeCollectItems"
+          BeforeTargets="ResizetizeCollectItems"
+          DependsOnTargets="_DeviceRunnersProcessAllTemplates" />
+
+  <!--
+    Process all template files: read template, replace placeholders, write to intermediate output,
+    and add to the build with the correct build action for the current platform.
+  -->
+  <Target Name="_DeviceRunnersProcessAllTemplates"
+          BeforeTargets="ResizetizeCollectItems"
+          Inputs="@(_DeviceRunnersTemplateFile)"
+          Outputs="%(_DeviceRunnersTemplateFile.Destination)">
+
+    <PropertyGroup>
+      <_DeviceRunnersBootstrapDir>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap', '$(TargetFramework)'))</_DeviceRunnersBootstrapDir>
+      <_DeviceRunnersIntermediateOutputPath>$([System.IO.Path]::Combine('$(_DeviceRunnersBootstrapDir)', '%(_DeviceRunnersTemplateFile.Destination)'))</_DeviceRunnersIntermediateOutputPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_DeviceRunnersIntermediateOutputPath)'))" />
+
+    <PropertyGroup>
+      <_TemplateContent>$([System.IO.File]::ReadAllText('%(_DeviceRunnersTemplateFile.Identity)'))</_TemplateContent>
+      <_ProcessedContent>$(_TemplateContent.Replace('{{RootNamespace}}', '$(RootNamespace)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationTitle}}', '$(ApplicationTitle)'))</_ProcessedContent>
+      <_ProcessedContent>$(_ProcessedContent.Replace('{{ApplicationId}}', '$(ApplicationId)'))</_ProcessedContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_DeviceRunnersIntermediateOutputPath)"
+                      Lines="$(_ProcessedContent)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_DeviceRunnersIntermediateOutputPath)" />
+    </ItemGroup>
+
+    <CreateItem Include="$(_DeviceRunnersIntermediateOutputPath)"
+                AdditionalMetadata="%(_DeviceRunnersTemplateFile.AdditionalMetadata)"
+                Condition="'%(_DeviceRunnersTemplateFile.Platform)' == '$(_DeviceRunnersBootstrapPlatform)'">
+      <Output TaskParameter="Include" ItemName="%(_DeviceRunnersTemplateFile.BuildAction)" />
+    </CreateItem>
+
+  </Target>
+
+  <!-- Clean up generated bootstrap files -->
+  <Target Name="_DeviceRunnersCleanBootstrap" BeforeTargets="Clean">
+    <RemoveDir Directories="$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', 'obj', 'devicerunners-bootstrap'))" />
+  </Target>
+
+  <!-- Remove xunit.runner.visualstudio files from Windows app packages -->
+  <Target Name="_DeviceRunnersRemoveVisualStudioTestRunner"
+          BeforeTargets="_ComputeAppxPackagePayload">
+    <ItemGroup>
+      <_VisualStudioTestRunnerFiles Include="@(PackagingOutputs)"
+                                    Condition="$([System.String]::Copy('%(PackagingOutputs.FullPath)').Contains('xunit.runner.visualstudio'))" />
+      <PackagingOutputs Remove="@(_VisualStudioTestRunnerFiles)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Default app icon and splash screen (MAUI apps only, not browser/WASM) -->
+  <ItemGroup Condition="'$(_DeviceRunnersBootstrapPlatform)' != 'browser'">
+    <MauiIcon Include="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appicon.svg"
+              ForegroundFile="$(MSBuildThisFileDirectory)templates/Resources/AppIcon/appiconfg.svg"
+              Color="#512BD4" />
+    <MauiSplashScreen Include="$(MSBuildThisFileDirectory)templates/Resources/Splash/splash.svg"
+                      Color="#512BD4"
+                      BaseSize="128,128" />
+  </ItemGroup>
+
+  <!-- Android manifest overlay for network permissions -->
+  <ItemGroup Condition="'$(_DeviceRunnersBootstrapPlatform)' == 'android'">
+    <AndroidManifestOverlay Include="$(MSBuildThisFileDirectory)AndroidManifestOverlay.xml" />
+  </ItemGroup>
+
+</Project>
