@@ -4,11 +4,10 @@ using Xunit.v3;
 namespace DeviceRunners.UITesting.Xunit3;
 
 /// <summary>
-/// A test case that executes a single [UIFact] test method on the UI thread.
+/// A test case that executes a single [UIFact] test on the UI thread.
 /// Implements <see cref="ISelfExecutingXunitTestCase"/> to hook into the xUnit v3
-/// execution pipeline and dispatch only the test method invocation to the UI thread,
-/// while class construction, <see cref="IAsyncLifetime"/>, and disposal run on the
-/// xUnit worker thread.
+/// execution pipeline and dispatch the entire test lifecycle — class construction,
+/// <see cref="IAsyncLifetime"/>, test method invocation, and disposal — to the UI thread.
 /// </summary>
 public class UITestCase : XunitTestCase, ISelfExecutingXunitTestCase
 {
@@ -59,8 +58,8 @@ public class UITestCase : XunitTestCase, ISelfExecutingXunitTestCase
 	{
 		var tests = await CreateTests();
 
-		// Use UIXunitTestCaseRunner which dispatches only InvokeTest to the UI thread,
-		// keeping construction, IAsyncLifetime, and disposal on the worker thread.
+		// Use UIXunitTestCaseRunner which dispatches the entire test lifecycle
+		// (construction, IAsyncLifetime, test method, disposal) to the UI thread.
 		return await UIXunitTestCaseRunner.Instance.Run(
 			this,
 			tests,

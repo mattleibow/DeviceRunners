@@ -17,22 +17,34 @@ xUnit v3 changed its architecture so that test projects are executables. For dev
 
 ### 1. Create a Test Class Library
 
-Create a standard .NET class library for your tests:
+Create a .NET class library for your tests. Multi-target it with your device platforms so the same library can be loaded by the MAUI visual runner:
 
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net10.0;net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3.extensibility.core" />
     <PackageReference Include="xunit.v3.assert" />
+  </ItemGroup>
+  <!-- Optional: enable 'dotnet test' on the host TFM (net10.0) -->
+  <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">
+    <OutputType>Exe</OutputType>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+  <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">
+    <PackageReference Include="xunit.v3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\YourApp\YourApp.csproj" />
   </ItemGroup>
 </Project>
 ```
+
+> **Tip:** The conditional `xunit.v3` reference and `OutputType=Exe` on the host TFM lets you run `dotnet test -f net10.0` for quick local iteration. Device TFMs use the MAUI visual runner instead.
 
 ### 2. Write Tests
 
@@ -253,13 +265,19 @@ DeviceRunners uses the standard xUnit v3 defaults for all configuration options.
 
 ### Verified xUnit v3 Features
 
-The following xUnit v3 features have been verified to work through DeviceRunners:
+The following xUnit v3 features have been tested through DeviceRunners' unit and device test suites:
 
-- `[Fact]`, `[Theory]`, `[InlineData]`, `[MemberData]`, `[ClassData]`
+- `[Fact]`, `[Theory]`, `[InlineData]`
 - `IAsyncLifetime` (construction and disposal on UI thread for `[UIFact]`/`[UITheory]`)
-- `[Collection]` for test serialization
+- `IDisposable` test class cleanup
 - `[Skip]`, `[Fact(Skip = "...")]`
 - `ITestOutputHelper` (output captured and reported)
 - `ISelfExecutingXunitTestCase` (used by `[UIFact]`/`[UITheory]`)
+- Theory row aggregation (`PreEnumerateTheories=false`: a failing row marks the test case as failed)
+
+The following are supported by xUnit v3 and expected to work through DeviceRunners, but do not have dedicated tests in this repository:
+
+- `[MemberData]`, `[ClassData]`
+- `[Collection]` for test serialization
 - Test assembly parallelization control
 - `xunit.runner.json` configuration loading

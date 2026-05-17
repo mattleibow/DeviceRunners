@@ -4,10 +4,10 @@ using Xunit.v3;
 namespace DeviceRunners.UITesting.Xunit3;
 
 /// <summary>
-/// A test case for [UITheory] test methods that executes the test method on the UI thread.
+/// A test case for [UITheory] test methods that executes on the UI thread.
 /// Theory test cases with un-enumerable data get one test case for the entire theory.
-/// Only the test method invocation is dispatched to the UI thread; class construction,
-/// <see cref="IAsyncLifetime"/>, and disposal run on the xUnit worker thread.
+/// The entire test lifecycle — class construction, <see cref="IAsyncLifetime"/>,
+/// test method invocation, and disposal — is dispatched to the UI thread.
 /// </summary>
 public class UITheoryTestCase : XunitDelayEnumeratedTheoryTestCase, ISelfExecutingXunitTestCase
 {
@@ -58,8 +58,8 @@ public class UITheoryTestCase : XunitDelayEnumeratedTheoryTestCase, ISelfExecuti
 	{
 		var tests = await CreateTests();
 
-		// Use UIXunitTestCaseRunner which dispatches only InvokeTest to the UI thread,
-		// keeping construction, IAsyncLifetime, and disposal on the worker thread.
+		// Use UIXunitTestCaseRunner which dispatches the entire test lifecycle
+		// (construction, IAsyncLifetime, test method, disposal) to the UI thread.
 		return await UIXunitTestCaseRunner.Instance.Run(
 			this,
 			tests,

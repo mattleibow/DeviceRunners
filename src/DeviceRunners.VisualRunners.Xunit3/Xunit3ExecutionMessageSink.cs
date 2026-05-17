@@ -8,17 +8,19 @@ class Xunit3ExecutionMessageSink : IMessageSink
 	// With parallel test execution the message bus may dispatch from multiple
 	// threads.  The lock is cheap when uncontended and keeps the internal
 	// dictionaries consistent regardless of the threading model.  Result
-	// reporting is done outside the lock to avoid deadlocks if subscribers
-	// (UI, result channels) do blocking work.
+	// and diagnostic reporting is done outside the lock to avoid deadlocks
+	// if subscribers (UI, result channels, diagnostics events) do blocking work.
 	readonly object _lock = new();
 	readonly IReadOnlyDictionary<string, Xunit3TestCaseInfo> _testCases;
 	readonly IResultChannelManager? _resultChannelManager;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 	readonly CancellationToken _cancellationToken;
 
-	readonly Dictionary<string, string> _testUniqueIdToTestCaseId = new();
-	readonly Dictionary<string, (TimeSpan Duration, string? Output)> _testFinishedData = new();
-	readonly Dictionary<string, (TestResultStatus Status, string? ErrorMessage, string? ErrorStackTrace, string? SkipReason)> _pendingResults = new();
+	// Per-test-case aggregation. When PreEnumerateTheories=false (the default),
+	// a single test case (e.g. a [Theory]) can produce multiple ITest rows.
+	// We aggregate all rows so that the worst status wins — a single failing
+	// row marks the entire test case as failed.
+	readonly Dictionary<string, TestCaseAggregate> _testCaseAggregates = new();
 
 	public Xunit3ExecutionMessageSink(
 		IReadOnlyDictionary<string, Xunit3TestCaseInfo> testCases,
@@ -34,76 +36,84 @@ class Xunit3ExecutionMessageSink : IMessageSink
 
 	public bool OnMessage(IMessageSinkMessage message)
 	{
-		// Collect results to report outside the lock to avoid deadlocks
-		// when subscribers (ResultReported, IResultChannel) do blocking work.
+		// Collect results and diagnostics to report outside the lock to avoid deadlocks
+		// when subscribers (ResultReported, IResultChannel, DiagnosticsManager events)
+		// do blocking or UI work.
 		List<(Xunit3TestCaseInfo TestCase, Xunit3TestResultInfo Result)>? resultsToReport = null;
+		List<string>? diagnosticsToReport = null;
 
 		lock (_lock)
 		{
 			switch (message)
 			{
-				case ITestStarting testStarting:
-					EnsureTestMapping(testStarting.TestUniqueID, testStarting.TestCaseUniqueID);
-					break;
-
 				case ITestPassed testPassed:
-					EnsureTestMapping(testPassed.TestUniqueID, testPassed.TestCaseUniqueID);
-					RecordResult(testPassed.TestUniqueID, TestResultStatus.Passed);
+					GetOrCreateAggregate(testPassed.TestCaseUniqueID)
+						.MergeResult(TestResultStatus.Passed);
 					break;
 
 				case ITestFailed testFailed:
-					EnsureTestMapping(testFailed.TestUniqueID, testFailed.TestCaseUniqueID);
-					RecordResult(testFailed.TestUniqueID, TestResultStatus.Failed,
-						errorMessage: ExceptionUtility.CombineMessages(testFailed),
-						errorStackTrace: ExceptionUtility.CombineStackTraces(testFailed));
+					GetOrCreateAggregate(testFailed.TestCaseUniqueID)
+						.MergeResult(TestResultStatus.Failed,
+							errorMessage: ExceptionUtility.CombineMessages(testFailed),
+							errorStackTrace: ExceptionUtility.CombineStackTraces(testFailed));
 					break;
 
 				case ITestSkipped testSkipped:
-					EnsureTestMapping(testSkipped.TestUniqueID, testSkipped.TestCaseUniqueID);
-					RecordResult(testSkipped.TestUniqueID, TestResultStatus.Skipped,
-						skipReason: testSkipped.Reason);
+					GetOrCreateAggregate(testSkipped.TestCaseUniqueID)
+						.MergeResult(TestResultStatus.Skipped,
+							skipReason: testSkipped.Reason);
 					break;
 
 				case ITestNotRun testNotRun:
-					EnsureTestMapping(testNotRun.TestUniqueID, testNotRun.TestCaseUniqueID);
-					RecordResult(testNotRun.TestUniqueID, TestResultStatus.NotRun);
+					GetOrCreateAggregate(testNotRun.TestCaseUniqueID)
+						.MergeResult(TestResultStatus.NotRun);
 					break;
 
 				case ITestFinished testFinished:
-					_testFinishedData[testFinished.TestUniqueID] = (
-						TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
-						testFinished.Output);
-					resultsToReport = FlushResult(testFinished.TestUniqueID);
+					GetOrCreateAggregate(testFinished.TestCaseUniqueID)
+						.AccumulateFinishedData(
+							TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
+							testFinished.Output);
 					break;
 
-				// Handle framework-level errors
+				case ITestCaseFinished testCaseFinished:
+					resultsToReport = FlushTestCaseResult(testCaseFinished.TestCaseUniqueID);
+					break;
+
+				// Collect framework-level error diagnostics to report outside the lock.
 				case IErrorMessage errorMessage:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Framework error: {ExceptionUtility.CombineMessages(errorMessage)}");
 					break;
 
 				case ITestAssemblyCleanupFailure cleanupFailure:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Test assembly cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCollectionCleanupFailure cleanupFailure:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Test collection cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestClassCleanupFailure cleanupFailure:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Test class cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCaseCleanupFailure cleanupFailure:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Test case cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCleanupFailure cleanupFailure:
-					_diagnosticsManager?.PostDiagnosticMessage(
+					diagnosticsToReport ??= [];
+					diagnosticsToReport.Add(
 						$"Test cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
@@ -123,72 +133,64 @@ class Xunit3ExecutionMessageSink : IMessageSink
 			}
 		}
 
+		// Report diagnostics outside the lock — event subscribers may do UI or I/O work.
+		if (diagnosticsToReport is not null)
+		{
+			foreach (var msg in diagnosticsToReport)
+			{
+				_diagnosticsManager?.PostDiagnosticMessage(msg);
+			}
+		}
+
 		return !_cancellationToken.IsCancellationRequested;
 	}
 
-	/// <summary>
-	/// Ensures a test-unique-ID → test-case-unique-ID mapping exists.
-	/// Normally set by ITestStarting, but some messages (ITestNotRun,
-	/// ITestSkipped, ITestPassed, ITestFailed) may fire without
-	/// ITestStarting when tests are filtered or never fully started.
-	/// </summary>
-	void EnsureTestMapping(string testUniqueID, string testCaseUniqueID)
+	TestCaseAggregate GetOrCreateAggregate(string testCaseUniqueID)
 	{
-		_testUniqueIdToTestCaseId.TryAdd(testUniqueID, testCaseUniqueID);
-	}
-
-	void RecordResult(string testUniqueID, TestResultStatus status, string? errorMessage = null, string? errorStackTrace = null, string? skipReason = null)
-	{
-		_pendingResults[testUniqueID] = (status, errorMessage, errorStackTrace, skipReason);
+		if (!_testCaseAggregates.TryGetValue(testCaseUniqueID, out var aggregate))
+		{
+			aggregate = new TestCaseAggregate();
+			_testCaseAggregates[testCaseUniqueID] = aggregate;
+		}
+		return aggregate;
 	}
 
 	/// <summary>
-	/// Tries to flush a pending result for the given test. Returns the result
-	/// to report outside the lock, or null if nothing to report.
+	/// Flushes the aggregated result for a test case. Called when ITestCaseFinished
+	/// arrives, indicating all tests within the test case have completed.
 	/// Must be called while holding <see cref="_lock"/>.
 	/// </summary>
-	List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? FlushResult(string testUniqueID)
+	List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? FlushTestCaseResult(string testCaseUniqueID)
 	{
-		if (!_pendingResults.TryGetValue(testUniqueID, out var pending))
-			return null;
-
-		_pendingResults.Remove(testUniqueID);
-
-		if (!_testUniqueIdToTestCaseId.TryGetValue(testUniqueID, out var testCaseUniqueID))
+		if (!_testCaseAggregates.Remove(testCaseUniqueID, out var aggregate))
 			return null;
 
 		if (!_testCases.TryGetValue(testCaseUniqueID, out var testCase))
 			return null;
 
-		var finishedData = _testFinishedData.GetValueOrDefault(testUniqueID);
-
-		// Clean up tracking dictionaries now that we have all the data.
-		_testFinishedData.Remove(testUniqueID);
-		_testUniqueIdToTestCaseId.Remove(testUniqueID);
-
 		var result = new Xunit3TestResultInfo(
 			testCase,
-			pending.Status,
-			finishedData.Duration,
-			output: finishedData.Output,
-			errorMessage: pending.ErrorMessage,
-			errorStackTrace: pending.ErrorStackTrace,
-			skipReason: pending.SkipReason);
+			aggregate.Status ?? TestResultStatus.NotRun,
+			aggregate.Duration,
+			output: aggregate.Output,
+			errorMessage: aggregate.ErrorMessage,
+			errorStackTrace: aggregate.ErrorStackTrace,
+			skipReason: aggregate.SkipReason);
 
 		return [(testCase, result)];
 	}
 
 	/// <summary>
-	/// Flushes all remaining pending results that never received ITestFinished.
+	/// Flushes all remaining aggregated results that never received ITestCaseFinished.
 	/// Must be called while holding <see cref="_lock"/>.
 	/// </summary>
 	List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? FlushRemainingResults()
 	{
 		List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? all = null;
 
-		foreach (var testUniqueID in _pendingResults.Keys.ToList())
+		foreach (var testCaseUniqueID in _testCaseAggregates.Keys.ToList())
 		{
-			var flushed = FlushResult(testUniqueID);
+			var flushed = FlushTestCaseResult(testCaseUniqueID);
 			if (flushed is not null)
 			{
 				all ??= [];
@@ -197,5 +199,56 @@ class Xunit3ExecutionMessageSink : IMessageSink
 		}
 
 		return all;
+	}
+
+	/// <summary>
+	/// Accumulates per-test results for a single test case. When
+	/// <c>PreEnumerateTheories</c> is <c>false</c> (the default), a [Theory]
+	/// with multiple data rows produces multiple ITest results that all map
+	/// to the same test case. This class aggregates them so that the worst
+	/// status wins — a single failing row marks the entire test case as failed.
+	/// </summary>
+	class TestCaseAggregate
+	{
+		public TestResultStatus? Status { get; private set; }
+		public TimeSpan Duration { get; private set; }
+		public string? Output { get; private set; }
+		public string? ErrorMessage { get; private set; }
+		public string? ErrorStackTrace { get; private set; }
+		public string? SkipReason { get; private set; }
+
+		public void MergeResult(TestResultStatus status, string? errorMessage = null, string? errorStackTrace = null, string? skipReason = null)
+		{
+			Status = Status.HasValue ? AggregateStatus(Status.Value, status) : status;
+
+			if (errorMessage is not null)
+				ErrorMessage = ErrorMessage is null ? errorMessage : ErrorMessage + Environment.NewLine + errorMessage;
+
+			if (errorStackTrace is not null)
+				ErrorStackTrace = ErrorStackTrace is null ? errorStackTrace : ErrorStackTrace + Environment.NewLine + "---" + Environment.NewLine + errorStackTrace;
+
+			SkipReason ??= skipReason;
+		}
+
+		public void AccumulateFinishedData(TimeSpan duration, string? output)
+		{
+			Duration += duration;
+
+			if (output is not null)
+				Output = Output is null ? output : Output + Environment.NewLine + output;
+		}
+
+		/// <summary>
+		/// Aggregates two test result statuses. Priority: Failed wins over everything;
+		/// then Passed (at least one test produced a result); then Skipped; then NotRun.
+		/// </summary>
+		static TestResultStatus AggregateStatus(TestResultStatus a, TestResultStatus b) =>
+			(a, b) switch
+			{
+				_ when a == TestResultStatus.Failed || b == TestResultStatus.Failed => TestResultStatus.Failed,
+				_ when a == TestResultStatus.Passed || b == TestResultStatus.Passed => TestResultStatus.Passed,
+				_ when a == TestResultStatus.Skipped || b == TestResultStatus.Skipped => TestResultStatus.Skipped,
+				_ => TestResultStatus.NotRun,
+			};
 	}
 }

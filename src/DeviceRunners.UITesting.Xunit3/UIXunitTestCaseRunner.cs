@@ -5,7 +5,7 @@ namespace DeviceRunners.UITesting.Xunit3;
 
 /// <summary>
 /// Custom xUnit v3 test case runner that uses <see cref="UIXunitTestRunner"/>
-/// to dispatch test method invocation to the UI thread.
+/// to dispatch the entire test lifecycle to the UI thread.
 /// </summary>
 public class UIXunitTestCaseRunner : XunitTestCaseRunner
 {
