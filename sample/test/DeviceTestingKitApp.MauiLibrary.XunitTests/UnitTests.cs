@@ -20,4 +20,13 @@ public class UnitTests
 		throw new Exception("This is meant to fail.");
 	}
 #endif
+
+	[Theory]
+	[InlineData(1)]
+	[InlineData(2)]
+	[InlineData(3)]
+	public void ParameterizedTest(int number)
+	{
+		Assert.NotEqual(0, number);
+	}
 }

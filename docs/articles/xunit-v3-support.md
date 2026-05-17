@@ -115,12 +115,11 @@ All execution happens in-process on the device — no separate test process is l
 
 ## UI Testing
 
-DeviceRunners also provides `[UIFact]` and `[UITheory]` attributes for xUnit v3 via the `DeviceRunners.UITesting.Xunit3` package. These work the same as their xUnit v2 counterparts — test methods decorated with these attributes will have only the test method invocation dispatched to the UI thread, while class construction, `IAsyncLifetime`, and disposal run on the xUnit worker thread.
+DeviceRunners also provides `[UIFact]` and `[UITheory]` attributes for xUnit v3 via the `DeviceRunners.UITesting.Xunit3` package. These work the same as their xUnit v2 counterparts — test methods decorated with these attributes will have the entire test lifecycle (class construction, `IAsyncLifetime`, test method invocation, and disposal) dispatched to the UI thread.
 
-> **Namespace change from v2:** The v3 `[UIFact]` and `[UITheory]` attributes are in the `DeviceRunners.UITesting.Xunit3` namespace (v2 uses `Xunit`). This avoids ambiguity when both v2 and v3 xUnit packages are referenced in the same project, since `[Fact]`, `[Theory]`, etc. are defined in the `Xunit` namespace by both versions.
+> **Same namespace as v2:** The v3 `[UIFact]` and `[UITheory]` attributes are in the `Xunit` namespace, matching both the v2 convention and the official xUnit v3 framework. Migrating from v2 to v3 requires only swapping the NuGet package — no namespace changes needed.
 
 ```csharp
-using DeviceRunners.UITesting.Xunit3;
 using Xunit;
 
 public class MyUITests
@@ -128,8 +127,8 @@ public class MyUITests
     [UIFact]
     public void TestOnUIThread()
     {
-        // Only InvokeTest runs on the UI thread;
-        // construction/disposal stay on the worker thread
+        // The entire test lifecycle runs on the UI thread:
+        // construction, IAsyncLifetime, test method, and disposal
     }
 
     [UITheory]

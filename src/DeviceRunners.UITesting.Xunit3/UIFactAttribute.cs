@@ -1,7 +1,7 @@
-using Xunit;
+using DeviceRunners.UITesting.Xunit3;
 using Xunit.v3;
 
-namespace DeviceRunners.UITesting.Xunit3;
+namespace Xunit;
 
 /// <summary>
 /// Attribute for test methods that should be run on the UI thread using xUnit v3.

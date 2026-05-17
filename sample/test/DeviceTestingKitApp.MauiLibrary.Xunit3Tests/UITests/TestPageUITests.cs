@@ -1,5 +1,3 @@
-using DeviceRunners.UITesting.Xunit3;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests;
 
 public class TestPageUITests : UITests<TestPage>

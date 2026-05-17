@@ -1,7 +1,5 @@
 using System.Collections;
 
-using DeviceRunners.UITesting.Xunit3;
-
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -69,7 +67,6 @@ public class DynamicUITests : UITests<ContentPage>
 		Assert.Equal(CurrentPage.Window, button.Window);
 	}
 
-#if ANDROID || IOS || MACCATALYST || WINDOWS
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
@@ -125,7 +122,6 @@ public class DynamicUITests : UITests<ContentPage>
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
-#endif
 
 	static readonly Rect InitialFrame = new(0, 0, -1, -1);
 
