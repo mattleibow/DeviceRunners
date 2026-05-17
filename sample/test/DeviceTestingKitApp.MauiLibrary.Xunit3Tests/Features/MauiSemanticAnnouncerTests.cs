@@ -2,8 +2,6 @@ using DeviceTestingKitApp.Features;
 
 using Microsoft.Maui.Accessibility;
 
-using Xunit;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests.Features;
 
 public class MauiSemanticAnnouncerTests

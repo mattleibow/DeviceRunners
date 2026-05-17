@@ -5,9 +5,7 @@ using DeviceRunners.UITesting.Xunit;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
-using static System.Net.Mime.MediaTypeNames;
-
-namespace DeviceTestingKitApp.DeviceTests;
+namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 public class DynamicUITests : UITests<ContentPage>
 {
@@ -71,6 +69,7 @@ public class DynamicUITests : UITests<ContentPage>
 		Assert.Equal(CurrentPage.Window, button.Window);
 	}
 
+#if ANDROID || IOS || MACCATALYST || WINDOWS
 	[UITheory]
 	[InlineData("hello", "HELLO")]
 	[InlineData("woRld", "WORLD")]
@@ -126,6 +125,7 @@ public class DynamicUITests : UITests<ContentPage>
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
+#endif
 
 	static readonly Rect InitialFrame = new(0, 0, -1, -1);
 

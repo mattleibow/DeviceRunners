@@ -1,4 +1,4 @@
-﻿namespace DeviceTestingKitApp.DeviceTests;
+﻿namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 [Collection("UITests")]
 public abstract class UITests<T> : IAsyncLifetime

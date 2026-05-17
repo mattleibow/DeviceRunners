@@ -1,6 +1,6 @@
 using DeviceRunners.UITesting.Xunit;
 
-namespace DeviceTestingKitApp.DeviceTests;
+namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 public class TestPageUITests : UITests<TestPage>
 {

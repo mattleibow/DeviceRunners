@@ -1,4 +1,4 @@
-﻿namespace DeviceTestingKitApp.DeviceTests;
+﻿namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 partial class TestPage : ContentPage
 {

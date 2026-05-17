@@ -3,8 +3,6 @@ using DeviceTestingKitApp.ViewModels;
 
 using Microsoft.Maui.Controls;
 
-using Xunit;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests.Controls;
 
 public class CounterViewTests : VisualElementTests

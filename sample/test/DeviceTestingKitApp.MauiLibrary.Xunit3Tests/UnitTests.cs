@@ -1,5 +1,3 @@
-using Xunit;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests;
 
 public class UnitTests

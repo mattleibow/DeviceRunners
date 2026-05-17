@@ -2,8 +2,6 @@ using System.Globalization;
 
 using DeviceTestingKitApp.Converters;
 
-using Xunit;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests.Converters;
 
 public class CounterValueConverterTests

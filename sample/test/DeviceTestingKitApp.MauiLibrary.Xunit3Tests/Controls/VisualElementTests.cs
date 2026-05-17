@@ -1,7 +1,5 @@
 using Microsoft.Maui.Dispatching;
 
-using Xunit;
-
 namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests.Controls;
 
 public class VisualElementTests : IDisposable
