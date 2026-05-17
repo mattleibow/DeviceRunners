@@ -17,6 +17,20 @@ class Xunit3DiagnosticMessageSink : IMessageSink
 		_assemblyDisplayName = assemblyDisplayName;
 	}
 
+	/// <summary>
+	/// Creates a diagnostic sink if a <see cref="IDiagnosticsManager"/> is available,
+	/// otherwise returns null. Shared helper for discoverer and runner.
+	/// </summary>
+	public static Xunit3DiagnosticMessageSink? TryCreate(IDiagnosticsManager? diagnosticsManager, string assemblyFileName)
+	{
+		if (diagnosticsManager is null)
+			return null;
+
+		return new Xunit3DiagnosticMessageSink(
+			diagnosticsManager.PostDiagnosticMessage,
+			Path.GetFileNameWithoutExtension(assemblyFileName));
+	}
+
 	public bool OnMessage(IMessageSinkMessage message)
 	{
 		if (message is IDiagnosticMessage diagnosticMessage)

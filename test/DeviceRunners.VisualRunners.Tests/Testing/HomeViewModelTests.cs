@@ -62,7 +62,7 @@ public abstract class HomeViewModelTests
 			Assert.NotEqual(TestResultStatus.NotRun, vm.TestAssemblies[0].ResultStatus);
 		else
 			Assert.Equal(TestResultStatus.NotRun, vm.TestAssemblies[0].ResultStatus);
-		
+
 		if (autoStart && autoTerminate)
 			terminator.Received().Terminate();
 		else

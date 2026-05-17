@@ -67,6 +67,7 @@
        Test classes are discovered via reflection, so the linker can't trace them. -->
   <ItemGroup>
     <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" RootMode="all" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.Xunit3Tests" RootMode="all" />
     <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" RootMode="all" />
   </ItemGroup>
 
@@ -98,7 +99,7 @@
   <Target Name="_ExcludeTestLibraryRuntimeConfigs" BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')))" />
+          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.Xunit3Tests')))" />
     </ItemGroup>
   </Target>
 

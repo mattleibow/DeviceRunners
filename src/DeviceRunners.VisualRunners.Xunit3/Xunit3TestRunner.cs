@@ -25,10 +25,10 @@ public class Xunit3TestRunner : ITestRunner
 	public Task RunTestsAsync(IEnumerable<ITestCaseInfo> testCases, CancellationToken cancellationToken = default)
 	{
 		var grouped = testCases
-		.OfType<Xunit3TestCaseInfo>()
-		.GroupBy(t => t.TestAssembly)
-		.Select(g => new Xunit3TestAssemblyInfo(g.Key, g.ToList()))
-		.ToList();
+			.OfType<Xunit3TestCaseInfo>()
+			.GroupBy(t => t.TestAssembly)
+			.Select(g => new Xunit3TestAssemblyInfo(g.Key, g.ToList()))
+			.ToList();
 
 		return RunTestsAsync(grouped, cancellationToken);
 	}
@@ -45,7 +45,15 @@ public class Xunit3TestRunner : ITestRunner
 
 			foreach (var assembly in xunit3Assemblies)
 			{
-				await RunTests(assembly, cancellationToken);
+				try
+				{
+					await RunTests(assembly, cancellationToken);
+				}
+				catch (Exception ex)
+				{
+					_diagnosticsManager?.PostDiagnosticMessage(
+						$"Exception running tests in assembly '{assembly.AssemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+				}
 			}
 		}
 	}
@@ -66,7 +74,11 @@ public class Xunit3TestRunner : ITestRunner
 				StringComparison.OrdinalIgnoreCase));
 
 		if (assembly is null)
+		{
+			_diagnosticsManager?.PostDiagnosticMessage(
+				$"Could not find assembly matching '{assemblyFileName}' in configured test assemblies. Skipping execution.");
 			return;
+		}
 
 		var testCaseLookup = assemblyInfo.TestCases
 			.ToDictionary(tc => tc.TestCaseUniqueID, tc => tc);
@@ -79,15 +91,9 @@ public class Xunit3TestRunner : ITestRunner
 		if (testCasesToRun.Count == 0)
 			return;
 
-		Xunit3DiagnosticMessageSink? diagnosticSink = null;
-		if (_diagnosticsManager is not null)
-		{
-			diagnosticSink = new Xunit3DiagnosticMessageSink(
-				d => _diagnosticsManager.PostDiagnosticMessage(d),
-				Path.GetFileNameWithoutExtension(assemblyFileName));
-		}
-
+		var diagnosticSink = Xunit3DiagnosticMessageSink.TryCreate(_diagnosticsManager, assemblyFileName);
 		var hasDiagnostics = diagnosticSink is not null;
+
 		TestContext.SetForInitialization(
 			diagnosticMessageSink: diagnosticSink,
 			diagnosticMessages: hasDiagnostics,
@@ -98,6 +104,7 @@ public class Xunit3TestRunner : ITestRunner
 
 		var configuration = assemblyInfo.Configuration;
 		var executor = testFramework.GetExecutor(assembly);
+		await using var executorDisposal = executor as IAsyncDisposable;
 
 		var executionOptions = TestFrameworkOptions.ForExecution(configuration);
 		executionOptions.SetSynchronousMessageReporting(true);

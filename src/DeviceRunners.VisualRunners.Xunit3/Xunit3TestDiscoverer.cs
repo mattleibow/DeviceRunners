@@ -22,79 +22,63 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 	{
 		var result = new List<ITestAssemblyInfo>();
 
-		try
+		foreach (var assm in _testAssemblies)
 		{
-			foreach (var assm in _testAssemblies)
+			if (cancellationToken.IsCancellationRequested)
+				break;
+
+			// Use logical name (not file path) so discovery works on
+			// platforms without filesystem access such as WASM.
+			var assemblyFileName = assm.GetName().Name + ".dll";
+
+			try
 			{
-				if (cancellationToken.IsCancellationRequested)
-					break;
+				var diagnosticSink = Xunit3DiagnosticMessageSink.TryCreate(_diagnosticsManager, assemblyFileName);
+				var hasDiagnostics = diagnosticSink is not null;
 
-				// Use logical name (not file path) so discovery works on
-				// platforms without filesystem access such as WASM.
-				var assemblyFileName = assm.GetName().Name + ".dll";
-
-				try
-				{
-					var diagnosticSink = CreateDiagnosticSink(assemblyFileName);
-					var hasDiagnostics = diagnosticSink is not null;
-
-					TestContext.SetForInitialization(
+				TestContext.SetForInitialization(
 					diagnosticMessageSink: diagnosticSink,
 					diagnosticMessages: hasDiagnostics,
 					internalDiagnosticMessages: hasDiagnostics);
 
-					var configuration = GetConfiguration(Path.GetFileNameWithoutExtension(assemblyFileName));
+				var configuration = GetConfiguration(Path.GetFileNameWithoutExtension(assemblyFileName));
 
-					var testFramework = CreateTestFramework(assm);
-					await using var frameworkDisposal = testFramework as IAsyncDisposable;
+				var testFramework = CreateTestFramework(assm);
+				await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
-					var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
+				var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
+				await using var discovererDisposal = frameworkDiscoverer as IAsyncDisposable;
 
-					var discoveredTestCases = new List<ITestCase>();
+				var discoveredTestCases = new List<ITestCase>();
 
-					var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
-					discoveryOptions.SetSynchronousMessageReporting(true);
-					discoveryOptions.SetPreEnumerateTheories(true);
+				var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
+				discoveryOptions.SetSynchronousMessageReporting(true);
+				discoveryOptions.SetPreEnumerateTheories(true);
 
-					await frameworkDiscoverer.Find(testCase =>
-					{
-						discoveredTestCases.Add(testCase);
-						return new ValueTask<bool>(true);
-					}, discoveryOptions, cancellationToken: cancellationToken);
-
-					var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
-					var testCases = discoveredTestCases
-						.Select(tc => new Xunit3TestCaseInfo(testAssembly, tc))
-						.ToList();
-
-					if (testCases.Count > 0)
-					{
-						testAssembly.TestCases.AddRange(testCases);
-						result.Add(testAssembly);
-					}
-				}
-				catch (Exception ex)
+				await frameworkDiscoverer.Find(testCase =>
 				{
-					_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+					discoveredTestCases.Add(testCase);
+					return new ValueTask<bool>(true);
+				}, discoveryOptions, cancellationToken: cancellationToken);
+
+				var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
+				var testCases = discoveredTestCases
+					.Select(tc => new Xunit3TestCaseInfo(testAssembly, tc))
+					.ToList();
+
+				if (testCases.Count > 0)
+				{
+					testAssembly.TestCases.AddRange(testCases);
+					result.Add(testAssembly);
 				}
 			}
-		}
-		catch (Exception ex)
-		{
-			_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests: '{ex.Message}'{Environment.NewLine}{ex}");
+			catch (Exception ex)
+			{
+				_diagnosticsManager?.PostDiagnosticMessage($"Exception discovering tests in assembly '{assemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+			}
 		}
 
 		return result;
-	}
-
-	Xunit3DiagnosticMessageSink? CreateDiagnosticSink(string assemblyFileName)
-	{
-		if (_diagnosticsManager is null)
-			return null;
-
-		return new Xunit3DiagnosticMessageSink(
-		d => _diagnosticsManager.PostDiagnosticMessage(d),
-		Path.GetFileNameWithoutExtension(assemblyFileName));
 	}
 
 	static TestAssemblyConfiguration GetConfiguration(string assemblyName)

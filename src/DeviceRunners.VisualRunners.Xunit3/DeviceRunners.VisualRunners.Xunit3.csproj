@@ -15,8 +15,5 @@
     <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Embeddedresource Include="Assets/**" />
-  </ItemGroup>
 
 </Project>

@@ -112,7 +112,7 @@ public abstract class TestRunnerTests : IAsyncLifetime
 			Assert.Equal(Constants.TestOutput, output);
 		else
 			Assert.Empty(output);
-	
+
 		if (name.EndsWith("_Failed"))
 		{
 			Assert.True(TestResultStatus.Failed == status, $"'{name}' should have failed but instead {status}.");

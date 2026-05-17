@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-
 using DeviceRunners.VisualRunners;
 using DeviceRunners.VisualRunners.Blazor.Components;
+
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

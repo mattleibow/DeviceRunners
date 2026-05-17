@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-
-using DeviceRunners.UITesting;
+﻿using DeviceRunners.UITesting;
 using DeviceRunners.VisualRunners;
+
+using Microsoft.Extensions.Logging;
 #if MODE_XHARNESS
 using DeviceRunners.XHarness;
 #endif

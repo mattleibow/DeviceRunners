@@ -151,8 +151,8 @@ A modern cross-platform CLI tool that replaces platform-specific PowerShell scri
   - `UIFactDiscoverer`, `UITheoryDiscoverer` - Test discovery
 - **DeviceRunners.UITesting.Xunit3** - Xunit v3 UI testing support
   - `UIFact` and `UITheory` attributes (xUnit v3 compatible)
-  - `DeviceTest` base class with `IDeviceTestApp` injection
-  - Extension methods: `UseXunit3DeviceRunner()` and `AddDeviceTestApp()`
+  - `UIFactDiscoverer`, `UITheoryDiscoverer` - Test discovery
+  - `UITestCase`, `UITheoryTestCase` - Custom test execution via `ISelfExecutingXunitTestCase`
 
 #### UI Testing MAUI Integration (`DeviceRunners.UITesting.Maui`)
 - MAUI-specific UI thread coordination

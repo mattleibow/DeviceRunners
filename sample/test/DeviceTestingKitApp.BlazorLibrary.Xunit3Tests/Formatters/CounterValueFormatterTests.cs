@@ -1,4 +1,5 @@
 using DeviceTestingKitApp.Formatters;
+
 using Xunit;
 
 namespace DeviceTestingKitApp.BlazorLibrary.Xunit3Tests.Formatters;

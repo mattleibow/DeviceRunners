@@ -212,7 +212,7 @@ xUnit v3 takes a cleaner approach: the **same discoverer and runner work on all 
 | Test discovery API | `XunitFrontController.Find()` | `ExtensibilityPointFactory` + `ITestFrameworkDiscoverer.Find()` |
 | Test execution API | `XunitFrontController.RunTests()` | `ITestFrameworkExecutor.RunTestCases()` |
 | Message handling | Event-based `TestMessageSink` | `IMessageSink.OnMessage()` |
-| Selective execution | `ITestCase` object references | Re-discover + filter by unique ID |
+| Selective execution | `ITestCase` object references | Cached `ITestCase` objects from discovery |
 | Configuration | Loads `xunit.runner.json` | Loads `xunit.runner.json` |
 | UI testing attributes | `DeviceRunners.UITesting.Xunit` | `DeviceRunners.UITesting.Xunit3` |
 | WASM support | Requires `useReflection: true` | Automatic (transparent in-memory detection) |

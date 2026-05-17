@@ -15,10 +15,10 @@ class Xunit3ExecutionMessageSink : IMessageSink
 	readonly Dictionary<string, (TestResultStatus Status, string? ErrorMessage, string? ErrorStackTrace, string? SkipReason)> _pendingResults = new();
 
 	public Xunit3ExecutionMessageSink(
-	IReadOnlyDictionary<string, Xunit3TestCaseInfo> testCases,
-	IResultChannelManager? resultChannelManager,
-	IDiagnosticsManager? diagnosticsManager = null,
-	CancellationToken cancellationToken = default)
+		IReadOnlyDictionary<string, Xunit3TestCaseInfo> testCases,
+		IResultChannelManager? resultChannelManager,
+		IDiagnosticsManager? diagnosticsManager = null,
+		CancellationToken cancellationToken = default)
 	{
 		_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
 		_resultChannelManager = resultChannelManager;
@@ -26,26 +26,30 @@ class Xunit3ExecutionMessageSink : IMessageSink
 		_cancellationToken = cancellationToken;
 	}
 
-	public ManualResetEventSlim Finished { get; } = new(false);
-
 	public bool OnMessage(IMessageSinkMessage message)
 	{
+		// Collect results to report outside the lock to avoid deadlocks
+		// when subscribers (ResultReported, IResultChannel) do blocking work.
+		List<(Xunit3TestCaseInfo TestCase, Xunit3TestResultInfo Result)>? resultsToReport = null;
+
 		lock (_lock)
 		{
 			switch (message)
 			{
 				case ITestStarting testStarting:
-					_testUniqueIdToTestCaseId[testStarting.TestUniqueID] = testStarting.TestCaseUniqueID;
+					EnsureTestMapping(testStarting.TestUniqueID, testStarting.TestCaseUniqueID);
 					break;
 
 				case ITestPassed testPassed:
+					EnsureTestMapping(testPassed.TestUniqueID, testPassed.TestCaseUniqueID);
 					RecordResult(testPassed.TestUniqueID, TestResultStatus.Passed);
 					break;
 
 				case ITestFailed testFailed:
+					EnsureTestMapping(testFailed.TestUniqueID, testFailed.TestCaseUniqueID);
 					RecordResult(testFailed.TestUniqueID, TestResultStatus.Failed,
-					errorMessage: CombineMessages(testFailed),
-					errorStackTrace: CombineStackTraces(testFailed));
+						errorMessage: ExceptionUtility.CombineMessages(testFailed),
+						errorStackTrace: ExceptionUtility.CombineStackTraces(testFailed));
 					break;
 
 				case ITestSkipped testSkipped:
@@ -61,47 +65,55 @@ class Xunit3ExecutionMessageSink : IMessageSink
 
 				case ITestFinished testFinished:
 					_testFinishedData[testFinished.TestUniqueID] = (
-					TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
-					testFinished.Output);
-					FlushResult(testFinished.TestUniqueID);
+						TimeSpan.FromSeconds((double)testFinished.ExecutionTime),
+						testFinished.Output);
+					resultsToReport = FlushResult(testFinished.TestUniqueID);
 					break;
 
 				// Handle framework-level errors
 				case IErrorMessage errorMessage:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Framework error: {string.Join(Environment.NewLine, errorMessage.Messages)}");
+						$"Framework error: {ExceptionUtility.CombineMessages(errorMessage)}");
 					break;
 
 				case ITestAssemblyCleanupFailure cleanupFailure:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Test assembly cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+						$"Test assembly cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCollectionCleanupFailure cleanupFailure:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Test collection cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+						$"Test collection cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestClassCleanupFailure cleanupFailure:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Test class cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+						$"Test class cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCaseCleanupFailure cleanupFailure:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Test case cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+						$"Test case cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestCleanupFailure cleanupFailure:
 					_diagnosticsManager?.PostDiagnosticMessage(
-					$"Test cleanup failure: {string.Join(Environment.NewLine, cleanupFailure.Messages)}");
+						$"Test cleanup failure: {ExceptionUtility.CombineMessages(cleanupFailure)}");
 					break;
 
 				case ITestAssemblyFinished:
-					// Flush any remaining pending results that never got ITestFinished
-					FlushRemainingResults();
-					Finished.Set();
+					resultsToReport = FlushRemainingResults();
 					break;
+			}
+		}
+
+		// Report results outside the lock to prevent deadlocks from subscriber callbacks.
+		if (resultsToReport is not null)
+		{
+			foreach (var (testCase, result) in resultsToReport)
+			{
+				testCase.ReportResult(result);
+				_resultChannelManager?.RecordResult(result);
 			}
 		}
 
@@ -110,8 +122,9 @@ class Xunit3ExecutionMessageSink : IMessageSink
 
 	/// <summary>
 	/// Ensures a test-unique-ID → test-case-unique-ID mapping exists.
-	/// Normally set by ITestStarting, but ITestNotRun and ITestSkipped
-	/// may fire without ITestStarting when tests are filtered or never started.
+	/// Normally set by ITestStarting, but some messages (ITestNotRun,
+	/// ITestSkipped, ITestPassed, ITestFailed) may fire without
+	/// ITestStarting when tests are filtered or never fully started.
 	/// </summary>
 	void EnsureTestMapping(string testUniqueID, string testCaseUniqueID)
 	{
@@ -123,55 +136,60 @@ class Xunit3ExecutionMessageSink : IMessageSink
 		_pendingResults[testUniqueID] = (status, errorMessage, errorStackTrace, skipReason);
 	}
 
-	void FlushResult(string testUniqueID)
+	/// <summary>
+	/// Tries to flush a pending result for the given test. Returns the result
+	/// to report outside the lock, or null if nothing to report.
+	/// Must be called while holding <see cref="_lock"/>.
+	/// </summary>
+	List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? FlushResult(string testUniqueID)
 	{
 		if (!_pendingResults.TryGetValue(testUniqueID, out var pending))
-			return;
+			return null;
 
 		_pendingResults.Remove(testUniqueID);
 
 		if (!_testUniqueIdToTestCaseId.TryGetValue(testUniqueID, out var testCaseUniqueID))
-			return;
+			return null;
 
 		if (!_testCases.TryGetValue(testCaseUniqueID, out var testCase))
-			return;
+			return null;
 
 		var finishedData = _testFinishedData.GetValueOrDefault(testUniqueID);
 
-		var result = new Xunit3TestResultInfo(
-		testCase,
-		pending.Status,
-		finishedData.Duration,
-		output: finishedData.Output,
-		errorMessage: pending.ErrorMessage,
-		errorStackTrace: pending.ErrorStackTrace,
-		skipReason: pending.SkipReason);
+		// Clean up tracking dictionaries now that we have all the data.
+		_testFinishedData.Remove(testUniqueID);
+		_testUniqueIdToTestCaseId.Remove(testUniqueID);
 
-		testCase.ReportResult(result);
-		_resultChannelManager?.RecordResult(result);
+		var result = new Xunit3TestResultInfo(
+			testCase,
+			pending.Status,
+			finishedData.Duration,
+			output: finishedData.Output,
+			errorMessage: pending.ErrorMessage,
+			errorStackTrace: pending.ErrorStackTrace,
+			skipReason: pending.SkipReason);
+
+		return [(testCase, result)];
 	}
 
-	void FlushRemainingResults()
+	/// <summary>
+	/// Flushes all remaining pending results that never received ITestFinished.
+	/// Must be called while holding <see cref="_lock"/>.
+	/// </summary>
+	List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? FlushRemainingResults()
 	{
+		List<(Xunit3TestCaseInfo, Xunit3TestResultInfo)>? all = null;
+
 		foreach (var testUniqueID in _pendingResults.Keys.ToList())
 		{
-			FlushResult(testUniqueID);
+			var flushed = FlushResult(testUniqueID);
+			if (flushed is not null)
+			{
+				all ??= [];
+				all.AddRange(flushed);
+			}
 		}
-	}
 
-	static string? CombineMessages(ITestFailed failure)
-	{
-		if (failure.Messages.Length == 0)
-			return null;
-
-		return string.Join(Environment.NewLine, failure.Messages);
-	}
-
-	static string? CombineStackTraces(ITestFailed failure)
-	{
-		if (failure.StackTraces.Length == 0)
-			return null;
-
-		return string.Join(Environment.NewLine + "--- End of stack trace from previous exception ---" + Environment.NewLine, failure.StackTraces.Where(s => s is not null));
+		return all;
 	}
 }
