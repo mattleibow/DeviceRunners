@@ -32,6 +32,17 @@
     <PackageVersion Include="xunit.v3.runner.utility" Version="3.2.2" />
   </ItemGroup>
 
+  <!-- Use xunit v3 CI build with Assembly.Location fix (xunit/xunit#3577) -->
+  <!-- Pass /p:UseXunitV3CI=true to test locally -->
+  <ItemGroup Condition="'$(UseXunitV3CI)' == 'true'">
+    <PackageVersion Update="xunit.v3" Version="4.0.0-pre.117" />
+    <PackageVersion Update="xunit.v3.assert" Version="4.0.0-pre.117" />
+    <PackageVersion Update="xunit.v3.core" Version="4.0.0-pre.117" />
+    <PackageVersion Update="xunit.v3.extensibility.core" Version="4.0.0-pre.117" />
+    <PackageVersion Update="xunit.v3.runner.inproc.console" Version="4.0.0-pre.117" />
+    <PackageVersion Update="xunit.v3.runner.utility" Version="4.0.0-pre.117" />
+  </ItemGroup>
+
   <!-- MAUI 10.x requires .NET 10 workload; downgrade to 9.x for net9 TFMs -->
   <ItemGroup Condition="$(TargetFramework.StartsWith('net9'))">
     <PackageVersion Update="Microsoft.Maui.Controls" Version="9.0.120" />

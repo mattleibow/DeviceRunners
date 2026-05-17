@@ -33,6 +33,11 @@ public class UIXunitTestCaseRunner : XunitTestCaseRunner
 			ctxt.ExplicitOption,
 			ctxt.Aggregator.Clone(),
 			ctxt.CancellationTokenSource,
+#if XUNIT_V3_CI
+			ctxt.BeforeAfterTestAttributes,
+			ctxt.CaseFixtureMappings);
+#else
 			ctxt.BeforeAfterTestAttributes);
+#endif
 	}
 }

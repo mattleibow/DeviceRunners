@@ -60,6 +60,20 @@ public class UITheoryTestCase : XunitDelayEnumeratedTheoryTestCase, ISelfExecuti
 
 		// Use UIXunitTestCaseRunner which dispatches the entire test lifecycle
 		// (construction, IAsyncLifetime, test method, disposal) to the UI thread.
+#if XUNIT_V3_CI
+		await using var methodFixtures = new FixtureMappingManager("Method");
+		return await UIXunitTestCaseRunner.Instance.Run(
+			this,
+			tests,
+			messageBus,
+			aggregator,
+			cancellationTokenSource,
+			TestCaseDisplayName,
+			SkipReason,
+			explicitOption,
+			constructorArguments,
+			methodFixtures);
+#else
 		return await UIXunitTestCaseRunner.Instance.Run(
 			this,
 			tests,
@@ -70,5 +84,6 @@ public class UITheoryTestCase : XunitDelayEnumeratedTheoryTestCase, ISelfExecuti
 			SkipReason,
 			explicitOption,
 			constructorArguments);
+#endif
 	}
 }
