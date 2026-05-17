@@ -221,3 +221,45 @@ xUnit v3 takes a cleaner approach: the **same discoverer and runner work on all 
 | UI testing attributes | `DeviceRunners.UITesting.Xunit` | `DeviceRunners.UITesting.Xunit3` |
 | WASM support | Requires `useReflection: true` | Automatic (transparent in-memory detection) |
 | `IAsyncLifetime` | Returns `Task` | Returns `ValueTask` |
+
+## Known Limitations
+
+The DeviceRunners xUnit v3 integration runs tests in-process within a MAUI app rather than through the standard `dotnet test` out-of-process execution model. This creates some differences from a standard xUnit v3 test project:
+
+### Platform Workarounds
+
+| Limitation | Details | Tracking |
+|---|---|---|
+| **`Assembly.Location` is empty** | On Android, iOS, and WASM, `Assembly.Location` returns an empty string. DeviceRunners works around this with `InMemoryXunit3TestAssembly` which provides a logical path. | [xunit/xunit#3577](https://github.com/xunit/xunit/issues/3577) |
+| **Config file discovery** | Standard xUnit v3 loads `xunit.runner.json` from the filesystem next to the assembly DLL. DeviceRunners loads it from app package resources via `OpenAppPackageFile` instead, since assemblies may not be on disk. |
+| **`[TestFramework]` attribute ignored on in-memory platforms** | When `Assembly.Location` is empty, DeviceRunners creates `InMemoryXunit3TestFramework` directly instead of using `ExtensibilityPointFactory`, which means any `[TestFramework]` assembly attribute is not honored. |
+
+### Feature Gaps
+
+| Feature | Standard `dotnet test` | DeviceRunners Visual Runner |
+|---|---|---|
+| **Out-of-process execution** | ✅ Supported | ❌ Always in-process (by design — tests run on the device) |
+| **`[Fact(Explicit = true)]`** | ✅ Runs with `--filter` or explicit opt-in | ⚠️ Executor supports it, but the visual runner UI has no way to opt-in to running explicit tests |
+| **`dotnet test --filter` expressions** | ✅ Full filter syntax | ❌ Visual runner has its own UI-based filtering |
+| **Source information** | ✅ IDE navigation to test source | ❌ Not available on in-memory platforms |
+
+### Behavioral Defaults
+
+DeviceRunners uses the standard xUnit v3 defaults for all configuration options. Users can customize behavior via `xunit.runner.json` (placed in app package resources). Notable defaults:
+
+- **`PreEnumerateTheories`**: `false` (a `[Theory]` with 3 `[InlineData]` appears as 1 test case, not 3). Set to `true` in `xunit.runner.json` to see individual theory data rows in the visual runner.
+- **`SynchronousMessageReporting`**: `false` (messages delivered asynchronously). The visual runner's message sink is thread-safe.
+- **Parallelization**: Follows xUnit v3 defaults (parallel by collection). Configurable via `xunit.runner.json`.
+
+### Verified xUnit v3 Features
+
+The following xUnit v3 features have been verified to work through DeviceRunners:
+
+- `[Fact]`, `[Theory]`, `[InlineData]`, `[MemberData]`, `[ClassData]`
+- `IAsyncLifetime` (construction and disposal on UI thread for `[UIFact]`/`[UITheory]`)
+- `[Collection]` for test serialization
+- `[Skip]`, `[Fact(Skip = "...")]`
+- `ITestOutputHelper` (output captured and reported)
+- `ISelfExecutingXunitTestCase` (used by `[UIFact]`/`[UITheory]`)
+- Test assembly parallelization control
+- `xunit.runner.json` configuration loading
