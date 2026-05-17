@@ -29,6 +29,7 @@ builder
         .EnableAutoStart(true)
         .AddTestAssembly(typeof(MyTests).Assembly)
         .AddXunit()
+        .AddXunit3()
         .AddNUnit()
         .AddConsoleResultChannel()
         .AddTcpResultChannel(new TcpResultChannelOptions
@@ -53,6 +54,7 @@ builder.RootComponents.Add<TestRunnerApp>("#app");
 
 builder.UseVisualTestRunner(conf => conf
     .AddXunit(useReflection: true)
+    .AddXunit3()
     .AddTestAssembly(typeof(MyTests).Assembly)
     .AddConsoleResultChannel());
 
@@ -61,7 +63,8 @@ await builder.Build().RunAsync();
 
 Key differences from the MAUI runner:
 - Uses `WebAssemblyHostBuilder` instead of `MauiApp.CreateBuilder()`
-- Requires `useReflection: true` for xunit since `XunitFrontController` needs filesystem access
+- Requires `useReflection: true` for xUnit v2 since `XunitFrontController` needs filesystem access
+- xUnit v3 works with plain `.AddXunit3()` — WASM compatibility is handled automatically
 - The `UseVisualTestRunner` extension automatically calls `AddCliConfiguration()` which parses the page URL for `?device-runners-autorun=1` to support headless CLI execution
 - No TCP result channel — uses console output with `EventStreamFormatter` for CLI integration
 

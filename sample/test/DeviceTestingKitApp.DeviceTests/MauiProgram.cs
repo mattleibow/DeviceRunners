@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-
-using DeviceRunners.UITesting;
+﻿using DeviceRunners.UITesting;
 using DeviceRunners.VisualRunners;
+
+using Microsoft.Extensions.Logging;
 #if MODE_XHARNESS
 using DeviceRunners.XHarness;
 #endif
@@ -48,8 +48,10 @@ public static class MauiProgram
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.Xunit3Tests.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.NUnitTests.UnitTests).Assembly)
 				.AddXunit()
+				.AddXunit3()
 				.AddNUnit());
 
 #if DEBUG

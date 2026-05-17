@@ -31,6 +31,8 @@
   items:
     - name: Visual Runner in the IDE
       href: visual-runner-in-the-ide.md
+    - name: xUnit v3 Support
+      href: xunit-v3-support.md
 
 - name: "DeviceRunners CLI (Advanced)"
   items:

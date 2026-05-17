@@ -1,3 +1,5 @@
+using DeviceRunners.UITesting.Xunit;
+
 namespace DeviceTestingKitApp.DeviceTests;
 
 public class TestPageUITests : UITests<TestPage>

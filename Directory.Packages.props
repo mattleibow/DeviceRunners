@@ -1,7 +1,6 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="AndroidSdk" Version="0.35.1" />
-    <PackageVersion Include="bunit" Version="1.36.0" />
     <PackageVersion Include="AppleDev" Version="0.8.10" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26259.3" />
@@ -25,6 +24,12 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.utility" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.assert" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.core" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.extensibility.core" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.runner.inproc.console" Version="3.2.2" />
+    <PackageVersion Include="xunit.v3.runner.utility" Version="3.2.2" />
   </ItemGroup>
 
   <!-- MAUI 10.x requires .NET 10 workload; downgrade to 9.x for net9 TFMs -->
