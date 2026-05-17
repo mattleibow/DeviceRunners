@@ -110,7 +110,6 @@ All execution happens in-process on the device — no separate test process is l
 
 ## Current Limitations
 
-- **Test Explorer**: Device test projects using xUnit v3 cannot be run via `dotnet test` or Visual Studio Test Explorer (this is a fundamental xUnit v3 architecture limitation for device testing)
 - **`[TestFramework]` attribute on in-memory platforms**: On platforms where `Assembly.Location` is empty (Android, iOS, WASM), DeviceRunners uses `InMemoryXunit3TestFramework` instead of calling `ExtensibilityPointFactory.GetTestFramework()`. This means any `[TestFramework]` assembly-level attribute that customizes the xUnit test framework will be **ignored** on those platforms. Custom test frameworks registered via `[TestFramework]` only work on desktop (Windows, macOS). This is tracked upstream at [xunit/xunit#3096](https://github.com/xunit/xunit/issues/3096) — if `XunitTestAssembly.AssemblyPath` is made virtual or `Assembly.Location` handling improves, this limitation can be removed.
 
 ## UI Testing
@@ -224,9 +223,9 @@ xUnit v3 takes a cleaner approach: the **same discoverer and runner work on all 
 
 ## Known Limitations
 
-The DeviceRunners xUnit v3 integration runs tests in-process within a MAUI app rather than through the standard `dotnet test` out-of-process execution model. This creates some differences from a standard xUnit v3 test project:
+The DeviceRunners visual runner executes xUnit v3 tests in-process within a MAUI app. This is different from a standard xUnit v3 test project which runs as a standalone executable via `dotnet test`. Note that `dotnet test` still works for the **host TFM** (`net10.0`) of your test libraries — only the **device TFMs** use the in-process visual runner.
 
-### Platform Workarounds
+### Platform Workarounds (Visual Runner Only)
 
 | Limitation | Details | Tracking |
 |---|---|---|
@@ -234,11 +233,12 @@ The DeviceRunners xUnit v3 integration runs tests in-process within a MAUI app r
 | **Config file discovery** | Standard xUnit v3 loads `xunit.runner.json` from the filesystem next to the assembly DLL. DeviceRunners loads it from app package resources via `OpenAppPackageFile` instead, since assemblies may not be on disk. |
 | **`[TestFramework]` attribute ignored on in-memory platforms** | When `Assembly.Location` is empty, DeviceRunners creates `InMemoryXunit3TestFramework` directly instead of using `ExtensibilityPointFactory`, which means any `[TestFramework]` assembly attribute is not honored. |
 
-### Feature Gaps
+### Visual Runner Feature Gaps
+
+These limitations apply only to the in-app visual runner, not to `dotnet test` on the host TFM:
 
 | Feature | Standard `dotnet test` | DeviceRunners Visual Runner |
 |---|---|---|
-| **Out-of-process execution** | ✅ Supported | ❌ Always in-process (by design — tests run on the device) |
 | **`[Fact(Explicit = true)]`** | ✅ Runs with `--filter` or explicit opt-in | ⚠️ Executor supports it, but the visual runner UI has no way to opt-in to running explicit tests |
 | **`dotnet test --filter` expressions** | ✅ Full filter syntax | ❌ Visual runner has its own UI-based filtering |
 | **Source information** | ✅ IDE navigation to test source | ❌ Not available on in-memory platforms |

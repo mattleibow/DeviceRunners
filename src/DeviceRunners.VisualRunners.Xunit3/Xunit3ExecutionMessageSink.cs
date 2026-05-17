@@ -4,6 +4,12 @@ namespace DeviceRunners.VisualRunners.Xunit3;
 
 class Xunit3ExecutionMessageSink : IMessageSink
 {
+	// IMessageSink.OnMessage does not guarantee single-threaded invocation.
+	// With parallel test execution the message bus may dispatch from multiple
+	// threads.  The lock is cheap when uncontended and keeps the internal
+	// dictionaries consistent regardless of the threading model.  Result
+	// reporting is done outside the lock to avoid deadlocks if subscribers
+	// (UI, result channels) do blocking work.
 	readonly object _lock = new();
 	readonly IReadOnlyDictionary<string, Xunit3TestCaseInfo> _testCases;
 	readonly IResultChannelManager? _resultChannelManager;
