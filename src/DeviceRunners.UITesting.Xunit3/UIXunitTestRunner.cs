@@ -3,9 +3,17 @@ using Xunit.v3;
 namespace DeviceRunners.UITesting.Xunit3;
 
 /// <summary>
-/// Custom xUnit v3 test runner that dispatches only the test method invocation
-/// to the UI thread. This matches the v2 behavior where class construction,
-/// <see cref="IAsyncLifetime"/>, and disposal all run off the UI thread.
+/// Custom xUnit v3 test runner that dispatches the entire test execution
+/// (class construction, <see cref="IAsyncLifetime"/>, test method invocation,
+/// and disposal) to the UI thread.
+/// <para>
+/// In xUnit v2 the single <c>InvokeTestMethodAsync</c> override encompassed
+/// class creation, lifecycle, method invocation, and disposal, so dispatching
+/// that one method was sufficient. In v3 the pipeline splits these into
+/// <c>CreateTestClassInstance</c>, <c>InvokeTest</c>, and
+/// <c>DisposeTestClassInstance</c>. To keep everything on the UI thread we
+/// override <see cref="RunTest"/> instead, which orchestrates all of them.
+/// </para>
 /// </summary>
 public class UIXunitTestRunner : XunitTestRunner
 {
@@ -22,12 +30,10 @@ public class UIXunitTestRunner : XunitTestRunner
 	}
 
 	/// <inheritdoc/>
-	protected override ValueTask<TimeSpan> InvokeTest(
-		XunitTestRunnerContext ctxt,
-		object? testClassInstance)
+	protected override ValueTask<TimeSpan> RunTest(XunitTestRunnerContext ctxt)
 	{
 		var task = UIThreadCoordinator.DispatchAsync(
-			() => base.InvokeTest(ctxt, testClassInstance).AsTask());
+			() => base.RunTest(ctxt).AsTask());
 
 		return new ValueTask<TimeSpan>(task);
 	}
