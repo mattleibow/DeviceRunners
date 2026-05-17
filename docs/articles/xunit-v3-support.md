@@ -111,12 +111,16 @@ All execution happens in-process on the device — no separate test process is l
 ## Current Limitations
 
 - **Test Explorer**: Device test projects using xUnit v3 cannot be run via `dotnet test` or Visual Studio Test Explorer (this is a fundamental xUnit v3 architecture limitation for device testing)
+- **`[TestFramework]` attribute on in-memory platforms**: On platforms where `Assembly.Location` is empty (Android, iOS, WASM), DeviceRunners uses `InMemoryXunit3TestFramework` instead of calling `ExtensibilityPointFactory.GetTestFramework()`. This means any `[TestFramework]` assembly-level attribute that customizes the xUnit test framework will be **ignored** on those platforms. Custom test frameworks registered via `[TestFramework]` only work on desktop (Windows, macOS). This is tracked upstream at [xunit/xunit#3096](https://github.com/xunit/xunit/issues/3096) — if `XunitTestAssembly.AssemblyPath` is made virtual or `Assembly.Location` handling improves, this limitation can be removed.
 
 ## UI Testing
 
-DeviceRunners also provides `[UIFact]` and `[UITheory]` attributes for xUnit v3 via the `DeviceRunners.UITesting.Xunit3` package. These work the same as their xUnit v2 counterparts — test methods decorated with these attributes will be dispatched to the UI thread for execution.
+DeviceRunners also provides `[UIFact]` and `[UITheory]` attributes for xUnit v3 via the `DeviceRunners.UITesting.Xunit3` package. These work the same as their xUnit v2 counterparts — test methods decorated with these attributes will have only the test method invocation dispatched to the UI thread, while class construction, `IAsyncLifetime`, and disposal run on the xUnit worker thread.
+
+> **Namespace change from v2:** The v3 `[UIFact]` and `[UITheory]` attributes are in the `DeviceRunners.UITesting.Xunit3` namespace (v2 uses `Xunit`). This avoids ambiguity when both v2 and v3 xUnit packages are referenced in the same project, since `[Fact]`, `[Theory]`, etc. are defined in the `Xunit` namespace by both versions.
 
 ```csharp
+using DeviceRunners.UITesting.Xunit3;
 using Xunit;
 
 public class MyUITests
@@ -124,7 +128,8 @@ public class MyUITests
     [UIFact]
     public void TestOnUIThread()
     {
-        // This runs on the UI thread
+        // Only InvokeTest runs on the UI thread;
+        // construction/disposal stay on the worker thread
     }
 
     [UITheory]

@@ -43,18 +43,31 @@ public class Xunit3TestRunner : ITestRunner
 			if (xunit3Assemblies.Count == 0)
 				return;
 
-			foreach (var assembly in xunit3Assemblies)
+			if (xunit3Assemblies.All(a => a.Configuration.ParallelizeAssemblyOrDefault))
 			{
-				try
+				// Run assemblies in parallel (matches v2 behavior)
+				await Task.WhenAll(xunit3Assemblies.Select(assembly => RunTestsSafe(assembly, cancellationToken)));
+			}
+			else
+			{
+				foreach (var assembly in xunit3Assemblies)
 				{
-					await RunTests(assembly, cancellationToken);
-				}
-				catch (Exception ex)
-				{
-					_diagnosticsManager?.PostDiagnosticMessage(
-						$"Exception running tests in assembly '{assembly.AssemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
+					await RunTestsSafe(assembly, cancellationToken);
 				}
 			}
+		}
+	}
+
+	async Task RunTestsSafe(Xunit3TestAssemblyInfo assembly, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await RunTests(assembly, cancellationToken);
+		}
+		catch (Exception ex)
+		{
+			_diagnosticsManager?.PostDiagnosticMessage(
+				$"Exception running tests in assembly '{assembly.AssemblyFileName}': '{ex.Message}'{Environment.NewLine}{ex}");
 		}
 	}
 

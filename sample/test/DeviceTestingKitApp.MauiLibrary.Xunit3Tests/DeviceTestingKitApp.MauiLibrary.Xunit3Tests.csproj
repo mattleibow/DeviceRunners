@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceTestingKitApp.MauiLibrary\DeviceTestingKitApp.MauiLibrary.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit3\DeviceRunners.UITesting.Xunit3.csproj" />
   </ItemGroup>
 
 </Project>

@@ -53,7 +53,10 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 
 				var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
 				discoveryOptions.SetSynchronousMessageReporting(true);
-				discoveryOptions.SetPreEnumerateTheories(true);
+
+				// Only force PreEnumerateTheories when not explicitly configured by the user
+				if (configuration.PreEnumerateTheories is null)
+					discoveryOptions.SetPreEnumerateTheories(true);
 
 				await frameworkDiscoverer.Find(testCase =>
 				{

@@ -1,5 +1,7 @@
 using System.Collections;
 
+using DeviceRunners.UITesting.Xunit;
+
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 

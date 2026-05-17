@@ -6,7 +6,9 @@ namespace DeviceRunners.UITesting.Xunit3;
 /// <summary>
 /// A test case that executes a single [UIFact] test method on the UI thread.
 /// Implements <see cref="ISelfExecutingXunitTestCase"/> to hook into the xUnit v3
-/// execution pipeline and dispatch test invocation to the UI thread.
+/// execution pipeline and dispatch only the test method invocation to the UI thread,
+/// while class construction, <see cref="IAsyncLifetime"/>, and disposal run on the
+/// xUnit worker thread.
 /// </summary>
 public class UITestCase : XunitTestCase, ISelfExecutingXunitTestCase
 {
@@ -55,19 +57,19 @@ public class UITestCase : XunitTestCase, ISelfExecutingXunitTestCase
 		ExceptionAggregator aggregator,
 		CancellationTokenSource cancellationTokenSource)
 	{
-		return await UIThreadCoordinator.DispatchAsync(async () =>
-		{
-			var tests = await CreateTests();
-			return await XunitTestCaseRunner.Instance.Run(
-				this,
-				tests,
-				messageBus,
-				aggregator,
-				cancellationTokenSource,
-				TestCaseDisplayName,
-				SkipReason,
-				explicitOption,
-				constructorArguments);
-		});
+		var tests = await CreateTests();
+
+		// Use UIXunitTestCaseRunner which dispatches only InvokeTest to the UI thread,
+		// keeping construction, IAsyncLifetime, and disposal on the worker thread.
+		return await UIXunitTestCaseRunner.Instance.Run(
+			this,
+			tests,
+			messageBus,
+			aggregator,
+			cancellationTokenSource,
+			TestCaseDisplayName,
+			SkipReason,
+			explicitOption,
+			constructorArguments);
 	}
 }
