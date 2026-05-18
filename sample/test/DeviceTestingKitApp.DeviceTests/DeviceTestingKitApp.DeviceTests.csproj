@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
-    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
+    Direct import of DeviceRunners.VisualRunners.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.VisualRunners.Targets" />
     which causes NuGet to auto-import the same .props and .targets files.
   -->
-  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Targets\build\DeviceRunners.VisualRunners.Targets.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net10.0-android</TargetFrameworks>
@@ -100,7 +100,7 @@
     </ItemGroup>
   </Target>
 
-  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
-  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
+  <!-- See the .props import at the top of this file for the DeviceRunners.VisualRunners.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Targets\build\DeviceRunners.VisualRunners.Targets.targets" />
 
 </Project>

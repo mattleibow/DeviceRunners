@@ -17,7 +17,7 @@
       <Import Project="$(VSTestTargets)" Condition="Exists('$(VSTestTargets)')" />
     By pre-setting VSTestTargets to a non-existent path (only when empty), the
     Exists() check fails and the SDK's VSTest target definition is never imported.
-    Our custom VSTest target in DeviceRunners.Testing.Targets.targets then becomes
+    Our custom VSTest target in DeviceRunners.VisualRunners.Targets.targets then becomes
     the only VSTest definition and handles device deployment + test execution.
   -->
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'
@@ -26,7 +26,7 @@
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'
                           Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'browser'
                           Or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
-    <VSTestTargets Condition="'$(VSTestTargets)' == ''">$(MSBuildThisFileDirectory)DeviceRunners.Testing.Targets.VSTest.targets.disabled</VSTestTargets>
+    <VSTestTargets Condition="'$(VSTestTargets)' == ''">$(MSBuildThisFileDirectory)DeviceRunners.VisualRunners.Targets.VSTest.targets.disabled</VSTestTargets>
     <!--
       Skip the default VSTest build step — our custom VSTest target already has
       DependsOnTargets="Build" so the app is built before tests run.

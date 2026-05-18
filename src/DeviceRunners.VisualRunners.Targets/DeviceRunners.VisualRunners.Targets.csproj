@@ -4,8 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoDefaultExcludes>true</NoDefaultExcludes>
-    <PackageId>DeviceRunners.Testing.Targets</PackageId>
-    <Description>MSBuild targets that enable `dotnet test` support for .NET device test apps (Android, iOS, macOS, Windows) via the DeviceRunners CLI tool.</Description>
+    <PackageId>DeviceRunners.VisualRunners.Targets</PackageId>
+    <Description>MSBuild targets that enable `dotnet test` support for .NET device test apps (Android, iOS, macOS, Windows) via the DeviceRunners CLI tool and Visual Runner TCP/NDJSON protocol.</Description>
     <!-- This is a targets-only package (no lib/ assemblies), so NU5128 is expected -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>
