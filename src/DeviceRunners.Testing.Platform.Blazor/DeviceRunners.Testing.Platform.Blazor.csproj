@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <RootNamespace>DeviceRunners.Testing.Platform</RootNamespace>
+    <Description>Blazor/WASM host integration for Microsoft Testing Platform — enables dotnet test for Blazor WebAssembly apps via console streaming and CDP capture.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.Testing.Platform\DeviceRunners.Testing.Platform.csproj" />
+  </ItemGroup>
+
+</Project>

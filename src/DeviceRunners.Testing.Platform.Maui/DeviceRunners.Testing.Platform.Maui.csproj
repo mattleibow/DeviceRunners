@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <IsPackable>true</IsPackable>
+    <RootNamespace>DeviceRunners.Testing.Platform</RootNamespace>
+    <Description>MAUI host integration for Microsoft Testing Platform on devices — enables dotnet test for MAUI apps.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.Core\DeviceRunners.Core.csproj" />
+    <ProjectReference Include="..\DeviceRunners.Testing.Platform\DeviceRunners.Testing.Platform.csproj" />
+  </ItemGroup>
+
+</Project>

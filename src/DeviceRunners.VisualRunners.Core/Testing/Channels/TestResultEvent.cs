@@ -59,9 +59,19 @@ public record TestResultEvent
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Timestamp { get; init; }
 
+	[JsonPropertyName("uid")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? Uid { get; init; }
+
+	[JsonPropertyName("parentUid")]
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? ParentUid { get; init; }
+
 	public const string TypeBegin = "begin";
 	public const string TypeResult = "result";
 	public const string TypeEnd = "end";
+	public const string TypeDiscovered = "discovered";
+	public const string TypeInProgress = "inprogress";
 
 	// ── Factory methods ──────────────────────────────────────
 
