@@ -25,13 +25,11 @@ class InMemoryXunit3TestAssembly : XunitTestAssembly, IXunitTestAssembly
 {
 	readonly string _logicalAssemblyPath;
 
-#pragma warning disable CS0618 // Obsolete constructor; tracked in xunit/xunit#3577 — new overload available in 4.0+
 	public InMemoryXunit3TestAssembly(Assembly assembly, string? configFileName, Version? version, string logicalAssemblyPath)
 		: base(assembly, configFileName, version)
 	{
 		_logicalAssemblyPath = logicalAssemblyPath;
 	}
-#pragma warning restore CS0618
 
 	/// <summary>
 	/// Returns the logical assembly path instead of <see cref="Assembly.Location"/>

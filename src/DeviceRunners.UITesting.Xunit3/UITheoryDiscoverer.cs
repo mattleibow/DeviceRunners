@@ -12,11 +12,7 @@ namespace DeviceRunners.UITesting.Xunit3;
 /// </summary>
 public class UITheoryDiscoverer : TheoryDiscoverer
 {
-#if XUNIT_V3_CI
-	protected new ValueTask<IReadOnlyCollection<IXunitTestCase>> CreateTestCasesForDataRow(
-#else
 	protected override ValueTask<IReadOnlyCollection<IXunitTestCase>> CreateTestCasesForDataRow(
-#endif
 	ITestFrameworkDiscoveryOptions discoveryOptions,
 	IXunitTestMethod testMethod,
 	ITheoryAttribute theoryAttribute,

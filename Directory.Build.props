@@ -22,10 +22,4 @@
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
-  <!-- xunit v3 CI build support: /p:UseXunitV3CI=true
-       See https://xunit.net/docs/using-ci-builds -->
-  <PropertyGroup Condition="'$(UseXunitV3CI)' == 'true'">
-    <DefineConstants>$(DefineConstants);XUNIT_V3_CI</DefineConstants>
-  </PropertyGroup>
-
 </Project>

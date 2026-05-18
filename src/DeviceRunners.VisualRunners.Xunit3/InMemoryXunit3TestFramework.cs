@@ -23,9 +23,7 @@ class InMemoryXunit3TestFramework : XunitTestFramework
 		if (string.IsNullOrEmpty(assembly.Location))
 			return new InMemoryXunit3TestFramework();
 
-#pragma warning disable CS0618 // Obsolete method; use RegisteredEngineConfig.GetTestFramework in 4.0+
 		return ExtensibilityPointFactory.GetTestFramework(assembly);
-#pragma warning restore CS0618
 	}
 
 	protected override ITestFrameworkDiscoverer CreateDiscoverer(Assembly assembly)
