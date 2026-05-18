@@ -19,8 +19,8 @@
     <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('osx'))">osx-$(_DRMtpArch)</_DRMtpRid>
     <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('windows'))">win-$(_DRMtpArch)</_DRMtpRid>
     <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-$(_DRMtpArch)</_DRMtpRid>
-    <_DRMtpExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Testing.Platform.exe</_DRMtpExePath>
-    <_DRMtpExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Testing.Platform</_DRMtpExePath>
+    <_DRMtpExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Cli.exe</_DRMtpExePath>
+    <_DRMtpExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Cli</_DRMtpExePath>
     <_DRMtpCommand Condition="'$(DeviceRunnersMtpBin)' != ''">$(DeviceRunnersMtpBin)</_DRMtpCommand>
     <_DRMtpCommand Condition="'$(DeviceRunnersMtpBin)' == ''">$(_DRMtpExePath)</_DRMtpCommand>
   </PropertyGroup>

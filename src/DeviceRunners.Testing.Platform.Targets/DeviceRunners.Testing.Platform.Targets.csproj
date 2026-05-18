@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Path to the MTP host tool project, relative to this file. -->
-    <_MtpToolProjectPath>$(MSBuildThisFileDirectory)..\DeviceRunners.Testing.Platform\DeviceRunners.Testing.Platform.csproj</_MtpToolProjectPath>
+    <!-- Path to the CLI tool project, relative to this file. -->
+    <_MtpToolProjectPath>$(MSBuildThisFileDirectory)..\DeviceRunners.Cli\DeviceRunners.Cli.csproj</_MtpToolProjectPath>
     <_MtpToolsDir>$(MSBuildThisFileDirectory)tools\</_MtpToolsDir>
   </PropertyGroup>
 
