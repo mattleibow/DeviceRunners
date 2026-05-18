@@ -28,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Testing.Platform" />
     <PackageReference Include="Spectre.Console.Cli" />
     <PackageReference Include="AndroidSdk" />
     <PackageReference Include="AppleDev" />
@@ -46,6 +47,7 @@
 
   <ItemGroup>
     <TrimmerRootAssembly Include="Spectre.Console.Cli" />
+    <TrimmerRootAssembly Include="Microsoft.Testing.Platform" />
     <TrimmerRootAssembly Include="DeviceRunners.Cli" />
   </ItemGroup>
 

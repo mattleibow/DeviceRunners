@@ -1,0 +1,148 @@
+<Project>
+
+  <!--
+    MTP Host Tool resolution.
+
+    The NuGet package ships self-contained, single-file binaries per RID in
+    tools/<rid>/. The targets detect the host OS and select the right binary.
+
+    Override by setting $(DeviceRunnersMtpBin) in your project file:
+      <PropertyGroup>
+        <DeviceRunnersMtpBin>/path/to/DeviceRunners.Testing.Platform</DeviceRunnersMtpBin>
+      </PropertyGroup>
+  -->
+  <PropertyGroup>
+    <_DRMtpToolsDir>$(MSBuildThisFileDirectory)..\tools\</_DRMtpToolsDir>
+    <_DRMtpArch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant())</_DRMtpArch>
+    <_DRMtpArch Condition="'$(_DRMtpArch)' == 'x64'">x64</_DRMtpArch>
+    <_DRMtpArch Condition="'$(_DRMtpArch)' == 'arm64'">arm64</_DRMtpArch>
+    <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('osx'))">osx-$(_DRMtpArch)</_DRMtpRid>
+    <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('windows'))">win-$(_DRMtpArch)</_DRMtpRid>
+    <_DRMtpRid Condition="$([MSBuild]::IsOSPlatform('linux'))">linux-$(_DRMtpArch)</_DRMtpRid>
+    <_DRMtpExePath Condition="$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Testing.Platform.exe</_DRMtpExePath>
+    <_DRMtpExePath Condition="!$([MSBuild]::IsOSPlatform('windows'))">$(_DRMtpToolsDir)$(_DRMtpRid)\DeviceRunners.Testing.Platform</_DRMtpExePath>
+    <_DRMtpCommand Condition="'$(DeviceRunnersMtpBin)' != ''">$(DeviceRunnersMtpBin)</_DRMtpCommand>
+    <_DRMtpCommand Condition="'$(DeviceRunnersMtpBin)' == ''">$(_DRMtpExePath)</_DRMtpCommand>
+  </PropertyGroup>
+
+  <!--
+    Compute the target platform once so all targets and conditions can use
+    $(_DRMtpPlatform).
+  -->
+  <PropertyGroup>
+    <_DRMtpPlatform>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_DRMtpPlatform>
+    <!-- Blazor WASM uses plain net9.0/net10.0 without a platform TFM -->
+    <_DRMtpPlatform Condition="'$(_DRMtpPlatform)' == '' And '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">browser</_DRMtpPlatform>
+    <_DRMtpIsSupportedPlatform Condition="'$(_DRMtpPlatform)' == 'android'
+                                        Or '$(_DRMtpPlatform)' == 'ios'
+                                        Or '$(_DRMtpPlatform)' == 'maccatalyst'
+                                        Or '$(_DRMtpPlatform)' == 'windows'
+                                        Or '$(_DRMtpPlatform)' == 'browser'">true</_DRMtpIsSupportedPlatform>
+  </PropertyGroup>
+
+  <!--
+    Wire up RunCommand/RunArguments so `dotnet test` knows to launch our host tool.
+    MTP's protocol args (--server dotnettestcli --dotnet-test-pipe <pipe>) are
+    appended automatically by the SDK when RunCommand is set.
+  -->
+  <PropertyGroup Condition="'$(_DRMtpIsSupportedPlatform)' == 'true'">
+    <RunCommand>$(_DRMtpCommand)</RunCommand>
+  </PropertyGroup>
+
+  <!--
+    Per-platform RunArguments.
+    The host tool parses these to create the appropriate orchestrator.
+  -->
+
+  <!-- Android -->
+  <PropertyGroup Condition="'$(_DRMtpPlatform)' == 'android'">
+    <_DRMtpRunArgs>--platform android</_DRMtpRunArgs>
+    <_DRMtpRunArgs Condition="'$(ApplicationId)' != ''">$(_DRMtpRunArgs) --package $(ApplicationId)</_DRMtpRunArgs>
+    <_DRMtpRunArgs Condition="'$(DeviceRunnersDevice)' != ''">$(_DRMtpRunArgs) --device $(DeviceRunnersDevice)</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --results-directory "$(TestResultsDirectory)"</_DRMtpRunArgs>
+    <RunArguments>$(_DRMtpRunArgs)</RunArguments>
+  </PropertyGroup>
+
+  <!-- iOS -->
+  <PropertyGroup Condition="'$(_DRMtpPlatform)' == 'ios'">
+    <_DRMtpRunArgs>--platform ios</_DRMtpRunArgs>
+    <_DRMtpRunArgs Condition="'$(ApplicationId)' != ''">$(_DRMtpRunArgs) --package $(ApplicationId)</_DRMtpRunArgs>
+    <_DRMtpRunArgs Condition="'$(DeviceRunnersDevice)' != ''">$(_DRMtpRunArgs) --device $(DeviceRunnersDevice)</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --results-directory "$(TestResultsDirectory)"</_DRMtpRunArgs>
+    <RunArguments>$(_DRMtpRunArgs)</RunArguments>
+  </PropertyGroup>
+
+  <!-- macCatalyst -->
+  <PropertyGroup Condition="'$(_DRMtpPlatform)' == 'maccatalyst'">
+    <_DRMtpRunArgs>--platform macos</_DRMtpRunArgs>
+    <_DRMtpRunArgs Condition="'$(ApplicationId)' != ''">$(_DRMtpRunArgs) --package $(ApplicationId)</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --results-directory "$(TestResultsDirectory)"</_DRMtpRunArgs>
+    <RunArguments>$(_DRMtpRunArgs)</RunArguments>
+  </PropertyGroup>
+
+  <!-- Windows -->
+  <PropertyGroup Condition="'$(_DRMtpPlatform)' == 'windows'">
+    <_DRMtpRunArgs>--platform windows</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --results-directory "$(TestResultsDirectory)"</_DRMtpRunArgs>
+    <RunArguments>$(_DRMtpRunArgs)</RunArguments>
+  </PropertyGroup>
+
+  <!-- WASM / Blazor WebAssembly -->
+  <PropertyGroup Condition="'$(_DRMtpPlatform)' == 'browser'">
+    <_DRMtpRunArgs>--platform wasm</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --results-directory "$(TestResultsDirectory)"</_DRMtpRunArgs>
+    <_DRMtpRunArgs>$(_DRMtpRunArgs) --headless</_DRMtpRunArgs>
+    <RunArguments>$(_DRMtpRunArgs)</RunArguments>
+  </PropertyGroup>
+
+  <!-- Verbose mode if requested -->
+  <PropertyGroup Condition="'$(DeviceRunnersVerbose)' == 'true'">
+    <RunArguments>$(RunArguments) --verbose</RunArguments>
+  </PropertyGroup>
+
+  <!--
+    For Android, wire up the app path from the build output.
+    The .apk path is populated by the Android SDK during build.
+  -->
+  <Target Name="_DRMtpComputeAndroidApp"
+          AfterTargets="Build"
+          Condition="'$(_DRMtpPlatform)' == 'android'">
+    <PropertyGroup>
+      <RunArguments Condition="'$(_AndroidApkPath)' != ''">$(RunArguments) --app "$(_AndroidApkPath)"</RunArguments>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    For iOS, compute the .app path from the build output.
+  -->
+  <Target Name="_DRMtpComputeAppleApp"
+          AfterTargets="Build"
+          Condition="'$(_DRMtpPlatform)' == 'ios' Or '$(_DRMtpPlatform)' == 'maccatalyst'">
+    <PropertyGroup>
+      <RunArguments Condition="'$(_AppBundlePath)' != ''">$(RunArguments) --app "$(_AppBundlePath)"</RunArguments>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    For Windows, compute the .exe path.
+  -->
+  <Target Name="_DRMtpComputeWindowsApp"
+          AfterTargets="Build"
+          Condition="'$(_DRMtpPlatform)' == 'windows'">
+    <PropertyGroup>
+      <RunArguments>$(RunArguments) --app "$(TargetPath)"</RunArguments>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    For WASM, compute the publish directory.
+  -->
+  <Target Name="_DRMtpComputeWasmApp"
+          AfterTargets="Publish"
+          Condition="'$(_DRMtpPlatform)' == 'browser'">
+    <PropertyGroup>
+      <RunArguments>$(RunArguments) --app "$(PublishDir)wwwroot"</RunArguments>
+    </PropertyGroup>
+  </Target>
+
+</Project>
