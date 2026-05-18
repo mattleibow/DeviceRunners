@@ -1,11 +1,11 @@
 using System.Collections;
 
+using DeviceRunners.UITesting.Xunit;
+
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
-using static System.Net.Mime.MediaTypeNames;
-
-namespace DeviceTestingKitApp.DeviceTests;
+namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 public class DynamicUITests : UITests<ContentPage>
 {

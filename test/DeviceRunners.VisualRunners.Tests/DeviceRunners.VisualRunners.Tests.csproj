@@ -16,11 +16,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestProject.Tests\TestProject.Tests.csproj" />
+    <ProjectReference Include="..\TestProject.Xunit3Tests\TestProject.Xunit3Tests.csproj" />
   </ItemGroup>
 
 </Project>

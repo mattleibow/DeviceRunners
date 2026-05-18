@@ -1,4 +1,6 @@
-namespace DeviceTestingKitApp.DeviceTests;
+using DeviceRunners.UITesting.Xunit;
+
+namespace DeviceTestingKitApp.MauiLibrary.XunitTests;
 
 public class TestPageUITests : UITests<TestPage>
 {
