@@ -16,6 +16,7 @@
     <Project Path="sample/test/DeviceTestingKitApp.BlazorLibrary.XunitTests/DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.BlazorLibrary.Xunit3Tests/DeviceTestingKitApp.BlazorLibrary.Xunit3Tests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MtpDeviceTests/DeviceTestingKitApp.MtpDeviceTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.MtpBrowserTests/DeviceTestingKitApp.MtpBrowserTests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DeviceRunners.Cli/DeviceRunners.Cli.csproj" />
