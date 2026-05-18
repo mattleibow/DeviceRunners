@@ -41,9 +41,8 @@
   </PropertyGroup>
 
   <!--
-    Wire up RunCommand/RunArguments so `dotnet test` knows to launch our host tool.
-    MTP's protocol args (--server dotnettestcli --dotnet-test-pipe <pipe>) are
-    appended automatically by the SDK when RunCommand is set.
+    Wire up RunCommand/RunArguments so 'dotnet test' knows to launch our host tool.
+    MTP's protocol args are appended automatically by the SDK when RunCommand is set.
   -->
   <PropertyGroup Condition="'$(_DRMtpIsSupportedPlatform)' == 'true'">
     <RunCommand>$(_DRMtpCommand)</RunCommand>
