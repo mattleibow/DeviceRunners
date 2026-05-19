@@ -8,6 +8,9 @@
     <Description>MSBuild targets that enable `dotnet test` support for .NET device test apps (Android, iOS, macOS, Windows, WASM) via Microsoft Testing Platform. Wires `dotnet test` to the DeviceRunners host tool for device orchestration.</Description>
     <!-- This is a targets-only package (no lib/ assemblies), so NU5128 is expected -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- Packing this project requires publishing the CLI tool for 6 RIDs (via PublishMtpTool target).
+         Disable pack during solution-wide dotnet pack; pack explicitly when releasing. -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,7 +27,7 @@
   <ItemGroup>
     <_MtpTargetRid Include="osx-arm64;osx-x64;win-x64;win-arm64;linux-x64;linux-arm64" />
   </ItemGroup>
-  <Target Name="PublishMtpTool" BeforeTargets="GenerateNuspec">
+  <Target Name="PublishMtpTool" BeforeTargets="GenerateNuspec" Condition="'$(IsPackable)' != 'false'">
     <Message Importance="high" Text="DeviceRunners.Testing.Platform.Targets: publishing MTP host tool for %(_MtpTargetRid.Identity)..." />
     <Exec Command="dotnet publish &quot;$(_MtpToolProjectPath)&quot; -f net10.0 -r %(_MtpTargetRid.Identity) -c $(Configuration) -p:PublishSingleFile=true -p:SelfContained=true -p:PublishTrimmed=true -p:SatelliteResourceLanguages=en -o &quot;$(_MtpToolsDir)%(_MtpTargetRid.Identity)&quot;" />
     <!-- Add published files to the package dynamically, after they exist on disk. -->
