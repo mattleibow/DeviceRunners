@@ -71,10 +71,16 @@ public class XunitTestDiscoverer : ITestDiscoverer
 	static TestAssemblyConfiguration GetConfiguration(string assemblyName)
 	{
 		using var stream = GetConfigurationStreamForAssembly(assemblyName);
-		if (stream is not null)
-			return ConfigReader.Load(stream);
+		var configuration = stream is not null
+			? ConfigReader.Load(stream)
+			: new TestAssemblyConfiguration();
 
-		return new TestAssemblyConfiguration();
+		// Device testing requires serial test execution to avoid shared state
+		// conflicts (UI singletons like Shell, DispatcherProvider, platform resources).
+		configuration.ParallelizeTestCollections ??= false;
+		configuration.MaxParallelThreads ??= 1;
+
+		return configuration;
 	}
 
 	static Stream? GetConfigurationStreamForAssembly(string assemblyName)
