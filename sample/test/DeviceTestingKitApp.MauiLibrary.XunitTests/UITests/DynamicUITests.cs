@@ -131,14 +131,27 @@ public class DynamicUITests : UITests<ContentPage>
 	{
 		initialFrame ??= InitialFrame;
 
+		// Wait for initial non-default frame
 		while (timeout > 0)
 		{
 			if (view.Frame != initialFrame)
-				return;
+				break;
 
 			await Task.Delay(interval);
-
 			timeout -= interval;
+		}
+
+		// Wait for frame to stabilize (unchanged for one interval)
+		var lastFrame = view.Frame;
+		while (timeout > 0)
+		{
+			await Task.Delay(interval);
+			timeout -= interval;
+
+			if (view.Frame == lastFrame)
+				return;
+
+			lastFrame = view.Frame;
 		}
 	}
 

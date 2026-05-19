@@ -34,6 +34,7 @@
   <!-- UI tests require a running MAUI app (Shell, handlers, etc.) — device-only -->
   <ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">
     <Compile Remove="UITests\**" />
+    <MauiXaml Remove="UITests\**" />
   </ItemGroup>
 
 </Project>
