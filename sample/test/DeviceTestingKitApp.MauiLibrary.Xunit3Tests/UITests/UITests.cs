@@ -10,13 +10,14 @@ public abstract class UITests<T> : IAsyncLifetime
 
 	public async ValueTask InitializeAsync()
 	{
-		Routing.RegisterRoute("uitests", typeof(T));
+		Routing.RegisterRoute("uitests_v3", typeof(T));
 
-		await Shell.Current.GoToAsync("uitests");
+		await Shell.Current.GoToAsync("uitests_v3");
 
 		CurrentPage = (T)Shell.Current.CurrentPage;
 
 		await WaitForLoaded(CurrentPage);
+		await WaitForPageLayout(CurrentPage);
 
 		MauiContext = CurrentPage.Handler!.MauiContext!;
 	}
@@ -43,12 +44,53 @@ public abstract class UITests<T> : IAsyncLifetime
 		}
 	}
 
+	/// <summary>
+	/// Waits for the page's platform view to be laid out with non-zero dimensions.
+	/// On Android, Shell navigation can leave the CoordinatorLayout at 0x0 until
+	/// a layout pass is explicitly triggered or the message loop processes layout requests.
+	/// </summary>
+	static async Task WaitForPageLayout(Page page, int timeout = 2000, int interval = 50)
+	{
+		if (page.Width > 0 && page.Height > 0)
+			return;
+
+		var elapsed = 0;
+		while (elapsed < timeout)
+		{
+			await Task.Delay(interval);
+			elapsed += interval;
+
+			if (page.Width > 0 && page.Height > 0)
+				return;
+		}
+
+#if ANDROID
+		// Force a layout pass if the platform view tree hasn't been measured yet
+		if (page.Handler?.PlatformView is Android.Views.View platformView && !platformView.IsLaidOut)
+		{
+			platformView.RootView?.RequestLayout();
+			elapsed = 0;
+			while (elapsed < timeout)
+			{
+				await Task.Delay(interval);
+				elapsed += interval;
+
+				if (page.Width > 0 && page.Height > 0)
+					return;
+			}
+		}
+#endif
+
+		Assert.True(page.Width > 0 && page.Height > 0,
+			$"Page was not laid out within timeout. Width={page.Width}, Height={page.Height}");
+	}
+
 	public async ValueTask DisposeAsync()
 	{
 		CurrentPage = null!;
 
 		await Shell.Current.GoToAsync("..");
 
-		Routing.UnRegisterRoute("uitests");
+		Routing.UnRegisterRoute("uitests_v3");
 	}
 }

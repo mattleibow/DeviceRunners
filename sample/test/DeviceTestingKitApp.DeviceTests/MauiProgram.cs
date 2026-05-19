@@ -47,11 +47,10 @@ public static class MauiProgram
 #endif
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
-				// TEMPORARY: isolate v3 tests to diagnose if v2 corrupts state
-				//.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.Xunit3Tests.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.NUnitTests.UnitTests).Assembly)
-				//.AddXunit()
+				.AddXunit()
 				.AddXunit3()
 				.AddNUnit());
 
