@@ -11,6 +11,9 @@
     <AssemblyName>DeviceRunners.Cli</AssemblyName>
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <!-- The CLI is a host tool, not a test application. Microsoft.Testing.Platform sets
+         IsTestingPlatformApplication=true by default which makes NuGet refuse to pack. -->
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
   </PropertyGroup>
 
   <!-- When publishing for the Testing.Targets NuGet package, produce a
