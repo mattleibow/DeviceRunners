@@ -62,6 +62,7 @@
       <Destination>wwwroot/index.html</Destination>
       <Platform>browser</Platform>
       <BuildAction>Content</BuildAction>
+      <AdditionalMetadata>Link=wwwroot/index.html;CopyToPublishDirectory=PreserveNewest</AdditionalMetadata>
     </_DeviceRunnersTemplateFile>
 
   </ItemGroup>
