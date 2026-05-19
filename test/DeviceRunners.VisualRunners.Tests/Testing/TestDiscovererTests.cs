@@ -1,5 +1,3 @@
-using System.Reflection;
-
 using DeviceRunners;
 using DeviceRunners.VisualRunners;
 
@@ -11,14 +9,12 @@ public abstract class TestDiscovererTests
 {
 	public abstract ITestDiscoverer CreateTestDiscoverer(VisualTestRunnerConfiguration configuration);
 
-	protected virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
-
 	protected virtual int ExpectedTestCount => Constants.TestCount;
 
 	[Fact]
 	public async Task DiscoverAsyncCanFindAllTests()
 	{
-		var assemblies = new[] { TestAssembly };
+		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
 		var options = new VisualTestRunnerConfiguration(assemblies);
 
 		ITestDiscoverer discoverer = CreateTestDiscoverer(options);

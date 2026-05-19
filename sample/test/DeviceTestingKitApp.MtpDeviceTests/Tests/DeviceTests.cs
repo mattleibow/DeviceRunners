@@ -1,15 +1,13 @@
-namespace DeviceTestingKitApp.MtpDeviceTests.Tests;
+namespace DeviceTestingKitApp.MtpDeviceTests;
 
 /// <summary>
 /// Tests that verify device-specific behaviors.
-/// These run on the actual device via the MTP runner.
 /// </summary>
 public class DeviceTests
 {
 	[Fact]
 	public void DeviceHasMainThread()
 	{
-		// On device, we should always have a main thread
 		Assert.NotNull(Thread.CurrentThread);
 	}
 

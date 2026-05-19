@@ -1,5 +1,4 @@
 ﻿using ObjCRuntime;
-
 using UIKit;
 
 namespace DeviceTestingKitApp.DeviceTests;

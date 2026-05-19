@@ -9,7 +9,7 @@ public class CounterViewTests : VisualElementTests
 	{
 		View = new CounterView();
 		ViewModel = new CounterViewModel();
-
+		
 		View.BindingContext = ViewModel;
 	}
 
@@ -39,7 +39,7 @@ public class CounterViewTests : VisualElementTests
 	public void FakeTappingButtonUpdatesButtonText()
 	{
 		var btn = Assert.IsType<Button>(View.Content);
-
+		
 		// trigger a fake click using internal APIs
 		btn.SendClicked();
 

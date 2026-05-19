@@ -12,7 +12,4 @@ public static class Constants
 
 	// When PreEnumerateTheories = false, [Theory] with 3 InlineData is 1 test case (not 3)
 	public const int TestCountNoTheoryEnumeration = 6;
-
-	// Xunit3 test assembly includes IAsyncLifetime tests (2 additional test cases)
-	public const int Xunit3TestCountNoTheoryEnumeration = 8;
 }

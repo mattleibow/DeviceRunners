@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!--
-    Direct import of DeviceRunners.VisualRunners.Targets for in-repo usage.
-    End users add: <PackageReference Include="DeviceRunners.VisualRunners.Targets" />
+    Direct import of DeviceRunners.Testing.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.Testing.Targets" />
     which causes NuGet to auto-import the same .props and .targets files.
   -->
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Targets\build\DeviceRunners.VisualRunners.Targets.props" />
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net10.0-android</TargetFrameworks>
@@ -31,6 +31,9 @@
 
     <!-- The MAUI app defines its own Program.Main; disable the auto-generated testing platform entry point -->
     <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+
+    <!-- Test pages intentionally use Source= bindings (e.g. x:Reference in DataTriggers) for demonstration purposes -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022;XC0025</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -64,18 +67,15 @@
        Test classes are discovered via reflection, so the linker can't trace them. -->
   <ItemGroup>
     <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" RootMode="all" />
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.Xunit3Tests" RootMode="all" />
     <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" RootMode="all" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.XunitTests\DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
-    <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.Xunit3Tests\DeviceTestingKitApp.MauiLibrary.Xunit3Tests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.Library.NUnitTests\DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
   </ItemGroup>
@@ -96,11 +96,11 @@
   <Target Name="_ExcludeTestLibraryRuntimeConfigs" BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.Xunit3Tests')))" />
+          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')))" />
     </ItemGroup>
   </Target>
 
-  <!-- See the .props import at the top of this file for the DeviceRunners.VisualRunners.Targets equivalent. -->
-  <Import Project="..\..\..\src\DeviceRunners.VisualRunners.Targets\build\DeviceRunners.VisualRunners.Targets.targets" />
+  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
 
 </Project>
