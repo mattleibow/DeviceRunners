@@ -56,7 +56,7 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 				await frameworkDiscoverer.Find(testCase =>
 				{
 					discoveredTestCases.Add(testCase);
-					return new ValueTask<bool>(true);
+					return new ValueTask<bool>(!cancellationToken.IsCancellationRequested);
 				}, discoveryOptions, cancellationToken: cancellationToken);
 
 				var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
