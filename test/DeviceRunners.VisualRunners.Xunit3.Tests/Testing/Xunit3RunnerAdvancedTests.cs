@@ -8,7 +8,7 @@ using NSubstitute;
 
 using Xunit;
 
-namespace VisualRunnerTests.Testing;
+namespace VisualRunnerTests.Xunit3.Testing;
 
 public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 {
@@ -16,16 +16,16 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 	IReadOnlyList<ITestAssemblyInfo> _testAssemblies = null!;
 	VisualTestRunnerConfiguration _options = null!;
 
-	public async Task InitializeAsync()
+	public async ValueTask InitializeAsync()
 	{
 		var assemblies = new[] { _testAssembly };
 		_options = new VisualTestRunnerConfiguration(assemblies);
 
 		var discoverer = new Xunit3TestDiscoverer(_options);
-		_testAssemblies = await discoverer.DiscoverAsync();
+		_testAssemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 	}
 
-	public Task DisposeAsync() => Task.CompletedTask;
+	public ValueTask DisposeAsync() => default;
 
 	[Fact]
 	public async Task RunTestsAsync_RerunSameTests_ProducesFreshResults()
@@ -34,7 +34,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		var testAssembly = _testAssemblies[0];
 
 		// First run
-		await runner.RunTestsAsync(testAssembly);
+		await runner.RunTestsAsync(testAssembly, TestContext.Current.CancellationToken);
 
 		var firstResults = testAssembly.TestCases
 			.Select(tc => (tc.DisplayName, tc.Result?.Status))
@@ -44,7 +44,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		Assert.All(firstResults, r => Assert.NotNull(r.Status));
 
 		// Second run — should produce fresh results
-		await runner.RunTestsAsync(testAssembly);
+		await runner.RunTestsAsync(testAssembly, TestContext.Current.CancellationToken);
 
 		// Verify results still present and correct
 		foreach (var tc in testAssembly.TestCases)
@@ -62,12 +62,12 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		var simpleTest = testAssembly.TestCases.First(tc => tc.DisplayName.EndsWith(".SimpleTest"));
 
 		// First run
-		await runner.RunTestsAsync(simpleTest);
+		await runner.RunTestsAsync(simpleTest, TestContext.Current.CancellationToken);
 		Assert.NotNull(simpleTest.Result);
 		var firstResult = simpleTest.Result;
 
 		// Second run
-		await runner.RunTestsAsync(simpleTest);
+		await runner.RunTestsAsync(simpleTest, TestContext.Current.CancellationToken);
 		Assert.NotNull(simpleTest.Result);
 
 		// Should have a new result (not same reference)
@@ -87,7 +87,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 			tc.ResultReported += r => reportedResults.Add(r);
 		}
 
-		await runner.RunTestsAsync(testAssembly);
+		await runner.RunTestsAsync(testAssembly, TestContext.Current.CancellationToken);
 
 		// Every test case should have fired ResultReported
 		Assert.Equal(testAssembly.TestCases.Count, reportedResults.Count);
@@ -106,7 +106,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 
 		Assert.Equal(2, selectedTests.Count);
 
-		await runner.RunTestsAsync(selectedTests);
+		await runner.RunTestsAsync(selectedTests, TestContext.Current.CancellationToken);
 
 		// Selected tests should have results
 		foreach (var tc in selectedTests)
@@ -127,7 +127,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		var runner = new Xunit3TestRunner(_options);
 
 		// Should not throw
-		await runner.RunTestsAsync(Array.Empty<ITestCaseInfo>());
+		await runner.RunTestsAsync(Array.Empty<ITestCaseInfo>(), TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -140,7 +140,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		mockTestCase.DisplayName.Returns("MockTest");
 
 		// Should not throw — runner filters to Xunit3TestCaseInfo only
-		await runner.RunTestsAsync(new[] { mockTestCase });
+		await runner.RunTestsAsync(new[] { mockTestCase }, TestContext.Current.CancellationToken);
 	}
 
 	[Fact]
@@ -168,7 +168,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		if (outputFailed is null)
 			return; // Skip if fixture doesn't have this test
 
-		await runner.RunTestsAsync(outputFailed);
+		await runner.RunTestsAsync(outputFailed, TestContext.Current.CancellationToken);
 
 		Assert.NotNull(outputFailed.Result);
 		Assert.Equal(TestResultStatus.Failed, outputFailed.Result.Status);

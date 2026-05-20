@@ -91,11 +91,6 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 			ConfigReader_Json.LoadFromJson(configuration, jsonText);
 		}
 
-		// Device testing requires serial test execution to avoid shared state
-		// conflicts (UI singletons like Shell, DispatcherProvider, platform resources).
-		configuration.ParallelizeTestCollections ??= false;
-		configuration.MaxParallelThreads ??= 1;
-
 		return configuration;
 	}
 

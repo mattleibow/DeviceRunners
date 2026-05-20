@@ -6,9 +6,11 @@ using DeviceRunners.VisualRunners.Xunit3;
 
 using NSubstitute;
 
+using VisualRunnerTests.Xunit3;
+
 using Xunit;
 
-namespace VisualRunnerTests.Testing;
+namespace VisualRunnerTests.Xunit3.Testing;
 
 public class Xunit3DiscovererAdvancedTests
 {
@@ -20,7 +22,7 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies = await discoverer.DiscoverAsync();
+		var assemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 		var assembly = Assert.Single(assemblies);
 
 		// Verify each test case has proper metadata
@@ -38,7 +40,7 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies = await discoverer.DiscoverAsync();
+		var assemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 		var assembly = Assert.Single(assemblies);
 
 		foreach (var tc in assembly.TestCases)
@@ -75,7 +77,7 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies = await discoverer.DiscoverAsync();
+		var assemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 		var assembly = Assert.Single(assemblies);
 
 		// PreEnumerateTheories = false: Theory with 3 InlineData = 1 test case
@@ -91,8 +93,8 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies1 = await discoverer.DiscoverAsync();
-		var assemblies2 = await discoverer.DiscoverAsync();
+		var assemblies1 = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
+		var assemblies2 = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 
 		var count1 = assemblies1.Single().TestCases.Count;
 		var count2 = assemblies2.Single().TestCases.Count;
@@ -106,7 +108,7 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies = await discoverer.DiscoverAsync();
+		var assemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 		var assembly = Assert.Single(assemblies);
 
 		Assert.NotNull(assembly.AssemblyFileName);
@@ -119,10 +121,10 @@ public class Xunit3DiscovererAdvancedTests
 		var options = new VisualTestRunnerConfiguration([_testAssembly]);
 		var discoverer = new Xunit3TestDiscoverer(options);
 
-		var assemblies = await discoverer.DiscoverAsync();
+		var assemblies = await discoverer.DiscoverAsync(TestContext.Current.CancellationToken);
 		var assembly = Assert.Single(assemblies);
 
-		// Device defaults: parallelization disabled, max threads = 1
+		// Configuration should be available for the discovered assembly
 		var config = assembly.Configuration;
 		Assert.NotNull(config);
 	}

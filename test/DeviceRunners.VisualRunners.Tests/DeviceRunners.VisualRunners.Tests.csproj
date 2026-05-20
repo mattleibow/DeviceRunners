@@ -3,15 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsTestProject>true</IsTestProject>
-    <!-- xUnit1051 comes from v3 analyzers pulled by xunit.v3.runner.common; this test project uses xunit v2 runner -->
+    <!-- xUnit1051 requires TestContext which only exists in xunit v3; inapplicable to this v2 project -->
     <NoWarn>$(NoWarn);xUnit1051</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.v3.common" />
-    <PackageReference Include="xunit.v3.runner.common" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
@@ -20,13 +18,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
-    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestProject.Tests\TestProject.Tests.csproj" />
-    <ProjectReference Include="..\TestProject.Xunit3Tests\TestProject.Xunit3Tests.csproj" />
   </ItemGroup>
 
 </Project>

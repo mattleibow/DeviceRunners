@@ -76,7 +76,7 @@ public class HomeViewModel : AbstractBaseViewModel
 		private set => Set(ref _isLoaded, value);
 	}
 
-	public async Task StartAssemblyScanAsync()
+	public async Task StartAssemblyScanAsync(CancellationToken cancellationToken = default)
 	{
 		if (IsLoaded)
 			return;
@@ -86,7 +86,7 @@ public class HomeViewModel : AbstractBaseViewModel
 
 		try
 		{
-			var allTests = await _discoverer.DiscoverAsync();
+			var allTests = await _discoverer.DiscoverAsync(cancellationToken);
 
 			foreach (var assembly in allTests)
 			{

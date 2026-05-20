@@ -7,7 +7,7 @@ using NSubstitute;
 using Xunit;
 using Xunit.Sdk;
 
-namespace VisualRunnerTests.Testing;
+namespace VisualRunnerTests.Xunit3.Testing;
 
 public class Xunit3ExecutionMessageSinkTests
 {
