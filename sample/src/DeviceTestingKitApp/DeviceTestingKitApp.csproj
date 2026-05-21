@@ -58,12 +58,12 @@
 
 	<!-- When building as a library for test projects, strip platform entry points -->
 	<ItemGroup Condition="'$(IsTestLibrary)' == 'true'">
-		<Compile Remove="Platforms\Android\MainApplication.cs" />
-		<Compile Remove="Platforms\Android\MainActivity.cs" />
-		<Compile Remove="Platforms\iOS\AppDelegate.cs" />
-		<Compile Remove="Platforms\iOS\Program.cs" />
-		<Compile Remove="Platforms\MacCatalyst\AppDelegate.cs" />
-		<Compile Remove="Platforms\MacCatalyst\Program.cs" />
+		<Compile Remove="Platforms\**" />
+		<AndroidManifest Remove="Platforms\**" />
+		<ApplicationDefinition Remove="Platforms\**" />
+		<Page Remove="Platforms\**" />
+		<Manifest Remove="Platforms\**" />
+		<AppxManifest Remove="Platforms\**" />
 	</ItemGroup>
 
 	<ItemGroup>

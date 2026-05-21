@@ -16,15 +16,8 @@ public static class MauiProgram
 				.AddResourceDictionary<DeviceTestingKitApp.Resources.Styles.Styles>()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddNUnit())
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
-
-		// Register the same services the real app uses
-		builder.Services.AddTransient<DeviceTestingKitApp.ViewModels.CounterViewModel>();
-		builder.Services.AddTransient<DeviceTestingKitApp.ViewModels.MainViewModel>();
+			// Register all the real app's services, VMs, pages, and fonts
+			.AddDeviceTestingKitAppServices();
 
 		return builder.Build();
 	}
