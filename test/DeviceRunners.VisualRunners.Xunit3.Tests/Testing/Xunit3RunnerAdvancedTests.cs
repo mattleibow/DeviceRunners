@@ -124,16 +124,20 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 	[Fact]
 	public async Task RunTestsAsync_EmptyTestCaseList_DoesNotThrow()
 	{
-		var runner = new Xunit3TestRunner(_options);
+		var resultChannel = Substitute.For<IResultChannelManager>();
+		var runner = new Xunit3TestRunner(_options, resultChannel);
 
-		// Should not throw
 		await runner.RunTestsAsync(Array.Empty<ITestCaseInfo>(), TestContext.Current.CancellationToken);
+
+		// No results should have been recorded for an empty list
+		resultChannel.DidNotReceive().RecordResult(Arg.Any<ITestResultInfo>());
 	}
 
 	[Fact]
 	public async Task RunTestsAsync_NonXunit3TestCases_AreIgnored()
 	{
-		var runner = new Xunit3TestRunner(_options);
+		var resultChannel = Substitute.For<IResultChannelManager>();
+		var runner = new Xunit3TestRunner(_options, resultChannel);
 
 		// Create a mock non-xunit3 test case
 		var mockTestCase = Substitute.For<ITestCaseInfo>();
@@ -141,6 +145,9 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 
 		// Should not throw — runner filters to Xunit3TestCaseInfo only
 		await runner.RunTestsAsync(new[] { mockTestCase }, TestContext.Current.CancellationToken);
+
+		// Non-xunit3 test cases should be filtered out — no results recorded
+		resultChannel.DidNotReceive().RecordResult(Arg.Any<ITestResultInfo>());
 	}
 
 	[Fact]
@@ -154,6 +161,10 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 
 		// Should return without throwing
 		await runner.RunTestsAsync(testAssembly.TestCases, cts.Token);
+
+		// With pre-cancelled token, at least some tests should not have been run
+		var unrunTests = testAssembly.TestCases.Count(tc => tc.Result is null);
+		Assert.True(unrunTests > 0, "Pre-cancelled runner should leave some tests without results");
 	}
 
 	[Fact]
@@ -165,8 +176,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		var outputFailed = testAssembly.TestCases
 			.FirstOrDefault(tc => tc.DisplayName.Contains("SimpleTest_Output_Failed"));
 
-		if (outputFailed is null)
-			return; // Skip if fixture doesn't have this test
+		Assert.NotNull(outputFailed);
 
 		await runner.RunTestsAsync(outputFailed, TestContext.Current.CancellationToken);
 

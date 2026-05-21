@@ -56,7 +56,41 @@ public class UITheoryTestCase : XunitDelayEnumeratedTheoryTestCase, ISelfExecuti
 		ExceptionAggregator aggregator,
 		CancellationTokenSource cancellationTokenSource)
 	{
-		var tests = await CreateTests();
+		// Run CreateTests() through the aggregator so data enumeration failures
+		// (e.g., bad MemberData, empty ClassData, SkipTestWithoutData) are reported
+		// as proper test failures/skips rather than unhandled exceptions.
+		var tests = await aggregator.RunAsync(CreateTests, []);
+
+		if (aggregator.ToException() is Exception ex)
+		{
+			if (ex.Message?.StartsWith(DynamicSkipToken.Value, StringComparison.Ordinal) == true)
+			{
+				return XunitRunnerHelper.SkipTestCases(
+					messageBus,
+					cancellationTokenSource,
+					[this],
+					ex.Message.Substring(DynamicSkipToken.Value.Length),
+					sendTestCaseMessages: false);
+			}
+			else if (SkipExceptions?.Contains(ex.GetType()) == true)
+			{
+				return XunitRunnerHelper.SkipTestCases(
+					messageBus,
+					cancellationTokenSource,
+					[this],
+					ex.Message ?? $"Exception of type '{ex.GetType().FullName}' was thrown",
+					sendTestCaseMessages: false);
+			}
+			else
+			{
+				return XunitRunnerHelper.FailTestCases(
+					messageBus,
+					cancellationTokenSource,
+					[this],
+					ex,
+					sendTestCaseMessages: false);
+			}
+		}
 
 		// Use UIXunitTestCaseRunner which dispatches the entire test lifecycle
 		// (construction, IAsyncLifetime, test method, disposal) to the UI thread.

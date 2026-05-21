@@ -17,6 +17,11 @@ namespace DeviceRunners.VisualRunners.Xunit3;
 /// to our override that returns the logical name.
 /// </summary>
 /// <remarks>
+/// We also pass an explicit <c>uniqueID</c> derived from the logical path to
+/// the base constructor because the default computation uses
+/// <c>assembly.Location</c> directly (not the <c>AssemblyPath</c> property),
+/// which would cause all in-memory assemblies to share the same UniqueID.
+/// <para/>
 /// This is a workaround for <c>AssemblyPath</c> not being virtual on
 /// <see cref="XunitTestAssembly"/>. Tracked upstream:
 /// https://github.com/xunit/xunit/issues/3577
@@ -26,7 +31,7 @@ class InMemoryXunit3TestAssembly : XunitTestAssembly, IXunitTestAssembly
 	readonly string _logicalAssemblyPath;
 
 	public InMemoryXunit3TestAssembly(Assembly assembly, string? configFileName, Version? version, string logicalAssemblyPath)
-		: base(assembly, configFileName, version)
+		: base(assembly, configFileName, version, UniqueIDGenerator.ForAssembly(logicalAssemblyPath, configFileName))
 	{
 		_logicalAssemblyPath = logicalAssemblyPath;
 	}

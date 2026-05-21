@@ -144,9 +144,11 @@ public class DynamicUITests : UITests<ContentPage>
 
 			lastFrame = currentFrame;
 		}
+
+		Assert.Fail($"WaitForLayout timed out — frame never stabilized. Last frame: {lastFrame}");
 	}
 
-	async Task LoadContent(View content)
+	async Task LoadContent(View content, int timeout = 5000)
 	{
 		var tcs = new TaskCompletionSource();
 
@@ -154,7 +156,8 @@ public class DynamicUITests : UITests<ContentPage>
 
 		CurrentPage.Content = content;
 
-		await tcs.Task;
+		var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+		Assert.True(completed == tcs.Task, $"LoadContent timed out after {timeout}ms — Loaded event was never fired.");
 
 		void OnLoaded(object? sender, EventArgs e)
 		{

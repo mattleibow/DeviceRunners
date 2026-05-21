@@ -58,16 +58,18 @@ public class Xunit3DiscovererAdvancedTests
 		using var cts = new CancellationTokenSource();
 		cts.Cancel(); // Pre-cancel
 
-		// Should either return empty or throw OperationCanceledException
-		// Both are acceptable
+		// A pre-cancelled token should either return empty/partial or throw OperationCanceledException
 		try
 		{
 			var assemblies = await discoverer.DiscoverAsync(cts.Token);
-			// If it returns, it should be empty or partial
+			// If it returns, it should be empty or have fewer tests than a full discovery
+			var totalTests = assemblies.Sum(a => a.TestCases.Count);
+			Assert.True(totalTests < Constants.Xunit3TestCountNoTheoryEnumeration,
+				$"Pre-cancelled discovery should return fewer tests than full discovery ({totalTests} >= {Constants.Xunit3TestCountNoTheoryEnumeration})");
 		}
 		catch (OperationCanceledException)
 		{
-			// Also acceptable
+			// Also acceptable — cancellation was honored by throwing
 		}
 	}
 
