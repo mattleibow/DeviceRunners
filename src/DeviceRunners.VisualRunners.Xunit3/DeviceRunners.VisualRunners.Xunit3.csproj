@@ -11,8 +11,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="xunit.v3.extensibility.core" />
-    <PackageReference Include="xunit.v3.runner.utility" />
+    <!-- PrivateAssets="compile" prevents xunit v3 attribute types (FactAttribute etc.)
+         from flowing transitively to host apps that also reference xunit v2. Consuming
+         test libraries that need xunit v3 types add their own direct reference. -->
+    <PackageReference Include="xunit.v3.extensibility.core" PrivateAssets="compile" />
+    <PackageReference Include="xunit.v3.runner.utility" PrivateAssets="compile" />
   </ItemGroup>
 
   <ItemGroup>
