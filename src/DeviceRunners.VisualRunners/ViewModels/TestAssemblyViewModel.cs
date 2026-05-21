@@ -264,16 +264,16 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 			return;
 		}
 
-		// This would occasionally crash when running the group operation
-		// most likely because of thread safety issues.
-		Dictionary<TestState, int> results;
+		// Snapshot the result statuses under lock to avoid iterating while items are mutated.
+		List<TestResultStatus> resultStatuses;
 		lock (_results)
 		{
-			results =
-				_results
-					.GroupBy(r => GetTestState(r.ResultStatus))
-					.ToDictionary(k => k.Key, v => v.Count());
+			resultStatuses = _results.Select(r => r.ResultStatus).ToList();
 		}
+
+		var results = resultStatuses
+			.GroupBy(s => GetTestState(s))
+			.ToDictionary(k => k.Key, v => v.Count());
 
 		results.TryGetValue(TestState.Passed, out int passed);
 		results.TryGetValue(TestState.Failed, out int failure);
