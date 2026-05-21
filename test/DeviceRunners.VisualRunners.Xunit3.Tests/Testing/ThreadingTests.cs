@@ -96,7 +96,7 @@ public class ThreadingTests : IAsyncLifetime
 	public async Task RunTestsAsync_ExecutesOnThreadPoolThread()
 	{
 		// Track which thread the test results arrive on
-		var resultThreadIds = new List<int>();
+		var resultThreadIds = new System.Collections.Concurrent.ConcurrentBag<int>();
 		var callerThreadId = Environment.CurrentManagedThreadId;
 
 		var runner = new Xunit3TestRunner(_options);

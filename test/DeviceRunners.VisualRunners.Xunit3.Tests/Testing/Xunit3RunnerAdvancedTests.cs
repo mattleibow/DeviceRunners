@@ -60,14 +60,12 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		// First run
 		await runner.RunTestsAsync(simpleTest, TestContext.Current.CancellationToken);
 		Assert.NotNull(simpleTest.Result);
-		var firstResult = simpleTest.Result;
 
 		// Second run
 		await runner.RunTestsAsync(simpleTest, TestContext.Current.CancellationToken);
 		Assert.NotNull(simpleTest.Result);
 
-		// Should have a new result (not same reference)
-		// Both should be Passed
+		// Both runs should produce a Passed result
 		Assert.Equal(TestResultStatus.Passed, simpleTest.Result.Status);
 	}
 
@@ -77,7 +75,7 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		var runner = new Xunit3TestRunner(_options);
 		var testAssembly = _testAssemblies[0];
 
-		var reportedResults = new List<ITestResultInfo>();
+		var reportedResults = new System.Collections.Concurrent.ConcurrentBag<ITestResultInfo>();
 		foreach (var tc in testAssembly.TestCases)
 		{
 			tc.ResultReported += r => reportedResults.Add(r);
