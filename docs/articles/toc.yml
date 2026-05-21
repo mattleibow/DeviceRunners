@@ -31,6 +31,8 @@
   items:
     - name: Visual Runner in the IDE
       href: visual-runner-in-the-ide.md
+    - name: Testing with App Resources
+      href: testing-with-app-resources.md
 
 - name: "DeviceRunners CLI (Advanced)"
   items:
