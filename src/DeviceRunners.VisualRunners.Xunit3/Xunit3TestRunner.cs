@@ -64,6 +64,10 @@ public class Xunit3TestRunner : ITestRunner
 		{
 			await RunTests(assembly, cancellationToken);
 		}
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+		{
+			// Cancellation is expected — don't log as an error.
+		}
 		catch (Exception ex)
 		{
 			_diagnosticsManager?.PostDiagnosticMessage(

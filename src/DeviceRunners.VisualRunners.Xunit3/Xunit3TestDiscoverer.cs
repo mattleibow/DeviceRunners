@@ -33,42 +33,57 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 
 			try
 			{
-				var diagnosticSink = Xunit3DiagnosticMessageSink.TryCreate(_diagnosticsManager, assemblyFileName);
-				var hasDiagnostics = diagnosticSink is not null;
-
-				TestContext.SetForInitialization(
-					diagnosticMessageSink: diagnosticSink,
-					diagnosticMessages: hasDiagnostics,
-					internalDiagnosticMessages: hasDiagnostics);
-
-				var configuration = GetConfiguration(Path.GetFileNameWithoutExtension(assemblyFileName));
-
-				var testFramework = CreateTestFramework(assm);
-				await using var frameworkDisposal = testFramework as IAsyncDisposable;
-
-				var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
-				await using var discovererDisposal = frameworkDiscoverer as IAsyncDisposable;
-
-				var discoveredTestCases = new List<ITestCase>();
-
-				var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
-
-				await frameworkDiscoverer.Find(testCase =>
+				// Run discovery on a thread pool thread to prevent xunit v3's
+				// internal async infrastructure from capturing the caller's
+				// SynchronizationContext (e.g. WinUI's DispatcherQueueSynchronizationContext).
+				var assemblyInfo = await Task.Run(async () =>
 				{
-					discoveredTestCases.Add(testCase);
-					return new ValueTask<bool>(!cancellationToken.IsCancellationRequested);
-				}, discoveryOptions, cancellationToken: cancellationToken);
+					var diagnosticSink = Xunit3DiagnosticMessageSink.TryCreate(_diagnosticsManager, assemblyFileName);
+					var hasDiagnostics = diagnosticSink is not null;
 
-				var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
-				var testCases = discoveredTestCases
-					.Select(tc => new Xunit3TestCaseInfo(testAssembly, tc))
-					.ToList();
+					TestContext.SetForInitialization(
+						diagnosticMessageSink: diagnosticSink,
+						diagnosticMessages: hasDiagnostics,
+						internalDiagnosticMessages: hasDiagnostics);
 
-				if (testCases.Count > 0)
-				{
-					testAssembly.TestCases.AddRange(testCases);
-					result.Add(testAssembly);
-				}
+					var configuration = GetConfiguration(Path.GetFileNameWithoutExtension(assemblyFileName));
+
+					var testFramework = CreateTestFramework(assm);
+					await using var frameworkDisposal = testFramework as IAsyncDisposable;
+
+					var frameworkDiscoverer = testFramework.GetDiscoverer(assm);
+					await using var discovererDisposal = frameworkDiscoverer as IAsyncDisposable;
+
+					var discoveredTestCases = new List<ITestCase>();
+
+					var discoveryOptions = TestFrameworkOptions.ForDiscovery(configuration);
+
+					await frameworkDiscoverer.Find(testCase =>
+					{
+						discoveredTestCases.Add(testCase);
+						return new ValueTask<bool>(!cancellationToken.IsCancellationRequested);
+					}, discoveryOptions, cancellationToken: cancellationToken);
+
+					var testAssembly = new Xunit3TestAssemblyInfo(assemblyFileName, configuration);
+					var testCases = discoveredTestCases
+						.Select(tc => new Xunit3TestCaseInfo(testAssembly, tc))
+						.ToList();
+
+					if (testCases.Count > 0)
+					{
+						testAssembly.TestCases.AddRange(testCases);
+						return testAssembly;
+					}
+
+					return null;
+				}, cancellationToken);
+
+				if (assemblyInfo is not null)
+					result.Add(assemblyInfo);
+			}
+			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+			{
+				break;
 			}
 			catch (Exception ex)
 			{

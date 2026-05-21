@@ -7,12 +7,14 @@ namespace DeviceRunners.VisualRunners;
 public class DiagnosticsViewModel : AbstractBaseViewModel
 {
 	readonly IDiagnosticsManager _diagnosticsManager;
+	readonly SynchronizationContext? _syncContext;
 
 	string _messagesString = "";
 
 	public DiagnosticsViewModel(IDiagnosticsManager diagnosticsManager)
 	{
 		_diagnosticsManager = diagnosticsManager;
+		_syncContext = SynchronizationContext.Current;
 		_diagnosticsManager.DiagnosticMessageReceived += OnDiagnosticMessageReceived;
 
 		Messages.CollectionChanged += OnDiagnosticMessagesCollectionChanged;
@@ -37,8 +39,12 @@ public class DiagnosticsViewModel : AbstractBaseViewModel
 
 	void OnDiagnosticMessageReceived(object? sender, string message)
 	{
-		Messages.Add(message);
 		Console.WriteLine(message);
+
+		if (_syncContext is not null)
+			_syncContext.Post(_ => Messages.Add(message), null);
+		else
+			Messages.Add(message);
 	}
 
 	void OnDiagnosticMessagesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
