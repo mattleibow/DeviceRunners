@@ -35,7 +35,7 @@ dotnet publish sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.D
 
 # Run tests
 device-runners macos test \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net10.0-maccatalyst/maccatalyst-arm64/publish/DeviceTestingKitApp.DeviceTests.app \
+  --app "sample/test/DeviceTestingKitApp.DeviceTests/bin/Release/net10.0-maccatalyst/maccatalyst-arm64/publish/DeviceRunners Tests.app" \
   --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

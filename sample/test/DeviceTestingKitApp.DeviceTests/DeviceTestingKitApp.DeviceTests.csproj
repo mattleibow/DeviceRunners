@@ -20,7 +20,7 @@
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 
     <!-- Display name -->
-    <ApplicationTitle>DeviceTestingKitApp.DeviceTests</ApplicationTitle>
+    <ApplicationTitle>DeviceRunners Tests</ApplicationTitle>
 
     <!-- App Identifier -->
     <ApplicationId>com.companyname.devicetestingkitapp.devicetests</ApplicationId>
