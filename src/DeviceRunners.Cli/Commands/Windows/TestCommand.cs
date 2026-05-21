@@ -90,7 +90,12 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 		{
 			FileName = settings.App,
 			UseShellExecute = false,
-			WorkingDirectory = Path.GetDirectoryName(settings.App)
+			WorkingDirectory = Path.GetDirectoryName(settings.App),
+			// Redirect stdout/stderr to prevent the test app's console output
+			// (diagnostics, framework errors) from being parsed by MSBuild's
+			// Exec task as canonical errors. Test results arrive via TCP.
+			RedirectStandardOutput = true,
+			RedirectStandardError = true,
 		};
 
 		foreach (var kvp in GetAppEnvironmentVariables(settings))
@@ -101,6 +106,11 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 		{
 			throw new InvalidOperationException("Failed to start the application process.");
 		}
+
+		// Consume redirected streams asynchronously to prevent deadlocks.
+		// Output is discarded since results are communicated via TCP.
+		process.BeginOutputReadLine();
+		process.BeginErrorReadLine();
 
 		WriteConsoleOutput($"    Application started with PID: {process.Id}", settings);
 
