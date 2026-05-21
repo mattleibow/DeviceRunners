@@ -36,12 +36,8 @@ public class Xunit3RunnerAdvancedTests : IAsyncLifetime
 		// First run
 		await runner.RunTestsAsync(testAssembly, TestContext.Current.CancellationToken);
 
-		var firstResults = testAssembly.TestCases
-			.Select(tc => (tc.DisplayName, tc.Result?.Status))
-			.ToList();
-
 		// Verify first run produced results
-		Assert.All(firstResults, r => Assert.NotNull(r.Status));
+		Assert.All(testAssembly.TestCases, tc => Assert.NotNull(tc.Result));
 
 		// Second run — should produce fresh results
 		await runner.RunTestsAsync(testAssembly, TestContext.Current.CancellationToken);

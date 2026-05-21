@@ -4,8 +4,6 @@ using DeviceRunners;
 using DeviceRunners.VisualRunners;
 using DeviceRunners.VisualRunners.Xunit3;
 
-using NSubstitute;
-
 using VisualRunnerTests.Xunit3;
 
 using Xunit;
