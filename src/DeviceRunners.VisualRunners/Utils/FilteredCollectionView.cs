@@ -10,6 +10,7 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 	readonly ObservableCollection<T> dataSource;
 	readonly Func<T, TFilterArg, bool> filter;
 	readonly SortedList<T> filteredList;
+	readonly object _syncLock = new();
 
 	TFilterArg filterArgument;
 
@@ -55,7 +56,10 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 			item.PropertyChanged -= DataSource_ItemChanged;
 		}
 
-		filteredList.Clear();
+		lock (_syncLock)
+		{
+			filteredList.Clear();
+		}
 	}
 
 	int IList.Add(object? value)
@@ -103,12 +107,13 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	void ICollection.CopyTo(Array array, int index)
 	{
-		filteredList.CopyTo((T[])array, index);
+		lock (_syncLock)
+			filteredList.CopyTo((T[])array, index);
 	}
 
-	bool ICollection.IsSynchronized => false;
+	bool ICollection.IsSynchronized => true;
 
-	object ICollection.SyncRoot => this;
+	object ICollection.SyncRoot => _syncLock;
 
 	public void Add(T item)
 	{
@@ -122,15 +127,24 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	public bool Contains(T item)
 	{
-		return filteredList.Contains(item);
+		lock (_syncLock)
+			return filteredList.Contains(item);
 	}
 
 	public void CopyTo(T[] array, int arrayIndex)
 	{
-		filteredList.CopyTo(array, arrayIndex);
+		lock (_syncLock)
+			filteredList.CopyTo(array, arrayIndex);
 	}
 
-	public int Count => filteredList.Count;
+	public int Count
+	{
+		get
+		{
+			lock (_syncLock)
+				return filteredList.Count;
+		}
+	}
 
 	public bool IsReadOnly => true;
 
@@ -141,7 +155,10 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	public IEnumerator<T> GetEnumerator()
 	{
-		return filteredList.GetEnumerator();
+		List<T> snapshot;
+		lock (_syncLock)
+			snapshot = filteredList.ToList();
+		return snapshot.GetEnumerator();
 	}
 
 	IEnumerator IEnumerable.GetEnumerator()
@@ -151,7 +168,8 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	public int IndexOf(T item)
 	{
-		return filteredList.IndexOf(item);
+		lock (_syncLock)
+			return filteredList.IndexOf(item);
 	}
 
 	public void Insert(int index, T item)
@@ -166,7 +184,11 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	public T this[int index]
 	{
-		get { return filteredList[index]; }
+		get
+		{
+			lock (_syncLock)
+				return filteredList[index];
+		}
 		set { throw new NotSupportedException(); }
 	}
 
@@ -230,35 +252,53 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 	void DataSource_ItemChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		var item = (T)sender!;
-		var index = filteredList.IndexOf(item);
-		if (filter(item, FilterArgument))
+		bool changed = false;
+
+		lock (_syncLock)
 		{
-			if (index < 0)
+			var index = filteredList.IndexOf(item);
+			if (filter(item, FilterArgument))
 			{
-				filteredList.Insert(~index, item);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index));
+				if (index < 0)
+				{
+					filteredList.Insert(~index, item);
+					changed = true;
+				}
+			}
+			else if (index >= 0)
+			{
+				filteredList.RemoveAt(index);
+				changed = true;
 			}
 		}
-		else if (index >= 0)
-		{
-			filteredList.RemoveAt(index);
-			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
-		}
+
+		// Use Reset rather than Add/Remove with index — under concurrent mutations
+		// the index captured inside the lock may be stale by the time subscribers observe it.
+		if (changed)
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
 		OnItemChanged(item, e);
 	}
 
 	void OnAdded(T item)
 	{
-		if (filter(item, filterArgument))
+		NotifyCollectionChangedEventArgs? changeArgs = null;
+
+		lock (_syncLock)
 		{
-			var index = filteredList.IndexOf(item);
-			if (index < 0)
+			if (filter(item, filterArgument))
 			{
-				filteredList.Insert(~index, item);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index));
+				var index = filteredList.IndexOf(item);
+				if (index < 0)
+				{
+					filteredList.Insert(~index, item);
+					changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index);
+				}
 			}
 		}
+
+		if (changeArgs is not null)
+			OnCollectionChanged(changeArgs);
 
 		if (item is INotifyPropertyChanged observable)
 		{
@@ -273,23 +313,37 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 			observable.PropertyChanged -= DataSource_ItemChanged;
 		}
 
-		var index = filteredList.IndexOf(item);
-		if (index >= 0)
+		NotifyCollectionChangedEventArgs? changeArgs = null;
+
+		lock (_syncLock)
 		{
-			filteredList.RemoveAt(index);
-			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+			var index = filteredList.IndexOf(item);
+			if (index >= 0)
+			{
+				filteredList.RemoveAt(index);
+				changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index);
+			}
 		}
+
+		if (changeArgs is not null)
+			OnCollectionChanged(changeArgs);
 	}
 
 	void RefreshFilter()
 	{
-		filteredList.Clear();
-
-		foreach (var item in dataSource)
+		// Note: dataSource (ObservableCollection) is not thread-safe for enumeration.
+		// This method assumes dataSource is not being structurally modified concurrently.
+		// In practice, dataSource (_allTests) is populated once at construction and never changed.
+		lock (_syncLock)
 		{
-			if (filter(item, filterArgument))
+			filteredList.Clear();
+
+			foreach (var item in dataSource)
 			{
-				filteredList.Add(item);
+				if (filter(item, filterArgument))
+				{
+					filteredList.Add(item);
+				}
 			}
 		}
 
