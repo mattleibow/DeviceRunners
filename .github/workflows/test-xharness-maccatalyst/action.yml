@@ -36,6 +36,17 @@ runs:
           -c ${{ inputs.configuration }} \
           -p:TestingMode=XHarness \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Discover App Bundle
+      id: app
+      shell: bash
+      run: |
+        OUTPUT_DIR="artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}"
+        APP_PATH=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.app" -type d | head -1)
+        if [ -z "$APP_PATH" ]; then
+          echo "::error::No .app bundle found in $OUTPUT_DIR"
+          exit 1
+        fi
+        echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
     - name: Run Tests
       shell: bash
       run: |
@@ -43,7 +54,7 @@ runs:
           --target maccatalyst \
           --timeout="00:02:00" \
           --launch-timeout=00:06:00 \
-          --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/DeviceTestingKitApp.DeviceTests.app \
+          --app "${{ steps.app.outputs.path }}" \
           --output-directory artifacts/test-results
     - name: Clean up build artifacts before upload
       if: always()
