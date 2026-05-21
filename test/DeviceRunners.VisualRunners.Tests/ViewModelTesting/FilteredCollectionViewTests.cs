@@ -116,7 +116,8 @@ public class FilteredCollectionViewTests
 		List<ObservableTestItem>? snapshotDuringEvent = null;
 		fcv.CollectionChanged += (_, args) =>
 		{
-			if (args.Action == NotifyCollectionChangedAction.Add)
+			// DataSource_ItemChanged fires Reset for thread-safety
+			if (args.Action == NotifyCollectionChangedAction.Reset)
 				snapshotDuringEvent = fcv.ToList();
 		};
 

@@ -150,7 +150,6 @@ public class SortedListTests
 		list.Clear();
 
 		Assert.Empty(list);
-		Assert.Empty(list);
 	}
 
 	[Fact]

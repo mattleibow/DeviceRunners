@@ -162,7 +162,7 @@ public class FilteredCollectionViewConcurrencyTests
 		{
 			try
 			{
-				var status = statuses[Math.Abs(tc.DisplayName.GetHashCode()) % statuses.Length];
+				var status = statuses[(tc.DisplayName.GetHashCode() & int.MaxValue) % statuses.Length];
 				var result = new FakeTestResultInfo(tc, status);
 				tc.FireResultReported(result);
 			}

@@ -252,7 +252,7 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 	void DataSource_ItemChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		var item = (T)sender!;
-		NotifyCollectionChangedEventArgs? changeArgs = null;
+		bool changed = false;
 
 		lock (_syncLock)
 		{
@@ -262,18 +262,20 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 				if (index < 0)
 				{
 					filteredList.Insert(~index, item);
-					changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index);
+					changed = true;
 				}
 			}
 			else if (index >= 0)
 			{
 				filteredList.RemoveAt(index);
-				changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index);
+				changed = true;
 			}
 		}
 
-		if (changeArgs is not null)
-			OnCollectionChanged(changeArgs);
+		// Use Reset rather than Add/Remove with index — under concurrent mutations
+		// the index captured inside the lock may be stale by the time subscribers observe it.
+		if (changed)
+			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
 		OnItemChanged(item, e);
 	}
@@ -329,14 +331,14 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 
 	void RefreshFilter()
 	{
-		// Snapshot dataSource to avoid issues if it's modified during iteration
-		var sourceSnapshot = dataSource.ToList();
-
+		// Note: dataSource (ObservableCollection) is not thread-safe for enumeration.
+		// This method assumes dataSource is not being structurally modified concurrently.
+		// In practice, dataSource (_allTests) is populated once at construction and never changed.
 		lock (_syncLock)
 		{
 			filteredList.Clear();
 
-			foreach (var item in sourceSnapshot)
+			foreach (var item in dataSource)
 			{
 				if (filter(item, filterArgument))
 				{
