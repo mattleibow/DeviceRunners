@@ -35,7 +35,7 @@ dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.Dev
 
 # Run tests
 device-runners ios test \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net10.0-ios/iossimulator-arm64/DeviceTestingKitApp.DeviceTests.app \
+  --app "sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net10.0-ios/iossimulator-arm64/DeviceRunners Tests.app" \
   --results-directory artifacts/test-results
 
 # Test result file will be: artifacts/test-results/TestResults.xml

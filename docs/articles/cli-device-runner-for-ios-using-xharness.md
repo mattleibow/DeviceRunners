@@ -29,7 +29,7 @@ dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.Dev
 
 xharness apple test \
   --target ios-simulator-64 \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-ios/iossimulator-arm64/DeviceTestingKitApp.DeviceTests.app \
+  --app "sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-ios/iossimulator-arm64/DeviceRunners Tests.app" \
   --output-directory artifacts
 
 # test result file will be artifacts/xunit-test-ios-simulator-64-########_######.xml
