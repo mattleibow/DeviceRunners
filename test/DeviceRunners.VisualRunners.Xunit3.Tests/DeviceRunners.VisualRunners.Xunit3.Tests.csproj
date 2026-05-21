@@ -16,6 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
     <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting\DeviceRunners.UITesting.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Xunit3\DeviceRunners.UITesting.Xunit3.csproj" />
   </ItemGroup>
 
   <ItemGroup>
