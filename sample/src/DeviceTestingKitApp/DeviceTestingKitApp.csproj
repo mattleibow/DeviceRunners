@@ -39,11 +39,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- App Icon — excluded in library mode to avoid Resizetizer duplicate filename conflicts -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" Condition="'$(IsTestLibrary)' != 'true'" />
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-		<!-- Splash Screen — excluded in library mode (test project provides its own) -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" Condition="'$(IsTestLibrary)' != 'true'" />
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -56,16 +56,6 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-	<!-- When building as a library for test projects, strip platform entry points -->
-	<ItemGroup Condition="'$(IsTestLibrary)' == 'true'">
-		<Compile Remove="Platforms\**" />
-		<AndroidManifest Remove="Platforms\**" />
-		<ApplicationDefinition Remove="Platforms\**" />
-		<Page Remove="Platforms\**" />
-		<Manifest Remove="Platforms\**" />
-		<AppxManifest Remove="Platforms\**" />
-	</ItemGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
@@ -75,6 +65,18 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\DeviceTestingKitApp.Library\DeviceTestingKitApp.Library.csproj" />
 	  <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary\DeviceTestingKitApp.MauiLibrary.csproj" />
+	</ItemGroup>
+
+	<!-- When building as a library for test projects, strip platform entry points and app-specific things -->
+	<ItemGroup Condition="'$(IsTestLibrary)' == 'true'">
+		<Compile Remove="Platforms\**" />
+		<AndroidManifest Remove="Platforms\**" />
+		<ApplicationDefinition Remove="Platforms\**" />
+		<Page Remove="Platforms\**" />
+		<Manifest Remove="Platforms\**" />
+		<AppxManifest Remove="Platforms\**" />
+		<MauiIcon Remove="@(MauiIcon)" />
+		<MauiSplashScreen Remove="@(MauiSplashScreen)" />
 	</ItemGroup>
 
 </Project>
