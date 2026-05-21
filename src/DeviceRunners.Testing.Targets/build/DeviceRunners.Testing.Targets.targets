@@ -153,7 +153,11 @@
   <Target Name="_DeviceRunnersiOSArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'ios'">
     <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
+      <!-- MAUI names the .app bundle after $(ApplicationTitle), not $(AssemblyName).
+           Try ApplicationTitle first, then AssemblyName, then wildcard as fallback. -->
+      <_DeviceRunnersAppPath Condition="'$(ApplicationTitle)' != ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(ApplicationTitle).app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath Condition="'$(_DeviceRunnersAppPath)' == ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath Condition="'$(_DeviceRunnersAppPath)' == ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
     </PropertyGroup>
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
@@ -169,7 +173,11 @@
   <Target Name="_DeviceRunnersMacOSArgs"
           Condition="'$(_DeviceRunnersPlatform)' == 'maccatalyst'">
     <PropertyGroup>
-      <_DeviceRunnersAppPath>$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
+      <!-- MAUI names the .app bundle after $(ApplicationTitle), not $(AssemblyName).
+           Try ApplicationTitle first, then AssemblyName, then wildcard as fallback. -->
+      <_DeviceRunnersAppPath Condition="'$(ApplicationTitle)' != ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(ApplicationTitle).app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath Condition="'$(_DeviceRunnersAppPath)' == ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '$(AssemblyName).app'))</_DeviceRunnersAppPath>
+      <_DeviceRunnersAppPath Condition="'$(_DeviceRunnersAppPath)' == ''">$([System.IO.Directory]::GetDirectories('$(OutputPath)', '*.app'))</_DeviceRunnersAppPath>
       <_DeviceRunnersAppPath>$(_DeviceRunnersAppPath.TrimEnd('\').TrimEnd('/'))</_DeviceRunnersAppPath>
     </PropertyGroup>
     <Error Text="No .app bundle found in '$(OutputPath)'. Make sure the project builds successfully."
