@@ -134,6 +134,49 @@ public class MainPageTests
 		Assert.That(counter.Count, Is.EqualTo(2));
 	}
 
+	[Test]
+	public async Task CounterButton_WhenPageIsLive_BindingUpdatesText()
+	{
+		await MainThread.InvokeOnMainThreadAsync(async () =>
+		{
+			var counter = new DeviceTestingKitApp.ViewModels.CounterViewModel();
+			var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(counter);
+			var page = new DeviceTestingKitApp.MainPage(vm);
+
+			// Push as modal so the page gets a live handler and binding engine runs
+			var currentPage = Application.Current!.Windows[0].Page!;
+			await currentPage.Navigation.PushModalAsync(page);
+
+			try
+			{
+				// Allow bindings to settle
+				await Task.Delay(200);
+
+				var button = FindByAutomationId<Button>(page, "CounterButton");
+				Assert.That(button, Is.Not.Null);
+				Assert.That(button!.Text, Is.EqualTo("Click me!"));
+
+				// Tap the button via its command
+				button.Command.Execute(null);
+				await Task.Delay(200);
+
+				Assert.That(counter.Count, Is.EqualTo(1));
+				Assert.That(button.Text, Is.EqualTo("Clicked 1 time"));
+
+				// Tap again
+				button.Command.Execute(null);
+				await Task.Delay(200);
+
+				Assert.That(counter.Count, Is.EqualTo(2));
+				Assert.That(button.Text, Is.EqualTo("Clicked 2 times"));
+			}
+			finally
+			{
+				await currentPage.Navigation.PopModalAsync();
+			}
+		});
+	}
+
 	static T? FindByAutomationId<T>(Element root, string automationId) where T : Element
 	{
 		if (root is T match && match.AutomationId == automationId)
