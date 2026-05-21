@@ -13,12 +13,10 @@ public class MainPageTests
 	[Test]
 	public void MainPage_CanBeCreated()
 	{
-		// Arrange & Act — MainPage requires a MainViewModel
 		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(
 			new DeviceTestingKitApp.ViewModels.CounterViewModel());
 		var page = new DeviceTestingKitApp.MainPage(vm);
 
-		// Assert — page was created without {StaticResource} failures
 		Assert.That(page, Is.Not.Null);
 	}
 
@@ -35,7 +33,6 @@ public class MainPageTests
 	[Test]
 	public void AppStyles_AreAvailable()
 	{
-		// Verify that the app's styles are available in Application.Resources
 		var app = Application.Current;
 		Assert.That(app, Is.Not.Null);
 
@@ -57,5 +54,106 @@ public class MainPageTests
 		var hasPrimary = app!.Resources.TryGetValue("Primary", out var primary);
 		Assert.That(hasPrimary, Is.True, "Primary color should be available from the app's Colors.xaml");
 		Assert.That(primary, Is.InstanceOf<Color>());
+	}
+
+	[Test]
+	public void MainPage_ContainsCounterButton()
+	{
+		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(
+			new DeviceTestingKitApp.ViewModels.CounterViewModel());
+		var page = new DeviceTestingKitApp.MainPage(vm);
+
+		// Find the button by AutomationId in the visual tree
+		var button = FindByAutomationId<Button>(page, "CounterButton");
+		Assert.That(button, Is.Not.Null, "CounterButton should exist in the MainPage visual tree");
+	}
+
+	[Test]
+	public void CounterButton_InitialText_IsClickMe()
+	{
+		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(
+			new DeviceTestingKitApp.ViewModels.CounterViewModel());
+		var page = new DeviceTestingKitApp.MainPage(vm);
+
+		var button = FindByAutomationId<Button>(page, "CounterButton");
+		Assert.That(button, Is.Not.Null);
+		Assert.That(button!.Text, Is.EqualTo("Click me!"));
+	}
+
+	[Test]
+	public void CounterButton_AfterOneClick_ViewModelUpdates()
+	{
+		var counter = new DeviceTestingKitApp.ViewModels.CounterViewModel();
+		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(counter);
+		var page = new DeviceTestingKitApp.MainPage(vm);
+
+		var button = FindByAutomationId<Button>(page, "CounterButton");
+		Assert.That(button, Is.Not.Null);
+
+		// Execute the command (simulates button tap)
+		counter.IncrementCommand.Execute(null);
+
+		// ViewModel state should update
+		Assert.That(counter.Count, Is.EqualTo(1));
+
+		// Verify the binding is wired to the command
+		Assert.That(button!.Command, Is.Not.Null);
+		Assert.That(button.Command, Is.SameAs(counter.IncrementCommand));
+	}
+
+	[Test]
+	public void CounterButton_AfterMultipleClicks_ViewModelTracksCount()
+	{
+		var counter = new DeviceTestingKitApp.ViewModels.CounterViewModel();
+		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(counter);
+		var page = new DeviceTestingKitApp.MainPage(vm);
+
+		var button = FindByAutomationId<Button>(page, "CounterButton");
+		Assert.That(button, Is.Not.Null);
+
+		// Tap via the button's command binding
+		button!.Command.Execute(null);
+		button.Command.Execute(null);
+		button.Command.Execute(null);
+
+		Assert.That(counter.Count, Is.EqualTo(3));
+	}
+
+	[Test]
+	public void CounterViewModel_IncrementCommand_CanExecute()
+	{
+		var counter = new DeviceTestingKitApp.ViewModels.CounterViewModel();
+
+		Assert.That(counter.IncrementCommand.CanExecute(null), Is.True);
+		Assert.That(counter.Count, Is.EqualTo(0));
+
+		counter.IncrementCommand.Execute(null);
+		Assert.That(counter.Count, Is.EqualTo(1));
+
+		counter.IncrementCommand.Execute(null);
+		Assert.That(counter.Count, Is.EqualTo(2));
+	}
+
+	static T? FindByAutomationId<T>(Element root, string automationId) where T : Element
+	{
+		if (root is T match && match.AutomationId == automationId)
+			return match;
+
+		IEnumerable<Element> children = root switch
+		{
+			IContentView { Content: Element content } => [content],
+			Layout layout => layout.Children.OfType<Element>(),
+			ContentPage { Content: View content } => [content],
+			_ => []
+		};
+
+		foreach (var child in children)
+		{
+			var result = FindByAutomationId<T>(child, automationId);
+			if (result is not null)
+				return result;
+		}
+
+		return null;
 	}
 }
