@@ -56,7 +56,10 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 			item.PropertyChanged -= DataSource_ItemChanged;
 		}
 
-		filteredList.Clear();
+		lock (_syncLock)
+		{
+			filteredList.Clear();
+		}
 	}
 
 	int IList.Add(object? value)
@@ -108,9 +111,9 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 			filteredList.CopyTo((T[])array, index);
 	}
 
-	bool ICollection.IsSynchronized => false;
+	bool ICollection.IsSynchronized => true;
 
-	object ICollection.SyncRoot => this;
+	object ICollection.SyncRoot => _syncLock;
 
 	public void Add(T item)
 	{
@@ -249,6 +252,8 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 	void DataSource_ItemChanged(object? sender, PropertyChangedEventArgs e)
 	{
 		var item = (T)sender!;
+		NotifyCollectionChangedEventArgs? changeArgs = null;
+
 		lock (_syncLock)
 		{
 			var index = filteredList.IndexOf(item);
@@ -257,21 +262,26 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 				if (index < 0)
 				{
 					filteredList.Insert(~index, item);
-					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index));
+					changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index);
 				}
 			}
 			else if (index >= 0)
 			{
 				filteredList.RemoveAt(index);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+				changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index);
 			}
 		}
+
+		if (changeArgs is not null)
+			OnCollectionChanged(changeArgs);
 
 		OnItemChanged(item, e);
 	}
 
 	void OnAdded(T item)
 	{
+		NotifyCollectionChangedEventArgs? changeArgs = null;
+
 		lock (_syncLock)
 		{
 			if (filter(item, filterArgument))
@@ -280,10 +290,13 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 				if (index < 0)
 				{
 					filteredList.Insert(~index, item);
-					OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index));
+					changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, ~index);
 				}
 			}
 		}
+
+		if (changeArgs is not null)
+			OnCollectionChanged(changeArgs);
 
 		if (item is INotifyPropertyChanged observable)
 		{
@@ -298,24 +311,32 @@ class FilteredCollectionView<T, TFilterArg> : IList<T>, IList, INotifyCollection
 			observable.PropertyChanged -= DataSource_ItemChanged;
 		}
 
+		NotifyCollectionChangedEventArgs? changeArgs = null;
+
 		lock (_syncLock)
 		{
 			var index = filteredList.IndexOf(item);
 			if (index >= 0)
 			{
 				filteredList.RemoveAt(index);
-				OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index));
+				changeArgs = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item, index);
 			}
 		}
+
+		if (changeArgs is not null)
+			OnCollectionChanged(changeArgs);
 	}
 
 	void RefreshFilter()
 	{
+		// Snapshot dataSource to avoid issues if it's modified during iteration
+		var sourceSnapshot = dataSource.ToList();
+
 		lock (_syncLock)
 		{
 			filteredList.Clear();
 
-			foreach (var item in dataSource)
+			foreach (var item in sourceSnapshot)
 			{
 				if (filter(item, filterArgument))
 				{
