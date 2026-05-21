@@ -8,6 +8,7 @@ public class TestCaseViewModel : AbstractBaseViewModel
 	string? _stackTrace;
 
 	TestResultViewModel _testResult;
+	readonly SynchronizationContext? _syncContext;
 
 	// TestCases with strongly typed class data for some reason don't get split into different
 	// test cases by the TheoryDiscoverer.
@@ -17,6 +18,7 @@ public class TestCaseViewModel : AbstractBaseViewModel
 	public TestCaseViewModel(ITestCaseInfo testCase)
 	{
 		TestCaseInfo = testCase ?? throw new ArgumentNullException(nameof(testCase));
+		_syncContext = SynchronizationContext.Current;
 
 		// create an initial result representing not run
 		_testResult = new TestResultViewModel(this, null);
@@ -64,6 +66,14 @@ public class TestCaseViewModel : AbstractBaseViewModel
 	}
 
 	void OnTestResultReported(ITestResultInfo testResult)
+	{
+		if (_syncContext is not null)
+			_syncContext.Post(_ => ApplyTestResult(testResult), null);
+		else
+			ApplyTestResult(testResult);
+	}
+
+	void ApplyTestResult(ITestResultInfo testResult)
 	{
 		// add all the results to the collection for this test
 		_testResults[testResult.TestCase.DisplayName] = testResult;
