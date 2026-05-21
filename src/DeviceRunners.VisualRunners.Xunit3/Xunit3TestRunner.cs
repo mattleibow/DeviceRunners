@@ -107,23 +107,33 @@ public class Xunit3TestRunner : ITestRunner
 		var diagnosticSink = Xunit3DiagnosticMessageSink.TryCreate(_diagnosticsManager, assemblyFileName);
 		var hasDiagnostics = diagnosticSink is not null;
 
-		TestContext.SetForInitialization(
-			diagnosticMessageSink: diagnosticSink,
-			diagnosticMessages: hasDiagnostics,
-			internalDiagnosticMessages: hasDiagnostics);
+		// Run the executor on a thread pool thread to prevent xunit v3's internal
+		// infrastructure from capturing the caller's SynchronizationContext (e.g.
+		// WinUI's DispatcherQueueSynchronizationContext). Without this, xunit v3's
+		// async message posting can trigger COMExceptions on Windows when it
+		// interacts with the captured WinUI context from thread pool threads.
+		// UIFact/UITheory tests still run on the UI thread because they explicitly
+		// dispatch via UIThreadCoordinator.DispatchAsync.
+		await Task.Run(async () =>
+		{
+			TestContext.SetForInitialization(
+				diagnosticMessageSink: diagnosticSink,
+				diagnosticMessages: hasDiagnostics,
+				internalDiagnosticMessages: hasDiagnostics);
 
-		var testFramework = CreateTestFramework(assembly);
-		await using var frameworkDisposal = testFramework as IAsyncDisposable;
+			var testFramework = CreateTestFramework(assembly);
+			await using var frameworkDisposal = testFramework as IAsyncDisposable;
 
-		var configuration = assemblyInfo.Configuration;
-		var executor = testFramework.GetExecutor(assembly);
-		await using var executorDisposal = executor as IAsyncDisposable;
+			var configuration = assemblyInfo.Configuration;
+			var executor = testFramework.GetExecutor(assembly);
+			await using var executorDisposal = executor as IAsyncDisposable;
 
-		var executionOptions = TestFrameworkOptions.ForExecution(configuration);
+			var executionOptions = TestFrameworkOptions.ForExecution(configuration);
 
-		var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
+			var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
 
-		await executor.RunTestCases(testCasesToRun, resultSink, executionOptions, cancellationToken);
+			await executor.RunTestCases(testCasesToRun, resultSink, executionOptions, cancellationToken);
+		}, cancellationToken);
 	}
 
 	static ITestFramework CreateTestFramework(Assembly assembly) =>
