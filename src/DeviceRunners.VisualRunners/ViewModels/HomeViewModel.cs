@@ -94,13 +94,18 @@ public class HomeViewModel : AbstractBaseViewModel
 			}
 
 			_diagnosticsManager?.PostDiagnosticMessage($"Discovered {allTests.Count} test assemblies.");
+			IsLoaded = true;
+		}
+		catch (OperationCanceledException)
+		{
+			_diagnosticsManager?.PostDiagnosticMessage("Test discovery was cancelled.");
 		}
 		catch (Exception ex)
 		{
 			_diagnosticsManager?.PostDiagnosticMessage($"Error during test discovery: '{ex.Message}'{Environment.NewLine}{ex}");
+			IsLoaded = true;
 		}
 
-		IsLoaded = true;
 		IsBusy = false;
 
 		AssemblyScanCompleted?.Invoke(this, EventArgs.Empty);
