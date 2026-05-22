@@ -38,12 +38,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- App Icon -->
+    <!-- App Icon (use different name to avoid collision with app's appicon.svg) -->
     <MauiIcon Include="Resources\AppIcon\testicon.svg" ForegroundFile="Resources\AppIcon\testiconfg.svg" Color="#512BD4" />
 
     <!-- Splash Screen -->
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
+
+  <!--
+    Resizetizer's transitive GetMauiItems call doesn't pass AdditionalProperties,
+    so the app's MauiIcon leaks through. Remove it after collection to avoid duplicates.
+  -->
+  <Target Name="_RemoveImportedAppIcon" AfterTargets="ResizetizeCollectItems">
+    <ItemGroup>
+      <MauiImage Remove="@(MauiImage)" Condition="'%(MauiImage.Filename)' == 'appicon' and '%(MauiImage.IsAppIcon)' == 'True'" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
