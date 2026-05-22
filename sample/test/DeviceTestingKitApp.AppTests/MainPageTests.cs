@@ -57,6 +57,58 @@ public class MainPageTests
 	}
 
 	[Test]
+	public void LibraryStyles_CounterButtonColor_IsAvailable()
+	{
+		var app = Application.Current;
+		Assert.That(app, Is.Not.Null);
+
+		var found = app!.Resources.TryGetValue("CounterButtonColor", out var value);
+		Assert.That(found, Is.True, "CounterButtonColor should be available from the MauiLibrary's CounterStyles.xaml");
+		Assert.That(value, Is.InstanceOf<Color>());
+		Assert.That((Color)value!, Is.EqualTo(Color.FromArgb("#FF6B6B")));
+	}
+
+	[Test]
+	public void LibraryStyles_CounterButtonTextColor_IsAvailable()
+	{
+		var app = Application.Current;
+		Assert.That(app, Is.Not.Null);
+
+		var found = app!.Resources.TryGetValue("CounterButtonTextColor", out var value);
+		Assert.That(found, Is.True, "CounterButtonTextColor should be available from the MauiLibrary's CounterStyles.xaml");
+		Assert.That(value, Is.InstanceOf<Color>());
+		Assert.That((Color)value!, Is.EqualTo(Colors.White));
+	}
+
+	[Test]
+	public async Task CounterButton_WhenPageIsLive_HasCorrectBackgroundColor()
+	{
+		await MainThread.InvokeOnMainThreadAsync(async () =>
+		{
+			var counter = new DeviceTestingKitApp.ViewModels.CounterViewModel();
+			var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(counter);
+			var page = new DeviceTestingKitApp.MainPage(vm);
+
+			var currentPage = Application.Current!.Windows[0].Page!;
+			await currentPage.Navigation.PushModalAsync(page);
+
+			try
+			{
+				await Task.Delay(200);
+
+				var button = FindByAutomationId<Button>(page, "CounterButton");
+				Assert.That(button, Is.Not.Null);
+				Assert.That(button!.BackgroundColor, Is.EqualTo(Color.FromArgb("#FF6B6B")),
+					"Counter button should use the coral color from CounterStyles.xaml, not the default purple");
+			}
+			finally
+			{
+				await currentPage.Navigation.PopModalAsync();
+			}
+		});
+	}
+
+	[Test]
 	public void MainPage_ContainsCounterButton()
 	{
 		var vm = new DeviceTestingKitApp.ViewModels.MainViewModel(

@@ -14,6 +14,7 @@ public static class MauiProgram
 			// Import the real app's styles so {StaticResource} references resolve
 			.AddResourceDictionary<DeviceTestingKitApp.Resources.Styles.Colors>()
 			.AddResourceDictionary<DeviceTestingKitApp.Resources.Styles.Styles>()
+			.AddResourceDictionary<DeviceTestingKitApp.CounterStyles>()
 			.AddTestAssembly(typeof(MauiProgram).Assembly)
 			.AddNUnit());
 
