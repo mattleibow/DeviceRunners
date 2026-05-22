@@ -176,6 +176,10 @@ Create a new MAUI app project for your tests. The `.csproj` needs three things:
   <ItemGroup>
     <PackageReference Include="nunit" />
     <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="DeviceRunners.VisualRunners.NUnit" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Maui" />
+    <!-- Enables `dotnet test` to deploy and run on devices -->
+    <PackageReference Include="DeviceRunners.Testing.Targets" />
   </ItemGroup>
 
   <!-- 1. Reference your app as a library -->
@@ -183,8 +187,6 @@ Create a new MAUI app project for your tests. The `.csproj` needs three things:
     <ProjectReference Include="..\MyApp\MyApp.csproj">
       <AdditionalProperties>Configuration=Library$(Configuration)</AdditionalProperties>
     </ProjectReference>
-    <ProjectReference Include="path\to\DeviceRunners.VisualRunners.NUnit.csproj" />
-    <ProjectReference Include="path\to\DeviceRunners.VisualRunners.Maui.csproj" />
   </ItemGroup>
 
   <!-- 2. Prevent linker from stripping the app assembly -->
@@ -382,7 +384,7 @@ static T? FindByAutomationId<T>(Element root, string automationId) where T : Ele
 ## How resource scoping works
 
 - **Your styles** are merged into `Application.Resources` via `AddResourceDictionary<T>()` — your pages find them via normal `{StaticResource}` lookup.
-- **Runner styles** live at page level only — they never conflict with your app styles, and your styles never affect the runner UI.
+- **Runner styles** use page-level resources with explicit keys, so they don't override your named resources. Note that app-level implicit styles (e.g., `Style TargetType="Button"`) will still apply globally — this is by design so your controls render the same way they do in your real app.
 
 ## Complete sample
 
