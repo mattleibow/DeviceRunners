@@ -16,7 +16,7 @@ public class ResourceDictionaryTests
 		var found = app!.Resources.TryGetValue("CounterButtonColor", out var value);
 		Assert.True(found, "Expected 'CounterButtonColor' resource to be resolvable from Application.Resources");
 		Assert.IsType<Color>(value);
-		Assert.Equal(Color.FromArgb("#512BD4"), (Color)value!);
+		Assert.Equal(Color.FromArgb("#FF6B6B"), (Color)value!);
 	}
 
 	[Fact]

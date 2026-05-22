@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="DeviceTestingKitApp.CounterStyles">
 
-    <Color x:Key="CounterButtonColor">#512BD4</Color>
-    <Color x:Key="CounterButtonTextColor">White</Color>
+    <Color x:Key="CounterButtonColor">#FF6B6B</Color>
+    <Color x:Key="CounterButtonTextColor">#FFFFFF</Color>
 
 </ResourceDictionary>
