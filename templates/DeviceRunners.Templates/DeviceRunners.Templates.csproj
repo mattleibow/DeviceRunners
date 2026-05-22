@@ -44,7 +44,7 @@
 
   <!-- Restore original tokens after pack so source control stays clean -->
   <Target Name="RestoreDeviceRunnersVersion" AfterTargets="Pack">
-    <Exec Command="git checkout -- content/" WorkingDirectory="$(MSBuildProjectDirectory)" IgnoreExitCode="true" />
+    <Exec Command="git checkout -- content/**/*.csproj" WorkingDirectory="$(MSBuildProjectDirectory)" IgnoreExitCode="true" />
   </Target>
 
 </Project>

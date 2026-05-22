@@ -43,6 +43,32 @@
       "datatype": "string",
       "defaultValue": "com.companyname.devicetests",
       "replaces": "com.companyname.devicerunners.devicetests"
+    },
+    "MauiVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(Framework == 'net9.0')", "value": "9.0.*" },
+          { "condition": "(Framework == 'net10.0')", "value": "10.0.*" }
+        ]
+      },
+      "replaces": "MAUI_VERSION"
+    },
+    "ExtensionsVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(Framework == 'net9.0')", "value": "9.0.*" },
+          { "condition": "(Framework == 'net10.0')", "value": "10.0.*" }
+        ]
+      },
+      "replaces": "EXTENSIONS_VERSION"
     }
   },
   "primaryOutputs": [

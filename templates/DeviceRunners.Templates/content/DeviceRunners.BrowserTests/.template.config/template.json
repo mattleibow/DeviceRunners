@@ -36,6 +36,19 @@
       ],
       "defaultValue": "net9.0",
       "replaces": "DOTNET_TFM"
+    },
+    "AspNetVersion": {
+      "type": "generated",
+      "generator": "switch",
+      "parameters": {
+        "evaluator": "C++",
+        "datatype": "string",
+        "cases": [
+          { "condition": "(Framework == 'net9.0')", "value": "9.0.*" },
+          { "condition": "(Framework == 'net10.0')", "value": "10.0.*" }
+        ]
+      },
+      "replaces": "ASPNET_VERSION"
     }
   },
   "primaryOutputs": [
