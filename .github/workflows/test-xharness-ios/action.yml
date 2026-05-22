@@ -51,6 +51,17 @@ runs:
           -c ${{ inputs.configuration }} \
           -p:TestingMode=XHarness \
           /bl:./artifacts/logs/msbuild-publish.binlog
+    - name: Discover App Bundle
+      id: app
+      shell: bash
+      run: |
+        OUTPUT_DIR="artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}"
+        APP_PATH=$(find "$OUTPUT_DIR" -maxdepth 1 -name "*.app" -type d | head -1)
+        if [ -z "$APP_PATH" ]; then
+          echo "::error::No .app bundle found in $OUTPUT_DIR"
+          exit 1
+        fi
+        echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
     - name: Run Tests
       shell: bash
       run: |
@@ -61,7 +72,7 @@ runs:
             --device "${{ steps.simulator.outputs.udid }}" \
             --timeout="00:10:00" \
             --launch-timeout=00:10:00 \
-            --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/DeviceTestingKitApp.DeviceTests.app \
+            --app "${{ steps.app.outputs.path }}" \
             --output-directory artifacts/test-results \
           && code=0 && break || code=$? && echo "Attempt $i failed (exit $code), rebooting simulator..." && dotnet apple simulator shutdown "${{ steps.simulator.outputs.udid }}" && sleep 5 && dotnet apple simulator boot "${{ steps.simulator.outputs.udid }}" --wait && sleep 30
         done

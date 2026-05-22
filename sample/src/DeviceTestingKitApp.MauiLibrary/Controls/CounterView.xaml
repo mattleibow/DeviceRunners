@@ -16,6 +16,8 @@
         Text="{Binding Count, Converter={StaticResource CounterValue}}" 
         AutomationId="CounterButton"
         Command="{Binding IncrementCommand}"
+        BackgroundColor="{DynamicResource CounterButtonColor}"
+        TextColor="{DynamicResource CounterButtonTextColor}"
         SemanticProperties.Hint="Counts the number of times you click" />
 
 </ContentView>

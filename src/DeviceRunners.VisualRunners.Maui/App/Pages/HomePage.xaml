@@ -7,6 +7,10 @@
              x:DataType="vr:HomeViewModel"
              Title="Test Runner">
 
+    <ContentPage.Resources>
+        <local:VisualRunnerResources />
+    </ContentPage.Resources>
+
     <Grid RowDefinitions="Auto,*,Auto,120" ColumnDefinitions="*,Auto"
           Padding="20" RowSpacing="10" ColumnSpacing="10">
 

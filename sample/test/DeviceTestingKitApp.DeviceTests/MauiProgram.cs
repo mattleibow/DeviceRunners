@@ -45,6 +45,7 @@ public static class MauiProgram
 					Timeout = TimeSpan.FromSeconds(30)
 				})
 #endif
+				.AddResourceDictionary<DeviceTestingKitApp.CounterStyles>()
 				.AddConsoleResultChannel()
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)

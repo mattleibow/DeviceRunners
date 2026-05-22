@@ -7,6 +7,10 @@
              x:DataType="vr:TestAssemblyViewModel"
              Title="{Binding DisplayName}">
 
+    <ContentPage.Resources>
+        <local:VisualRunnerResources />
+    </ContentPage.Resources>
+
     <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,Auto,Auto"
           Padding="20" RowSpacing="10" ColumnSpacing="10">
 

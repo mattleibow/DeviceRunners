@@ -29,7 +29,7 @@ dotnet build sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.Dev
 
 xharness apple test \
   --target maccatalyst \
-  --app sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/DeviceTestingKitApp.DeviceTests.app \
+  --app "sample/test/DeviceTestingKitApp.DeviceTests/bin/Debug/net9.0-maccatalyst/maccatalyst-arm64/DeviceRunners Tests.app" \
   --output-directory artifacts
 
 # test result file will be artifacts/xunit-test-maccatalyst-########_######.xml

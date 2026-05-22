@@ -31,7 +31,7 @@ public class XunitReflectionTestDiscoverer : ITestDiscoverer
 			if (cancellationToken.IsCancellationRequested)
 				break;
 
-			var assemblyFileName = assembly.GetName().Name + ".dll";
+			var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assembly);
 			var configuration = new TestAssemblyConfiguration
 			{
 				ShadowCopy = false,

@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Windows.Input;
 
 namespace DeviceRunners.VisualRunners;
@@ -9,7 +8,6 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 	readonly ObservableCollection<TestCaseViewModel> _allTests;
 	readonly FilteredCollectionView<TestCaseViewModel, FilterArgs> _filteredTests;
 	readonly ITestRunner _runner;
-	readonly List<TestCaseViewModel> _results;
 
 	CancellationTokenSource? _filterCancellationTokenSource;
 	TestCaseViewModel? _selectedTestCase;
@@ -42,27 +40,6 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 			.Select(t => new TestCaseViewModel(t))
 			.ToList();
 		_allTests = new ObservableCollection<TestCaseViewModel>(testCases);
-		_results = new List<TestCaseViewModel>(testCases);
-
-		_allTests.CollectionChanged += (_, args) =>
-		{
-			lock (_results)
-			{
-				switch (args.Action)
-				{
-					case NotifyCollectionChangedAction.Add:
-						foreach (TestCaseViewModel item in args.NewItems!)
-							_results.Add(item);
-						break;
-					case NotifyCollectionChangedAction.Remove:
-						foreach (TestCaseViewModel item in args.OldItems!)
-							_results.Remove(item);
-						break;
-					default:
-						throw new InvalidOperationException($"I can't work with {args.Action}");
-				}
-			}
-		};
 
 		_filteredTests = new FilteredCollectionView<TestCaseViewModel, FilterArgs>(
 			_allTests,
@@ -264,16 +241,9 @@ public class TestAssemblyViewModel : AbstractBaseViewModel
 			return;
 		}
 
-		// This would occasionally crash when running the group operation
-		// most likely because of thread safety issues.
-		Dictionary<TestState, int> results;
-		lock (_results)
-		{
-			results =
-				_results
-					.GroupBy(r => GetTestState(r.ResultStatus))
-					.ToDictionary(k => k.Key, v => v.Count());
-		}
+		var results = _allTests
+			.GroupBy(r => GetTestState(r.ResultStatus))
+			.ToDictionary(k => k.Key, v => v.Count());
 
 		results.TryGetValue(TestState.Passed, out int passed);
 		results.TryGetValue(TestState.Failed, out int failure);

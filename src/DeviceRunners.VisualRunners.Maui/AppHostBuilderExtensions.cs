@@ -15,6 +15,11 @@ public static class AppHostBuilderExtensions
 		configurationBuilder?.Invoke(configBuilder);
 		var configuration = configBuilder.Build();
 
+		// register resource dictionary options
+		var resourceOptions = new VisualRunnerResourceOptions();
+		resourceOptions.ResourceDictionaryFactories.AddRange(configBuilder.ResourceDictionaryFactories);
+		appHostBuilder.Services.AddSingleton(resourceOptions);
+
 		// register runner components
 		appHostBuilder.Services.AddSingleton<IVisualTestRunnerConfiguration>(configuration);
 		appHostBuilder.Services.AddSingleton<IDiagnosticsManager, DiagnosticsManager>();

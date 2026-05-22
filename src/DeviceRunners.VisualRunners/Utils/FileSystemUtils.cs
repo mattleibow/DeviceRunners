@@ -98,7 +98,13 @@ public class FileSystemUtils
 			File.Create(path).Close();
 		return path;
 #else
-		return assm.Location;
+		// On WASM (and other platforms without filesystem-backed assemblies),
+		// Assembly.Location is empty. Fall back to the assembly name.
+		var location = assm.Location;
+		if (!string.IsNullOrEmpty(location))
+			return location;
+
+		return filename;
 #endif
 	}
 
