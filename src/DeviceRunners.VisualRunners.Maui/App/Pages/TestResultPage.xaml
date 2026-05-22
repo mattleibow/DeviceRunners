@@ -7,6 +7,10 @@
              x:DataType="vr:TestResultViewModel"
              Title="Test Result">
 
+    <ContentPage.Resources>
+        <local:VisualRunnerResources />
+    </ContentPage.Resources>
+
     <ScrollView>
         <StackLayout Spacing="10" Padding="20">
             <Label Text="{Binding TestCase.DisplayName}" FontAttributes="Bold" AutomationId="TestDisplayName" />

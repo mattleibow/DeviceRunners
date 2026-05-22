@@ -6,6 +6,7 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 {
 	readonly MauiAppBuilder _appHostBuilder;
 	readonly List<Assembly> _testAssemblies = new();
+	readonly List<Func<ResourceDictionary>> _resourceDictionaryFactories = new();
 	bool _autoStart;
 	bool _autoTerminate;
 
@@ -15,6 +16,27 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 	}
 
 	internal VisualTestRunnerUsage RunnerUsage { get; set; } = VisualTestRunnerUsage.Automatic;
+
+	internal IReadOnlyList<Func<ResourceDictionary>> ResourceDictionaryFactories => _resourceDictionaryFactories;
+
+	/// <summary>
+	/// Registers a resource dictionary to be merged into Application.Resources at startup.
+	/// Order matters — register Colors before Styles so StaticResource resolves correctly.
+	/// </summary>
+	public VisualTestRunnerConfigurationBuilder AddResourceDictionary<T>() where T : ResourceDictionary, new()
+	{
+		_resourceDictionaryFactories.Add(() => new T());
+		return this;
+	}
+
+	/// <summary>
+	/// Registers a resource dictionary using a factory to be merged into Application.Resources at startup.
+	/// </summary>
+	public VisualTestRunnerConfigurationBuilder AddResourceDictionary(Func<ResourceDictionary> factory)
+	{
+		_resourceDictionaryFactories.Add(factory ?? throw new ArgumentNullException(nameof(factory)));
+		return this;
+	}
 
 	void IVisualTestRunnerConfigurationBuilder.AddTestAssembly(Assembly assembly) =>
 		_testAssemblies.Add(assembly);

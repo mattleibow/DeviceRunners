@@ -12,6 +12,16 @@ partial class VisualRunnerApp : Application
 		if (Windows.Any(w => w is VisualRunnerWindow))
 			throw new InvalidOperationException("Only a single instance of the test runner window is supported.");
 
-		return Handler!.MauiContext!.Services.GetRequiredService<VisualRunnerWindow>();
+		// Merge registered resource dictionaries (order matters — Colors before Styles)
+		var resourceOptions = Handler!.MauiContext!.Services.GetService<VisualRunnerResourceOptions>();
+		if (resourceOptions is not null)
+		{
+			foreach (var factory in resourceOptions.ResourceDictionaryFactories)
+			{
+				Resources.MergedDictionaries.Add(factory());
+			}
+		}
+
+		return Handler.MauiContext.Services.GetRequiredService<VisualRunnerWindow>();
 	}
 }
