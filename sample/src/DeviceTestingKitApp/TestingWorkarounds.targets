@@ -70,15 +70,4 @@
     <MauiSplashScreen Remove="@(MauiSplashScreen)" />
   </ItemGroup>
 
-  <!--
-    Propagate library configuration to transitive references so they build into
-    separate output paths. Without this, a solution-level build can race with the
-    library-mode build on the same intermediate DLL (XamlCTask file lock).
-  -->
-  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
-    <ProjectReference Update="@(ProjectReference)">
-      <AdditionalProperties>Configuration=$(Configuration)</AdditionalProperties>
-    </ProjectReference>
-  </ItemGroup>
-
 </Project>
