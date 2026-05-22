@@ -328,7 +328,33 @@ The test project references the app with `Configuration=Library$(Configuration)`
 
 Resizetizer's `GetMauiItems` target calls into referenced projects without passing `AdditionalProperties`. This means the app's conditional `MauiIcon Remove` doesn't fire during Resizetizer's collection phase. The test project's `TestingWorkarounds.targets` strips these leaked items after collection.
 
-This is tracked at [dotnet/maui#35574](https://github.com/dotnet/maui/issues/35574).
+This is tracked at [dotnet/maui#35574](https://github.com/dotnet/maui/issues/35574) with a fix in [dotnet/maui#35575](https://github.com/dotnet/maui/pull/35575).
+
+#### When the fix ships
+
+Once dotnet/maui#35575 is merged and included in a MAUI release, the test-side `TestingWorkarounds.targets` can be simplified to only the Windows PRI workaround:
+
+```xml
+<Project>
+  <!--
+    Windows App SDK's GetPriOutputs calls MSBuild on references without AdditionalProperties.
+    Inject IsTestProject=true into SetConfiguration so the app builds as library during PRI generation.
+    TODO: Remove once a corresponding fix is shipped for GetPriOutputs.
+  -->
+  <Target Name="_FixWindowsPriForAppReference" AfterTargets="AssignProjectConfiguration"
+    Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ItemGroup>
+      <ProjectReferenceWithConfiguration Condition="'%(Filename)' == 'MyApp'">
+        <SetConfiguration>%(ProjectReferenceWithConfiguration.SetConfiguration);IsTestProject=true;IncludePriFilesOutputGroup=false;IncludeCopyLocalFilesOutputGroup=false</SetConfiguration>
+      </ProjectReferenceWithConfiguration>
+    </ItemGroup>
+  </Target>
+</Project>
+```
+
+The `_RemoveImportedAppResizetizerItems` target can be deleted entirely — the Resizetizer will correctly pass `Configuration=Library$(Configuration)` to the app during `GetMauiItems`, which triggers `MauiIcon Remove` and `MauiSplashScreen Remove` in the app's own targets.
+
+> **Note:** The app-side `TestingWorkarounds.targets` is **always required** — it's not a workaround but the mechanism that makes library mode work (OutputType=Library, entry point stripping, icon removal).
 
 ### Resource scoping
 
