@@ -15,9 +15,9 @@
   -->
   <Target Name="_RemoveImportedAppResizetizerItems" AfterTargets="ResizetizeCollectItems">
     <ItemGroup>
-      <MauiIcon Remove="@(MauiIcon)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
-      <MauiImage Remove="@(MauiImage)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
-      <MauiSplashScreen Remove="@(MauiSplashScreen)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/Splash'))" />
+      <MauiIcon Remove="@(MauiIcon)" Condition="$([System.String]::new('%(Identity)').Replace('\','/').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
+      <MauiImage Remove="@(MauiImage)" Condition="$([System.String]::new('%(Identity)').Replace('\','/').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
+      <MauiSplashScreen Remove="@(MauiSplashScreen)" Condition="$([System.String]::new('%(Identity)').Replace('\','/').Contains('DeviceTestingKitApp/Resources/Splash'))" />
     </ItemGroup>
   </Target>
 
