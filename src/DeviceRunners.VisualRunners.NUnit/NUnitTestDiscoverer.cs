@@ -33,35 +33,23 @@ public class NUnitTestDiscoverer : ITestDiscoverer
 				if (cancellationToken.IsCancellationRequested)
 					break;
 
-				var assemblyFileName = GetAssemblyFileName(assm);
+				var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
 
-				// Provide a WorkDirectory to prevent NUnit from calling
-				// Directory.GetCurrentDirectory() which may fail on some platforms.
-				// Set RunOnMainThread=true to use MainThreadWorkItemDispatcher which
-				// executes tests inline without spawning threads — required for
-				// single-threaded environments like WASM where Thread.Start() throws.
-				// Set SynchronousEvents=true to avoid creating an EventPump thread.
-				var configuration = new Dictionary<string, object>
+				var configuration = new Dictionary<string, object>();
+
+				// On WASM (single-threaded), NUnit's dispatchers and EventPump
+				// create threads which throw PlatformNotSupportedException.
+				if (OperatingSystem.IsBrowser())
 				{
-					["WorkDirectory"] = ".",
-					["RunOnMainThread"] = true,
-					["SynchronousEvents"] = true
-				};
+					configuration["WorkDirectory"] = ".";
+					configuration["RunOnMainThread"] = true;
+					configuration["SynchronousEvents"] = true;
+				}
 
 				try
 				{
 					var builder = new DefaultTestAssemblyBuilder();
 					var nunitTestAssembly = (TestAssembly)builder.Build(assm, configuration);
-
-					// Check if NUnit marked the assembly as invalid (e.g. no fixtures found
-					// due to ReflectionTypeLoadException on WASM)
-					if (nunitTestAssembly.RunState == RunState.NotRunnable)
-					{
-						var reason = nunitTestAssembly.Properties.Get(PropertyNames.SkipReason) as string;
-						_diagnosticsManager?.PostDiagnosticMessage(
-							$"NUnit marked assembly '{assemblyFileName}' as not runnable: {reason}");
-						continue;
-					}
 
 					var testAssembly = new NUnitTestAssemblyInfo(assemblyFileName, nunitTestAssembly, configuration);
 					var testCases = GetChildTests(nunitTestAssembly)
@@ -72,11 +60,6 @@ public class NUnitTestDiscoverer : ITestDiscoverer
 					{
 						testAssembly.TestCases.AddRange(testCases);
 						result.Add(testAssembly);
-					}
-					else
-					{
-						_diagnosticsManager?.PostDiagnosticMessage(
-							$"NUnit found 0 test cases in assembly '{assemblyFileName}' (RunState={nunitTestAssembly.RunState}, HasChildren={nunitTestAssembly.HasChildren}, TestCount={nunitTestAssembly.TestCaseCount})");
 					}
 				}
 				catch (Exception ex)
@@ -91,16 +74,6 @@ public class NUnitTestDiscoverer : ITestDiscoverer
 		}
 
 		return result;
-	}
-
-	static string GetAssemblyFileName(Assembly assembly)
-	{
-		// On WASM, Assembly.Location is empty string. Use the assembly name as fallback.
-		var location = assembly.Location;
-		if (!string.IsNullOrEmpty(location))
-			return location;
-
-		return assembly.GetName().Name + ".dll";
 	}
 
 	static IEnumerable<ITest> GetChildTests(ITest test)
