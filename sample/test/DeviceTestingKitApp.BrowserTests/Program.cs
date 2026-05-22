@@ -9,8 +9,10 @@ builder.RootComponents.Add<TestRunnerApp>("#app");
 
 builder.UseVisualTestRunner(conf => conf
 	.AddXunit(useReflection: true)
+	.AddNUnit()
 	.AddTestAssembly(typeof(DeviceTestingKitApp.BrowserTests.UnitTests).Assembly)
 	.AddTestAssemblies(typeof(DeviceTestingKitApp.BlazorLibrary.XunitTests.UnitTests).Assembly)
+	.AddTestAssemblies(typeof(DeviceTestingKitApp.BlazorLibrary.NUnitTests.UnitTests).Assembly)
 	.AddConsoleResultChannel());
 
 await builder.Build().RunAsync();

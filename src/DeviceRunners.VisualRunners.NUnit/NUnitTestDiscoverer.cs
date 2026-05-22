@@ -18,6 +18,7 @@ public class NUnitTestDiscoverer : ITestDiscoverer
 		_diagnosticsManager = diagnosticsManager;
 		_testAssemblies = options.TestAssemblies.ToArray();
 	}
+
 	public Task<IReadOnlyList<ITestAssemblyInfo>> DiscoverAsync(CancellationToken cancellationToken = default) =>
 		AsyncUtils.RunAsync(() => Discover(cancellationToken));
 
@@ -34,8 +35,16 @@ public class NUnitTestDiscoverer : ITestDiscoverer
 
 				var assemblyFileName = FileSystemUtils.GetAssemblyFileName(assm);
 
-				// TODO: configuration
 				var configuration = new Dictionary<string, object>();
+
+				// On WASM (single-threaded), NUnit's dispatchers and EventPump
+				// create threads which throw PlatformNotSupportedException.
+				if (OperatingSystem.IsBrowser())
+				{
+					configuration["WorkDirectory"] = ".";
+					configuration["RunOnMainThread"] = true;
+					configuration["SynchronousEvents"] = true;
+				}
 
 				try
 				{
