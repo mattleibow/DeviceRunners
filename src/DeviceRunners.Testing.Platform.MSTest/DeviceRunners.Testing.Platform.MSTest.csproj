@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <RootNamespace>DeviceRunners.Testing.Platform</RootNamespace>
+    <Description>MSTest integration for DeviceRunners Microsoft Testing Platform runner.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="MSTest.TestAdapter" ExcludeAssets="build;buildTransitive" GeneratePathProperty="true" PrivateAssets="none" />
+  </ItemGroup>
+
+  <!-- MSTest.TestAdapter ships DLLs only in buildTransitive/, not lib/.
+       With ExcludeAssets="build;buildTransitive", the compile reference is lost.
+       We add an explicit reference to the adapter DLL (same as what the MSBuild targets do). -->
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter">
+      <HintPath>$(PkgMSTest_TestAdapter)\buildTransitive\net9.0\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.Testing.Platform\DeviceRunners.Testing.Platform.csproj" />
+  </ItemGroup>
+
+</Project>

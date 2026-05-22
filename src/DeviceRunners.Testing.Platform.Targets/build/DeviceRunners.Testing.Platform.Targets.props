@@ -1,0 +1,34 @@
+<Project>
+
+  <!--
+    This project IS a Microsoft Testing Platform application.
+    MTP handles all protocol communication with `dotnet test` natively.
+    The RunCommand points to our host tool which orchestrates device deployment,
+    app launch, TRX pull, and result publishing.
+  -->
+  <PropertyGroup>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <!--
+    Default properties injected before the project builds.
+    Users can override any of these in their own .csproj.
+  -->
+  <PropertyGroup>
+    <!--
+      Target device/emulator to use. Leave empty to use the booted/default device.
+      For iOS: the simulator UDID (e.g. from `xcrun simctl list`).
+      For Android: the device serial number (e.g. emulator-5554).
+    -->
+    <DeviceRunnersDevice Condition="'$(DeviceRunnersDevice)' == ''" />
+
+    <!-- Where TRX / test result files are written. -->
+    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ArtifactsPath)'))test-results\</TestResultsDirectory>
+    <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
+
+    <!-- Skip deployment (for fast re-runs when app is already deployed). -->
+    <DeviceRunnersSkipDeploy Condition="'$(DeviceRunnersSkipDeploy)' == ''">false</DeviceRunnersSkipDeploy>
+  </PropertyGroup>
+
+</Project>

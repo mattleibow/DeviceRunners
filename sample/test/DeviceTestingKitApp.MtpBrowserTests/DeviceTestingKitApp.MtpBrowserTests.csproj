@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <!--
+    Direct import of DeviceRunners.Testing.Platform.Targets for in-repo usage.
+    End users add: <PackageReference Include="DeviceRunners.Testing.Platform.Targets" />
+  -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Platform.Targets\build\DeviceRunners.Testing.Platform.Targets.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- The Blazor app owns its own entry point -->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.assert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\DeviceRunners.Testing.Platform.Blazor\DeviceRunners.Testing.Platform.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.Testing.Platform.Xunit3\DeviceRunners.Testing.Platform.Xunit3.csproj" />
+  </ItemGroup>
+
+  <!-- See the .props import at the top of this file for the DeviceRunners.Testing.Platform.Targets equivalent. -->
+  <Import Project="..\..\..\src\DeviceRunners.Testing.Platform.Targets\build\DeviceRunners.Testing.Platform.Targets.targets" />
+
+</Project>

@@ -13,9 +13,18 @@
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.BrowserTests/DeviceTestingKitApp.BrowserTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.BlazorLibrary.XunitTests/DeviceTestingKitApp.BlazorLibrary.XunitTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.MtpDeviceTests/DeviceTestingKitApp.MtpDeviceTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.MtpBrowserTests/DeviceTestingKitApp.MtpBrowserTests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/DeviceRunners.Cli/DeviceRunners.Cli.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform/DeviceRunners.Testing.Platform.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.Maui/DeviceRunners.Testing.Platform.Maui.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.Blazor/DeviceRunners.Testing.Platform.Blazor.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.Xunit3/DeviceRunners.Testing.Platform.Xunit3.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.MSTest/DeviceRunners.Testing.Platform.MSTest.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.NUnit/DeviceRunners.Testing.Platform.NUnit.csproj" />
+    <Project Path="src/DeviceRunners.Testing.Platform.Targets/DeviceRunners.Testing.Platform.Targets.csproj" />
     <Project Path="src/DeviceRunners.Core/DeviceRunners.Core.csproj" />
     <Project Path="src/DeviceRunners.Testing.Targets/DeviceRunners.Testing.Targets.csproj" />
     <Project Path="src/DeviceRunners.UITesting.Maui/DeviceRunners.UITesting.Maui.csproj" />

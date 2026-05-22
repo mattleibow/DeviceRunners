@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <RootNamespace>DeviceRunners.Testing.Platform</RootNamespace>
+    <Description>xUnit v3 integration for DeviceRunners Microsoft Testing Platform runner.</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.extensibility.core" />
+    <PackageReference Include="xunit.v3.runner.utility" />
+    <PackageReference Include="xunit.v3.core.mtp-v2" ExcludeAssets="build;buildTransitive" PrivateAssets="none" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.Testing.Platform\DeviceRunners.Testing.Platform.csproj" />
+  </ItemGroup>
+
+</Project>

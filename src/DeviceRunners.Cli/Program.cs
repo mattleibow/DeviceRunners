@@ -1,5 +1,11 @@
 using DeviceRunners.Cli.Commands;
+using DeviceRunners.Cli.Mtp;
 using Spectre.Console.Cli;
+
+// MTP host mode: when dotnet test launches us with --server, enter MTP mode
+// This must be checked before Spectre.Console which doesn't understand MTP args.
+if (args.Any(a => a == "--server"))
+	return await MtpHost.RunAsync(args);
 
 var app = new CommandApp();
 
