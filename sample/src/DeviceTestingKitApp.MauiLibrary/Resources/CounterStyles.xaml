@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="DeviceTestingKitApp.CounterStyles">
+
+    <Color x:Key="CounterButtonColor">#FF6B6B</Color>
+    <Color x:Key="CounterButtonTextColor">#FFFFFF</Color>
+
+</ResourceDictionary>
