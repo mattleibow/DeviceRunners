@@ -1,78 +1,47 @@
-# Testing with App Resources (Library Mode)
+# Testing with App Resources
 
-This guide explains how to create a **separate test app** that references your real application as a library. This lets you test custom controls, ViewModels, and services that depend on your app's styles, colors, and DI configuration — without mocking anything code-related.
+Test your custom controls, ViewModels, and services on a real device — with your app's actual styles, colors, and DI configuration. No mocking required.
 
-## When to use this pattern
+## What you'll build
 
-Use this approach when:
-
-- Your custom controls use `{StaticResource}` references to app-level styles/colors
-- You want to test ViewModels with the same DI services your app registers
-- You need to instantiate pages and verify bindings work with real styles
-- You want to avoid duplicating service registration logic between app and tests
-
-## Overview
-
-The pattern works by:
-
-1. Building your app as a **library** (via a Configuration-based trigger) so the test project can reference it
-2. Using the visual test runner as the host application
-3. Importing your app's `Colors.xaml` and `Styles.xaml` via `AddResourceDictionary<T>()`
-4. Calling the same service registration your app uses
+A separate test project that references your real app as a library. The DeviceRunners visual test runner hosts everything, and your app's `{StaticResource}` references resolve correctly because you import the resource dictionaries explicitly.
 
 ```
-┌─────────────────────────────┐
-│    Test App (Exe)           │
-│  ┌───────────────────────┐  │
-│  │ Visual Test Runner     │  │  ← Hosts the app, runs tests
-│  │  + AddResourceDictionary│  │  ← Your styles/colors
-│  │  + Your services       │  │  ← Same DI as your app
-│  └───────────────────────┘  │
-│  ┌───────────────────────┐  │
-│  │ Your App (Library)     │  │  ← Referenced with Configuration=Library$(Configuration)
-│  │  Pages, VMs, Controls  │  │
-│  └───────────────────────┘  │
-│  ┌───────────────────────┐  │
-│  │ Test Classes (NUnit)   │  │  ← Your test code
-│  └───────────────────────┘  │
-└─────────────────────────────┘
+┌───────────────────────────────────┐
+│  Test App (runs on device)        │
+│                                   │
+│  ┌─────────────────────────────┐  │
+│  │ Visual Test Runner (host)   │  │
+│  │  + Your Colors & Styles     │  │
+│  │  + Your DI services         │  │
+│  └─────────────────────────────┘  │
+│  ┌─────────────────────────────┐  │
+│  │ Your App (built as library) │  │
+│  │  Pages, VMs, Controls       │  │
+│  └─────────────────────────────┘  │
+│  ┌─────────────────────────────┐  │
+│  │ Test Classes                │  │
+│  └─────────────────────────────┘  │
+└───────────────────────────────────┘
 ```
 
-## Why Configuration=Library$(Configuration)?
+## Prerequisites
 
-We use `Configuration=Library$(Configuration)` (e.g., `LibraryDebug`) on the `ProjectReference` rather than a custom property because:
+- .NET 9+ with MAUI workload installed
+- A MAUI app you want to test
+- DeviceRunners NuGet packages (see [Preview Packages](preview-packages.md))
 
-- **MSBuild already uses Configuration in output paths** — the artifacts layout (`artifacts/obj/MyApp/librarydebug_net10.0-ios/`) naturally separates intermediate files
-- **Avoids file-locking races** — without a distinct Configuration, the app's Exe build and Library build share `obj/` and race on intermediate files during parallel solution builds
-- **Propagates transitively** — all dependencies automatically get separate output paths too
+## Quick Start
 
-## Step 1: Add the library-mode targets to your app
+### 1. Add library-mode support to your app
 
-Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and import it. This keeps your csproj clean — no inline workaround logic:
+Create `TestingWorkarounds.targets` next to your app's `.csproj`:
 
-**In your app's `.csproj`, add at the end:**
 ```xml
-<Import Project="TestingWorkarounds.targets" />
-```
-
-**Create `TestingWorkarounds.targets` (in app project folder):**
-```xml
-<!--
-  Allows this MAUI app to be referenced as a library by test projects.
-  The test project uses AdditionalProperties=Configuration=Library$(Configuration) which
-  triggers IsTestProject=true here, providing separate intermediate/output paths automatically.
-
-  When IsTestProject=true:
-  - OutputType becomes Library (no entry point)
-  - Platform entry points are removed (they conflict with the test app's own)
-  - MauiIcon/MauiSplashScreen are stripped (Resizetizer would duplicate them)
-  - Android resource designer is disabled (no manifest in library mode)
-  - Windows packaging is suppressed (no PRI/MSIX conflicts)
-
-  See: https://github.com/dotnet/maui/issues/35574
--->
 <Project>
 
+  <!-- When the test project references us with Configuration=LibraryDebug,
+       this switches OutputType to Library and strips platform entry points. -->
   <PropertyGroup Condition="$(Configuration.StartsWith('Library'))">
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -82,7 +51,7 @@ Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and 
     <OutputType Condition="'$(IsTestProject)' != 'true'">Exe</OutputType>
   </PropertyGroup>
 
-  <!-- Windows: suppress packaging that conflicts with the consuming test app -->
+  <!-- Windows: suppress packaging -->
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <WindowsPackageType>None</WindowsPackageType>
     <GenerateLibraryLayout>false</GenerateLibraryLayout>
@@ -91,20 +60,19 @@ Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and 
     <IncludeCopyLocalFilesOutputGroup>false</IncludeCopyLocalFilesOutputGroup>
   </PropertyGroup>
 
-  <!-- Android: disable resource designer (no manifest) and clear RIDs -->
+  <!-- Android: disable resource designer and clear RIDs -->
   <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
     <RuntimeIdentifiers></RuntimeIdentifiers>
   </PropertyGroup>
 
-  <!-- Android: remove entry point classes -->
+  <!-- Remove platform entry points that conflict with the test app -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
     <Compile Remove="Platforms\Android\MainApplication.cs" />
     <Compile Remove="Platforms\Android\MainActivity.cs" />
     <AndroidManifest Remove="Platforms\Android\AndroidManifest.xml" />
   </ItemGroup>
 
-  <!-- iOS/MacCatalyst: remove entry point classes -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true' and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst')">
     <Compile Remove="Platforms\iOS\AppDelegate.cs" />
     <Compile Remove="Platforms\iOS\Program.cs" />
@@ -112,7 +80,6 @@ Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and 
     <Compile Remove="Platforms\MacCatalyst\Program.cs" />
   </ItemGroup>
 
-  <!-- Windows: remove all platform files -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <ApplicationDefinition Remove="Platforms\Windows\**" />
     <Page Remove="Platforms\Windows\**" />
@@ -121,7 +88,7 @@ Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and 
     <AppxManifest Remove="Platforms\Windows\**" />
   </ItemGroup>
 
-  <!-- Remove app-specific assets that would conflict with the test app's own -->
+  <!-- Remove icons/splash that would conflict with the test app's own -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <MauiIcon Remove="@(MauiIcon)" />
     <MauiSplashScreen Remove="@(MauiSplashScreen)" />
@@ -130,11 +97,17 @@ Create a `TestingWorkarounds.targets` file **next to your app's `.csproj`** and 
 </Project>
 ```
 
-> **Note:** This file is always required. It is not a temporary workaround — it's the mechanism that enables library mode. Your app builds as Exe normally and as Library when referenced by the test project.
+Import it at the end of your app's `.csproj`:
 
-## Step 2: Add `x:Class` to your resource dictionaries
+```xml
+<Import Project="TestingWorkarounds.targets" />
+```
 
-Your `Colors.xaml` and `Styles.xaml` need to be instantiable as C# types. Add an `x:Class` attribute and a codebehind:
+> Your app still builds normally as an Exe. The library mode only activates when the test project references it.
+
+### 2. Make your resource dictionaries instantiable
+
+Add `x:Class` to any XAML resource dictionaries you want to use in tests, plus a code-behind:
 
 **Colors.xaml:**
 ```xml
@@ -142,7 +115,7 @@ Your `Colors.xaml` and `Styles.xaml` need to be instantiable as C# types. Add an
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     x:Class="MyApp.Resources.Styles.Colors">
-    <!-- your colors here -->
+    <!-- your colors -->
 </ResourceDictionary>
 ```
 
@@ -152,84 +125,85 @@ namespace MyApp.Resources.Styles;
 
 public partial class Colors : ResourceDictionary
 {
-    public Colors()
-    {
-        InitializeComponent();
-    }
+    public Colors() => InitializeComponent();
 }
 ```
 
-Do the same for `Styles.xaml`.
+Repeat for `Styles.xaml` and any other resource dictionaries your controls depend on.
 
-## Step 3: Create a shared service registration method
+### 3. Extract shared service registration
 
-In your app project, extract service/VM/page registration into an extension method so both the app and test project can call it:
+Move your DI/font/page registration into a reusable extension method:
 
 ```csharp
-// In your app project
-public static class ServiceCollectionExtensions
+// In your app project (e.g. MauiProgram.cs or a ServiceExtensions.cs)
+public static MauiAppBuilder AddMyAppServices(this MauiAppBuilder builder)
 {
-    public static MauiAppBuilder AddMyAppServices(this MauiAppBuilder builder)
+    builder.ConfigureFonts(fonts =>
     {
-        builder.ConfigureFonts(fonts =>
-        {
-            fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-        });
+        fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+    });
 
-        builder.Services.AddTransient<MainPage>();
-        builder.Services.AddTransient<MainViewModel>();
-        // ... all your services
-        
-        return builder;
-    }
+    builder.Services.AddTransient<MainPage>();
+    builder.Services.AddTransient<MainViewModel>();
+    // ... all your services
+
+    return builder;
 }
 ```
 
-Then your app's `MauiProgram.cs` becomes:
+Your app's `MauiProgram.cs` calls it:
 ```csharp
 builder.UseMauiApp<App>().AddMyAppServices();
 ```
 
-## Step 4: Create the test project
+### 4. Create the test project
 
-Create a new MAUI app project. Reference the app with `Configuration=Library$(Configuration)` and add the test-side workarounds targets:
+Create a new MAUI app project for your tests. The `.csproj` needs three things:
 
-**In your test project's `.csproj`:**
 ```xml
-<!-- Reference the main app as a library -->
-<ItemGroup>
-  <ProjectReference Include="..\MyApp\MyApp.csproj">
-    <AdditionalProperties>Configuration=Library$(Configuration)</AdditionalProperties>
-  </ProjectReference>
-</ItemGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
-<!-- Prevent the linker from stripping the app assembly (tests use reflection) -->
-<ItemGroup>
-  <TrimmerRootAssembly Include="MyApp" RootMode="all" />
-</ItemGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <!-- ... standard MAUI project properties ... -->
+  </PropertyGroup>
 
-<!-- Import workarounds at the end of the csproj -->
-<Import Project="TestingWorkarounds.targets" />
+  <ItemGroup>
+    <PackageReference Include="nunit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+  </ItemGroup>
+
+  <!-- 1. Reference your app as a library -->
+  <ItemGroup>
+    <ProjectReference Include="..\MyApp\MyApp.csproj">
+      <AdditionalProperties>Configuration=Library$(Configuration)</AdditionalProperties>
+    </ProjectReference>
+    <ProjectReference Include="path\to\DeviceRunners.VisualRunners.NUnit.csproj" />
+    <ProjectReference Include="path\to\DeviceRunners.VisualRunners.Maui.csproj" />
+  </ItemGroup>
+
+  <!-- 2. Prevent linker from stripping the app assembly -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="MyApp" RootMode="all" />
+  </ItemGroup>
+
+  <!-- 3. Import workarounds for Resizetizer/PRI bugs -->
+  <Import Project="TestingWorkarounds.targets" />
+
+</Project>
 ```
 
-**Create `TestingWorkarounds.targets` (in test project folder):**
-```xml
-<!--
-  Workarounds for referencing a MAUI app as a library in a test project.
+Create `TestingWorkarounds.targets` in the test project folder (replace `YOUR_APP_NAME` with your app's project folder name):
 
-  Resizetizer's GetMauiItems and Windows PRI's GetPriOutputs don't propagate
-  AdditionalProperties from ProjectReference, so the app's MauiIcon/MauiSplashScreen
-  leak into this project. These targets strip those imported items.
-  See: https://github.com/dotnet/maui/issues/35574
--->
+```xml
 <Project>
 
-  <!--
-    After Resizetizer collects items from all project references, remove any
-    MauiIcon/MauiImage/MauiSplashScreen that originated from the referenced app.
-    Items from the app use absolute paths containing the app's project folder.
-    Replace YOUR_APP_NAME with your app's project folder name.
-  -->
+  <!-- Strip leaked MauiIcon/MauiSplashScreen from the referenced app -->
   <Target Name="_RemoveImportedAppResizetizerItems" AfterTargets="ResizetizeCollectItems">
     <ItemGroup>
       <MauiIcon Remove="@(MauiIcon)"
@@ -241,11 +215,7 @@ Create a new MAUI app project. Reference the app with `Configuration=Library$(Co
     </ItemGroup>
   </Target>
 
-  <!--
-    Windows App SDK's GetPriOutputs calls MSBuild on references without AdditionalProperties.
-    Inject IsTestProject=true into SetConfiguration so the app builds as library during PRI generation.
-    Replace YOUR_APP_NAME with your app's project filename (without .csproj).
-  -->
+  <!-- Windows: fix PRI generation for app-as-library reference -->
   <Target Name="_FixWindowsPriForAppReference" AfterTargets="AssignProjectConfiguration"
     Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <ItemGroup>
@@ -258,11 +228,11 @@ Create a new MAUI app project. Reference the app with `Configuration=Library$(Co
 </Project>
 ```
 
-> **Important:** Replace `YOUR_APP_NAME` with your app's project folder/filename. The `Replace('\','/')` normalizes path separators so the condition works on both Windows and macOS.
+> These workarounds are needed because of [dotnet/maui#35574](https://github.com/dotnet/maui/issues/35574). They'll be simplified once the upstream fix ships.
 
-## Step 5: Configure the test runner
+### 5. Wire up the test runner
 
-Your test project's `MauiProgram.cs`:
+Create `MauiProgram.cs` in the test project:
 
 ```csharp
 using DeviceRunners.VisualRunners;
@@ -272,28 +242,31 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-        builder
-            .UseVisualTestRunner(conf => conf
-                .AddCliConfiguration()
-                .AddConsoleResultChannel()
-                // Import app styles — order matters! Colors before Styles.
-                .AddResourceDictionary<MyApp.Resources.Styles.Colors>()
-                .AddResourceDictionary<MyApp.Resources.Styles.Styles>()
-                .AddTestAssembly(typeof(MauiProgram).Assembly)
-                .AddNUnit())
-            // Register the same services as the real app
-            .AddMyAppServices();
+
+        builder.UseVisualTestRunner(conf => conf
+            .AddCliConfiguration()
+            .AddConsoleResultChannel()
+            // Import your app's resource dictionaries (order matters!)
+            .AddResourceDictionary<MyApp.Resources.Styles.Colors>()
+            .AddResourceDictionary<MyApp.Resources.Styles.Styles>()
+            .AddTestAssembly(typeof(MauiProgram).Assembly)
+            .AddNUnit());
+
+        // Register the same services as the real app
+        builder.AddMyAppServices();
 
         return builder.Build();
     }
 }
 ```
 
-> **Important:** Add `Colors` before `Styles` — Styles.xaml typically uses `{StaticResource}` references to keys defined in Colors.xaml. Dictionaries are merged in order, so earlier ones must be available when later ones are constructed.
+> **Order matters:** Add `Colors` before `Styles`. Styles typically reference colors via `{StaticResource}`, so they must already be merged when Styles is constructed.
 
-## Step 6: Write tests
+### 6. Write tests
 
 ```csharp
+using NUnit.Framework;
+
 [TestFixture]
 public class MainPageTests
 {
@@ -313,86 +286,104 @@ public class MainPageTests
         Assert.That(found, Is.True);
         Assert.That(color, Is.InstanceOf<Color>());
     }
-
-    [Test]
-    public async Task Page_WithLiveBindings()
-    {
-        // For tests that need the binding engine to process updates,
-        // push the page as a modal on the UI thread:
-        await MainThread.InvokeOnMainThreadAsync(async () =>
-        {
-            var vm = new MainViewModel();
-            var page = new MainPage(vm);
-
-            var nav = Application.Current!.Windows[0].Page!.Navigation;
-            await nav.PushModalAsync(page);
-
-            try
-            {
-                await Task.Delay(200); // let bindings settle
-                // ... assert binding-driven UI state
-            }
-            finally
-            {
-                await nav.PopModalAsync();
-            }
-        });
-    }
 }
 ```
 
-## How it works
-
-### Configuration-based library mode
-
-The test project references the app with `Configuration=Library$(Configuration)` (e.g., `LibraryDebug`). This:
-- Triggers `IsTestProject=true` in the app's `TestingWorkarounds.targets`
-- Automatically provides separate intermediate/output paths (MSBuild uses Configuration in the path)
-- Strips platform entry points, app icons, and packaging that would conflict
-
-### Known issue: Resizetizer and PRI don't propagate AdditionalProperties
-
-Two MAUI/Windows SDK build targets call `MSBuild` on referenced projects without passing `AdditionalProperties`:
-
-1. **Resizetizer's `GetMauiItems`** — collects `MauiIcon`/`MauiImage`/`MauiSplashScreen` from references. Since it doesn't pass `Configuration=LibraryDebug`, the app's `IsTestProject=true` doesn't activate, and icons/splash leak through.
-
-2. **Windows PRI's `GetPriOutputs`** — generates Package Resource Index files. Same issue: calls into the app without AdditionalProperties, so it tries to generate PRI for an Exe instead of a Library, causing conflicts.
-
-Both are tracked at [dotnet/maui#35574](https://github.com/dotnet/maui/issues/35574) with a Resizetizer fix in [dotnet/maui#35575](https://github.com/dotnet/maui/pull/35575).
-
-The test-side `TestingWorkarounds.targets` works around both issues:
-- `_RemoveImportedAppResizetizerItems` strips leaked icons/splash after Resizetizer collects them
-- `_FixWindowsPriForAppReference` injects `IsTestProject=true` into the PRI build's SetConfiguration
-
-### Resource scoping
-
-The test runner uses **page-level resources** for its own styles (colors, button styles, etc.). This means:
-
-- **Your styles don't affect runner pages** — the runner's UI looks correct regardless of what you register
-- **Runner styles don't leak into your pages** — your controls render with your styles only
-- **App-level resources are yours** — `AddResourceDictionary<T>()` merges into `Application.Resources`, which your pages can access via `{StaticResource}`
-
-### Live binding tests
-
-Tests that instantiate pages without attaching them to a window work for verifying:
-- Page creation doesn't throw (StaticResource resolution)
-- BindingContext is set correctly  
-- Visual tree structure (finding elements by AutomationId)
-- Command wiring (`button.Command` is the expected ICommand)
-
-For tests that need binding *updates* (e.g., verifying Button.Text changes after a command), push the page as a modal via `PushModalAsync`. This attaches it to a live handler where the binding engine processes property changes. Always use `MainThread.InvokeOnMainThreadAsync` for these — UIKit requires UI operations on the main thread.
-
-## Running tests
+### 7. Run
 
 ```bash
-# Run on macOS
+# macOS
 dotnet test MyApp.AppTests -f net10.0-maccatalyst
 
-# Run on iOS simulator
+# iOS simulator
 dotnet test MyApp.AppTests -f net10.0-ios
 
-# Run on Android emulator
+# Android emulator
 dotnet test MyApp.AppTests -f net10.0-android
+
+# Windows
+dotnet test MyApp.AppTests -f net10.0-windows10.0.19041.0
 ```
 
-The `AddCliConfiguration()` call enables the DeviceRunners CLI to auto-start tests and stream results via TCP when invoked through `dotnet test`.
+## Testing patterns
+
+### Simple tests (no live UI needed)
+
+These work without attaching the page to a window:
+
+- ✅ Page creation (verifies `{StaticResource}` resolves)
+- ✅ BindingContext assignment
+- ✅ Visual tree structure (finding elements by AutomationId)
+- ✅ Command wiring (`button.Command` is the expected ICommand)
+
+### Live UI tests (binding updates, rendering)
+
+When you need the binding engine to process property changes, push the page as a modal:
+
+```csharp
+[Test]
+public async Task Button_UpdatesText_AfterCommand()
+{
+    await MainThread.InvokeOnMainThreadAsync(async () =>
+    {
+        var vm = new MainViewModel();
+        var page = new MainPage(vm);
+
+        var nav = Application.Current!.Windows[0].Page!.Navigation;
+        await nav.PushModalAsync(page);
+
+        try
+        {
+            await Task.Delay(200); // let bindings settle
+
+            var button = FindByAutomationId<Button>(page, "CounterButton");
+            button!.Command.Execute(null);
+            await Task.Delay(200);
+
+            Assert.That(button.Text, Is.EqualTo("Clicked 1 time"));
+        }
+        finally
+        {
+            await nav.PopModalAsync();
+        }
+    });
+}
+```
+
+> Always wrap live UI tests in `MainThread.InvokeOnMainThreadAsync` — platform UI requires the main thread.
+
+### Helper: finding elements by AutomationId
+
+```csharp
+static T? FindByAutomationId<T>(Element root, string automationId) where T : Element
+{
+    if (root is T match && match.AutomationId == automationId)
+        return match;
+
+    IEnumerable<Element> children = root switch
+    {
+        IContentView { Content: Element content } => [content],
+        Layout layout => layout.Children.OfType<Element>(),
+        ContentPage { Content: View content } => [content],
+        _ => []
+    };
+
+    foreach (var child in children)
+    {
+        var result = FindByAutomationId<T>(child, automationId);
+        if (result is not null)
+            return result;
+    }
+
+    return null;
+}
+```
+
+## How resource scoping works
+
+- **Your styles** are merged into `Application.Resources` via `AddResourceDictionary<T>()` — your pages find them via normal `{StaticResource}` lookup.
+- **Runner styles** live at page level only — they never conflict with your app styles, and your styles never affect the runner UI.
+
+## Complete sample
+
+See the [`DeviceTestingKitApp.AppTests`](https://github.com/mattleibow/DeviceRunners/tree/main/sample/test/DeviceTestingKitApp.AppTests) project in this repository for a working example with NUnit tests covering page creation, style resolution, command binding, and live UI verification.
