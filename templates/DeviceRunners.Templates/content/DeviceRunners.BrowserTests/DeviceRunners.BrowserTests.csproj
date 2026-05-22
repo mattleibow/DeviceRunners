@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceRunners.VisualRunners.Blazor" Version="*-*" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="*-*" />
-    <PackageReference Include="DeviceRunners.Testing.Targets" Version="*-*" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.6" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Blazor" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="DeviceRunners.Testing.Targets" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="ASPNET_VERSION" />
     <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 

@@ -15,11 +15,36 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>disable</ImplicitUsings>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <!-- Default DeviceRunners version injected into templates; override via -p:DeviceRunnersTemplateVersion=x.y.z -->
+    <DeviceRunnersTemplateVersion Condition="'$(DeviceRunnersTemplateVersion)' == ''">$(PackageVersion)</DeviceRunnersTemplateVersion>
+    <DeviceRunnersTemplateVersion Condition="'$(DeviceRunnersTemplateVersion)' == ''">*-*</DeviceRunnersTemplateVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="content/**/*" Exclude="content/**/bin/**;content/**/obj/**" />
     <Compile Remove="content/**/*" />
   </ItemGroup>
+
+  <!--
+    Stamp DEVICE_RUNNERS_VERSION into template csproj files at pack time.
+    When packing with -p:PackageVersion=1.0.0, this replaces the token so end users
+    get pinned versions. In CI with -p:DeviceRunnersTemplateVersion=0.999-ci.123,
+    the CI version is used. Falls back to *-* if neither is set (local dev).
+  -->
+  <Target Name="StampDeviceRunnersVersion" BeforeTargets="GenerateNuspec">
+    <ItemGroup>
+      <_TemplateFilesToStamp Include="$(MSBuildProjectDirectory)/content/**/*.csproj" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="%(_TemplateFilesToStamp.Identity).stamp"
+      Lines="$([System.IO.File]::ReadAllText('%(_TemplateFilesToStamp.Identity)').Replace('DEVICE_RUNNERS_VERSION','$(DeviceRunnersTemplateVersion)'))"
+      Overwrite="true" />
+    <Move SourceFiles="@(_TemplateFilesToStamp->'%(Identity).stamp')" DestinationFiles="@(_TemplateFilesToStamp)" />
+  </Target>
+
+  <!-- Restore original tokens after pack so source control stays clean -->
+  <Target Name="RestoreDeviceRunnersVersion" AfterTargets="Pack">
+    <Exec Command="git checkout -- content/" WorkingDirectory="$(MSBuildProjectDirectory)" IgnoreExitCode="true" />
+  </Target>
 
 </Project>

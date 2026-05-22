@@ -44,13 +44,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="*-*" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="*-*" />
-    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="*-*" />
-    <PackageReference Include="DeviceRunners.Testing.Targets" Version="*-*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.120" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.120" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="DeviceRunners.VisualRunners.Maui" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="DeviceRunners.UITesting.Maui" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="DeviceRunners.Testing.Targets" Version="DEVICE_RUNNERS_VERSION" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="EXTENSIONS_VERSION" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="MAUI_VERSION" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="MAUI_VERSION" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.utility" Version="2.9.3" />
   </ItemGroup>
