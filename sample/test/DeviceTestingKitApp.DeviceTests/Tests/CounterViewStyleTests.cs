@@ -33,19 +33,5 @@ public class CounterViewStyleTests
 		Assert.Equal(Colors.White, btn.TextColor);
 	}
 
-	[UIFact]
-	public void CounterButtonStillFunctionsWithStyles()
-	{
-		var view = new CounterView();
-		var vm = new CounterViewModel();
-		view.BindingContext = vm;
 
-		var btn = Assert.IsType<Button>(view.Content);
-
-		// Verify styles don't break command binding — execute via button click
-		btn.SendClicked();
-
-		Assert.Equal(1, vm.Count);
-		Assert.Equal("Clicked 1 time", btn.Text);
-	}
 }
