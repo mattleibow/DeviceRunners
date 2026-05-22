@@ -4,7 +4,7 @@ namespace DeviceRunners.VisualRunners.Maui;
 /// Holds resource dictionary factories registered via the configuration builder.
 /// These are merged into Application.Resources at startup.
 /// </summary>
-public class VisualRunnerResourceOptions
+internal class VisualRunnerResourceOptions
 {
 	internal List<Func<ResourceDictionary>> ResourceDictionaryFactories { get; } = new();
 }
