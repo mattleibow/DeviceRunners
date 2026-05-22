@@ -45,16 +45,6 @@
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
 
-  <!--
-    Resizetizer's transitive GetMauiItems call doesn't pass AdditionalProperties,
-    so the app's MauiIcon leaks through. Remove it after collection to avoid duplicates.
-  -->
-  <Target Name="_RemoveImportedAppIcon" AfterTargets="ResizetizeCollectItems">
-    <ItemGroup>
-      <MauiImage Remove="@(MauiImage)" Condition="'%(MauiImage.Filename)' == 'appicon' and '%(MauiImage.IsAppIcon)' == 'True'" />
-    </ItemGroup>
-  </Target>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
@@ -64,10 +54,11 @@
     <PackageReference Include="NUnit3TestAdapter" />
   </ItemGroup>
 
-  <!-- Reference the main app as a library (builds it with IsTestLibrary=true to strip entry points) -->
+  <!-- Reference the main app as a library. Configuration=Library$(Configuration) triggers
+       IsTestProject=true in the app, which strips entry points and uses separate output paths. -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\DeviceTestingKitApp\DeviceTestingKitApp.csproj">
-      <AdditionalProperties>IsTestLibrary=true</AdditionalProperties>
+      <AdditionalProperties>Configuration=Library$(Configuration)</AdditionalProperties>
     </ProjectReference>
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
@@ -77,6 +68,12 @@
   <ItemGroup>
     <TrimmerRootAssembly Include="DeviceTestingKitApp" RootMode="all" />
   </ItemGroup>
+
+  <!--
+    Workarounds for Resizetizer/PRI not propagating AdditionalProperties.
+    See: https://github.com/dotnet/maui/issues/35574
+  -->
+  <Import Project="TestingWorkarounds.targets" />
 
   <Import Project="..\..\..\src\DeviceRunners.Testing.Targets\build\DeviceRunners.Testing.Targets.targets" />
 

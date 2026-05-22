@@ -1,0 +1,36 @@
+<!--
+  Workarounds for referencing a MAUI app as a library in a test project.
+
+  Resizetizer's GetMauiItems and Windows PRI's GetPriOutputs don't propagate
+  AdditionalProperties from ProjectReference, so the app's MauiIcon/MauiSplashScreen
+  leak into this project. These targets strip those imported items.
+  See: https://github.com/dotnet/maui/issues/35574
+-->
+<Project>
+
+  <!--
+    After Resizetizer collects items from all project references, remove any
+    MauiIcon/MauiImage/MauiSplashScreen that originated from the referenced app.
+    Items from the app use absolute paths containing the app's project folder.
+  -->
+  <Target Name="_RemoveImportedAppResizetizerItems" AfterTargets="ResizetizeCollectItems">
+    <ItemGroup>
+      <MauiIcon Remove="@(MauiIcon)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
+      <MauiImage Remove="@(MauiImage)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/AppIcon'))" />
+      <MauiSplashScreen Remove="@(MauiSplashScreen)" Condition="$([System.String]::new('%(Identity)').Contains('DeviceTestingKitApp/Resources/Splash'))" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Windows App SDK's GetPriOutputs calls MSBuild on references without AdditionalProperties.
+    Inject IsTestProject=true into SetConfiguration so the app builds as library during PRI generation.
+  -->
+  <Target Name="_FixWindowsPriForAppReference" AfterTargets="AssignProjectConfiguration" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ItemGroup>
+      <ProjectReferenceWithConfiguration Condition="'%(Filename)' == 'DeviceTestingKitApp'">
+        <SetConfiguration>%(ProjectReferenceWithConfiguration.SetConfiguration);IsTestProject=true;IncludePriFilesOutputGroup=false;IncludeCopyLocalFilesOutputGroup=false</SetConfiguration>
+      </ProjectReferenceWithConfiguration>
+    </ItemGroup>
+  </Target>
+
+</Project>

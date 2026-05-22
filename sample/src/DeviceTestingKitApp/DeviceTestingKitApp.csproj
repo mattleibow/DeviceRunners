@@ -5,7 +5,6 @@
 		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
-
 		<!-- Note for MacCatalyst:
 		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
 		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
@@ -13,8 +12,6 @@
 		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
 		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
 
-		<OutputType Condition="'$(IsTestLibrary)' != 'true'">Exe</OutputType>
-		<OutputType Condition="'$(IsTestLibrary)' == 'true'">Library</OutputType>
 		<RootNamespace>DeviceTestingKitApp</RootNamespace>
 		<UseMaui>true</UseMaui>
 		<SingleProject>true</SingleProject>
@@ -67,16 +64,6 @@
 	  <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary\DeviceTestingKitApp.MauiLibrary.csproj" />
 	</ItemGroup>
 
-	<!-- When building as a library for test projects, strip platform entry points and app-specific things -->
-	<ItemGroup Condition="'$(IsTestLibrary)' == 'true'">
-		<Compile Remove="Platforms\**" />
-		<AndroidManifest Remove="Platforms\**" />
-		<ApplicationDefinition Remove="Platforms\**" />
-		<Page Remove="Platforms\**" />
-		<Manifest Remove="Platforms\**" />
-		<AppxManifest Remove="Platforms\**" />
-		<MauiIcon Remove="@(MauiIcon)" />
-		<MauiSplashScreen Remove="@(MauiSplashScreen)" />
-	</ItemGroup>
+	<Import Project="TestingWorkarounds.targets" />
 
 </Project>

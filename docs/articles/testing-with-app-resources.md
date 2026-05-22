@@ -15,7 +15,7 @@ Use this approach when:
 
 The pattern works by:
 
-1. Building your app as a **library** (via an MSBuild property) so the test project can reference it
+1. Building your app as a **library** (via a Configuration-based trigger) so the test project can reference it
 2. Using the visual test runner as the host application
 3. Importing your app's `Colors.xaml` and `Styles.xaml` via `AddResourceDictionary<T>()`
 4. Calling the same service registration your app uses
@@ -29,7 +29,7 @@ The pattern works by:
 │  │  + Your services       │  │  ← Same DI as your app
 │  └───────────────────────┘  │
 │  ┌───────────────────────┐  │
-│  │ Your App (Library)     │  │  ← Referenced with IsTestLibrary=true
+│  │ Your App (Library)     │  │  ← Referenced with Configuration=Library$(Configuration)
 │  │  Pages, VMs, Controls  │  │
 │  └───────────────────────┘  │
 │  ┌───────────────────────┐  │
@@ -40,33 +40,75 @@ The pattern works by:
 
 ## Step 1: Make your app buildable as a library
 
-Add the following to your app's `.csproj`:
+Add a `TestingWorkarounds.targets` file to your app project with the library-mode logic. This keeps the main `.csproj` clean:
 
+**TestingWorkarounds.targets (in app project folder):**
 ```xml
-<PropertyGroup>
-  <!-- When IsTestLibrary is set, build as a class library instead of an app -->
-  <OutputType Condition="'$(IsTestLibrary)' != 'true'">Exe</OutputType>
-  <OutputType Condition="'$(IsTestLibrary)' == 'true'">Library</OutputType>
-</PropertyGroup>
+<Project>
+  <!-- When built in a "Library*" configuration (e.g. LibraryDebug), activate library mode.
+       The test project uses AdditionalProperties=Configuration=Library$(Configuration) which
+       triggers this automatically and provides separate intermediate/output paths. -->
+  <PropertyGroup Condition="$(Configuration.StartsWith('Library'))">
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
 
-<ItemGroup>
-  <!-- Strip app resources that conflict with the test project's icons -->
-  <MauiIcon Include="..." Condition="'$(IsTestLibrary)' != 'true'" />
-  <MauiSplashScreen Include="..." Condition="'$(IsTestLibrary)' != 'true'" />
-</ItemGroup>
+  <PropertyGroup>
+    <OutputType Condition="'$(IsTestProject)' == 'true'">Library</OutputType>
+    <OutputType Condition="'$(IsTestProject)' != 'true'">Exe</OutputType>
+  </PropertyGroup>
 
-<!-- Strip platform entry points when building as a library -->
-<ItemGroup Condition="'$(IsTestLibrary)' == 'true'">
-  <Compile Remove="Platforms\Android\MainApplication.cs" />
-  <Compile Remove="Platforms\Android\MainActivity.cs" />
-  <Compile Remove="Platforms\iOS\AppDelegate.cs" />
-  <Compile Remove="Platforms\iOS\Program.cs" />
-  <Compile Remove="Platforms\MacCatalyst\AppDelegate.cs" />
-  <Compile Remove="Platforms\MacCatalyst\Program.cs" />
-</ItemGroup>
+  <!-- Android: disable resource designer and clear RIDs -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <RuntimeIdentifiers></RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- Android: remove entry point classes -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <Compile Remove="Platforms\Android\MainApplication.cs" />
+    <Compile Remove="Platforms\Android\MainActivity.cs" />
+    <AndroidManifest Remove="Platforms\Android\AndroidManifest.xml" />
+  </ItemGroup>
+
+  <!-- iOS/MacCatalyst: remove entry point classes -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst')">
+    <Compile Remove="Platforms\iOS\AppDelegate.cs" />
+    <Compile Remove="Platforms\iOS\Program.cs" />
+    <Compile Remove="Platforms\MacCatalyst\AppDelegate.cs" />
+    <Compile Remove="Platforms\MacCatalyst\Program.cs" />
+  </ItemGroup>
+
+  <!-- Windows: remove all platform files and suppress packaging -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <WindowsPackageType>None</WindowsPackageType>
+    <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
+    <IncludePriFilesOutputGroup>false</IncludePriFilesOutputGroup>
+    <IncludeCopyLocalFilesOutputGroup>false</IncludeCopyLocalFilesOutputGroup>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ApplicationDefinition Remove="Platforms\Windows\**" />
+    <Page Remove="Platforms\Windows\**" />
+    <Compile Remove="Platforms\Windows\**" />
+    <Manifest Remove="Platforms\Windows\**" />
+    <AppxManifest Remove="Platforms\Windows\**" />
+  </ItemGroup>
+
+  <!-- Remove app icons/splash that would conflict with test project's own -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <MauiIcon Remove="@(MauiIcon)" />
+    <MauiSplashScreen Remove="@(MauiSplashScreen)" />
+  </ItemGroup>
+</Project>
 ```
 
-> **Note:** Images, fonts, and raw assets do *not* need the condition — they flow through fine as library content.
+Then import it from your app's `.csproj`:
+```xml
+<Import Project="TestingWorkarounds.targets" />
+```
+
+> **Note:** Images, fonts, and raw assets do *not* need stripping — they flow through fine as library content.
 
 ## Step 2: Add `x:Class` to your resource dictionaries
 
@@ -128,15 +170,44 @@ builder.UseMauiApp<App>().AddMyAppServices();
 
 ## Step 4: Create the test project
 
-Create a new MAUI app project that references:
-- Your app (with `IsTestLibrary=true`)
-- `DeviceRunners.VisualRunners.NUnit` (or `.Xunit`)
-- `DeviceRunners.VisualRunners.Maui`
+Create a new MAUI app project with a `TestingWorkarounds.targets` for the Resizetizer workaround:
 
+**TestingWorkarounds.targets (in test project folder):**
+```xml
+<Project>
+  <!--
+    Resizetizer's GetMauiItems and Windows PRI's GetPriOutputs don't propagate
+    AdditionalProperties from ProjectReference, so the app's MauiIcon/MauiSplashScreen
+    leak into this project. These targets strip those imported items.
+    See: https://github.com/dotnet/maui/issues/35574
+  -->
+  <Target Name="_RemoveImportedAppResizetizerItems" AfterTargets="ResizetizeCollectItems">
+    <ItemGroup>
+      <MauiIcon Remove="@(MauiIcon)"
+        Condition="$([System.String]::new('%(Identity)').Contains('MyApp/Resources/AppIcon'))" />
+      <MauiImage Remove="@(MauiImage)"
+        Condition="$([System.String]::new('%(Identity)').Contains('MyApp/Resources/AppIcon'))" />
+      <MauiSplashScreen Remove="@(MauiSplashScreen)"
+        Condition="$([System.String]::new('%(Identity)').Contains('MyApp/Resources/Splash'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Windows: inject IsTestProject=true during PRI generation -->
+  <Target Name="_FixWindowsPriForAppReference" AfterTargets="AssignProjectConfiguration"
+    Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ItemGroup>
+      <ProjectReferenceWithConfiguration Condition="'%(Filename)' == 'MyApp'">
+        <SetConfiguration>%(ProjectReferenceWithConfiguration.SetConfiguration);IsTestProject=true;IncludePriFilesOutputGroup=false;IncludeCopyLocalFilesOutputGroup=false</SetConfiguration>
+      </ProjectReferenceWithConfiguration>
+    </ItemGroup>
+  </Target>
+</Project>
+```
+
+**Test project `.csproj`:**
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="path/to/DeviceRunners.Testing.Targets.props" />
-  <!-- Or: <PackageReference Include="DeviceRunners.Testing.Targets" /> -->
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -145,9 +216,9 @@ Create a new MAUI app project that references:
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Reference the app as a library -->
+    <!-- Reference the app as a library via Configuration override -->
     <ProjectReference Include="..\MyApp\MyApp.csproj">
-      <AdditionalProperties>IsTestLibrary=true</AdditionalProperties>
+      <AdditionalProperties>Configuration=Library$(Configuration)</AdditionalProperties>
     </ProjectReference>
     <ProjectReference Include="path/to/DeviceRunners.VisualRunners.NUnit.csproj" />
     <ProjectReference Include="path/to/DeviceRunners.VisualRunners.Maui.csproj" />
@@ -158,6 +229,7 @@ Create a new MAUI app project that references:
     <TrimmerRootAssembly Include="MyApp" RootMode="all" />
   </ItemGroup>
 
+  <Import Project="TestingWorkarounds.targets" />
   <Import Project="path/to/DeviceRunners.Testing.Targets.targets" />
 </Project>
 ```
@@ -244,6 +316,19 @@ public class MainPageTests
 ```
 
 ## How it works
+
+### Configuration-based library mode
+
+The test project references the app with `Configuration=Library$(Configuration)` (e.g., `LibraryDebug`). This:
+- Triggers `IsTestProject=true` in the app's `TestingWorkarounds.targets`
+- Automatically provides separate intermediate/output paths (MSBuild uses Configuration in the path)
+- Strips platform entry points, app icons, and packaging that would conflict
+
+### Known issue: Resizetizer doesn't propagate AdditionalProperties
+
+Resizetizer's `GetMauiItems` target calls into referenced projects without passing `AdditionalProperties`. This means the app's conditional `MauiIcon Remove` doesn't fire during Resizetizer's collection phase. The test project's `TestingWorkarounds.targets` strips these leaked items after collection.
+
+This is tracked at [dotnet/maui#35574](https://github.com/dotnet/maui/issues/35574).
 
 ### Resource scoping
 
