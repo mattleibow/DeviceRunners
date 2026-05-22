@@ -33,7 +33,7 @@ public class CounterViewStyleTests
 		Assert.Equal(Colors.White, btn.TextColor);
 	}
 
-	[Fact]
+	[UIFact]
 	public void CounterButtonStillFunctionsWithStyles()
 	{
 		var view = new CounterView();
@@ -42,7 +42,7 @@ public class CounterViewStyleTests
 
 		var btn = Assert.IsType<Button>(view.Content);
 
-		// Verify the button still works (styles don't break command binding)
+		// Verify styles don't break command binding — execute via button click
 		btn.SendClicked();
 
 		Assert.Equal(1, vm.Count);

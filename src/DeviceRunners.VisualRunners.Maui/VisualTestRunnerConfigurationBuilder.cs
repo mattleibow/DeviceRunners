@@ -30,6 +30,16 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 	}
 
 	/// <summary>
+	/// Registers a resource dictionary instance to be merged into Application.Resources at startup.
+	/// </summary>
+	public VisualTestRunnerConfigurationBuilder AddResourceDictionary(ResourceDictionary dictionary)
+	{
+		ArgumentNullException.ThrowIfNull(dictionary);
+		_resourceDictionaryFactories.Add(() => dictionary);
+		return this;
+	}
+
+	/// <summary>
 	/// Registers a resource dictionary using a factory to be merged into Application.Resources at startup.
 	/// </summary>
 	public VisualTestRunnerConfigurationBuilder AddResourceDictionary(Func<ResourceDictionary> factory)
