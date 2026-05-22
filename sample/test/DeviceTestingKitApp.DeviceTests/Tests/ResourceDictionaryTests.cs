@@ -7,29 +7,27 @@ namespace DeviceTestingKitApp.DeviceTests;
 public class ResourceDictionaryTests
 {
 	[Fact]
-	public void RegisteredResourceDictionary_ResolvesStaticResource()
+	public void RegisteredResourceDictionary_ResolvesCounterButtonColor()
 	{
 		var app = Application.Current;
 		Assert.NotNull(app);
 
-		// "Primary" is defined in TestColors.xaml which is registered via AddResourceDictionary<TestColors>()
-		var found = app!.Resources.TryGetValue("Primary", out var value);
-		Assert.True(found, "Expected 'Primary' resource to be resolvable from Application.Resources");
+		// "CounterButtonColor" is defined in CounterStyles.xaml registered via AddResourceDictionary<CounterStyles>()
+		var found = app!.Resources.TryGetValue("CounterButtonColor", out var value);
+		Assert.True(found, "Expected 'CounterButtonColor' resource to be resolvable from Application.Resources");
 		Assert.IsType<Color>(value);
+		Assert.Equal(Color.FromArgb("#512BD4"), (Color)value!);
 	}
 
 	[Fact]
-	public void RegisteredResourceDictionary_ResolvesCustomColor()
+	public void RegisteredResourceDictionary_ResolvesCounterButtonTextColor()
 	{
 		var app = Application.Current;
 		Assert.NotNull(app);
 
-		// "TestAccent" is defined in TestColors.xaml
-		var found = app!.Resources.TryGetValue("TestAccent", out var value);
-		Assert.True(found, "Expected 'TestAccent' resource to be resolvable from Application.Resources");
-
-		var color = Assert.IsType<Color>(value);
-		Assert.Equal(Color.FromArgb("#FF5733"), color);
+		var found = app!.Resources.TryGetValue("CounterButtonTextColor", out var value);
+		Assert.True(found, "Expected 'CounterButtonTextColor' resource to be resolvable from Application.Resources");
+		Assert.IsType<Color>(value);
 	}
 
 	[Fact]
@@ -38,8 +36,6 @@ public class ResourceDictionaryTests
 		var app = Application.Current;
 		Assert.NotNull(app);
 
-		// The resource dictionaries registered via AddResourceDictionary should appear
-		// in MergedDictionaries
 		Assert.NotEmpty(app!.Resources.MergedDictionaries);
 	}
 }
