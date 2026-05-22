@@ -1,6 +1,6 @@
-﻿using Foundation;
+using Foundation;
 
-namespace DeviceTestingKitApp.DeviceTests;
+namespace {{RootNamespace}};
 
 [Register(nameof(AppDelegate))]
 partial class AppDelegate : MauiUIApplicationDelegate
