@@ -12,15 +12,22 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
-			.ConfigureFonts(fonts =>
-			{
-				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-			});
+			.AddDeviceTestingKitAppServices();
 
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
+
+		return builder.Build();
+	}
+
+	public static MauiAppBuilder AddDeviceTestingKitAppServices(this MauiAppBuilder builder)
+	{
+		builder.ConfigureFonts(fonts =>
+		{
+			fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+			fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+		});
 
 		// app pages
 		builder.Services.AddTransient<MainPage>();
@@ -33,6 +40,6 @@ public static class MauiProgram
 		builder.Services.AddTransient<MainViewModel>();
 		builder.Services.AddTransient<CounterViewModel>();
 
-		return builder.Build();
+		return builder;
 	}
 }

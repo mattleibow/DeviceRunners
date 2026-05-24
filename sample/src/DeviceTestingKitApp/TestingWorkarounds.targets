@@ -1,0 +1,73 @@
+<!--
+  Workarounds to allow this MAUI app to be referenced as a library by test projects.
+  The test project uses AdditionalProperties=Configuration=Library$(Configuration) which
+  triggers IsTestProject=true here, providing separate intermediate/output paths automatically.
+
+  When IsTestProject=true:
+  - OutputType becomes Library (no entry point)
+  - Platform entry points are removed (they conflict with the test app's own)
+  - MauiIcon/MauiSplashScreen are stripped (Resizetizer would duplicate them)
+  - Android resource designer is disabled (no manifest in library mode)
+  - Windows packaging is suppressed (no PRI/MSIX conflicts)
+
+  These workarounds exist because Resizetizer and Windows PRI tooling don't propagate
+  AdditionalProperties when invoking targets on referenced projects.
+  See: https://github.com/dotnet/maui/issues/35574
+-->
+<Project>
+
+  <PropertyGroup Condition="$(Configuration.StartsWith('Library'))">
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType Condition="'$(IsTestProject)' == 'true'">Library</OutputType>
+    <OutputType Condition="'$(IsTestProject)' != 'true'">Exe</OutputType>
+  </PropertyGroup>
+
+  <!-- Windows: suppress packaging that conflicts with the consuming test app -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <WindowsPackageType>None</WindowsPackageType>
+    <GenerateLibraryLayout>false</GenerateLibraryLayout>
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
+    <IncludePriFilesOutputGroup>false</IncludePriFilesOutputGroup>
+    <IncludeCopyLocalFilesOutputGroup>false</IncludeCopyLocalFilesOutputGroup>
+  </PropertyGroup>
+
+  <!-- Android: disable resource designer (no manifest) and clear RIDs (consuming app handles packaging) -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <RuntimeIdentifiers></RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!-- Android: remove entry point classes -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <Compile Remove="Platforms\Android\MainApplication.cs" />
+    <Compile Remove="Platforms\Android\MainActivity.cs" />
+    <AndroidManifest Remove="Platforms\Android\AndroidManifest.xml" />
+  </ItemGroup>
+
+  <!-- iOS/MacCatalyst: remove entry point classes -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and ($([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst')">
+    <Compile Remove="Platforms\iOS\AppDelegate.cs" />
+    <Compile Remove="Platforms\iOS\Program.cs" />
+    <Compile Remove="Platforms\MacCatalyst\AppDelegate.cs" />
+    <Compile Remove="Platforms\MacCatalyst\Program.cs" />
+  </ItemGroup>
+
+  <!-- Windows: remove all platform files -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true' and $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+    <ApplicationDefinition Remove="Platforms\Windows\**" />
+    <Page Remove="Platforms\Windows\**" />
+    <Compile Remove="Platforms\Windows\**" />
+    <Manifest Remove="Platforms\Windows\**" />
+    <AppxManifest Remove="Platforms\Windows\**" />
+  </ItemGroup>
+
+  <!-- Remove app-specific assets that would conflict with the test app's own -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <MauiIcon Remove="@(MauiIcon)" />
+    <MauiSplashScreen Remove="@(MauiSplashScreen)" />
+  </ItemGroup>
+
+</Project>

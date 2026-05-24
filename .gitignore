@@ -404,3 +404,4 @@ FodyWeavers.xsd
 # DocFX output
 docs/_site/
 *.lscache
+sample/src/DeviceTestingKitApp/lib_*
