@@ -27,7 +27,7 @@ A separate test project that references your real app as a library. The DeviceRu
 
 ## Prerequisites
 
-- .NET 9+ with MAUI workload installed
+- .NET 10+ with MAUI workload installed
 - A MAUI app you want to test
 - DeviceRunners NuGet packages (see [Preview Packages](preview-packages.md))
 
@@ -170,6 +170,9 @@ Create a new MAUI app project for your tests. The `.csproj` needs three things:
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
+
+    <!-- The MAUI app defines its own entry points — don't generate an MTP one -->
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
     <!-- ... standard MAUI project properties ... -->
   </PropertyGroup>
 
@@ -356,6 +359,8 @@ public async Task Button_UpdatesText_AfterCommand()
 
 ### Helper: finding elements by AutomationId
 
+This simple helper walks the visual tree for `ContentPage` + `Layout` hierarchies. For apps using `Shell`, `NavigationPage`, or `ControlTemplate`, you'll need to extend it.
+
 ```csharp
 static T? FindByAutomationId<T>(Element root, string automationId) where T : Element
 {
@@ -364,9 +369,9 @@ static T? FindByAutomationId<T>(Element root, string automationId) where T : Ele
 
     IEnumerable<Element> children = root switch
     {
+        ContentPage { Content: View content } => [content],
         IContentView { Content: Element content } => [content],
         Layout layout => layout.Children.OfType<Element>(),
-        ContentPage { Content: View content } => [content],
         _ => []
     };
 

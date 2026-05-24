@@ -236,9 +236,9 @@ public class MainPageTests
 
 		IEnumerable<Element> children = root switch
 		{
+			ContentPage { Content: View content } => [content],
 			IContentView { Content: Element content } => [content],
 			Layout layout => layout.Children.OfType<Element>(),
-			ContentPage { Content: View content } => [content],
 			_ => []
 		};
 
