@@ -133,7 +133,11 @@ public class Xunit3TestRunner : ITestRunner
 			await using var executorDisposal = executor as IAsyncDisposable;
 
 			var executionOptions = TestFrameworkOptions.ForExecution(configuration);
-			executionOptions.SetValue(TestOptionsNames.Execution.SynchronousMessageReporting, true);
+
+			// WASM cannot spawn threads, so the MessageBus async pump throws PlatformNotSupportedException.
+			// On threaded platforms we leave the default (async) to avoid contention on the message sink lock.
+			if (OperatingSystem.IsBrowser())
+				executionOptions.SetValue(TestOptionsNames.Execution.SynchronousMessageReporting, true);
 
 			var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
 
