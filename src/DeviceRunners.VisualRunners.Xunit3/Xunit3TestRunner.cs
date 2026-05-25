@@ -133,6 +133,7 @@ public class Xunit3TestRunner : ITestRunner
 			await using var executorDisposal = executor as IAsyncDisposable;
 
 			var executionOptions = TestFrameworkOptions.ForExecution(configuration);
+			executionOptions.SetValue(TestOptionsNames.Execution.SynchronousMessageReporting, true);
 
 			var resultSink = new Xunit3ExecutionMessageSink(testCaseLookup, _resultChannelManager, _diagnosticsManager, cancellationToken);
 
