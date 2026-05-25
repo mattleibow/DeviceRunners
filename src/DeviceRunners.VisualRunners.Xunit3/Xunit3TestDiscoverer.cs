@@ -83,7 +83,7 @@ public class Xunit3TestDiscoverer : ITestDiscoverer
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 			{
-				break;
+				throw;
 			}
 			catch (Exception ex)
 			{

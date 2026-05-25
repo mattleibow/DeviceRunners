@@ -18,6 +18,11 @@ class InMemoryXunit3TestFramework : XunitTestFramework
 	/// is empty (Android, iOS, WASM), otherwise delegates to the standard
 	/// <see cref="ExtensibilityPointFactory"/>.
 	/// </summary>
+	/// <remarks>
+	/// When <see cref="Assembly.Location"/> is empty, custom <c>[TestFramework]</c> attributes
+	/// on the assembly are not consulted. This matches v2 behavior on these platforms where
+	/// the reflection-based discoverer also hard-codes the xunit framework type.
+	/// </remarks>
 	public static ITestFramework CreateForAssembly(Assembly assembly)
 	{
 		if (string.IsNullOrEmpty(assembly.Location))
