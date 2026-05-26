@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Threading.Channels;
 
 using DeviceRunners;
@@ -16,10 +17,14 @@ public abstract class HomeViewModelTests
 
 	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
+	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
+
+	public virtual int ExpectedTestCount => Constants.TestCount;
+
 	[Fact]
 	public async Task StartAssemblyScanAsyncCreatesAllTheViewExpectedModels()
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		var options = new VisualTestRunnerConfiguration(assemblies);
 		var discoverer = CreateTestDiscoverer(options);
 		var runner = CreateTestRunner(options);
@@ -31,7 +36,7 @@ public abstract class HomeViewModelTests
 
 		var vmAssembly = Assert.Single(vm.TestAssemblies);
 		Assert.NotEmpty(vmAssembly.TestCases);
-		Assert.Equal(Constants.TestCount, vmAssembly.TestCases.Count);
+		Assert.Equal(ExpectedTestCount, vmAssembly.TestCases.Count);
 	}
 
 	[Theory]
@@ -41,7 +46,7 @@ public abstract class HomeViewModelTests
 	[InlineData(true, true)]
 	public async Task AutoStartAndAutoTerminateWorkCorrectly(bool autoStart, bool autoTerminate)
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		var options = new VisualTestRunnerConfiguration(assemblies, autoStart, autoTerminate);
 		var discoverer = CreateTestDiscoverer(options);
 		var runner = CreateTestRunner(options);
@@ -57,7 +62,7 @@ public abstract class HomeViewModelTests
 			Assert.NotEqual(TestResultStatus.NotRun, vm.TestAssemblies[0].ResultStatus);
 		else
 			Assert.Equal(TestResultStatus.NotRun, vm.TestAssemblies[0].ResultStatus);
-		
+
 		if (autoStart && autoTerminate)
 			terminator.Received().Terminate();
 		else

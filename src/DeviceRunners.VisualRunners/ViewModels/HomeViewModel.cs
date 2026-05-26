@@ -76,7 +76,7 @@ public class HomeViewModel : AbstractBaseViewModel
 		private set => Set(ref _isLoaded, value);
 	}
 
-	public async Task StartAssemblyScanAsync()
+	public async Task StartAssemblyScanAsync(CancellationToken cancellationToken = default)
 	{
 		if (IsLoaded)
 			return;
@@ -86,7 +86,7 @@ public class HomeViewModel : AbstractBaseViewModel
 
 		try
 		{
-			var allTests = await _discoverer.DiscoverAsync();
+			var allTests = await _discoverer.DiscoverAsync(cancellationToken);
 
 			foreach (var assembly in allTests)
 			{
@@ -94,13 +94,18 @@ public class HomeViewModel : AbstractBaseViewModel
 			}
 
 			_diagnosticsManager?.PostDiagnosticMessage($"Discovered {allTests.Count} test assemblies.");
+			IsLoaded = true;
+		}
+		catch (OperationCanceledException)
+		{
+			_diagnosticsManager?.PostDiagnosticMessage("Test discovery was cancelled.");
 		}
 		catch (Exception ex)
 		{
 			_diagnosticsManager?.PostDiagnosticMessage($"Error during test discovery: '{ex.Message}'{Environment.NewLine}{ex}");
+			IsLoaded = true;
 		}
 
-		IsLoaded = true;
 		IsBusy = false;
 
 		AssemblyScanCompleted?.Invoke(this, EventArgs.Empty);

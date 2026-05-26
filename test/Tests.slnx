@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="DeviceRunners.VisualRunners.Tests/DeviceRunners.VisualRunners.Tests.csproj" />
+  <Project Path="DeviceRunners.VisualRunners.Xunit3.Tests/DeviceRunners.VisualRunners.Xunit3.Tests.csproj" />
   <Project Path="DeviceRunners.Cli.Tests/DeviceRunners.Cli.Tests.csproj" />
 </Solution>

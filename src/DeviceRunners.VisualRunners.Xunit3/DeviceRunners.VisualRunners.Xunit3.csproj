@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeviceRunners.VisualRunners.Xunit3.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- PrivateAssets="compile" prevents xunit v3 attribute types (FactAttribute etc.)
+         from flowing transitively to host apps that also reference xunit v2. Consuming
+         test libraries that need xunit v3 types add their own direct reference. -->
+    <PackageReference Include="xunit.v3.extensibility.core" PrivateAssets="compile" />
+    <PackageReference Include="xunit.v3.runner.utility" PrivateAssets="compile" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+  </ItemGroup>
+
+</Project>

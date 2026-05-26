@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="using:DeviceTestingKitApp.DeviceTests"
-             x:Class="DeviceTestingKitApp.DeviceTests.TestPage"
+             xmlns:local="using:DeviceTestingKitApp.MauiLibrary.XunitTests"
+             x:Class="DeviceTestingKitApp.MauiLibrary.XunitTests.TestPage"
              Shell.PresentationMode="ModalAnimated">
 
     <ContentPage.BindingContext>

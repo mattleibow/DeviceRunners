@@ -404,3 +404,5 @@ FodyWeavers.xsd
 # DocFX output
 docs/_site/
 *.lscache
+.copilot/
+.pr_monitor/

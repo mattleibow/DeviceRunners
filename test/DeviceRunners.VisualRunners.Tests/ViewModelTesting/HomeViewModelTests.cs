@@ -24,7 +24,7 @@ public class HomeViewModelTests
 
 		var expectedTestAssemblies = new List<ITestAssemblyInfo> { inputAssembly };
 		var discoverer = Substitute.For<ITestDiscoverer>();
-		discoverer.DiscoverAsync().Returns(Task.FromResult<IReadOnlyList<ITestAssemblyInfo>>(expectedTestAssemblies));
+		discoverer.DiscoverAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<ITestAssemblyInfo>>(expectedTestAssemblies));
 
 		var runner = Substitute.For<ITestRunner>();
 		var channels = Substitute.For<IResultChannelManager>();

@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using DeviceRunners;
 using DeviceRunners.VisualRunners;
 
@@ -11,12 +13,14 @@ public abstract class TestRunnerTests : IAsyncLifetime
 
 	public abstract ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration);
 
+	public virtual Assembly TestAssembly => typeof(TestProject.Tests.XunitTests).Assembly;
+
 	protected IReadOnlyList<ITestAssemblyInfo> _testAssemblies = null!;
 	protected VisualTestRunnerConfiguration _options = null!;
 
 	public async Task InitializeAsync()
 	{
-		var assemblies = new[] { typeof(TestProject.Tests.XunitTests).Assembly };
+		var assemblies = new[] { TestAssembly };
 		_options = new VisualTestRunnerConfiguration(assemblies);
 
 		var discoverer = CreateTestDiscoverer(_options);
@@ -61,11 +65,21 @@ public abstract class TestRunnerTests : IAsyncLifetime
 		AssertTestResult(simpleTest);
 	}
 
+	public virtual bool SupportsOutputCapture => true;
+
 	[Fact]
 	public async Task RunTestsAsyncCanCaptureOutput()
 	{
 		var testAssembly = _testAssemblies[0];
 		var simpleTests = testAssembly.TestCases.Where(tc => tc.DisplayName.Contains("_Output")).ToList();
+
+		if (!SupportsOutputCapture)
+		{
+			Assert.Empty(simpleTests);
+			return;
+		}
+
+		Assert.NotEmpty(simpleTests);
 
 		var runner = CreateTestRunner(_options);
 		await runner.RunTestsAsync(simpleTests);
@@ -98,7 +112,7 @@ public abstract class TestRunnerTests : IAsyncLifetime
 			Assert.Equal(Constants.TestOutput, output);
 		else
 			Assert.Empty(output);
-	
+
 		if (name.EndsWith("_Failed"))
 		{
 			Assert.True(TestResultStatus.Failed == status, $"'{name}' should have failed but instead {status}.");

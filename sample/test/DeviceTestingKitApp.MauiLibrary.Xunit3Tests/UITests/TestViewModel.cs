@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace DeviceTestingKitApp.DeviceTests;
+namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests;
 
 public class TestViewModel : BindableObject
 {

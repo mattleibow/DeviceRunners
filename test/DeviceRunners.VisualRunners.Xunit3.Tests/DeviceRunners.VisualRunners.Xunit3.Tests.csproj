@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting\DeviceRunners.UITesting.csproj" />
+    <ProjectReference Include="..\..\src\DeviceRunners.UITesting.Xunit3\DeviceRunners.UITesting.Xunit3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TestProject.Xunit3Tests\TestProject.Xunit3Tests.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -71,10 +71,11 @@ public class XunitTestDiscoverer : ITestDiscoverer
 	static TestAssemblyConfiguration GetConfiguration(string assemblyName)
 	{
 		using var stream = GetConfigurationStreamForAssembly(assemblyName);
-		if (stream is not null)
-			return ConfigReader.Load(stream);
+		var configuration = stream is not null
+			? ConfigReader.Load(stream)
+			: new TestAssemblyConfiguration();
 
-		return new TestAssemblyConfiguration();
+		return configuration;
 	}
 
 	static Stream? GetConfigurationStreamForAssembly(string assemblyName)

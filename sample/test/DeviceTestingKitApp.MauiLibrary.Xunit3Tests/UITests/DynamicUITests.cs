@@ -3,9 +3,7 @@ using System.Collections;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
-using static System.Net.Mime.MediaTypeNames;
-
-namespace DeviceTestingKitApp.DeviceTests;
+namespace DeviceTestingKitApp.MauiLibrary.Xunit3Tests;
 
 public class DynamicUITests : UITests<ContentPage>
 {
@@ -131,18 +129,24 @@ public class DynamicUITests : UITests<ContentPage>
 	{
 		initialFrame ??= InitialFrame;
 
+		Rect lastFrame = initialFrame.Value;
+
 		while (timeout > 0)
 		{
-			if (view.Frame != initialFrame)
+			await Task.Delay(interval);
+			timeout -= interval;
+
+			var currentFrame = view.Frame;
+			if (currentFrame != initialFrame && currentFrame == lastFrame)
 				return;
 
-			await Task.Delay(interval);
-
-			timeout -= interval;
+			lastFrame = currentFrame;
 		}
+
+		Assert.Fail($"WaitForLayout timed out — frame never stabilized. Last frame: {lastFrame}");
 	}
 
-	async Task LoadContent(View content)
+	async Task LoadContent(View content, int timeout = 5000)
 	{
 		var tcs = new TaskCompletionSource();
 
@@ -150,7 +154,8 @@ public class DynamicUITests : UITests<ContentPage>
 
 		CurrentPage.Content = content;
 
-		await tcs.Task;
+		var completed = await Task.WhenAny(tcs.Task, Task.Delay(timeout));
+		Assert.True(completed == tcs.Task, $"LoadContent timed out after {timeout}ms — Loaded event was never fired.");
 
 		void OnLoaded(object? sender, EventArgs e)
 		{
