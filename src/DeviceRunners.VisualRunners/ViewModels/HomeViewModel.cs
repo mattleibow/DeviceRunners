@@ -112,17 +112,28 @@ public class HomeViewModel : AbstractBaseViewModel
 
 		if (_options.AutoStart)
 		{
-			if (string.IsNullOrWhiteSpace(_options.TestCaseFilter))
+			try
 			{
-				_diagnosticsManager?.PostDiagnosticMessage("Auto-starting test run...");
+				if (string.IsNullOrWhiteSpace(_options.TestCaseFilter))
+				{
+					_diagnosticsManager?.PostDiagnosticMessage("Auto-starting test run...");
 
-				await RunEverythingAsync();
+					await RunEverythingAsync();
+				}
+				else
+				{
+					_diagnosticsManager?.PostDiagnosticMessage($"Auto-starting filtered test run ({_options.TestCaseFilter})...");
+
+					await RunFilteredAsync(_options.TestCaseFilter!);
+				}
 			}
-			else
+			catch (Exception ex)
 			{
-				_diagnosticsManager?.PostDiagnosticMessage($"Auto-starting filtered test run ({_options.TestCaseFilter})...");
-
-				await RunFilteredAsync(_options.TestCaseFilter!);
+				// An invalid filter (or any other failure) aborts the run without
+				// opening the result channel. We still need to auto-terminate so the
+				// host process doesn't hang; the missing run is reported as a failure
+				// by the CLI (no "begin" event was received).
+				_diagnosticsManager?.PostDiagnosticMessage($"Test run aborted: {ex.Message}");
 			}
 
 			if (_options.AutoTerminate)
@@ -142,9 +153,8 @@ public class HomeViewModel : AbstractBaseViewModel
 		{
 			if (!TestCaseFilter.TryParse(expression, out var filter))
 			{
-				_diagnosticsManager?.PostDiagnosticMessage($"Invalid test filter expression: '{expression}'. Running everything instead.");
-				await _runner.RunTestsAsync(TestAssemblies.Select(t => t.TestAssemblyInfo).ToList());
-				return;
+				_diagnosticsManager?.PostDiagnosticMessage($"Invalid test filter expression: '{expression}'. Aborting test run.");
+				throw new ArgumentException($"Invalid test filter expression: '{expression}'.", nameof(expression));
 			}
 
 			var matchingCases = TestAssemblies
@@ -154,9 +164,11 @@ public class HomeViewModel : AbstractBaseViewModel
 
 			_diagnosticsManager?.PostDiagnosticMessage($"Filter matched {matchingCases.Count} test case(s).");
 
-			if (matchingCases.Count == 0)
-				return;
-
+			// A filter that matches zero tests is still a successful, empty run
+			// (mirroring `dotnet test --filter`, which exits 0 with "No test matches
+			// the given testcase filter"). Running with an empty set still opens and
+			// closes the result channel, emitting begin/end events so the CLI can
+			// distinguish a clean empty run from a crash or missing connection.
 			await _runner.RunTestsAsync(matchingCases);
 		}
 		finally

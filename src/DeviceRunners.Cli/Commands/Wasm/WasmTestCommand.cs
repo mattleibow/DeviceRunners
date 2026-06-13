@@ -166,21 +166,28 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 
 			WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
-			if (eventStream.TotalCount == 0)
+			// A clean empty run (begin + end received, but no test results) is a success,
+			// mirroring `dotnet test --filter` exit 0. Only a missing run (no "begin"
+			// event) is treated as a failure.
+			var cleanEmptyRun = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount) == TestRunOutcome.CleanEmpty;
+
+			if (eventStream.TotalCount == 0 && !cleanEmptyRun)
 				WriteConsoleOutput($"    [red]No test results received. This usually means the browser failed to navigate, the app didn't boot, or the autorun query parameter was not detected. Check browser-console.log for details.[/]", settings);
+			else if (cleanEmptyRun)
+				WriteConsoleOutput($"    [yellow]No test matches the given test filter. The run completed with no results.[/]", settings);
 
 			var result = new TestStartResult
 			{
-				Success = eventStream.FailedCount == 0 && eventStream.TotalCount > 0,
+				Success = eventStream.FailedCount == 0 && (eventStream.TotalCount > 0 || cleanEmptyRun),
 				AppPath = settings.App,
 				ResultsDirectory = settings.ResultsDirectory,
 				TestFailures = eventStream.FailedCount,
 				TestResults = resultsFile,
-				ErrorMessage = eventStream.TotalCount == 0 ? "No test results received — check browser-console.log" : null
+				ErrorMessage = eventStream.TotalCount == 0 && !cleanEmptyRun ? "No test results received — check browser-console.log" : null
 			};
 			WriteResult(result, settings);
 
-			return eventStream.FailedCount > 0 || eventStream.TotalCount == 0 ? 1 : 0;
+			return eventStream.FailedCount > 0 || (eventStream.TotalCount == 0 && !cleanEmptyRun) ? 1 : 0;
 		}
 		catch (Exception ex)
 		{

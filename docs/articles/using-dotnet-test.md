@@ -99,8 +99,12 @@ The on-device evaluator mirrors the documented `dotnet test --filter` syntax:
 
 Conditions can be combined with `&` (and), `|` (or) and grouped with parentheses. `&`
 binds tighter than `|`. Use `\` to escape a special character. Filtering works across all
-supported frameworks (xUnit v2, xUnit v3 and NUnit) and platforms. A filter that matches no
-tests results in an empty run.
+supported frameworks (xUnit v2, xUnit v3 and NUnit) and platforms.
+
+A filter that matches no tests is a **successful empty run** (exit code `0`), mirroring
+`dotnet test --filter`, which prints "No test matches the given testcase filter". An
+**invalid** filter expression aborts the run and is reported as a failure (non-zero exit
+code) rather than silently running everything.
 
 > [!NOTE]
 > The filter only affects the headless `dotnet test`/CLI run. Launching the app interactively

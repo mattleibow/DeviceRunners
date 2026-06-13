@@ -108,4 +108,46 @@ public class Xunit3HomeViewModelTests
 		var dataTest = allCases.Where(c => c.TestCaseInfo.TestMethodName == "DataTest");
 		Assert.All(dataTest, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
 	}
+
+	[Fact]
+	public async Task AutoStartWithZeroMatchFilterCompletesWithoutRunningTests()
+	{
+		var assemblies = new[] { TestAssembly };
+		var filter = "FullyQualifiedName=Does.Not.Exist.AtAll";
+		var options = new VisualTestRunnerConfiguration(assemblies, autoStart: true, autoTerminate: true, testCaseFilter: filter);
+		var discoverer = new Xunit3TestDiscoverer(options);
+		var runner = new Xunit3TestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var terminator = Substitute.For<IAppTerminator>();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels, terminator);
+		await vm.StartAssemblyScanAsync(TestContext.Current.CancellationToken);
+
+		var allCases = vm.TestAssemblies.SelectMany(a => a.TestCases).ToList();
+		Assert.All(allCases, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
+
+		terminator.Received().Terminate();
+	}
+
+	[Fact]
+	public async Task AutoStartWithInvalidFilterAbortsButStillTerminates()
+	{
+		var assemblies = new[] { TestAssembly };
+		var filter = "(FullyQualifiedName=Adds";
+		var options = new VisualTestRunnerConfiguration(assemblies, autoStart: true, autoTerminate: true, testCaseFilter: filter);
+		var discoverer = new Xunit3TestDiscoverer(options);
+		var runner = new Xunit3TestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var terminator = Substitute.For<IAppTerminator>();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels, terminator);
+		await vm.StartAssemblyScanAsync(TestContext.Current.CancellationToken);
+
+		var allCases = vm.TestAssemblies.SelectMany(a => a.TestCases).ToList();
+		Assert.All(allCases, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
+
+		terminator.Received().Terminate();
+	}
 }

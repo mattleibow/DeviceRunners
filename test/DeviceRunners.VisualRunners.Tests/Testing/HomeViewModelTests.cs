@@ -117,4 +117,52 @@ public abstract class HomeViewModelTests
 		else
 			terminator.DidNotReceive().Terminate();
 	}
+
+	[Fact]
+	public async Task AutoStartWithZeroMatchFilterCompletesWithoutRunningTests()
+	{
+		var assemblies = new[] { TestAssembly };
+		var filter = "FullyQualifiedName=Does.Not.Exist.AtAll";
+		var options = new VisualTestRunnerConfiguration(assemblies, autoStart: true, autoTerminate: true, testCaseFilter: filter);
+		var discoverer = CreateTestDiscoverer(options);
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var terminator = Substitute.For<IAppTerminator>();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels, terminator);
+
+		await vm.StartAssemblyScanAsync();
+
+		// A zero-match filter is a successful empty run: no test executes,
+		// but the runner still completes and auto-terminate fires.
+		var allCases = vm.TestAssemblies.SelectMany(a => a.TestCases).ToList();
+		Assert.All(allCases, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
+
+		terminator.Received().Terminate();
+	}
+
+	[Fact]
+	public async Task AutoStartWithInvalidFilterAbortsButStillTerminates()
+	{
+		var assemblies = new[] { TestAssembly };
+		var filter = "(FullyQualifiedName=Adds";
+		var options = new VisualTestRunnerConfiguration(assemblies, autoStart: true, autoTerminate: true, testCaseFilter: filter);
+		var discoverer = CreateTestDiscoverer(options);
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var terminator = Substitute.For<IAppTerminator>();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels, terminator);
+
+		await vm.StartAssemblyScanAsync();
+
+		// An invalid filter aborts the run (no test executes), but the app must
+		// still auto-terminate so the host process does not hang.
+		var allCases = vm.TestAssemblies.SelectMany(a => a.TestCases).ToList();
+		Assert.All(allCases, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
+
+		terminator.Received().Terminate();
+	}
 }
