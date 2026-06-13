@@ -4,6 +4,10 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Failing demo tests compile in by default; "dotnet test" excludes them via the
+         ExpectedFailure category. TCP device runs set -p:IncludeFailingTests=false. -->
+    <IncludeFailingTests Condition="'$(IncludeFailingTests)' == ''">true</IncludeFailingTests>
+    <DefineConstants Condition="'$(IncludeFailingTests)' == 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 

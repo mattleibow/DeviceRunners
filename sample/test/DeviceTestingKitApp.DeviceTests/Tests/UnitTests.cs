@@ -13,12 +13,14 @@ public class UnitTests
 	{
 	}
 
+#if INCLUDE_FAILING_TESTS
 	[Fact]
 	[Trait("Category", "ExpectedFailure")]
 	public void FailingTest()
 	{
 		throw new Exception("This is meant to fail.");
 	}
+#endif
 
 	[Theory]
 	[InlineData(1)]
@@ -36,6 +38,7 @@ public class UnitTests
 		Assert.True(true);
 	}
 
+#if INCLUDE_FAILING_TESTS
 	[Fact]
 	[Trait("Category", "ExpectedFailure")]
 	public async Task LongRunningFail()
@@ -43,4 +46,5 @@ public class UnitTests
 		await Task.Delay(2000);
 		throw new Exception("This is meant to fail.");
 	}
+#endif
 }

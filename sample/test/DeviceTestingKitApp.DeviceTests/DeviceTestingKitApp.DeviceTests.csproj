@@ -15,6 +15,11 @@
     <RootNamespace>DeviceTestingKitApp.DeviceTests</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
+    <!-- Intentionally-failing demo tests are compiled in by default (and excluded by
+         "dotnet test" via "Category!=ExpectedFailure"). TCP device runs that cannot pass
+         a runtime filter set -p:IncludeFailingTests=false to compile them out instead. -->
+    <IncludeFailingTests Condition="'$(IncludeFailingTests)' == ''">true</IncludeFailingTests>
+    <DefineConstants Condition="'$(IncludeFailingTests)' == 'true'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 

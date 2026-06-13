@@ -34,6 +34,7 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
+          -p:IncludeFailingTests=false `
           -p:AppxPackageSigningEnabled=true `
           -p:PackageCertificateThumbprint=$fingerprint `
           -p:PackageCertificateKeyFile="" `
@@ -44,7 +45,7 @@ runs:
       run: |
         $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
         if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
-        device-runners windows test --app $msix --results-directory artifacts/test-results --filter "Category!=ExpectedFailure" --logger trx
+        device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
     - name: Clean up build artifacts before upload
       if: always()
       shell: pwsh

@@ -55,13 +55,14 @@ runs:
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
           -p:TestingMode=NonInteractiveVisual \
+          -p:IncludeFailingTests=false \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Run Tests
       shell: bash
       run: |
         app_bundle=$(find artifacts/bin -name "*.app" -type d | head -1)
         [ -n "$app_bundle" ] || { echo "::error::No .app bundle found in artifacts/bin"; exit 1; }
-        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results --filter "Category!=ExpectedFailure" --logger trx
+        device-runners ios test --app "$app_bundle" --device "${{ steps.simulator.outputs.udid }}" --results-directory artifacts/test-results --logger trx
     - name: Cleanup Simulator
       if: always()
       shell: bash

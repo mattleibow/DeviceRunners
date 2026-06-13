@@ -110,11 +110,13 @@ tests results in an empty run.
 
 The sample test suite tags intentionally-failing demo tests with the `ExpectedFailure`
 category (`[Trait("Category", "ExpectedFailure")]` for xUnit/xUnit v3,
-`[Category("ExpectedFailure")]` for NUnit). CI keeps the suite green by excluding that
-category instead of compiling the tests out:
+`[Category("ExpectedFailure")]` for NUnit). CI keeps the suite green by excluding them:
 
 - **`dotnet test`** – CI passes `--filter "Category!=ExpectedFailure"` on the command line.
-- **CLI runs (TCP/WASM)** – the workflows pass `--filter "Category!=ExpectedFailure"`.
+- **CLI TCP runs** – these launch an installed app that cannot receive a runtime filter
+  on every platform, so the workflows build with `-p:IncludeFailingTests=false`, which
+  compiles the failing demo tests out (they are wrapped in `#if INCLUDE_FAILING_TESTS`).
+- **CLI WASM runs** – the workflow passes `--filter "Category!=ExpectedFailure"`.
 - **XHarness** – the app skips the category in-process via
   `.SkipCategory("Category", "ExpectedFailure")`.
 
