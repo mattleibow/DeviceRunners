@@ -10,9 +10,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- In CI, exclude the intentionally-failing demo tests so the suite stays green.
-         An explicit filter passed to "dotnet test" still wins because it overrides the VSTestTestCaseFilter property. -->
-    <VSTestTestCaseFilter Condition="('$(CI)' == 'true' Or '$(TF_BUILD)' == 'True') And '$(VSTestTestCaseFilter)' == ''">Category!=ExpectedFailure</VSTestTestCaseFilter>
   </PropertyGroup>
 
   <ItemGroup>

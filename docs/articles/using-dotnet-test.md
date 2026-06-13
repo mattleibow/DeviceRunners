@@ -113,8 +113,7 @@ category (`[Trait("Category", "ExpectedFailure")]` for xUnit/xUnit v3,
 `[Category("ExpectedFailure")]` for NUnit). CI keeps the suite green by excluding that
 category instead of compiling the tests out:
 
-- **`dotnet test`** – the sample app projects default `$(VSTestTestCaseFilter)` to
-  `Category!=ExpectedFailure` when `CI`/`TF_BUILD` is set. An explicit `--filter` overrides it.
+- **`dotnet test`** – CI passes `--filter "Category!=ExpectedFailure"` on the command line.
 - **CLI runs (TCP/WASM)** – the workflows pass `--filter "Category!=ExpectedFailure"`.
 - **XHarness** – the app skips the category in-process via
   `.SkipCategory("Category", "ExpectedFailure")`.
