@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">INCLUDE_FAILING_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,7 +8,6 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">INCLUDE_FAILING_TESTS</DefineConstants>
     <OutputType Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">Exe</OutputType>
     <TestingPlatformDotnetTestSupport Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == ''">true</TestingPlatformDotnetTestSupport>
 

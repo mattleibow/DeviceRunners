@@ -102,6 +102,7 @@ runs:
           --app artifacts/bin/DeviceTestingKitApp.DeviceTests/${{ inputs.configuration }}_${{ inputs.target-framework }}_${{ inputs.runtime-identifier }}/com.companyname.devicetestingkitapp.devicetests-Signed.apk \
           --results-directory artifacts/test-results \
           --connection-timeout ${{ inputs.connection-timeout }} \
+          --filter "Category!=ExpectedFailure" \
           --logger trx
     - name: Capture Logcat
       if: always()

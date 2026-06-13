@@ -39,6 +39,7 @@ runs:
         device-runners wasm test \
           --app "$wwwroot" \
           --timeout ${{ inputs.timeout }} \
+          --filter "Category!=ExpectedFailure" \
           --logger "trx;LogFileName=test-results.trx" \
           --results-directory artifacts/test-results
     - name: Clean up build artifacts before upload

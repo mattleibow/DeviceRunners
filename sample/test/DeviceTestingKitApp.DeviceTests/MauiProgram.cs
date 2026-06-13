@@ -28,6 +28,7 @@ public static class MauiProgram
 			.UseXHarnessTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
+				.SkipCategory("Category", "ExpectedFailure")
 				.AddXunit())
 #endif
 			.UseVisualTestRunner(conf => conf

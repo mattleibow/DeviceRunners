@@ -106,6 +106,19 @@ tests results in an empty run.
 > The filter only affects the headless `dotnet test`/CLI run. Launching the app interactively
 > from the IDE always shows the full visual runner.
 
+#### Excluding known-failing tests
+
+The sample test suite tags intentionally-failing demo tests with the `ExpectedFailure`
+category (`[Trait("Category", "ExpectedFailure")]` for xUnit/xUnit v3,
+`[Category("ExpectedFailure")]` for NUnit). CI keeps the suite green by excluding that
+category instead of compiling the tests out:
+
+- **`dotnet test`** – the sample app projects default `$(VSTestTestCaseFilter)` to
+  `Category!=ExpectedFailure` when `CI`/`TF_BUILD` is set. An explicit `--filter` overrides it.
+- **CLI runs (TCP/WASM)** – the workflows pass `--filter "Category!=ExpectedFailure"`.
+- **XHarness** – the app skips the category in-process via
+  `.SkipCategory("Category", "ExpectedFailure")`.
+
 ## Output
 
 The output matches the standard `dotnet test` format:
