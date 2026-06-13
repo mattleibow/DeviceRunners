@@ -12,6 +12,12 @@ public interface IVisualTestRunnerConfigurationBuilder
 
 	void EnableAutoStart(bool autoTerminate = false);
 
+	/// <summary>
+	/// Sets a <c>dotnet test --filter</c> style expression used to select which tests run
+	/// during an auto-started run.
+	/// </summary>
+	void SetTestCaseFilter(string? filter);
+
 	void AddResultChannel<T>(Func<IServiceProvider, T> creator)
 		where T : class, IResultChannel;
 

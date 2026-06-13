@@ -170,6 +170,8 @@ public class WindowsTestCommand(IAnsiConsole console) : BaseTestCommand<WindowsT
 			var appPort = settings.AppPort ?? settings.Port;
 			var appHostNames = settings.AppHostNames ?? "localhost";
 			var appArgs = $"--device-runners-autorun --device-runners-port {appPort} --device-runners-host-names {appHostNames}";
+			if (!string.IsNullOrWhiteSpace(settings.Filter))
+				appArgs += $" --device-runners-filter \"{settings.Filter}\"";
 			pid = await winAppService.RunDetachedAsync(inputFolder, manifestPath, appArgs: appArgs);
 		}
 		catch (Exception ex)

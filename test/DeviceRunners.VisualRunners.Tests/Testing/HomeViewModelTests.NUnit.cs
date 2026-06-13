@@ -11,4 +11,6 @@ public class NUnitHomeViewModelTests : HomeViewModelTests
 
 	public override ITestRunner CreateTestRunner(VisualTestRunnerConfiguration configuration) =>
 		new NUnitTestRunner(configuration);
+
+	public override string SingleClassName => "TestProject.Tests.NUnitTests";
 }

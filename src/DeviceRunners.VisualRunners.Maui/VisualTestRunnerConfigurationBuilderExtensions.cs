@@ -25,6 +25,7 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		var autorun = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_AUTORUN");
 		var portStr = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_PORT");
 		var hostNamesRaw = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_HOST_NAMES");
+		var filter = Environment.GetEnvironmentVariable("DEVICE_RUNNERS_FILTER");
 
 		// Fall back to CLI arguments (for MSIX where env vars are not forwarded)
 		if (string.IsNullOrEmpty(autorun))
@@ -38,6 +39,8 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 					portStr = args[++i];
 				else if (args[i] == "--device-runners-host-names" && i + 1 < args.Length)
 					hostNamesRaw = args[++i];
+				else if (args[i] == "--device-runners-filter" && i + 1 < args.Length)
+					filter = args[++i];
 			}
 		}
 
@@ -50,6 +53,7 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 			: hostNamesRaw.Split(';', StringSplitOptions.RemoveEmptyEntries);
 
 		builder.EnableAutoStart(autoTerminate: true);
+		builder.SetTestCaseFilter(filter);
 		builder.AddTcpResultChannel(new TcpResultChannelOptions
 		{
 			HostNames = hostNames,

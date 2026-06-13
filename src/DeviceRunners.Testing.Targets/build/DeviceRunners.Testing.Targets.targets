@@ -122,8 +122,15 @@
       <_DeviceRunnersLoggerArg />
       <_DeviceRunnersLoggerArg Condition="'$(VSTestLogger)' != ''"> --logger &quot;$(VSTestLogger)&quot;</_DeviceRunnersLoggerArg>
 
+      <!--
+        Forward the test filter from "dotnet test ‑‑filter" ($(VSTestTestCaseFilter))
+        when present, so a single test or class can be selected on-device.
+      -->
+      <_DeviceRunnersFilterArg />
+      <_DeviceRunnersFilterArg Condition="'$(VSTestTestCaseFilter)' != ''"> --filter &quot;$(VSTestTestCaseFilter)&quot;</_DeviceRunnersFilterArg>
+
       <!-- Flags shared by every platform sub-command. -->
-      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout)$(_DeviceRunnersLoggerArg)</_DeviceRunnersCommonCliArgs>
+      <_DeviceRunnersCommonCliArgs>--results-directory &quot;$(_DeviceRunnersResultsDir)&quot; --port $(DeviceRunnersPort) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout)$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg)</_DeviceRunnersCommonCliArgs>
     </PropertyGroup>
     <MakeDir Directories="$(_DeviceRunnersResultsDir)" />
   </Target>
@@ -243,7 +250,7 @@
            Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
     <PropertyGroup>
       <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
-      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>
@@ -399,6 +406,7 @@
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_AUTORUN=1" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_PORT=$(DeviceRunnersPort)" />
       <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_HOST_NAMES=localhost%3B10.0.2.2" />
+      <_GeneratedAndroidEnvironment Include="DEVICE_RUNNERS_FILTER=$(VSTestTestCaseFilter)" Condition="'$(VSTestTestCaseFilter)' != ''" />
     </ItemGroup>
   </Target>
 

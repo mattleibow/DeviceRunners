@@ -21,6 +21,55 @@ public abstract class HomeViewModelTests
 
 	public virtual int ExpectedTestCount => Constants.TestCount;
 
+	public virtual string SingleClassName => "TestProject.Tests.XunitTests";
+
+	[Fact]
+	public async Task DiscoveredTestCasesExposeClassAndMethodMetadata()
+	{
+		var assemblies = new[] { TestAssembly };
+		var options = new VisualTestRunnerConfiguration(assemblies);
+		var discoverer = CreateTestDiscoverer(options);
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels);
+		await vm.StartAssemblyScanAsync();
+
+		var cases = vm.TestAssemblies
+			.SelectMany(a => a.TestAssemblyInfo.TestCases)
+			.ToList();
+
+		var simpleTest = Assert.Single(
+			cases,
+			c => c.TestClassName == SingleClassName && c.TestMethodName == "SimpleTest");
+
+		Assert.Equal(SingleClassName, simpleTest.TestClassName);
+		Assert.Equal("SimpleTest", simpleTest.TestMethodName);
+		Assert.Equal("TestProject.Tests", simpleTest.TestClassNamespace);
+	}
+
+	[Fact]
+	public async Task AutoStartWithFilterRunsOnlyMatchingTests()
+	{
+		var assemblies = new[] { TestAssembly };
+		var filter = $"FullyQualifiedName={SingleClassName}.SimpleTest";
+		var options = new VisualTestRunnerConfiguration(assemblies, autoStart: true, testCaseFilter: filter);
+		var discoverer = CreateTestDiscoverer(options);
+		var runner = CreateTestRunner(options);
+		var channels = new DefaultResultChannelManager();
+
+		var vm = new HomeViewModel(options, [discoverer], [runner], channels);
+		await vm.StartAssemblyScanAsync();
+
+		var allCases = vm.TestAssemblies.SelectMany(a => a.TestCases).ToList();
+
+		var ran = allCases.Where(c => c.ResultStatus != TestResultStatus.NotRun).ToList();
+		Assert.All(ran, c => Assert.Contains("SimpleTest", c.TestCaseInfo.TestMethodName));
+
+		var dataTest = allCases.Where(c => c.TestCaseInfo.TestMethodName == "DataTest");
+		Assert.All(dataTest, c => Assert.Equal(TestResultStatus.NotRun, c.ResultStatus));
+	}
+
 	[Fact]
 	public async Task StartAssemblyScanAsyncCreatesAllTheViewExpectedModels()
 	{

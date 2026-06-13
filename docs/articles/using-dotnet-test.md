@@ -61,6 +61,51 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst
 
 That's it. The package handles building the app, deploying it, launching it with the right environment variables, collecting results, and producing a TRX file.
 
+### Filtering Tests
+
+You can run a single test or a subset of tests using the standard `dotnet test --filter` option. The filter expression is forwarded to the device app, which runs only the matching tests instead of the whole suite.
+
+```bash
+# Run a single test by its fully qualified name
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "FullyQualifiedName=MyApp.Tests.CalculatorTests.Adds"
+
+# Run every test in a single class
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "FullyQualifiedName~CalculatorTests"
+
+# Run tests in a trait/category
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "Category=Smoke"
+```
+
+The on-device evaluator mirrors the documented `dotnet test --filter` syntax:
+
+| Property | Description |
+|----------|-------------|
+| `FullyQualifiedName` | `Namespace.Class.Method` (the **default** when no property is given) |
+| `DisplayName` | The test's display name |
+| `Name` | The test method's simple name |
+| `ClassName` | The fully qualified test class name |
+| `Namespace` | The test class namespace |
+| _any trait name_ | A trait/category value (e.g. `Category`, `Priority`) |
+
+| Operator | Meaning |
+|----------|---------|
+| `=` | Equals (case-insensitive) |
+| `!=` | Not equals |
+| `~` | Contains |
+| `!~` | Does not contain |
+
+Conditions can be combined with `&` (and), `|` (or) and grouped with parentheses. `&`
+binds tighter than `|`. Use `\` to escape a special character. Filtering works across all
+supported frameworks (xUnit v2, xUnit v3 and NUnit) and platforms. A filter that matches no
+tests results in an empty run.
+
+> [!NOTE]
+> The filter only affects the headless `dotnet test`/CLI run. Launching the app interactively
+> from the IDE always shows the full visual runner.
+
 ## Output
 
 The output matches the standard `dotnet test` format:

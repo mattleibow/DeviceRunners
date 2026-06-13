@@ -49,6 +49,10 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 		[CommandOption("--data-timeout")]
 		[DefaultValue(30)]
 		public int DataTimeout { get; set; } = 30;
+
+		[Description("Run only the tests matching the given dotnet test --filter style expression")]
+		[CommandOption("--filter")]
+		public string? Filter { get; set; }
 	}
 
 	public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
@@ -62,12 +66,20 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 	/// Builds the environment variables that tell the test app how to connect
 	/// back to the CLI's TCP listener.
 	/// </summary>
-	protected static Dictionary<string, string> GetAppEnvironmentVariables(TSettings settings) => new()
+	internal static Dictionary<string, string> GetAppEnvironmentVariables(TSettings settings)
 	{
-		["DEVICE_RUNNERS_AUTORUN"] = "1",
-		["DEVICE_RUNNERS_PORT"] = (settings.AppPort ?? settings.Port).ToString(),
-		["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
-	};
+		var variables = new Dictionary<string, string>
+		{
+			["DEVICE_RUNNERS_AUTORUN"] = "1",
+			["DEVICE_RUNNERS_PORT"] = (settings.AppPort ?? settings.Port).ToString(),
+			["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
+		};
+
+		if (!string.IsNullOrWhiteSpace(settings.Filter))
+			variables["DEVICE_RUNNERS_FILTER"] = settings.Filter!;
+
+		return variables;
+	}
 
 	protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed)
 	{

@@ -134,6 +134,8 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			};
 
 			var testUrl = $"{url}?device-runners-autorun=1";
+			if (!string.IsNullOrWhiteSpace(settings.Filter))
+				testUrl += $"&device-runners-filter={Uri.EscapeDataString(settings.Filter)}";
 			await browser.LaunchAsync(testUrl, headless: !settings.Headed);
 			WriteConsoleOutput($"    Browser launched, running tests...", settings);
 

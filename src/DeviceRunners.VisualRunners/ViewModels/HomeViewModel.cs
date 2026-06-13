@@ -112,9 +112,18 @@ public class HomeViewModel : AbstractBaseViewModel
 
 		if (_options.AutoStart)
 		{
-			_diagnosticsManager?.PostDiagnosticMessage("Auto-starting test run...");
+			if (string.IsNullOrWhiteSpace(_options.TestCaseFilter))
+			{
+				_diagnosticsManager?.PostDiagnosticMessage("Auto-starting test run...");
 
-			await RunEverythingAsync();
+				await RunEverythingAsync();
+			}
+			else
+			{
+				_diagnosticsManager?.PostDiagnosticMessage($"Auto-starting filtered test run ({_options.TestCaseFilter})...");
+
+				await RunFilteredAsync(_options.TestCaseFilter!);
+			}
 
 			if (_options.AutoTerminate)
 			{
@@ -122,6 +131,38 @@ public class HomeViewModel : AbstractBaseViewModel
 
 				_appTerminator?.Terminate();
 			}
+		}
+	}
+
+	async Task RunFilteredAsync(string expression)
+	{
+		IsBusy = true;
+
+		try
+		{
+			if (!TestCaseFilter.TryParse(expression, out var filter))
+			{
+				_diagnosticsManager?.PostDiagnosticMessage($"Invalid test filter expression: '{expression}'. Running everything instead.");
+				await _runner.RunTestsAsync(TestAssemblies.Select(t => t.TestAssemblyInfo).ToList());
+				return;
+			}
+
+			var matchingCases = TestAssemblies
+				.SelectMany(t => t.TestAssemblyInfo.TestCases)
+				.Where(filter.Matches)
+				.ToList();
+
+			_diagnosticsManager?.PostDiagnosticMessage($"Filter matched {matchingCases.Count} test case(s).");
+
+			if (matchingCases.Count == 0)
+				return;
+
+			await _runner.RunTestsAsync(matchingCases);
+		}
+		finally
+		{
+			_diagnosticsManager?.PostDiagnosticMessage("Test run complete.");
+			IsBusy = false;
 		}
 	}
 

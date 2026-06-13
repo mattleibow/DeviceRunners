@@ -8,6 +8,10 @@ class XunitTestCaseInfo : ITestCaseInfo
 	{
 		TestAssembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
 		TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
+
+		TestClassName = testCase.TestMethod?.TestClass?.Class?.Name;
+		TestMethodName = testCase.TestMethod?.Method?.Name;
+		Traits = ConvertTraits(testCase.Traits);
 	}
 
 	public XunitTestAssemblyInfo TestAssembly { get; }
@@ -17,6 +21,12 @@ class XunitTestCaseInfo : ITestCaseInfo
 	public string AssemblyFileName => TestAssembly.AssemblyFileName;
 
 	public string DisplayName => TestCase.DisplayName;
+
+	public string? TestClassName { get; }
+
+	public string? TestMethodName { get; }
+
+	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
 
 	public ITestCase TestCase { get; }
 
@@ -31,5 +41,17 @@ class XunitTestCaseInfo : ITestCaseInfo
 		Result = result;
 
 		ResultReported?.Invoke(result);
+	}
+
+	static IReadOnlyDictionary<string, IReadOnlyList<string>> ConvertTraits(Dictionary<string, List<string>>? traits)
+	{
+		if (traits is null || traits.Count == 0)
+			return new Dictionary<string, IReadOnlyList<string>>();
+
+		var result = new Dictionary<string, IReadOnlyList<string>>(traits.Count);
+		foreach (var pair in traits)
+			result[pair.Key] = pair.Value;
+
+		return result;
 	}
 }
