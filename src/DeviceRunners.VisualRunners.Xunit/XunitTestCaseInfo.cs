@@ -26,6 +26,8 @@ class XunitTestCaseInfo : ITestCaseInfo
 
 	public string? TestMethodName { get; }
 
+	public string? TestClassNamespace => GetNamespace(TestClassName);
+
 	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
 
 	public ITestCase TestCase { get; }
@@ -41,6 +43,15 @@ class XunitTestCaseInfo : ITestCaseInfo
 		Result = result;
 
 		ResultReported?.Invoke(result);
+	}
+
+	static string? GetNamespace(string? className)
+	{
+		if (string.IsNullOrEmpty(className))
+			return null;
+
+		var index = className!.LastIndexOf('.');
+		return index > 0 ? className.Substring(0, index) : null;
 	}
 
 	static IReadOnlyDictionary<string, IReadOnlyList<string>> ConvertTraits(Dictionary<string, List<string>>? traits)

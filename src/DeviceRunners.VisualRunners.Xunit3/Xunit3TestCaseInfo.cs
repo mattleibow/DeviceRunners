@@ -46,6 +46,11 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 	public string? TestMethodName { get; }
 
 	/// <summary>
+	/// The namespace of the test class (e.g. "MyNamespace").
+	/// </summary>
+	public string? TestClassNamespace => GetNamespace(TestClassName);
+
+	/// <summary>
 	/// The traits associated with this test case.
 	/// </summary>
 	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
@@ -61,6 +66,15 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 		Result = result;
 
 		ResultReported?.Invoke(result);
+	}
+
+	static string? GetNamespace(string? className)
+	{
+		if (string.IsNullOrEmpty(className))
+			return null;
+
+		var index = className!.LastIndexOf('.');
+		return index > 0 ? className.Substring(0, index) : null;
 	}
 
 	static IReadOnlyDictionary<string, IReadOnlyList<string>> ConvertTraits(IReadOnlyDictionary<string, IReadOnlyCollection<string>>? traits)

@@ -142,6 +142,16 @@ public class TestCaseFilterTests
 		public ITestResultInfo? Result => null;
 		public string? TestClassName { get; set; }
 		public string? TestMethodName { get; set; }
+		public string? TestClassNamespace
+		{
+			get
+			{
+				if (string.IsNullOrEmpty(TestClassName))
+					return null;
+				var index = TestClassName!.LastIndexOf('.');
+				return index > 0 ? TestClassName.Substring(0, index) : null;
+			}
+		}
 		public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; set; } =
 			new Dictionary<string, IReadOnlyList<string>>();
 

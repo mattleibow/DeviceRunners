@@ -110,20 +110,6 @@ code) rather than silently running everything.
 > The filter only affects the headless `dotnet test`/CLI run. Launching the app interactively
 > from the IDE always shows the full visual runner.
 
-#### Excluding known-failing tests
-
-The sample test suite tags intentionally-failing demo tests with the `ExpectedFailure`
-category (`[Trait("Category", "ExpectedFailure")]` for xUnit/xUnit v3,
-`[Category("ExpectedFailure")]` for NUnit). CI keeps the suite green by excluding them:
-
-- **`dotnet test`** – CI passes `--filter "Category!=ExpectedFailure"` on the command line.
-- **CLI TCP runs** – these launch an installed app that cannot receive a runtime filter
-  on every platform, so the workflows build with `-p:IncludeFailingTests=false`, which
-  compiles the failing demo tests out (they are wrapped in `#if INCLUDE_FAILING_TESTS`).
-- **CLI WASM runs** – the workflow passes `--filter "Category!=ExpectedFailure"`.
-- **XHarness** – the app skips the category in-process via
-  `.SkipCategory("Category", "ExpectedFailure")`.
-
 ## Output
 
 The output matches the standard `dotnet test` format:

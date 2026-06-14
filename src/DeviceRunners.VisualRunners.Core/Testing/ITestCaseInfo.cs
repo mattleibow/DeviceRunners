@@ -13,35 +13,20 @@ public interface ITestCaseInfo
 	/// <summary>
 	/// The fully qualified test class name (e.g. "MyNamespace.MyClass"), when available.
 	/// </summary>
-	string? TestClassName => null;
+	string? TestClassName { get; }
 
 	/// <summary>
 	/// The test method name (e.g. "MyMethod"), when available.
 	/// </summary>
-	string? TestMethodName => null;
+	string? TestMethodName { get; }
 
 	/// <summary>
-	/// The namespace of the test class (e.g. "MyNamespace"). Derived from
-	/// <see cref="TestClassName"/> unless an implementation provides a better value.
+	/// The namespace of the test class (e.g. "MyNamespace"), when available.
 	/// </summary>
-	string? TestClassNamespace
-	{
-		get
-		{
-			var className = TestClassName;
-			if (string.IsNullOrEmpty(className))
-				return null;
-
-			var index = className!.LastIndexOf('.');
-			return index > 0 ? className.Substring(0, index) : null;
-		}
-	}
+	string? TestClassNamespace { get; }
 
 	/// <summary>
 	/// The traits (categories) associated with the test case, keyed by trait name.
 	/// </summary>
-	IReadOnlyDictionary<string, IReadOnlyList<string>> Traits => EmptyTraits;
-
-	private static readonly IReadOnlyDictionary<string, IReadOnlyList<string>> EmptyTraits =
-		new Dictionary<string, IReadOnlyList<string>>();
+	IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
 }
