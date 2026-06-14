@@ -33,6 +33,12 @@ public static class MauiProgram
 #endif
 			.UseVisualTestRunner(conf => conf
 				.AddCliConfiguration()
+#if EXCLUDE_FAILING_TESTS
+				// TCP device runs auto-start without a runtime filter, so bake in the same
+				// exclusion "dotnet test" uses. Enabled only when built with
+				// -p:IncludeFailingTests=false (the specific TCP CI runs).
+				.SetTestCaseFilter("Category!=ExpectedFailure")
+#endif
 #if MODE_NON_INTERACTIVE_VISUAL
 				.EnableAutoStart(true)
 				.AddTcpResultChannel(new TcpResultChannelOptions

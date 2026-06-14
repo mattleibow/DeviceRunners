@@ -169,7 +169,7 @@ The sample suite ships a handful of **intentionally-failing** demo tests so the 
 | Workflow | Exclusion mechanism |
 |---|---|
 | `test-dotnet-test-*` | `--filter "Category!=ExpectedFailure"` on the `dotnet test` command line |
-| `test-tcp-*` | Built with `-p:IncludeFailingTests=false`, which compiles the demo tests out via `#if INCLUDE_FAILING_TESTS` (the installed app cannot reliably receive a runtime filter on every platform) |
+| `test-tcp-*` | Built with `-p:IncludeFailingTests=false`, which defines the `EXCLUDE_FAILING_TESTS` compile constant. The sample's `MauiProgram` reads that constant and bakes `SetTestCaseFilter("Category!=ExpectedFailure")` into the runner (the installed app auto-starts without receiving a runtime filter on every platform). The failing tests still compile in — they are excluded at runtime by the baked filter. |
 | WASM (`device-runners wasm test`) | `--filter "Category!=ExpectedFailure"` on the CLI |
 | XHarness | Skipped in-process via `.SkipCategory("Category", "ExpectedFailure")` |
 
