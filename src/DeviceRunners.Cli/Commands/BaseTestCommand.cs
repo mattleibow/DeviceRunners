@@ -49,6 +49,10 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 		[CommandOption("--data-timeout")]
 		[DefaultValue(30)]
 		public int DataTimeout { get; set; } = 30;
+
+		[Description("Run only the tests matching the given dotnet test --filter style expression")]
+		[CommandOption("--filter")]
+		public string? Filter { get; set; }
 	}
 
 	public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
@@ -62,12 +66,20 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 	/// Builds the environment variables that tell the test app how to connect
 	/// back to the CLI's TCP listener.
 	/// </summary>
-	protected static Dictionary<string, string> GetAppEnvironmentVariables(TSettings settings) => new()
+	internal static Dictionary<string, string> GetAppEnvironmentVariables(TSettings settings)
 	{
-		["DEVICE_RUNNERS_AUTORUN"] = "1",
-		["DEVICE_RUNNERS_PORT"] = (settings.AppPort ?? settings.Port).ToString(),
-		["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
-	};
+		var variables = new Dictionary<string, string>
+		{
+			["DEVICE_RUNNERS_AUTORUN"] = "1",
+			["DEVICE_RUNNERS_PORT"] = (settings.AppPort ?? settings.Port).ToString(),
+			["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
+		};
+
+		if (!string.IsNullOrWhiteSpace(settings.Filter))
+			variables["DEVICE_RUNNERS_FILTER"] = settings.Filter!;
+
+		return variables;
+	}
 
 	protected record TestListenerResult(int FailedCount, string? ResultsFile, bool Crashed)
 	{
@@ -198,7 +210,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 		// Detect app crash: if we received a "begin" event and test results but
 		// never got the "end" event, the app crashed or was killed mid-run.
 		// Return -1 to signal crash to the caller (mapped to exit code 2).
-		if (eventStream.HasStarted && !eventStream.HasEnded && eventStream.TotalCount > 0)
+		var outcome = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount);
+
+		if (outcome == TestRunOutcome.Crashed)
 		{
 			WriteConsoleOutput($"    [red]The application appears to have crashed during the test run.[/]", settings);
 			WriteConsoleOutput($"    [red]Only {eventStream.TotalCount} test result(s) were received before the connection was lost.[/]", settings);
@@ -206,7 +220,17 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 			return new TestListenerResult(eventStream.FailedCount, resultsFile, Crashed: true);
 		}
 
-		if (eventStream.TotalCount == 0)
+		// A clean empty run (begin + end received, but no test results) is a success,
+		// not a failure — it mirrors `dotnet test --filter`, which exits 0 with
+		// "No test matches the given testcase filter". Only treat a missing connection
+		// (no "begin" event at all) as a failure.
+		if (outcome == TestRunOutcome.CleanEmpty)
+		{
+			WriteConsoleOutput($"    [yellow]No test matches the given test filter. The run completed with no results.[/]", settings);
+			return new TestListenerResult(0, resultsFile, Crashed: false);
+		}
+
+		if (outcome == TestRunOutcome.NoResults)
 		{
 			WriteConsoleOutput($"    [yellow]No test results received.[/]", settings);
 			return new TestListenerResult(1, null, Crashed: false);
@@ -214,6 +238,66 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
 		return new TestListenerResult(eventStream.FailedCount, resultsFile, Crashed: false);
 	}
+
+	internal enum TestRunOutcome
+	{
+		/// <summary>Begin, results, and end were all received — a normal run.</summary>
+		Completed,
+
+		/// <summary>Begin and end received with zero results — a successful empty run (e.g. a zero-match filter).</summary>
+		CleanEmpty,
+
+		/// <summary>Begin and results received but no end — the app crashed mid-run.</summary>
+		Crashed,
+
+		/// <summary>No connection or no begin event — the app never reported a run.</summary>
+		NoResults,
+	}
+
+	/// <summary>
+	/// Classifies a test run from the event-stream flags, distinguishing a clean
+	/// empty run (zero-match filter, still a success) from a crash or a missing
+	/// connection.
+	/// </summary>
+	internal static TestRunOutcome ClassifyRun(bool hasStarted, bool hasEnded, int totalCount)
+	{
+		if (hasStarted && !hasEnded && totalCount > 0)
+			return TestRunOutcome.Crashed;
+
+		if (hasStarted && hasEnded && totalCount == 0)
+			return TestRunOutcome.CleanEmpty;
+
+		if (totalCount == 0)
+			return TestRunOutcome.NoResults;
+
+		return TestRunOutcome.Completed;
+	}
+
+	/// <summary>
+	/// Whether the given outcome represents a successful run: a normal completion
+	/// with no failures, or a clean zero-match run. A crash or a missing run is
+	/// never a success, even if no individual failures were recorded.
+	/// </summary>
+	internal static bool OutcomeIsSuccess(TestRunOutcome outcome, int failedCount) =>
+		outcome switch
+		{
+			TestRunOutcome.Completed => failedCount == 0,
+			TestRunOutcome.CleanEmpty => true,
+			_ => false,
+		};
+
+	/// <summary>
+	/// Maps an outcome to a process exit code, matching the TCP listener semantics:
+	/// 0 = success or clean empty run, 1 = test failures or no results, 2 = crash.
+	/// </summary>
+	internal static int OutcomeToExitCode(TestRunOutcome outcome, int failedCount) =>
+		outcome switch
+		{
+			TestRunOutcome.Crashed => 2,
+			TestRunOutcome.NoResults => 1,
+			TestRunOutcome.CleanEmpty => 0,
+			_ => failedCount > 0 ? 1 : 0,
+		};
 
 	/// <summary>
 	/// Parses a logger string in the format "name" or "name;LogFileName=file.ext"

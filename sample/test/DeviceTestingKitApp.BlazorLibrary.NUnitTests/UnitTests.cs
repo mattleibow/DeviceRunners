@@ -15,11 +15,10 @@ public class UnitTests
 	{
 	}
 
-#if INCLUDE_FAILING_TESTS
 	[Test]
+	[Category("ExpectedFailure")]
 	public void FailingTest()
 	{
 		throw new Exception("This is meant to fail.");
 	}
-#endif
 }

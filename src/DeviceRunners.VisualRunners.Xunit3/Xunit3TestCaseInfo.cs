@@ -12,6 +12,8 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 		DisplayName = testCase.TestCaseDisplayName;
 		TestClassName = testCase.TestClassName;
 		TestMethodName = testCase.TestMethodName;
+		TestClassNamespace = GetNamespace(TestClassName);
+		Traits = ConvertTraits(testCase.Traits);
 	}
 
 	public Xunit3TestAssemblyInfo TestAssembly { get; }
@@ -44,6 +46,16 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 	/// </summary>
 	public string? TestMethodName { get; }
 
+	/// <summary>
+	/// The namespace of the test class (e.g. "MyNamespace").
+	/// </summary>
+	public string? TestClassNamespace { get; }
+
+	/// <summary>
+	/// The traits associated with this test case.
+	/// </summary>
+	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
+
 	public Xunit3TestResultInfo? Result { get; private set; }
 
 	ITestResultInfo? ITestCaseInfo.Result => Result;
@@ -55,5 +67,26 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 		Result = result;
 
 		ResultReported?.Invoke(result);
+	}
+
+	static string? GetNamespace(string? className)
+	{
+		if (string.IsNullOrEmpty(className))
+			return null;
+
+		var index = className!.LastIndexOf('.');
+		return index > 0 ? className.Substring(0, index) : null;
+	}
+
+	static IReadOnlyDictionary<string, IReadOnlyList<string>> ConvertTraits(IReadOnlyDictionary<string, IReadOnlyCollection<string>>? traits)
+	{
+		if (traits is null || traits.Count == 0)
+			return new Dictionary<string, IReadOnlyList<string>>();
+
+		var result = new Dictionary<string, IReadOnlyList<string>>(traits.Count);
+		foreach (var pair in traits)
+			result[pair.Key] = pair.Value as IReadOnlyList<string> ?? pair.Value.ToList();
+
+		return result;
 	}
 }

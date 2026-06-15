@@ -185,6 +185,11 @@ public record TestResultEvent
 		public ITestAssemblyInfo TestAssembly { get; } = new ParsedTestAssemblyInfo(assemblyFileName);
 		public string DisplayName { get; } = displayName;
 		public ITestResultInfo? Result => null;
+		public string? TestClassName => null;
+		public string? TestMethodName => null;
+		public string? TestClassNamespace => null;
+		public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; } =
+			new Dictionary<string, IReadOnlyList<string>>();
 		public event Action<ITestResultInfo>? ResultReported { add { } remove { } }
 	}
 

@@ -30,6 +30,7 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:WindowsPackageType=None `
+          --filter "Category!=ExpectedFailure" `
           --logger "trx;LogFileName=test-results.trx" `
           /bl:./artifacts/logs/msbuild-test.binlog
     - name: Clean up build artifacts before upload

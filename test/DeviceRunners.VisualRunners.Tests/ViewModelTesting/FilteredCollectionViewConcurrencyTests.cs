@@ -222,6 +222,11 @@ public class FilteredCollectionViewConcurrencyTests
 		public ITestAssemblyInfo TestAssembly { get; }
 		public string DisplayName { get; }
 		public ITestResultInfo? Result { get; private set; }
+		public string? TestClassName => null;
+		public string? TestMethodName => null;
+		public string? TestClassNamespace => null;
+		public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; } =
+			new Dictionary<string, IReadOnlyList<string>>();
 
 		public event Action<ITestResultInfo>? ResultReported;
 

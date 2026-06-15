@@ -13,11 +13,10 @@ public class UnitTests
 	{
 	}
 
-#if INCLUDE_FAILING_TESTS
 	[Fact]
+	[Trait("Category", "ExpectedFailure")]
 	public void FailingTest()
 	{
 		throw new Exception("This is meant to fail.");
 	}
-#endif
 }

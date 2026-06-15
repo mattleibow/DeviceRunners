@@ -32,6 +32,7 @@ runs:
           -f ${{ inputs.target-framework }} `
           -c ${{ inputs.configuration }} `
           -p:TestingMode=NonInteractiveVisual `
+          -p:IncludeFailingTests=false `
           -p:WindowsPackageType=None `
           --output artifacts/publish `
           /bl:./artifacts/logs/msbuild-publish-unpackaged.binlog

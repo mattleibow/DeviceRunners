@@ -162,6 +162,22 @@ The `DeviceRunners.Testing.Targets` package is included in the test project via 
 > [!NOTE]
 > The `dotnet test` workflows (`test-dotnet-test-*`) run tests via `dotnet test` and the `DeviceRunners.Testing.Targets` package. The TCP workflows (`test-tcp-*`) use the DeviceRunners CLI directly for scenarios requiring more control. The XHarness workflows remain as a legacy alternative.
 
+### Excluding the intentionally-failing demo tests
+
+The sample suite ships a handful of **intentionally-failing** demo tests so the various runners can be shown reporting failures. They are tagged with the `ExpectedFailure` category (`[Trait("Category", "ExpectedFailure")]` for xUnit/xUnit v3, `[Category("ExpectedFailure")]` for NUnit). The failing tests always compile in (so they stay visible for local/interactive runs); to keep CI green, every device test job excludes that category. Most jobs build the app with `-p:IncludeFailingTests=false`, which defines the `EXCLUDE_FAILING_TESTS` compile constant that the sample's `MauiProgram` reads to bake the exclusion into the runner — `dotnet test` is the exception and uses a true command-line filter:
+
+| Workflow | Exclusion mechanism |
+|---|---|
+| `test-dotnet-test-*` | `--filter "Category!=ExpectedFailure"` on the `dotnet test` command line (delivered to the app as a runtime filter) |
+| `test-tcp-*` | Built with `-p:IncludeFailingTests=false`. `MauiProgram` reads `EXCLUDE_FAILING_TESTS` and bakes `SetTestCaseFilter("Category!=ExpectedFailure")` into the visual runner (the installed app auto-starts without receiving a runtime filter on every platform). |
+| WASM (`device-runners wasm test`) | `--filter "Category!=ExpectedFailure"` on the CLI |
+| `test-xharness-*` | Built with `-p:IncludeFailingTests=false`. `MauiProgram` reads `EXCLUDE_FAILING_TESTS` and skips the category in-process via `.SkipCategory("Category", "ExpectedFailure")`. |
+
+> [!NOTE]
+> Because the exclusion is gated on `-p:IncludeFailingTests=false`, a local XHarness or TCP run built without that property runs the failing demo tests and reports them as failures — which is the intended behaviour for demonstrating the runners.
+
+When adding or editing a device test job, mirror the matching mechanism above in **both** `.github/workflows/test-*/action.yml` and `.azure/templates/test-*.yml` so the two CI services stay in sync.
+
 ## Device Management Patterns
 
 ### Android Emulator (via `dotnet android`)

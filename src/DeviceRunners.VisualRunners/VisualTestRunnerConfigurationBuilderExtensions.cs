@@ -37,6 +37,13 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		return builder;
 	}
 
+	public static TBuilder SetTestCaseFilter<TBuilder>(this TBuilder builder, string? filter)
+		where TBuilder : IVisualTestRunnerConfigurationBuilder
+	{
+		builder.SetTestCaseFilter(filter);
+		return builder;
+	}
+
 	public static TBuilder AddConsoleResultChannel<TBuilder>(this TBuilder builder)
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{

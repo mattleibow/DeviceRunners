@@ -252,7 +252,7 @@ These limitations apply only to the in-app visual runner, not to `dotnet test` o
 | Feature | Standard `dotnet test` | DeviceRunners Visual Runner |
 |---|---|---|
 | **`[Fact(Explicit = true)]`** | ✅ Runs with `--filter` or explicit opt-in | ⚠️ Executor supports it, but the visual runner UI has no way to opt-in to running explicit tests |
-| **`dotnet test --filter` expressions** | ✅ Full filter syntax | ❌ Visual runner has its own UI-based filtering |
+| **`dotnet test --filter` expressions** | ✅ Full filter syntax | ✅ Headless runs honor `--filter` (a documented subset); the interactive UI also has its own filtering |
 | **Source information** | ✅ IDE navigation to test source | ❌ Not available on in-memory platforms |
 
 ### Behavioral Defaults

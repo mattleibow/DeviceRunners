@@ -18,6 +18,7 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 		where TBuilder : IVisualTestRunnerConfigurationBuilder
 	{
 		string? autorun = null;
+		string? filter = null;
 
 		try
 		{
@@ -33,6 +34,8 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 
 					if (key.Equals("device-runners-autorun", StringComparison.OrdinalIgnoreCase))
 						autorun = value;
+					else if (key.Equals("device-runners-filter", StringComparison.OrdinalIgnoreCase))
+						filter = value;
 				}
 			}
 		}
@@ -45,6 +48,7 @@ public static class VisualTestRunnerConfigurationBuilderExtensions
 			return builder;
 
 		builder.EnableAutoStart(autoTerminate: true);
+		builder.SetTestCaseFilter(filter);
 		builder.AddResultChannel(_ => new ConsoleResultChannel(new EventStreamFormatter()));
 		return builder;
 	}

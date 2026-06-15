@@ -9,6 +9,7 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 	readonly List<Func<ResourceDictionary>> _resourceDictionaryFactories = new();
 	bool _autoStart;
 	bool _autoTerminate;
+	string? _testCaseFilter;
 
 	public VisualTestRunnerConfigurationBuilder(MauiAppBuilder appHostBuilder)
 	{
@@ -63,6 +64,9 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 		_autoTerminate = autoTerminate;
 	}
 
+	void IVisualTestRunnerConfigurationBuilder.SetTestCaseFilter(string? filter) =>
+		_testCaseFilter = string.IsNullOrWhiteSpace(filter) ? null : filter;
+
 	void IVisualTestRunnerConfigurationBuilder.AddResultChannel<T>(Func<IServiceProvider, T> creator) =>
 		_appHostBuilder.Services.AddSingleton<IResultChannel>(svc => creator(svc));
 
@@ -70,5 +74,5 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 		Build();
 
 	public VisualTestRunnerConfiguration Build() =>
-		new(_testAssemblies, _autoStart, _autoTerminate);
+		new(_testAssemblies, _autoStart, _autoTerminate, _testCaseFilter);
 }

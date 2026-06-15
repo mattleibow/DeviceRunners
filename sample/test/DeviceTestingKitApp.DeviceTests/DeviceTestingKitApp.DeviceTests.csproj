@@ -15,7 +15,12 @@
     <RootNamespace>DeviceTestingKitApp.DeviceTests</RootNamespace>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
-    <DefineConstants Condition="'$(CI)' != 'true' And '$(TF_BUILD)' != 'True'">$(DefineConstants);INCLUDE_FAILING_TESTS</DefineConstants>
+    <!-- Intentionally-failing demo tests are always compiled in. "dotnet test" excludes
+         them via "Category!=ExpectedFailure". TCP device runs (which auto-start the runner
+         without a runtime filter) set -p:IncludeFailingTests=false, which defines
+         EXCLUDE_FAILING_TESTS so MauiProgram bakes the same exclusion filter into the app. -->
+    <IncludeFailingTests Condition="'$(IncludeFailingTests)' == ''">true</IncludeFailingTests>
+    <DefineConstants Condition="'$(IncludeFailingTests)' == 'false'">$(DefineConstants);EXCLUDE_FAILING_TESTS</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'NonInteractiveVisual'">$(DefineConstants);MODE_NON_INTERACTIVE_VISUAL</DefineConstants>
     <DefineConstants Condition="'$(TestingMode)' == 'XHarness'">$(DefineConstants);MODE_XHARNESS</DefineConstants>
 

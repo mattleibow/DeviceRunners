@@ -15,6 +15,7 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 	readonly List<Assembly> _assemblies = [];
 	bool _autoStart;
 	bool _autoTerminate;
+	string? _testCaseFilter;
 
 	public VisualTestRunnerConfigurationBuilder(IServiceCollection services)
 	{
@@ -36,11 +37,14 @@ public class VisualTestRunnerConfigurationBuilder : IVisualTestRunnerConfigurati
 		_autoTerminate = autoTerminate;
 	}
 
+	void IVisualTestRunnerConfigurationBuilder.SetTestCaseFilter(string? filter) =>
+		_testCaseFilter = string.IsNullOrWhiteSpace(filter) ? null : filter;
+
 	void IVisualTestRunnerConfigurationBuilder.AddResultChannel<T>(Func<IServiceProvider, T> creator) =>
 		_services.AddSingleton<IResultChannel>(svc => creator(svc));
 
 	IVisualTestRunnerConfiguration IVisualTestRunnerConfigurationBuilder.Build() => Build();
 
 	public VisualTestRunnerConfiguration Build() =>
-		new(_assemblies, _autoStart, _autoTerminate);
+		new(_assemblies, _autoStart, _autoTerminate, _testCaseFilter);
 }
