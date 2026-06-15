@@ -85,6 +85,7 @@ runs:
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
           -p:TestingMode=XHarness \
+          -p:IncludeFailingTests=false \
           -p:AndroidSdkDirectory=$ANDROID_SDK_ROOT \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Set ADB_EXE_PATH for XHarness

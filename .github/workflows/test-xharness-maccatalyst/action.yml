@@ -35,6 +35,7 @@ runs:
           -r ${{ inputs.runtime-identifier }} \
           -c ${{ inputs.configuration }} \
           -p:TestingMode=XHarness \
+          -p:IncludeFailingTests=false \
           /bl:./artifacts/logs/msbuild-publish.binlog
     - name: Discover App Bundle
       id: app

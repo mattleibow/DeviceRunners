@@ -28,15 +28,18 @@ public static class MauiProgram
 			.UseXHarnessTestRunner(conf => conf
 				.AddTestAssembly(typeof(MauiProgram).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
+#if EXCLUDE_FAILING_TESTS
 				.SkipCategory("Category", "ExpectedFailure")
+#endif
 				.AddXunit())
 #endif
 			.UseVisualTestRunner(conf => conf
 				.AddCliConfiguration()
 #if EXCLUDE_FAILING_TESTS
-				// TCP device runs auto-start without a runtime filter, so bake in the same
-				// exclusion "dotnet test" uses. Enabled only when built with
-				// -p:IncludeFailingTests=false (the specific TCP CI runs).
+				// Exclude the intentionally-failing demo tests on CI device runs, which
+				// auto-start without a runtime filter. Enabled only when built with
+				// -p:IncludeFailingTests=false (the TCP and XHarness CI runs); local and
+				// interactive runs leave it undefined so the failure demos stay visible.
 				.SetTestCaseFilter("Category!=ExpectedFailure")
 #endif
 #if MODE_NON_INTERACTIVE_VISUAL
