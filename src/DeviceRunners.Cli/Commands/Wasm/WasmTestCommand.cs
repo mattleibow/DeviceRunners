@@ -166,28 +166,39 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 
 			WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
-			// A clean empty run (begin + end received, but no test results) is a success,
-			// mirroring `dotnet test --filter` exit 0. Only a missing run (no "begin"
-			// event) is treated as a failure.
-			var cleanEmptyRun = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount) == TestRunOutcome.CleanEmpty;
+			// Classify the run the same way the TCP listener does so a crash or
+			// timeout mid-run (begin + some results, but no "end") is reported as a
+			// failure instead of being mistaken for a successful run. A clean empty
+			// run (begin + end, no results) still succeeds, mirroring `dotnet test
+			// --filter` exit 0.
+			var outcome = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount);
 
-			if (eventStream.TotalCount == 0 && !cleanEmptyRun)
+			if (outcome == TestRunOutcome.Crashed)
+				WriteConsoleOutput($"    [red]The app crashed or timed out before the run completed. Only {eventStream.TotalCount} test result(s) were received before the connection was lost. Check browser-console.log for details.[/]", settings);
+			else if (outcome == TestRunOutcome.NoResults)
 				WriteConsoleOutput($"    [red]No test results received. This usually means the browser failed to navigate, the app didn't boot, or the autorun query parameter was not detected. Check browser-console.log for details.[/]", settings);
-			else if (cleanEmptyRun)
+			else if (outcome == TestRunOutcome.CleanEmpty)
 				WriteConsoleOutput($"    [yellow]No test matches the given test filter. The run completed with no results.[/]", settings);
+
+			var errorMessage = outcome switch
+			{
+				TestRunOutcome.Crashed => "The app crashed or timed out mid-run — check browser-console.log",
+				TestRunOutcome.NoResults => "No test results received — check browser-console.log",
+				_ => (string?)null,
+			};
 
 			var result = new TestStartResult
 			{
-				Success = eventStream.FailedCount == 0 && (eventStream.TotalCount > 0 || cleanEmptyRun),
+				Success = OutcomeIsSuccess(outcome, eventStream.FailedCount),
 				AppPath = settings.App,
 				ResultsDirectory = settings.ResultsDirectory,
 				TestFailures = eventStream.FailedCount,
 				TestResults = resultsFile,
-				ErrorMessage = eventStream.TotalCount == 0 && !cleanEmptyRun ? "No test results received — check browser-console.log" : null
+				ErrorMessage = errorMessage
 			};
 			WriteResult(result, settings);
 
-			return eventStream.FailedCount > 0 || (eventStream.TotalCount == 0 && !cleanEmptyRun) ? 1 : 0;
+			return OutcomeToExitCode(outcome, eventStream.FailedCount);
 		}
 		catch (Exception ex)
 		{

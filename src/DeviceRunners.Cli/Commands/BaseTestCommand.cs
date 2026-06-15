@@ -274,6 +274,32 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 	}
 
 	/// <summary>
+	/// Whether the given outcome represents a successful run: a normal completion
+	/// with no failures, or a clean zero-match run. A crash or a missing run is
+	/// never a success, even if no individual failures were recorded.
+	/// </summary>
+	internal static bool OutcomeIsSuccess(TestRunOutcome outcome, int failedCount) =>
+		outcome switch
+		{
+			TestRunOutcome.Completed => failedCount == 0,
+			TestRunOutcome.CleanEmpty => true,
+			_ => false,
+		};
+
+	/// <summary>
+	/// Maps an outcome to a process exit code, matching the TCP listener semantics:
+	/// 0 = success or clean empty run, 1 = test failures or no results, 2 = crash.
+	/// </summary>
+	internal static int OutcomeToExitCode(TestRunOutcome outcome, int failedCount) =>
+		outcome switch
+		{
+			TestRunOutcome.Crashed => 2,
+			TestRunOutcome.NoResults => 1,
+			TestRunOutcome.CleanEmpty => 0,
+			_ => failedCount > 0 ? 1 : 0,
+		};
+
+	/// <summary>
 	/// Parses a logger string in the format "name" or "name;LogFileName=file.ext"
 	/// matching dotnet test --logger conventions.
 	/// </summary>
