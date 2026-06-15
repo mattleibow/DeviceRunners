@@ -11,6 +11,7 @@ class NUnitTestCaseInfo : ITestCaseInfo
 
 		TestClassName = testCase.ClassName;
 		TestMethodName = testCase.MethodName;
+		TestClassNamespace = GetNamespace(TestClassName);
 		Traits = ConvertTraits(testCase.Properties);
 	}
 
@@ -26,7 +27,7 @@ class NUnitTestCaseInfo : ITestCaseInfo
 
 	public string? TestMethodName { get; }
 
-	public string? TestClassNamespace => GetNamespace(TestClassName);
+	public string? TestClassNamespace { get; }
 
 	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
 

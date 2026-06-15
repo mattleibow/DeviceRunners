@@ -12,6 +12,7 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 		DisplayName = testCase.TestCaseDisplayName;
 		TestClassName = testCase.TestClassName;
 		TestMethodName = testCase.TestMethodName;
+		TestClassNamespace = GetNamespace(TestClassName);
 		Traits = ConvertTraits(testCase.Traits);
 	}
 
@@ -48,7 +49,7 @@ class Xunit3TestCaseInfo : ITestCaseInfo
 	/// <summary>
 	/// The namespace of the test class (e.g. "MyNamespace").
 	/// </summary>
-	public string? TestClassNamespace => GetNamespace(TestClassName);
+	public string? TestClassNamespace { get; }
 
 	/// <summary>
 	/// The traits associated with this test case.
