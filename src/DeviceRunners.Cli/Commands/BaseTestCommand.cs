@@ -94,6 +94,10 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 					"--filter-not-method/--filter-namespace/--filter-not-namespace/--filter-trait/" +
 					"--filter-not-trait options. Use one filtering style or the other.");
 
+			var traitError = MtpFilterTranslator.ValidateTraits(this);
+			if (traitError is not null)
+				return ValidationResult.Error(traitError);
+
 			return base.Validate();
 		}
 	}

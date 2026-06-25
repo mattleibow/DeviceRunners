@@ -132,4 +132,36 @@ public class MtpFilterTranslatorTests
 		var filters = new Filters { FilterTrait = new[] { "Cat=a=b" } };
 		Assert.Equal(@"Cat=a\=b", MtpFilterTranslator.Translate(filters));
 	}
+
+	[Fact]
+	public void ValidateTraits_AcceptsWellFormedTraits()
+	{
+		var filters = new Filters
+		{
+			FilterTrait = new[] { "Category=Fast" },
+			FilterNotTrait = new[] { "Category=Slow" },
+		};
+		Assert.Null(MtpFilterTranslator.ValidateTraits(filters));
+	}
+
+	[Fact]
+	public void ValidateTraits_RejectsTraitWithoutSeparator()
+	{
+		var filters = new Filters { FilterTrait = new[] { "Category" } };
+		Assert.NotNull(MtpFilterTranslator.ValidateTraits(filters));
+	}
+
+	[Fact]
+	public void ValidateTraits_RejectsTraitWithEmptyName()
+	{
+		var filters = new Filters { FilterNotTrait = new[] { "=Fast" } };
+		Assert.NotNull(MtpFilterTranslator.ValidateTraits(filters));
+	}
+
+	[Fact]
+	public void ValidateTraits_IgnoresNonTraitFilters()
+	{
+		var filters = new Filters { FilterClass = new[] { "Calc" } };
+		Assert.Null(MtpFilterTranslator.ValidateTraits(filters));
+	}
 }

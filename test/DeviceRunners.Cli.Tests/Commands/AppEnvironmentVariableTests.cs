@@ -123,4 +123,16 @@ public class AppEnvironmentVariableTests
 
 		Assert.True(settings.Validate().Successful);
 	}
+
+	[Fact]
+	public void Validate_RejectsMalformedTraitFilter()
+	{
+		var settings = new WindowsTestCommand.Settings
+		{
+			App = "app.msix",
+			FilterTrait = new[] { "Category" },
+		};
+
+		Assert.False(settings.Validate().Successful);
+	}
 }

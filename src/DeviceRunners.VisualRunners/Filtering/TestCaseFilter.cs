@@ -375,10 +375,14 @@ public static class TestCaseFilter
 
 		// Translates a wildcard value into an anchored, case-insensitive regex where
 		// '*' matches zero or more characters and every other character is literal.
+		// NonBacktracking guarantees linear-time matching, so a pathological filter
+		// (e.g. many '*' segments) cannot trigger catastrophic backtracking.
 		static Regex BuildWildcardRegex(string value)
 		{
 			var pattern = string.Join(".*", value.Split('*').Select(Regex.Escape));
-			return new Regex($"^{pattern}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+			return new Regex(
+				$"^{pattern}$",
+				RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 		}
 	}
 }

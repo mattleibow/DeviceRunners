@@ -140,6 +140,8 @@ public class TestCaseFilterTests
 	[InlineData("ClassName=*Calculator", true)]   // ends-with
 	[InlineData("ClassName=*Calc*", true)]        // contains
 	[InlineData("ClassName=*", true)]             // match-all
+	[InlineData("ClassName=M*A*C*r", true)]       // multiple wildcard segments
+	[InlineData("ClassName=*Z*Z*Z*Z*Z*Z*Z*", false)] // many segments, no match (no backtracking blow-up)
 	[InlineData("ClassName=MyApp.Other*", false)]
 	[InlineData("ClassName=myapp.calc*", true)]   // case-insensitive
 	[InlineData("ClassName=MyApp.Calculator", true)] // exact still works (parity)

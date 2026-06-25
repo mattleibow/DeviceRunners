@@ -44,6 +44,25 @@ public static class MtpFilterTranslator
 		HasValues(settings.FilterTrait) || HasValues(settings.FilterNotTrait);
 
 	/// <summary>
+	/// Validates the trait filters, which must use the <c>name=value</c> form.
+	/// Returns an error message for the first malformed entry, or <c>null</c> when
+	/// every trait filter is well-formed. This prevents a nameless trait (e.g.
+	/// <c>=Fast</c>) from being silently reinterpreted as a different filter kind.
+	/// </summary>
+	public static string? ValidateTraits(IMtpSimpleFilterSettings settings)
+	{
+		foreach (var entry in Clean(settings.FilterTrait).Concat(Clean(settings.FilterNotTrait)))
+		{
+			// A valid trait needs a non-empty name before the '=' separator, so the
+			// separator must be present (eq >= 0) and not the first character (eq > 0).
+			if (entry.IndexOf('=') <= 0)
+				return $"Invalid trait filter '{entry}'. Traits must be specified as name=value.";
+		}
+
+		return null;
+	}
+
+	/// <summary>
 	/// Builds the combined <c>--filter</c> expression, or <c>null</c> when no
 	/// simple filters were specified.
 	/// </summary>
