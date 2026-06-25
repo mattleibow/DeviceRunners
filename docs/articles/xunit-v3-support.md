@@ -233,6 +233,54 @@ xUnit v3 takes a cleaner approach: the **same discoverer and runner work on all 
 | WASM support | Requires `useReflection: true` | Automatic (transparent in-memory detection) |
 | `IAsyncLifetime` | Returns `Task` | Returns `ValueTask` |
 
+## Test Filtering (Microsoft Testing Platform parity)
+
+When you run xUnit v3 tests through `dotnet test`, the [Microsoft Testing Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
+exposes a set of typed "simple" filter switches. The DeviceRunners CLI accepts the same
+switches on its `test` command and runs the matching subset on-device:
+
+| Microsoft Testing Platform switch | DeviceRunners CLI equivalent |
+|---|---|
+| `--filter-class` / `--filter-not-class` | `--filter-class` / `--filter-not-class` |
+| `--filter-method` / `--filter-not-method` | `--filter-method` / `--filter-not-method` |
+| `--filter-namespace` / `--filter-not-namespace` | `--filter-namespace` / `--filter-not-namespace` |
+| `--filter-trait` / `--filter-not-trait` | `--filter-trait` / `--filter-not-trait` |
+
+Each switch is repeatable and supports `*` wildcards. Same-kind values OR together,
+different kinds AND together, and the `not-` variants exclude. See
+[Using DeviceRunners CLI](using-devicerunners-cli.md#filtering-tests) for examples. The
+on-device evaluator applies the filter the same way for xUnit v2, xUnit v3 and NUnit, so the
+simple filters behave identically regardless of which framework discovered the test.
+
+> [!NOTE]
+> The DeviceRunners `--filter` expression (and its `--filter-*` simple-filter translation)
+> is evaluated by DeviceRunners' own on-device matcher, not by xUnit v3's filter engine. The
+> switch **names** and combine semantics match Microsoft Testing Platform, but the matching
+> happens against the framework-agnostic test metadata DeviceRunners collects.
+
+### `--filter-query` (advanced graph query)
+
+xUnit v3 also exposes an advanced `--filter-query` option that uses a path-like **graph
+query language** instead of the simple switches. DeviceRunners does **not** implement
+`--filter-query` — use the simple `--filter-*` switches (or the `--filter` expression)
+instead. It is documented here only so the syntax is familiar if you see it elsewhere.
+
+A query matches the tree `/<assembly>/<namespace>/<class>/<method>`, with an optional
+`[trait=value]` suffix:
+
+| Query | Matches |
+|---|---|
+| `/MyTests/MyApp.Calc/CalculatorTests/Adds` | The single `Adds` method |
+| `/*/*/CalculatorTests/*` | Every test in `CalculatorTests` |
+| `/*/MyApp.Calc/*/*` | Everything in the `MyApp.Calc` namespace |
+| `/[Category=Smoke]` | Every test with trait `Category=Smoke` |
+| `/[Category!=Slow]` | Every test that does **not** have `Category=Slow` |
+
+`*` wildcards are allowed at the start/end of any segment, and `|`/`&` can combine patterns
+within a single (parenthesized) segment. `--filter-query` cannot be mixed with the simple
+filters. For the closest DeviceRunners equivalents, map class/namespace/method/trait segments
+onto the matching `--filter-*` switch.
+
 ## Known Limitations
 
 The DeviceRunners visual runner executes xUnit v3 tests in-process within a MAUI app. This is different from a standard xUnit v3 test project which runs as a standalone executable via `dotnet test`. Note that `dotnet test` still works for the **host TFM** (`net10.0`) of your test libraries — only the **device TFMs** use the in-process visual runner.

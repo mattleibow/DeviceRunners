@@ -135,6 +135,43 @@ public class TestCaseFilterTests
 		Assert.True(filter.Matches(Case()));
 	}
 
+	[Theory]
+	[InlineData("ClassName=MyApp.Calc*", true)]   // starts-with
+	[InlineData("ClassName=*Calculator", true)]   // ends-with
+	[InlineData("ClassName=*Calc*", true)]        // contains
+	[InlineData("ClassName=*", true)]             // match-all
+	[InlineData("ClassName=MyApp.Other*", false)]
+	[InlineData("ClassName=myapp.calc*", true)]   // case-insensitive
+	[InlineData("ClassName=MyApp.Calculator", true)] // exact still works (parity)
+	[InlineData("ClassName=MyApp.Calc", false)]   // exact, no wildcard => no match
+	[InlineData("FullyQualifiedName=MyApp.*.Adds", true)] // mid-string wildcard
+	[InlineData("FullyQualifiedName=*.Adds", true)]
+	[InlineData("ClassName!=MyApp.Calc*", false)] // negated wildcard match excludes
+	[InlineData("ClassName!=Other*", true)]
+	public void WildcardMatching(string expression, bool expected)
+	{
+		var filter = TestCaseFilter.Parse(expression);
+		Assert.Equal(expected, filter.Matches(Case()));
+	}
+
+	[Fact]
+	public void WildcardMatchingTraits()
+	{
+		var caseInfo = Case(traits: ("Category", new[] { "Smoke", "Fast" }));
+		Assert.True(TestCaseFilter.Parse("Category=Sm*").Matches(caseInfo));
+		Assert.True(TestCaseFilter.Parse("Category=*ast").Matches(caseInfo));
+		Assert.False(TestCaseFilter.Parse("Category=Slo*").Matches(caseInfo));
+	}
+
+	[Fact]
+	public void WildcardOnlyAppliesToEqualsFamily()
+	{
+		// '~' (contains) keeps treating '*' literally, so the literal substring
+		// "Calc*" is never found in "MyApp.Calculator".
+		var caseInfo = Case(className: "MyApp.Calculator");
+		Assert.False(TestCaseFilter.Parse("ClassName~Calc*").Matches(caseInfo));
+	}
+
 	class StubTestCaseInfo : ITestCaseInfo
 	{
 		public ITestAssemblyInfo TestAssembly { get; set; } = null!;

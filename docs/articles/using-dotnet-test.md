@@ -92,14 +92,38 @@ The on-device evaluator mirrors the documented `dotnet test --filter` syntax:
 
 | Operator | Meaning |
 |----------|---------|
-| `=` | Equals (case-insensitive) |
-| `!=` | Not equals |
+| `=` | Equals (case-insensitive, supports `*` wildcards) |
+| `!=` | Not equals (supports `*` wildcards) |
 | `~` | Contains |
 | `!~` | Does not contain |
 
 Conditions can be combined with `&` (and), `|` (or) and grouped with parentheses. `&`
 binds tighter than `|`. Use `\` to escape a special character. Filtering works across all
 supported frameworks (xUnit v2, xUnit v3 and NUnit) and platforms.
+
+#### Wildcards
+
+The equals operators (`=` and `!=`) support `*` wildcards, where `*` matches zero or more
+characters. This is a superset of the standard `dotnet test --filter` grammar — any filter
+without a `*` behaves exactly as before.
+
+```bash
+# Every class whose name starts with "Calc"
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "ClassName=Calc*"
+
+# Every test whose fully qualified name ends with ".Adds"
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "FullyQualifiedName=*.Adds"
+
+# Every trait value containing "Smoke"
+dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
+  --filter "Category=*Smoke*"
+```
+
+`*` is only special for `=`/`!=`; the contains operators (`~`/`!~`) always treat it
+literally. Because a literal `*` cannot appear in CLR type or method names, there is no way
+to match a literal `*` with `=` — it is always interpreted as a wildcard.
 
 A filter that matches no tests is a **successful empty run** (exit code `0`), mirroring
 `dotnet test --filter`, which prints "No test matches the given testcase filter". An

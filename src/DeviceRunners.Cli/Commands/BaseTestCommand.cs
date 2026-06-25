@@ -12,7 +12,7 @@ namespace DeviceRunners.Cli.Commands;
 public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCommand<TSettings>(console)
 	where TSettings : BaseTestCommand<TSettings>.BaseTestCommandSettings
 {
-	public abstract class BaseTestCommandSettings : BaseCommandSettings
+	public abstract class BaseTestCommandSettings : BaseCommandSettings, IMtpSimpleFilterSettings
 	{
 		[Description("Path to the application package")]
 		[CommandOption("--app")]
@@ -53,6 +53,49 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 		[Description("Run only the tests matching the given dotnet test --filter style expression")]
 		[CommandOption("--filter")]
 		public string? Filter { get; set; }
+
+		[Description("Run all tests in the given test class (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-class")]
+		public string[]? FilterClass { get; set; }
+
+		[Description("Exclude all tests in the given test class (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-not-class")]
+		public string[]? FilterNotClass { get; set; }
+
+		[Description("Run the given test method by fully qualified name (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-method")]
+		public string[]? FilterMethod { get; set; }
+
+		[Description("Exclude the given test method by fully qualified name (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-not-method")]
+		public string[]? FilterNotMethod { get; set; }
+
+		[Description("Run all tests in the given namespace (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-namespace")]
+		public string[]? FilterNamespace { get; set; }
+
+		[Description("Exclude all tests in the given namespace (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-not-namespace")]
+		public string[]? FilterNotNamespace { get; set; }
+
+		[Description("Run all tests with the given trait value, formatted name=value (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-trait")]
+		public string[]? FilterTrait { get; set; }
+
+		[Description("Exclude all tests with the given trait value, formatted name=value (Microsoft Testing Platform filter; repeatable; supports * wildcards)")]
+		[CommandOption("--filter-not-trait")]
+		public string[]? FilterNotTrait { get; set; }
+
+		public override ValidationResult Validate()
+		{
+			if (MtpFilterTranslator.HasSimpleFilters(this) && !string.IsNullOrWhiteSpace(Filter))
+				return ValidationResult.Error(
+					"Cannot combine --filter with the --filter-class/--filter-not-class/--filter-method/" +
+					"--filter-not-method/--filter-namespace/--filter-not-namespace/--filter-trait/" +
+					"--filter-not-trait options. Use one filtering style or the other.");
+
+			return base.Validate();
+		}
 	}
 
 	public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
@@ -61,6 +104,16 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 	}
 
 	protected abstract Task<int> ExecuteAsync(CommandContext context, TSettings settings);
+
+	/// <summary>
+	/// Resolves the effective <c>--filter</c> expression for a run: the translated
+	/// Microsoft Testing Platform simple filters when any are present, otherwise the
+	/// raw <c>--filter</c> expression. (Validation prevents specifying both.)
+	/// </summary>
+	internal static string? GetEffectiveFilter(TSettings settings) =>
+		MtpFilterTranslator.HasSimpleFilters(settings)
+			? MtpFilterTranslator.Translate(settings)
+			: settings.Filter;
 
 	/// <summary>
 	/// Builds the environment variables that tell the test app how to connect
@@ -75,8 +128,9 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 			["DEVICE_RUNNERS_HOST_NAMES"] = settings.AppHostNames ?? "localhost",
 		};
 
-		if (!string.IsNullOrWhiteSpace(settings.Filter))
-			variables["DEVICE_RUNNERS_FILTER"] = settings.Filter!;
+		var filter = GetEffectiveFilter(settings);
+		if (!string.IsNullOrWhiteSpace(filter))
+			variables["DEVICE_RUNNERS_FILTER"] = filter!;
 
 		return variables;
 	}

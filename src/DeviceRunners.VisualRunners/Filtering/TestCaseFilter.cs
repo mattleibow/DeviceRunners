@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DeviceRunners.VisualRunners;
 
@@ -15,6 +16,9 @@ namespace DeviceRunners.VisualRunners;
 /// and any trait name (e.g. <c>Category</c>).</item>
 /// <item>Logic: <c>&amp;</c> (and), <c>|</c> (or), grouping with <c>(</c> and <c>)</c>.
 /// <c>&amp;</c> binds tighter than <c>|</c>. Use <c>\</c> to escape a special character.</item>
+/// <item>Wildcards: a <c>*</c> in the value of an equals condition (<c>=</c> or <c>!=</c>)
+/// matches zero or more characters (e.g. <c>ClassName=Calc*</c>). This is a DeviceRunners
+/// extension over VSTest; a value without <c>*</c> still matches exactly as before.</item>
 /// </list>
 /// </remarks>
 public static class TestCaseFilter
@@ -302,6 +306,13 @@ public static class TestCaseFilter
 
 	sealed class ConditionFilter(string property, FilterOperator op, string value) : ITestCaseFilter
 	{
+		// Wildcards only apply to the equals family. A '*' in the value matches zero or
+		// more characters; a value without '*' keeps the original exact-match behavior.
+		readonly Regex? _wildcard =
+			(op is FilterOperator.Equals or FilterOperator.NotEquals) && value.Contains('*')
+				? BuildWildcardRegex(value)
+				: null;
+
 		public bool Matches(ITestCaseInfo testCase)
 		{
 			var actualValues = ResolveValues(testCase);
@@ -317,7 +328,9 @@ public static class TestCaseFilter
 		}
 
 		bool Equals(string? actual) =>
-			actual is not null && string.Equals(actual, value, StringComparison.OrdinalIgnoreCase);
+			actual is not null && (_wildcard is not null
+				? _wildcard.IsMatch(actual)
+				: string.Equals(actual, value, StringComparison.OrdinalIgnoreCase));
 
 		bool Contains(string? actual) =>
 			actual is not null && actual.Contains(value, StringComparison.OrdinalIgnoreCase);
@@ -358,6 +371,14 @@ public static class TestCaseFilter
 				return $"{className}.{methodName}";
 
 			return className ?? methodName ?? testCase.DisplayName;
+		}
+
+		// Translates a wildcard value into an anchored, case-insensitive regex where
+		// '*' matches zero or more characters and every other character is literal.
+		static Regex BuildWildcardRegex(string value)
+		{
+			var pattern = string.Join(".*", value.Split('*').Select(Regex.Escape));
+			return new Regex($"^{pattern}$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 		}
 	}
 }
