@@ -16,6 +16,8 @@ The current testing frameworks supported are:
     - XHarness (CI) device runner
  - NUnit
     - Visual device runner
+ - MSTest
+    - Visual device runner
 
 ## Testing with `dotnet test` (Recommended)
 
