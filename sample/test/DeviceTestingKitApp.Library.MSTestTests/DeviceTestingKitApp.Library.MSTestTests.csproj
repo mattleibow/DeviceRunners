@@ -10,12 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest.TestAdapter" />
-    <!-- Hide the framework's build assets from consumers. Its buildTransitive targets inject a
-         `global using Microsoft.VisualStudio.TestTools.UnitTesting`, which would otherwise flow
-         into the DeviceTests host and collide with its xUnit `Assert`. Runtime assets still flow. -->
-    <PackageReference Include="MSTest.TestFramework">
-      <PrivateAssets>contentfiles;analyzers;build;buildTransitive;buildMultitargeting</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
