@@ -122,8 +122,9 @@ dotnet test MyApp.DeviceTests.csproj -f net10.0-maccatalyst \
 ```
 
 `*` is only special for `=`/`!=`; the contains operators (`~`/`!~`) always treat it
-literally. Because a literal `*` cannot appear in CLR type or method names, there is no way
-to match a literal `*` with `=` — it is always interpreted as a wildcard.
+literally. To match a **literal** `*` with `=`/`!=` — for example a trait value or display
+name that actually contains a `*` — escape it as `\*` (e.g. `--filter "Category=A\*B"`).
+Alternatively, use the contains operators, which never treat `*` as a wildcard.
 
 A filter that matches no tests is a **successful empty run** (exit code `0`), mirroring
 `dotnet test --filter`, which prints "No test matches the given testcase filter". An

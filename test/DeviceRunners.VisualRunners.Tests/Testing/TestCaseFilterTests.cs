@@ -174,6 +174,42 @@ public class TestCaseFilterTests
 		Assert.False(TestCaseFilter.Parse("ClassName~Calc*").Matches(caseInfo));
 	}
 
+	[Fact]
+	public void EscapedWildcardMatchesLiteralStar()
+	{
+		// "\*" escapes the wildcard so it matches a literal '*' rather than any characters.
+		var starCase = Case(traits: ("Category", new[] { "A*B" }));
+		Assert.True(TestCaseFilter.Parse(@"Category=A\*B").Matches(starCase));
+
+		// The same expression must NOT match a value where '*' stood in for other chars,
+		// proving the star is literal (not a wildcard).
+		var wideCase = Case(traits: ("Category", new[] { "AXYZB" }));
+		Assert.False(TestCaseFilter.Parse(@"Category=A\*B").Matches(wideCase));
+
+		// A bare '*' still wildcards, so it matches the "AXYZB" value.
+		Assert.True(TestCaseFilter.Parse("Category=A*B").Matches(wideCase));
+	}
+
+	[Fact]
+	public void EscapedWildcardMixedWithWildcard()
+	{
+		// "a\**" == literal 'a*' followed by a wildcard, matching anything that starts
+		// with the literal "a*".
+		var caseInfo = Case(traits: ("Category", new[] { "a*bcd" }));
+		Assert.True(TestCaseFilter.Parse(@"Category=a\**").Matches(caseInfo));
+		Assert.False(TestCaseFilter.Parse(@"Category=a\**").Matches(Case(traits: ("Category", new[] { "axbcd" }))));
+	}
+
+	[Fact]
+	public void EscapedWildcardOnExactValueDoesNotWildcard()
+	{
+		// A fully-escaped star with no bare '*' is an exact literal match, so a value
+		// that would match a wildcard ("anything") must not match here.
+		var literal = Case(traits: ("Category", new[] { "*" }));
+		Assert.True(TestCaseFilter.Parse(@"Category=\*").Matches(literal));
+		Assert.False(TestCaseFilter.Parse(@"Category=\*").Matches(Case(traits: ("Category", new[] { "Smoke" }))));
+	}
+
 	class StubTestCaseInfo : ITestCaseInfo
 	{
 		public ITestAssemblyInfo TestAssembly { get; set; } = null!;
