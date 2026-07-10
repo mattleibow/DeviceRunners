@@ -57,9 +57,9 @@
         <!-- diagnostic messages footer -->
         <Label Text="Diagnostic Messages:" FontAttributes="Bold"
                Grid.Row="2" Grid.ColumnSpan="2" />
-        <ScrollView Grid.Row="3" Grid.ColumnSpan="2">
-            <Label Text="{Binding Diagnostics.MessagesString}" />
-        </ScrollView>
+
+        <Editor Text="{Binding Diagnostics.MessagesString}" IsReadOnly="True"
+                Grid.Row="3" Grid.ColumnSpan="2" />
 
         <!-- busy indicator -->
         <ContentView IsVisible="{Binding IsBusy}" Style="{StaticResource BusyOverlayStyle}"
