@@ -9,7 +9,13 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="MSTest.TestAdapter" />
+    <!--
+      No MSTest.TestAdapter reference here on purpose. The adapter runtime is provided by
+      DeviceRunners.VisualRunners.MSTest as real closure assemblies (so it deploys correctly to
+      Android/iOS assembly stores). Referencing it here too would content-copy the same adapter dlls
+      and collide with that copy at publish time (NETSDK1152). This project only needs the framework
+      (attributes + asserts) to compile. Consequence: standalone `dotnet test` on THIS project won't
+      discover tests; run them through the DeviceTests host (visual runner or `dotnet test` on it). -->
     <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="coverlet.collector">
       <PrivateAssets>all</PrivateAssets>

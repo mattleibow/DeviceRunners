@@ -17,29 +17,35 @@
          discoverer/runner and the hand-rolled sink/context/handle are built on. -->
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <!--
-      The MSTest adapter ships its assemblies as build/content assets rather than as a lib
-      reference. We only need it at compile time here (see the <Reference> below); the runtime
-      adapter dlls are delivered by the test project that actually contains the MSTest tests (the
-      leaf project, e.g. the sample's *.MSTestTests). ExcludeAssets on the build targets prevents
-      this library from ALSO carrying/propagating the adapter dlls to consumers, which would
-      duplicate them at publish time (NETSDK1152) — the same reason MSTest warns that non-leaf
-      "test libraries" should not pull the adapter's build assets. GeneratePathProperty still
-      exposes $(PkgMSTest_TestAdapter) for the compile-time reference.
+      The MSTest adapter ships its assemblies as build/content assets rather than as lib
+      references. ExcludeAssets on the build targets suppresses that content-copy mechanism: it
+      places the dlls beside the app on the filesystem, which loads on Windows but NOT on Android/
+      iOS, where assemblies are loaded from the app's assembly store and must be part of the
+      runtime closure (deps.json). Instead we pull the two MSTest-specific dlls in as real
+      references below so they become closure assemblies on every platform. GeneratePathProperty
+      exposes $(PkgMSTest_TestAdapter) for those reference HintPaths.
     -->
     <PackageReference Include="MSTest.TestAdapter" GeneratePathProperty="true"
                       ExcludeAssets="build;buildMultitargeting;buildTransitive" />
   </ItemGroup>
 
   <!--
-    MSTestDiscoverer/MSTestExecutor are not exposed as a compile-time reference by the package, so
-    reference the adapter dll directly for compilation only (net9.0 asset works on both target
-    frameworks). Private=false: the runtime dll is delivered by the package's build targets above,
-    so we must not copy a second one (NETSDK1152).
+    MSTestDiscoverer/MSTestExecutor (and the platform services the adapter loads at runtime) are not
+    exposed as lib references by the package, so reference the two MSTest-specific dlls directly from
+    the restored package (the net9.0 assets work on both target frameworks). Private=true makes them
+    copy-local so they enter this library's runtime closure and are deployed as real assemblies to
+    every platform's app — this is the single owner of these dlls. The rest of the test-platform
+    stack (ObjectModel, CoreUtilities, PlatformAbstractions, AdapterUtilities) comes from the normal
+    Microsoft.TestPlatform.ObjectModel package reference above.
   -->
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter">
       <HintPath>$(PkgMSTest_TestAdapter)\buildTransitive\net9.0\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll</HintPath>
-      <Private>false</Private>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices">
+      <HintPath>$(PkgMSTest_TestAdapter)\buildTransitive\net9.0\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
 
