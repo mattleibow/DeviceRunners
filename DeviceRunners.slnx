@@ -9,7 +9,7 @@
   </Folder>
   <Folder Name="/sample/test/">
     <Project Path="sample/test/DeviceTestingKitApp.DeviceTests/DeviceTestingKitApp.DeviceTests.csproj" />
-    <Project Path="sample/test/DeviceTestingKitApp.Library.MSTestTests/DeviceTestingKitApp.Library.MSTestTests.csproj" />
+    <Project Path="sample/test/DeviceTestingKitApp.Library.MSTest3Tests/DeviceTestingKitApp.Library.MSTest3Tests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.Library.NUnitTests/DeviceTestingKitApp.Library.NUnitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.XunitTests/DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
     <Project Path="sample/test/DeviceTestingKitApp.MauiLibrary.Xunit3Tests/DeviceTestingKitApp.MauiLibrary.Xunit3Tests.csproj" />
@@ -28,7 +28,7 @@
     <Project Path="src/DeviceRunners.UITesting/DeviceRunners.UITesting.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Core/DeviceRunners.VisualRunners.Core.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Maui/DeviceRunners.VisualRunners.Maui.csproj" />
-    <Project Path="src/DeviceRunners.VisualRunners.MSTest/DeviceRunners.VisualRunners.MSTest.csproj" />
+    <Project Path="src/DeviceRunners.VisualRunners.MSTest3/DeviceRunners.VisualRunners.MSTest3.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.NUnit/DeviceRunners.VisualRunners.NUnit.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Xunit/DeviceRunners.VisualRunners.Xunit.csproj" />
     <Project Path="src/DeviceRunners.VisualRunners.Xunit3/DeviceRunners.VisualRunners.Xunit3.csproj" />

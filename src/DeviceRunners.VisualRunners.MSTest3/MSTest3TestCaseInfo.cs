@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace DeviceRunners.VisualRunners.MSTest;
+namespace DeviceRunners.VisualRunners.MSTest3;
 
-class MSTestTestCaseInfo : ITestCaseInfo
+class MSTest3TestCaseInfo : ITestCaseInfo
 {
 	// Property identifiers set by the MSTest adapter on each discovered TestCase.
 	const string ManagedTypePropertyId = "TestCase.ManagedType";
@@ -13,7 +13,7 @@ class MSTestTestCaseInfo : ITestCaseInfo
 	// "Category" property used by TestCaseFilter (and the NUnit backend).
 	const string CategoryTraitName = "Category";
 
-	public MSTestTestCaseInfo(MSTestTestAssemblyInfo assembly, TestCase testCase)
+	public MSTest3TestCaseInfo(MSTest3TestAssemblyInfo assembly, TestCase testCase)
 	{
 		TestAssembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
 		TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
@@ -24,7 +24,7 @@ class MSTestTestCaseInfo : ITestCaseInfo
 		Traits = ConvertTraits(testCase);
 	}
 
-	public MSTestTestAssemblyInfo TestAssembly { get; }
+	public MSTest3TestAssemblyInfo TestAssembly { get; }
 
 	ITestAssemblyInfo ITestCaseInfo.TestAssembly => TestAssembly;
 
@@ -44,13 +44,13 @@ class MSTestTestCaseInfo : ITestCaseInfo
 
 	public IReadOnlyDictionary<string, IReadOnlyList<string>> Traits { get; }
 
-	public MSTestTestResultInfo? Result { get; private set; }
+	public MSTest3TestResultInfo? Result { get; private set; }
 
 	ITestResultInfo? ITestCaseInfo.Result => Result;
 
 	public event Action<ITestResultInfo>? ResultReported;
 
-	public void ReportResult(MSTestTestResultInfo result)
+	public void ReportResult(MSTest3TestResultInfo result)
 	{
 		Result = result;
 

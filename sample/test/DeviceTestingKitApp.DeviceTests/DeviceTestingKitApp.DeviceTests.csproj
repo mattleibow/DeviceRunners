@@ -71,7 +71,7 @@
     <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.XunitTests" RootMode="all" />
     <TrimmerRootAssembly Include="DeviceTestingKitApp.MauiLibrary.Xunit3Tests" RootMode="all" />
     <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.NUnitTests" RootMode="all" />
-    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.MSTestTests" RootMode="all" />
+    <TrimmerRootAssembly Include="DeviceTestingKitApp.Library.MSTest3Tests" RootMode="all" />
     <!-- The MSTest tests are discovered/executed reflectively through the MSTest VSTest adapter,
          so the linker can't trace the adapter assemblies; root them explicitly. -->
     <TrimmerRootAssembly Include="Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter" RootMode="all" />
@@ -82,13 +82,13 @@
     <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.XunitTests\DeviceTestingKitApp.MauiLibrary.XunitTests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.MauiLibrary.Xunit3Tests\DeviceTestingKitApp.MauiLibrary.Xunit3Tests.csproj" />
     <ProjectReference Include="..\DeviceTestingKitApp.Library.NUnitTests\DeviceTestingKitApp.Library.NUnitTests.csproj" />
-    <ProjectReference Include="..\DeviceTestingKitApp.Library.MSTestTests\DeviceTestingKitApp.Library.MSTestTests.csproj" />
+    <ProjectReference Include="..\DeviceTestingKitApp.Library.MSTest3Tests\DeviceTestingKitApp.Library.MSTest3Tests.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Xunit\DeviceRunners.UITesting.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.UITesting.Maui\DeviceRunners.UITesting.Maui.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit\DeviceRunners.VisualRunners.Xunit.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Xunit3\DeviceRunners.VisualRunners.Xunit3.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.NUnit\DeviceRunners.VisualRunners.NUnit.csproj" />
-    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.MSTest\DeviceRunners.VisualRunners.MSTest.csproj" />
+    <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.MSTest3\DeviceRunners.VisualRunners.MSTest3.csproj" />
     <ProjectReference Include="..\..\..\src\DeviceRunners.VisualRunners.Maui\DeviceRunners.VisualRunners.Maui.csproj" />
   </ItemGroup>
 
@@ -119,7 +119,7 @@
   <Target Name="_ExcludeTestLibraryRuntimeConfigs" BeforeTargets="_ComputePublishPackage;_ComputeAppBundleContent;ComputeResolvedFilesToPublishList">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.MSTestTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.Xunit3Tests')))" />
+          Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.runtimeconfig.json')) and ($([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.NUnitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.Library.MSTest3Tests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.XunitTests')) or $([System.String]::Copy('%(Filename)').StartsWith('DeviceTestingKitApp.MauiLibrary.Xunit3Tests')))" />
     </ItemGroup>
   </Target>
 

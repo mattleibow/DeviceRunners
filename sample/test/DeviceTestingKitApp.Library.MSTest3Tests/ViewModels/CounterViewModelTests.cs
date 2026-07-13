@@ -1,6 +1,6 @@
 using DeviceTestingKitApp.ViewModels;
 
-namespace DeviceTestingKitApp.Library.MSTestTests.ViewModels;
+namespace DeviceTestingKitApp.Library.MSTest3Tests.ViewModels;
 
 [TestClass]
 public class CounterViewModelTests

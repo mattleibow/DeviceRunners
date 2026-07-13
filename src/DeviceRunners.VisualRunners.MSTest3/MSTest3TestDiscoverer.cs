@@ -2,14 +2,14 @@ using Microsoft.Extensions.Logging;
 
 using Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter;
 
-namespace DeviceRunners.VisualRunners.MSTest;
+namespace DeviceRunners.VisualRunners.MSTest3;
 
-public class MSTestTestDiscoverer : ITestDiscoverer
+public class MSTest3TestDiscoverer : ITestDiscoverer
 {
 	readonly IDiagnosticsManager? _diagnosticsManager;
 	readonly IReadOnlyList<System.Reflection.Assembly> _testAssemblies;
 
-	public MSTestTestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null, ILogger<MSTestTestDiscoverer>? logger = null)
+	public MSTest3TestDiscoverer(IVisualTestRunnerConfiguration options, IDiagnosticsManager? diagnosticsManager = null, ILogger<MSTest3TestDiscoverer>? logger = null)
 	{
 		_diagnosticsManager = diagnosticsManager;
 		_testAssemblies = options.TestAssemblies.ToArray();
@@ -40,9 +40,9 @@ public class MSTestTestDiscoverer : ITestDiscoverer
 					var discoverer = new MSTestDiscoverer();
 					discoverer.DiscoverTests(new[] { assemblyFileName }, context, logger, sink);
 
-					var testAssembly = new MSTestTestAssemblyInfo(assemblyFileName);
+					var testAssembly = new MSTest3TestAssemblyInfo(assemblyFileName);
 					var testCases = sink.TestCases
-						.Select(tc => new MSTestTestCaseInfo(testAssembly, tc))
+						.Select(tc => new MSTest3TestCaseInfo(testAssembly, tc))
 						.ToList();
 
 					if (testCases.Count > 0)

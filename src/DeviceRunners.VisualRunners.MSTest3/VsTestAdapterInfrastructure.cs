@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 using VsTestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
-namespace DeviceRunners.VisualRunners.MSTest;
+namespace DeviceRunners.VisualRunners.MSTest3;
 
 /// <summary>
 /// Minimal <see cref="IDiscoveryContext"/>/<see cref="IRunContext"/> implementation used to drive

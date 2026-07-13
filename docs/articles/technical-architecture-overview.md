@@ -28,7 +28,7 @@ DeviceRunners is a comprehensive testing framework for .NET MAUI applications th
 | **Xunit v2** | ✅ | ✅ (any) | ✅ |
 | **Xunit v3** | ✅ | ✅ (any) | ❌ |
 | **NUnit** | ✅ | ✅ (any) | ❌ |
-| **MSTest** | ✅ | ✅ (any) | ❌ |
+| **MSTest v3** | ✅ | ✅ (any) | ❌ |
 
 > [!NOTE]
 > Both `dotnet test` and the CLI tool are framework-agnostic — they launch the test app and collect results via TCP. They work with any testing framework that the app supports.
@@ -65,7 +65,7 @@ The WASM platform uses a fundamentally different architecture from the native pl
 - **DeviceRunners.VisualRunners.Xunit** - Xunit v2 test runner and discoverer
 - **DeviceRunners.VisualRunners.Xunit3** - Xunit v3 test runner and discoverer (with automatic WASM support)
 - **DeviceRunners.VisualRunners.NUnit** - NUnit test runner and discoverer
-- **DeviceRunners.VisualRunners.MSTest** - MSTest test runner and discoverer (drives the MSTest VSTest adapter in-process)
+- **DeviceRunners.VisualRunners.MSTest3** - MSTest v3 test runner and discoverer (drives the MSTest VSTest adapter in-process)
 
 #### MAUI Integration (`DeviceRunners.VisualRunners.Maui`)
 - MAUI app integration via `UseVisualTestRunner()`
@@ -171,7 +171,7 @@ builder.UseVisualTestRunner(conf => conf
     .AddXunit()
     .AddXunit3()
     .AddNUnit()
-    .AddMSTest()
+    .AddMSTest3()
     .AddConsoleResultChannel()
     .AddFileResultChannel(new FileResultChannelOptions { Directory = "test-results" })
     .AddTcpResultChannel(new TcpResultChannelOptions
@@ -264,7 +264,7 @@ The framework supports multiple result output channels:
 - Result aggregation and reporting
 - Filter support for test selection
 
-### MSTest Integration
+### MSTest v3 Integration
 - Drives the MSTest VSTest adapter (`MSTestDiscoverer`/`MSTestExecutor`) in-process
 - `[DataRow]` rows discovered as distinct cases and matched back by `TestCase.Id`
 - `[TestCategory]` surfaced as `Category` traits for `dotnet test --filter` support

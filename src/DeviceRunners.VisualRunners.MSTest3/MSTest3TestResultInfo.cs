@@ -2,11 +2,11 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 using VsTestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
-namespace DeviceRunners.VisualRunners.MSTest;
+namespace DeviceRunners.VisualRunners.MSTest3;
 
-class MSTestTestResultInfo : ITestResultInfo
+class MSTest3TestResultInfo : ITestResultInfo
 {
-	public MSTestTestResultInfo(MSTestTestCaseInfo testCase, VsTestResult testResult)
+	public MSTest3TestResultInfo(MSTest3TestCaseInfo testCase, VsTestResult testResult)
 	{
 		TestCase = testCase ?? throw new ArgumentNullException(nameof(testCase));
 		TestResult = testResult ?? throw new ArgumentNullException(nameof(testResult));
@@ -33,7 +33,7 @@ class MSTestTestResultInfo : ITestResultInfo
 		}
 	}
 
-	public MSTestTestCaseInfo TestCase { get; }
+	public MSTest3TestCaseInfo TestCase { get; }
 
 	ITestCaseInfo ITestResultInfo.TestCase => TestCase;
 

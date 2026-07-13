@@ -61,11 +61,11 @@ public static class MauiProgram
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.XunitTests.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.MauiLibrary.Xunit3Tests.UnitTests).Assembly)
 				.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.NUnitTests.UnitTests).Assembly)
-				.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.MSTestTests.UnitTests).Assembly)
+				.AddTestAssemblies(typeof(DeviceTestingKitApp.Library.MSTest3Tests.UnitTests).Assembly)
 				.AddXunit()
 				.AddXunit3()
 				.AddNUnit()
-				.AddMSTest());
+				.AddMSTest3());
 
 #if DEBUG
 		builder.Logging.AddDebug();

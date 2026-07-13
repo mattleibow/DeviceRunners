@@ -3,9 +3,9 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 using VsTestResult = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestResult;
 
-namespace DeviceRunners.VisualRunners.MSTest;
+namespace DeviceRunners.VisualRunners.MSTest3;
 
-public class MSTestTestRunner : ITestRunner
+public class MSTest3TestRunner : ITestRunner
 {
 	readonly AsyncLock _executionLock = new();
 
@@ -13,7 +13,7 @@ public class MSTestTestRunner : ITestRunner
 	readonly IResultChannelManager? _resultChannelManager;
 	readonly IDiagnosticsManager? _diagnosticsManager;
 
-	public MSTestTestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
+	public MSTest3TestRunner(IVisualTestRunnerConfiguration options, IResultChannelManager? resultChannelManager = null, IDiagnosticsManager? diagnosticsManager = null)
 	{
 		_options = options;
 		_resultChannelManager = resultChannelManager;
@@ -24,9 +24,9 @@ public class MSTestTestRunner : ITestRunner
 	{
 		// we can only run MSTest tests
 		var grouped = testCases
-			.OfType<MSTestTestCaseInfo>()
+			.OfType<MSTest3TestCaseInfo>()
 			.GroupBy(t => t.TestAssembly)
-			.Select(g => new MSTestTestAssemblyInfo(g.Key, g.ToList()))
+			.Select(g => new MSTest3TestAssemblyInfo(g.Key, g.ToList()))
 			.ToList();
 
 		return RunTestsAsync(grouped, cancellationToken);
@@ -45,7 +45,7 @@ public class MSTestTestRunner : ITestRunner
 	void RunTests(IEnumerable<ITestAssemblyInfo> testAssemblies, CancellationToken cancellationToken)
 	{
 		// we can only run MSTest tests
-		var mstestAssemblies = testAssemblies.OfType<MSTestTestAssemblyInfo>().ToList();
+		var mstestAssemblies = testAssemblies.OfType<MSTest3TestAssemblyInfo>().ToList();
 		if (mstestAssemblies.Count == 0)
 			return;
 
@@ -62,14 +62,14 @@ public class MSTestTestRunner : ITestRunner
 		}
 	}
 
-	void RunTests(MSTestExecutor executor, VsTestAdapterContext context, MSTestTestAssemblyInfo assemblyInfo, CancellationToken cancellationToken)
+	void RunTests(MSTestExecutor executor, VsTestAdapterContext context, MSTest3TestAssemblyInfo assemblyInfo, CancellationToken cancellationToken)
 	{
 		if (assemblyInfo.TestCases.Count == 0)
 			return;
 
 		// map each VSTest TestCase.Id back to the wrapping case; DataRow rows share a fully
 		// qualified name but each has a distinct Id, so match on the Id.
-		var testCasesById = new Dictionary<Guid, MSTestTestCaseInfo>();
+		var testCasesById = new Dictionary<Guid, MSTest3TestCaseInfo>();
 		foreach (var testCase in assemblyInfo.TestCases)
 			testCasesById[testCase.Id] = testCase;
 
@@ -78,7 +78,7 @@ public class MSTestTestRunner : ITestRunner
 			if (!testCasesById.TryGetValue(result.TestCase.Id, out var testCase))
 				return;
 
-			var info = new MSTestTestResultInfo(testCase, result);
+			var info = new MSTest3TestResultInfo(testCase, result);
 			testCase.ReportResult(info);
 
 			_resultChannelManager?.RecordResult(info);

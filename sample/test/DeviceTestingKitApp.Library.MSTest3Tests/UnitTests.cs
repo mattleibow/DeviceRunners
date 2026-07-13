@@ -1,4 +1,4 @@
-namespace DeviceTestingKitApp.Library.MSTestTests;
+namespace DeviceTestingKitApp.Library.MSTest3Tests;
 
 [TestClass]
 public class UnitTests
