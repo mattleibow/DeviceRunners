@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
+    <IsPackable>true</IsPackable>
+    <!-- This is a runner library, not a test project: do not generate an MTP entry point. -->
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <GenerateProgramFile>false</GenerateProgramFile>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DeviceRunners.VisualRunners.MSTest.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <!-- Microsoft.Testing.Platform provides the ITestApplication builder/host used to run the
+         platform in server mode in-process. MSTest.TestAdapter provides the AddMSTest(...) builder
+         extension that hosts the MSTest framework. PrivateAssets="compile" keeps the MSTest
+         attribute types from flowing transitively to consuming test libraries, which bring their
+         own reference. -->
+    <PackageReference Include="Microsoft.Testing.Platform" />
+    <PackageReference Include="MSTest.TestAdapter" PrivateAssets="compile;build;buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DeviceRunners.VisualRunners\DeviceRunners.VisualRunners.csproj" />
+  </ItemGroup>
+
+</Project>
