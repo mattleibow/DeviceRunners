@@ -55,7 +55,7 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 		public string? Filter { get; set; }
 	}
 
-	public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
+	protected override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
 	{
 		return ExecuteAsync(context, settings).GetAwaiter().GetResult();
 	}

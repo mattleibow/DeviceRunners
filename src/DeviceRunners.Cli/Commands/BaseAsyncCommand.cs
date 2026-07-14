@@ -20,7 +20,7 @@ public abstract class BaseAsyncCommand<TSettings>(IAnsiConsole console) : Comman
         public OutputFormat OutputFormat { get; set; } = OutputFormat.Default;
     }
 
-    public override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
+    protected override int Execute(CommandContext context, TSettings settings, CancellationToken cancellationToken)
     {
         return ExecuteAsync(context, settings).GetAwaiter().GetResult();
     }
