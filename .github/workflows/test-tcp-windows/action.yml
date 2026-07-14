@@ -43,9 +43,15 @@ runs:
     - name: Run Tests
       shell: pwsh
       run: |
-        $msix = (Get-ChildItem -Recurse -Filter "*.msix" -Path "artifacts" | Select-Object -First 1).FullName
-        if (-not $msix) { Write-Error "No .msix file found in artifacts"; exit 1 }
-        device-runners windows test --app $msix --results-directory artifacts/test-results --logger trx
+        $projectDir = Split-Path -Parent "${{ inputs.test-project }}"
+        # WindowsAppSDK 1.8+ emits the packaged .msix under the project's AppPackages
+        # folder rather than under artifacts, so search both locations. Exclude the
+        # framework dependency packages so we select the app package itself.
+        $searchRoots = @('artifacts', (Join-Path $projectDir 'AppPackages')) | Where-Object { Test-Path $_ }
+        $msix = Get-ChildItem -Recurse -Filter "*.msix" -Path $searchRoots -ErrorAction SilentlyContinue |
+          Where-Object { $_.FullName -notmatch '[\\/]Dependencies[\\/]' -and $_.Name -notlike 'Microsoft.WindowsAppRuntime*' } |
+          Select-Object -First 1 -ExpandProperty FullName
+        if (-not $msix) { Write-Error "No .msix file found"; exit 1 }
     - name: Clean up build artifacts before upload
       if: always()
       shell: pwsh
