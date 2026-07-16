@@ -27,7 +27,7 @@ public class AndroidAppLaunchCommand(IAnsiConsole console) : BaseCommand<Android
         public string? Device { get; set; }
     }
 
-    public override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
+    protected override int Execute(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
         try
         {
