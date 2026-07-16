@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DeviceRunners.VisualRunners;
 
@@ -15,10 +16,19 @@ namespace DeviceRunners.VisualRunners;
 /// and any trait name (e.g. <c>Category</c>).</item>
 /// <item>Logic: <c>&amp;</c> (and), <c>|</c> (or), grouping with <c>(</c> and <c>)</c>.
 /// <c>&amp;</c> binds tighter than <c>|</c>. Use <c>\</c> to escape a special character.</item>
+/// <item>Wildcards: a <c>*</c> in the value of an equals condition (<c>=</c> or <c>!=</c>)
+/// matches zero or more characters (e.g. <c>ClassName=Calc*</c>). This is a DeviceRunners
+/// extension over VSTest; a value without <c>*</c> still matches exactly as before. Use
+/// <c>\*</c> to match a literal <c>*</c>.</item>
 /// </list>
 /// </remarks>
 public static class TestCaseFilter
 {
+	// Sentinel used internally to represent an escaped '*' (i.e. "\*") so it is matched
+	// literally instead of being treated as a wildcard. Uses a Unicode private-use code
+	// point that will never appear in a real test identifier or trait value.
+	const char EscapedWildcard = '\uE000';
+
 	/// <summary>
 	/// Parses the given filter expression into an evaluable <see cref="ITestCaseFilter"/>.
 	/// An empty or whitespace expression returns a filter that matches everything.
@@ -137,7 +147,10 @@ public static class TestCaseFilter
 			{
 				if (i + 1 < expression.Length)
 				{
-					target.Append(expression[i + 1]);
+					// Preserve an escaped '*' as a sentinel so it matches literally instead
+					// of acting as a wildcard; all other escaped characters pass through.
+					var next = expression[i + 1];
+					target.Append(next == '*' ? EscapedWildcard : next);
 					i += 2;
 				}
 				else
@@ -302,6 +315,20 @@ public static class TestCaseFilter
 
 	sealed class ConditionFilter(string property, FilterOperator op, string value) : ITestCaseFilter
 	{
+		// Wildcards only apply to the equals family. An unescaped '*' in the value matches
+		// zero or more characters; a value without one keeps the original exact-match
+		// behavior. Escaped stars ('\*') arrive as EscapedWildcard sentinels, so they are
+		// not counted as wildcards here and are matched literally.
+		readonly Regex? _wildcard =
+			(op is FilterOperator.Equals or FilterOperator.NotEquals) && value.Contains('*')
+				? BuildWildcardRegex(value)
+				: null;
+
+		// For every direct (non-regex) comparison, collapse the sentinel back to a literal
+		// '*'. It only needs to survive long enough to build the wildcard regex above.
+		readonly string _property = property.Replace(EscapedWildcard, '*');
+		readonly string _value = value.Replace(EscapedWildcard, '*');
+
 		public bool Matches(ITestCaseInfo testCase)
 		{
 			var actualValues = ResolveValues(testCase);
@@ -317,32 +344,34 @@ public static class TestCaseFilter
 		}
 
 		bool Equals(string? actual) =>
-			actual is not null && string.Equals(actual, value, StringComparison.OrdinalIgnoreCase);
+			actual is not null && (_wildcard is not null
+				? _wildcard.IsMatch(actual)
+				: string.Equals(actual, _value, StringComparison.OrdinalIgnoreCase));
 
 		bool Contains(string? actual) =>
-			actual is not null && actual.Contains(value, StringComparison.OrdinalIgnoreCase);
+			actual is not null && actual.Contains(_value, StringComparison.OrdinalIgnoreCase);
 
 		IEnumerable<string?> ResolveValues(ITestCaseInfo testCase)
 		{
-			if (property.Length == 0 || string.Equals(property, "FullyQualifiedName", StringComparison.OrdinalIgnoreCase))
+			if (_property.Length == 0 || string.Equals(_property, "FullyQualifiedName", StringComparison.OrdinalIgnoreCase))
 				return new[] { GetFullyQualifiedName(testCase) };
 
-			if (string.Equals(property, "DisplayName", StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(_property, "DisplayName", StringComparison.OrdinalIgnoreCase))
 				return new[] { testCase.DisplayName };
 
-			if (string.Equals(property, "Name", StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(_property, "Name", StringComparison.OrdinalIgnoreCase))
 				return new[] { testCase.TestMethodName };
 
-			if (string.Equals(property, "ClassName", StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(_property, "ClassName", StringComparison.OrdinalIgnoreCase))
 				return new[] { testCase.TestClassName };
 
-			if (string.Equals(property, "Namespace", StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(_property, "Namespace", StringComparison.OrdinalIgnoreCase))
 				return new[] { testCase.TestClassNamespace };
 
 			// Otherwise treat the property as a trait name (case-insensitive lookup).
 			foreach (var trait in testCase.Traits)
 			{
-				if (string.Equals(trait.Key, property, StringComparison.OrdinalIgnoreCase))
+				if (string.Equals(trait.Key, _property, StringComparison.OrdinalIgnoreCase))
 					return trait.Value;
 			}
 
@@ -358,6 +387,21 @@ public static class TestCaseFilter
 				return $"{className}.{methodName}";
 
 			return className ?? methodName ?? testCase.DisplayName;
+		}
+
+		// Translates a wildcard value into an anchored, case-insensitive regex where an
+		// unescaped '*' matches zero or more characters and every other character is
+		// literal. Escaped-star sentinels inside a segment collapse back to a literal '*'.
+		// NonBacktracking guarantees linear-time matching, so a pathological filter
+		// (e.g. many '*' segments) cannot trigger catastrophic backtracking.
+		static Regex BuildWildcardRegex(string value)
+		{
+			var pattern = string.Join(
+				".*",
+				value.Split('*').Select(segment => Regex.Escape(segment.Replace(EscapedWildcard, '*'))));
+			return new Regex(
+				$"^{pattern}$",
+				RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.NonBacktracking);
 		}
 	}
 }
