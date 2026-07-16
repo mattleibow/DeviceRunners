@@ -42,4 +42,7 @@
     <Project Path="test/TestProject.Tests/TestProject.Tests.csproj" />
     <Project Path="test/TestProject.Xunit3Tests/TestProject.Xunit3Tests.csproj" />
   </Folder>
+  <Folder Name="/templates/">
+    <Project Path="templates/DeviceRunners.Templates/DeviceRunners.Templates.csproj" />
+  </Folder>
 </Solution>
