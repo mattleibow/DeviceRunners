@@ -6,7 +6,7 @@
     <PackageVersion Include="Microsoft.DotNet.XHarness.DefaultAndroidEntryPoint.Xunit" Version="11.0.0-prerelease.26360.1" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Common" Version="11.0.0-prerelease.26360.1" />
     <PackageVersion Include="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="11.0.0-prerelease.26360.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.9" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.80" />
