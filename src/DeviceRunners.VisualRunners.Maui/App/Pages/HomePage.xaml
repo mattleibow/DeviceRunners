@@ -58,7 +58,7 @@
         <Label Text="Diagnostic Messages:" FontAttributes="Bold"
                Grid.Row="2" Grid.ColumnSpan="2" />
 
-        <Editor Text="{Binding Diagnostics.MessagesString}" IsReadOnly="True"
+        <Editor Text="{Binding Diagnostics.MessagesString, Mode=OneWay}" IsReadOnly="True"
                 Grid.Row="3" Grid.ColumnSpan="2" />
 
         <!-- busy indicator -->
