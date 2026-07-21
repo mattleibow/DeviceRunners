@@ -29,6 +29,13 @@ static class MSTestServerModeHost
 	const int InitializeRequestId = 0;
 	const int OperationRequestId = 1;
 
+	static readonly Assembly ClientAssembly = typeof(MSTestServerModeHost).Assembly;
+	static readonly string ClientName = ClientAssembly.GetName().Name!;
+	static readonly string ClientVersion =
+		ClientAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+		?? ClientAssembly.GetName().Version?.ToString()
+		?? "0.0.0";
+
 	public readonly record struct TestNodeRef(string Uid, string DisplayName);
 
 	public static async Task RunSessionAsync(
@@ -112,7 +119,7 @@ static class MSTestServerModeHost
 			@params = new
 			{
 				processId = Environment.ProcessId,
-				clientInfo = new { name = "DeviceRunners.VisualRunners.MSTest", version = "1.0.0" },
+				clientInfo = new { name = ClientName, version = ClientVersion },
 				capabilities = new { testing = new { debuggerProvider = false } },
 			},
 		}, cancellationToken);
