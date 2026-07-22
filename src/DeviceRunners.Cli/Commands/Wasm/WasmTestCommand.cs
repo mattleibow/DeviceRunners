@@ -133,7 +133,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			// reset to the (shorter) data timeout on every subsequent message. The
 			// reset is guarded below because a late console message can race with the
 			// disposal of the source during teardown.
-			var anyMessageReceived = false;
 			using var inactivityCts = new CancellationTokenSource();
 			inactivityCts.CancelAfter(TimeSpan.FromSeconds(settings.ConnectionTimeout));
 			inactivityCts.Token.Register(() => testRunEnded.TrySetCanceled());
@@ -141,7 +140,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			browser.ConsoleMessageReceived += (_, msg) =>
 			{
 				consoleLog.WriteLine(msg);
-				anyMessageReceived = true;
 				// Reset the inactivity window on every message received. Guard against a
 				// message racing with disposal at the very end of the run.
 				try
@@ -168,8 +166,7 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			}
 			catch (OperationCanceledException)
 			{
-				var reason = DescribeWasmTimeout(settings, anyMessageReceived);
-				WriteConsoleOutput($"    [red]Test execution TIMED OUT: {Markup.Escape(reason)}[/]", settings);
+				WriteConsoleOutput($"    [yellow]Browser timed out waiting for test results.[/]", settings);
 			}
 
 			eventStream.Flush();
@@ -234,17 +231,5 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			WriteResult(result, settings);
 			return 1;
 		}
-	}
-
-	/// <summary>
-	/// Builds a human-readable reason describing which of the two timeouts fired,
-	/// used in the console failure message.
-	/// </summary>
-	internal static string DescribeWasmTimeout(Settings settings, bool anyMessageReceived)
-	{
-		if (!anyMessageReceived)
-			return $"no browser output within the connection timeout of {settings.ConnectionTimeout}s (the app may have failed to boot)";
-
-		return $"no browser output for {settings.DataTimeout}s (inactivity / data timeout — the test run stalled)";
 	}
 }
