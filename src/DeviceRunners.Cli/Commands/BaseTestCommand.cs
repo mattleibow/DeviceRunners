@@ -207,9 +207,10 @@ public abstract class BaseTestCommand<TSettings>(IAnsiConsole console) : BaseCom
 
 		WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
 
-		// Detect app crash: if we received a "begin" event and test results but
-		// never got the "end" event, the app crashed or was killed mid-run.
-		// Return -1 to signal crash to the caller (mapped to exit code 2).
+		// Detect app crash or timeout: if we received a "begin" event and test
+		// results but never got the "end" event, the app crashed, was killed, or
+		// timed out mid-run. Signal that as a crash (mapped to exit code 2) so an
+		// incomplete run never looks like a clean pass.
 		var outcome = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount);
 
 		if (outcome == TestRunOutcome.Crashed)

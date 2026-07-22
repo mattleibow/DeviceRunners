@@ -249,8 +249,9 @@
     <Error Text="Published WASM output not found at '$(PublishDir)'. Make sure the project publishes successfully."
            Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
     <PropertyGroup>
-      <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
-      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+      <!-- WASM uses a browser instead of TCP, but honours the same connection and
+           data (inactivity) timeouts as the device platforms. -->
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg) --connection-timeout $(DeviceRunnersConnectionTimeout) --data-timeout $(DeviceRunnersDataTimeout)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>
@@ -366,7 +367,7 @@
       CLI exit codes: 0 = success, 1 = test failures, 2 = app crashed.
     -->
     <Error Code="TESTERROR"
-           Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s (incomplete: app crashed)"
+           Text="Test summary: total: $(_TrxTotal), failed: $(_TrxFailed), succeeded: $(_TrxPassed), skipped: @(_TrxSkipped->Count()), duration: $(_TrxDuration)s (incomplete: the app crashed or the run timed out before it finished)"
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '2'" />
 
     <Error Code="TESTERROR"
@@ -374,7 +375,7 @@
            Condition="'$(_DeviceRunnersTrxExists)' == 'true' And '$(_DeviceRunnersExitCode)' == '1'" />
 
     <Error Code="TESTERROR"
-           Text="The application crashed before producing any test results (exit code 2). Check the device log for details."
+           Text="The application crashed or the run timed out before producing any test results (exit code 2). Check the device/browser log for details."
            Condition="'$(_DeviceRunnersTrxExists)' == 'false' And '$(_DeviceRunnersExitCode)' == '2'" />
 
     <Error Code="TESTERROR" Text="DeviceRunners CLI exited with code $(_DeviceRunnersExitCode) and no TRX was written. Check the output above for details."

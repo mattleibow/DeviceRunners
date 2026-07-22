@@ -47,7 +47,6 @@ wwwroot=$(find artifacts/publish -type d -name "wwwroot" | head -1)
 # Run tests in headless Chrome
 device-runners wasm test \
   --app "$wwwroot" \
-  --timeout 300 \
   --logger "trx;LogFileName=test-results.trx" \
   --results-directory artifacts/test-results
 
@@ -64,10 +63,13 @@ device-runners wasm test \
 | `--app` | *(required)* | Path to the published WASM app directory (the `wwwroot` folder) |
 | `--results-directory` | `artifacts` | Directory for test output files |
 | `--logger` | *(none)* | Result format and file name (e.g. `trx;LogFileName=results.trx`) |
-| `--timeout` | `300` | Test execution timeout in seconds |
+| `--connection-timeout` | `120` | Seconds to wait for the first browser message (the app booting and reporting). |
+| `--data-timeout` | `30` | Inactivity timeout: seconds without any browser output before the run is considered stalled. Resets on every message, so a long healthy run keeps going. |
 | `--headed` | `false` | Run browser in visible mode (useful for debugging) |
 | `--server-port` | `0` (auto) | HTTP port for the local web server |
 | `--output` | `default` | CLI output format: `default`, `json`, `xml`, or `text` |
+
+> A run that hits either of these timeouts before completing is treated as a **crash and fails** (exit code 2) — it is never reported as a passing run.
 
 The test command also generates a `browser-console.log` file in the results directory containing all browser console output, similar to `logcat.txt` on Android or `ios-device-log.txt` on iOS.
 
@@ -97,7 +99,9 @@ The CLI searches for Chrome/Chromium in standard installation paths. If your Chr
 
 ### Tests hang or timeout
 
-If the app fails to boot, check the Blazor WebAssembly publish output to ensure the `wwwroot` directory contains `_framework/blazor.webassembly.js` and the app's DLLs. Use `--timeout` to increase the timeout for large test suites.
+Runs are governed by two timeouts: `--connection-timeout` (waiting for the app to boot and send its first browser message) and `--data-timeout` (an inactivity timeout that resets on every browser message). A large but healthy suite will keep running as long as it keeps producing output, so you rarely need to raise anything. If a run stalls, it **fails** rather than silently passing — check `browser-console.log` for the last output before the stall.
+
+If the app fails to boot, check the Blazor WebAssembly publish output to ensure the `wwwroot` directory contains `_framework/blazor.webassembly.js` and the app's DLLs.
 
 ### Console output is empty
 
@@ -105,7 +109,7 @@ Ensure the test app calls `AddConsoleResultChannel()` in its `Program.cs`. When 
 
 ### Debugging with headed mode
 
-Use `--headed` to launch a visible browser window. This lets you see the Blazor visual runner UI and inspect the browser console directly. Combined with `--timeout 0` (infinite), this is useful for interactive debugging.
+Use `--headed` to launch a visible browser window. This lets you see the Blazor visual runner UI and inspect the browser console directly. Bumping `--data-timeout` gives you more time between output before the run is considered stalled, which is useful for interactive debugging.
 
 ### Reviewing browser logs
 
