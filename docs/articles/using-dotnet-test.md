@@ -153,11 +153,10 @@ All settings are MSBuild properties that can be set in your `.csproj` or passed 
 | Property | Default | Description |
 |----------|---------|-------------|
 | `DeviceRunnersPort` | `16384` | TCP port for test result collection |
-| `DeviceRunnersConnectionTimeout` | `120` | Seconds to wait for the app to connect |
-| `DeviceRunnersDataTimeout` | `30` | Seconds of silence before assuming the run ended |
+| `DeviceRunnersConnectionTimeout` | `120` | Seconds to wait for the first sign of life (first connection, or first browser message on WASM) |
+| `DeviceRunnersDataTimeout` | `30` | Inactivity timeout: seconds of silence before the run is considered stalled. Resets on every event, so a long healthy run keeps going as long as it produces output. A run that stalls **fails** (exit code 2). |
 | `DeviceRunnersDevice` | _(auto)_ | Target device ID (Android emulator serial, iOS simulator UDID) |
 | `DeviceRunnersBin` | _(bundled)_ | Override the CLI tool path (for using a globally installed tool) |
-| `DeviceRunnersWasmTimeout` | `300` | WASM: test execution timeout in seconds |
 
 Example:
 

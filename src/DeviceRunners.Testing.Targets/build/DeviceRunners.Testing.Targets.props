@@ -44,10 +44,13 @@
     <!-- TCP port the CLI tool listens on (and the app connects to). -->
     <DeviceRunnersPort Condition="'$(DeviceRunnersPort)' == ''">16384</DeviceRunnersPort>
 
-    <!-- How long (seconds) the CLI waits for the first TCP connection from the device. -->
+    <!-- How long (seconds) the CLI waits for the first sign of life from the app:
+         the first TCP connection (device platforms) or the first browser message (WASM). -->
     <DeviceRunnersConnectionTimeout Condition="'$(DeviceRunnersConnectionTimeout)' == ''">120</DeviceRunnersConnectionTimeout>
 
-    <!-- How long (seconds) the CLI waits for more data after the last received packet. -->
+    <!-- Inactivity timeout (seconds): how long the CLI waits for more output after the
+         last event. Resets on every packet/message, so a long but healthy run keeps
+         going as long as it keeps producing results. Applies to all platforms incl. WASM. -->
     <DeviceRunnersDataTimeout Condition="'$(DeviceRunnersDataTimeout)' == ''">30</DeviceRunnersDataTimeout>
 
     <!--
@@ -61,9 +64,6 @@
          UseArtifactsOutput=true, otherwise to $(MSBuildProjectDirectory)\test-results. -->
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == '' And '$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ArtifactsPath)'))test-results\</TestResultsDirectory>
     <TestResultsDirectory Condition="'$(TestResultsDirectory)' == ''">$(MSBuildProjectDirectory)\test-results\</TestResultsDirectory>
-
-    <!-- WASM: test execution timeout in seconds (default 5 minutes). -->
-    <DeviceRunnersWasmTimeout Condition="'$(DeviceRunnersWasmTimeout)' == ''">300</DeviceRunnersWasmTimeout>
   </PropertyGroup>
 
 

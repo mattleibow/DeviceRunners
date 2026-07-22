@@ -21,11 +21,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 		[CommandOption("--server-port")]
 		[DefaultValue(0)]
 		public int ServerPort { get; set; }
-
-		[Description("Test execution timeout in seconds")]
-		[CommandOption("--timeout")]
-		[DefaultValue(300)]
-		public int Timeout { get; set; } = 300;
 	}
 
 	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -127,9 +122,36 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 
 			await using var browser = new BrowserService();
 
+			// Two timeouts, mirroring the TCP runner so every platform behaves the
+			// same way:
+			//  - connection timeout: how long to wait for the FIRST browser message
+			//    (a sign the app booted and started reporting);
+			//  - data timeout: an inactivity timeout that resets on every message, so
+			//    a long but healthy run keeps going as long as it produces output.
+			// A single resettable source models the connection-then-inactivity window:
+			// it starts with the connection timeout and, once any message arrives, is
+			// reset to the (shorter) data timeout on every subsequent message. The
+			// reset is guarded below because a late console message can race with the
+			// disposal of the source during teardown.
+			var anyMessageReceived = false;
+			using var inactivityCts = new CancellationTokenSource();
+			inactivityCts.CancelAfter(TimeSpan.FromSeconds(settings.ConnectionTimeout));
+			inactivityCts.Token.Register(() => testRunEnded.TrySetCanceled());
+
 			browser.ConsoleMessageReceived += (_, msg) =>
 			{
 				consoleLog.WriteLine(msg);
+				anyMessageReceived = true;
+				// Reset the inactivity window on every message received. Guard against a
+				// message racing with disposal at the very end of the run.
+				try
+				{
+					if (!inactivityCts.IsCancellationRequested)
+						inactivityCts.CancelAfter(TimeSpan.FromSeconds(settings.DataTimeout));
+				}
+				catch (ObjectDisposedException)
+				{
+				}
 				eventStream.ReceiveData(msg + "\n");
 			};
 
@@ -139,20 +161,25 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			await browser.LaunchAsync(testUrl, headless: !settings.Headed);
 			WriteConsoleOutput($"    Browser launched, running tests...", settings);
 
-			// Wait for test completion or timeout
-			using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(settings.Timeout));
-			cts.Token.Register(() => testRunEnded.TrySetCanceled());
-
+			// Wait for test completion or one of the timeouts.
 			try
 			{
 				await testRunEnded.Task;
 			}
 			catch (OperationCanceledException)
 			{
-				WriteConsoleOutput($"    [yellow]Test execution timed out after {settings.Timeout}s[/]", settings);
+				var reason = DescribeWasmTimeout(settings, anyMessageReceived);
+				WriteConsoleOutput($"    [red]Test execution TIMED OUT: {Markup.Escape(reason)}[/]", settings);
 			}
 
 			eventStream.Flush();
+
+			// Classify the run the same way the TCP listener does so a crash or
+			// timeout mid-run (begin + some results, but no "end") is reported as a
+			// failure instead of being mistaken for a successful run. A clean empty
+			// run (begin + end, no results) still succeeds, mirroring `dotnet test
+			// --filter` exit 0.
+			var outcome = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount);
 
 			WriteConsoleOutput($"[blue]------------------------------------------------------------[/]", settings);
 
@@ -165,13 +192,6 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			WriteConsoleOutput($"  - Browser console log: [green]{Markup.Escape(consoleLogPath)}[/]", settings);
 
 			WriteConsoleOutput($"  - Results: Total={eventStream.TotalCount}, Passed={eventStream.PassedCount}, Failed={eventStream.FailedCount}, Skipped={eventStream.SkippedCount}", settings);
-
-			// Classify the run the same way the TCP listener does so a crash or
-			// timeout mid-run (begin + some results, but no "end") is reported as a
-			// failure instead of being mistaken for a successful run. A clean empty
-			// run (begin + end, no results) still succeeds, mirroring `dotnet test
-			// --filter` exit 0.
-			var outcome = ClassifyRun(eventStream.HasStarted, eventStream.HasEnded, eventStream.TotalCount);
 
 			if (outcome == TestRunOutcome.Crashed)
 				WriteConsoleOutput($"    [red]The app crashed or timed out before the run completed. Only {eventStream.TotalCount} test result(s) were received before the connection was lost. Check browser-console.log for details.[/]", settings);
@@ -214,5 +234,17 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			WriteResult(result, settings);
 			return 1;
 		}
+	}
+
+	/// <summary>
+	/// Builds a human-readable reason describing which of the two timeouts fired,
+	/// used in the console failure message.
+	/// </summary>
+	internal static string DescribeWasmTimeout(Settings settings, bool anyMessageReceived)
+	{
+		if (!anyMessageReceived)
+			return $"no browser output within the connection timeout of {settings.ConnectionTimeout}s (the app may have failed to boot)";
+
+		return $"no browser output for {settings.DataTimeout}s (inactivity / data timeout — the test run stalled)";
 	}
 }

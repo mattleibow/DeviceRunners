@@ -180,8 +180,8 @@ device-runners windows test --app "path/to/app.msix" --port 8080 --connection-ti
 - `--certificate` - Path to the certificate file (optional, auto-detected if not provided)
 - `--results-directory` - Results directory for test outputs (default: "artifacts")
 - `--port` - TCP port to listen on (default: 16384)
-- `--connection-timeout` - Connection timeout in seconds (default: 30)
-- `--data-timeout` - Data timeout in seconds (default: 30)
+- `--connection-timeout` - Seconds to wait for the app to connect (default: 120)
+- `--data-timeout` - Inactivity timeout in seconds; resets on every event (default: 30). A run that stalls fails (exit code 2).
 
 **Workflow:**
 1. **Preparation Phase:**
@@ -195,7 +195,7 @@ device-runners windows test --app "path/to/app.msix" --port 8080 --connection-ti
 2. **Execution Phase:**
    - Launches the application
    - Starts TCP listener on specified port (default: 16384) for test results
-   - Waits for test completion with configurable timeouts (defaults: 30s connection, 30s data)
+   - Waits for test completion with configurable timeouts (defaults: 120s connection, 30s inactivity)
    - Analyzes test results
 
 3. **Cleanup Phase:**

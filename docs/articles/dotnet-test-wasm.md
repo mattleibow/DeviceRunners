@@ -61,10 +61,17 @@ Blazor WebAssembly runs on a single thread. To keep the UI responsive during tes
 
 ## Configuration
 
-To change the test execution timeout, set `DeviceRunnersWasmTimeout` (default: 300 seconds):
+WASM runs are governed by the same two timeouts as the device platforms:
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `DeviceRunnersConnectionTimeout` | `120` | Seconds to wait for the first browser message (the app booting and reporting). |
+| `DeviceRunnersDataTimeout` | `30` | Inactivity timeout: seconds without any browser output before the run is considered stalled. Resets on every message, so a long healthy suite keeps running as long as it produces output. |
+
+A run that hits either timeout before completing is treated as a crash and **fails** (exit code 2) — it is never reported as a passing run. Because the data timeout resets on every message, you rarely need to raise anything for large suites; only bump `DeviceRunnersDataTimeout` if individual tests legitimately produce no output for long stretches:
 
 ```bash
-dotnet test MyApp.BrowserTests.csproj -p:DeviceRunnersWasmTimeout=600
+dotnet test MyApp.BrowserTests.csproj -p:DeviceRunnersDataTimeout=120
 ```
 
 ## Troubleshooting
@@ -75,7 +82,7 @@ The CLI searches for Chrome/Chromium in standard installation paths. If your Chr
 
 ### Tests hang or timeout
 
-If the app fails to boot, check the Blazor WebAssembly publish output to ensure the `wwwroot` directory contains `_framework/blazor.webassembly.js` and the app's DLLs. The default timeout is 300 seconds — use `--timeout` to increase it for large test suites.
+If the app fails to boot, check the Blazor WebAssembly publish output to ensure the `wwwroot` directory contains `_framework/blazor.webassembly.js` and the app's DLLs. A healthy suite keeps running as long as it produces output (the data timeout resets per message); if a run stalls it **fails** instead of passing silently — check `browser-console.log` for the last output before the stall.
 
 ### Console output is empty
 
