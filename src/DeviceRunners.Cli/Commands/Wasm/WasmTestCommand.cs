@@ -26,6 +26,10 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 		[CommandOption("--timeout")]
 		[DefaultValue(300)]
 		public int Timeout { get; set; } = 300;
+
+		[Description("Extra switches for the browser, quoted as they would be in a shell. Repeatable. Example: --browser-args \"--enable-unsafe-webgpu\"")]
+		[CommandOption("--browser-args")]
+		public string[] BrowserArgs { get; set; } = [];
 	}
 
 	protected override async Task<int> ExecuteAsync(CommandContext context, Settings settings)
@@ -136,7 +140,17 @@ public class WasmTestCommand(IAnsiConsole console) : BaseTestCommand<WasmTestCom
 			var testUrl = $"{url}?device-runners-autorun=1";
 			if (!string.IsNullOrWhiteSpace(settings.Filter))
 				testUrl += $"&device-runners-filter={Uri.EscapeDataString(settings.Filter)}";
-			await browser.LaunchAsync(testUrl, headless: !settings.Headed);
+			// Each --browser-args value is a command-line fragment: the shell that
+			// launched us only stripped the outer quotes, so the inner grouping still
+			// has to be resolved. "--" is deliberately left alone — it is reserved for
+			// arguments aimed at the app under test rather than at the browser.
+			var browserArgs = settings.BrowserArgs.SelectMany(ArgumentTokenizer.Tokenize).ToList();
+
+			await browser.LaunchAsync(
+				testUrl,
+				headless: !settings.Headed,
+				extraArguments: browserArgs);
+			WriteConsoleOutput($"    Browser args: [grey]{Markup.Escape(string.Join(' ', browser.LaunchArguments))}[/]", settings);
 			WriteConsoleOutput($"    Browser launched, running tests...", settings);
 
 			// Wait for test completion or timeout

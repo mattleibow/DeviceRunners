@@ -64,6 +64,18 @@
 
     <!-- WASM: test execution timeout in seconds (default 5 minutes). -->
     <DeviceRunnersWasmTimeout Condition="'$(DeviceRunnersWasmTimeout)' == ''">300</DeviceRunnersWasmTimeout>
+
+    <!--
+      WASM: extra switches for the browser the CLI launches. This is a command-line
+      fragment, not an MSBuild list: separate switches with spaces and quote any value
+      that contains one, exactly as you would in a shell.
+
+      Note this configures the browser, not the app under test. The app is configured
+      through the runner's own query-string parameters.
+
+      See docs/articles/dotnet-test-wasm.md for examples.
+    -->
+    <DeviceRunnersWasmBrowserArgs Condition="'$(DeviceRunnersWasmBrowserArgs)' == ''" />
   </PropertyGroup>
 
 

@@ -67,9 +67,43 @@ device-runners wasm test \
 | `--timeout` | `300` | Test execution timeout in seconds |
 | `--headed` | `false` | Run browser in visible mode (useful for debugging) |
 | `--server-port` | `0` (auto) | HTTP port for the local web server |
+| `--browser-args` | *(none)* | Extra switches for the browser, quoted as in a shell. Repeatable. Use the `=` form: `--browser-args=--enable-unsafe-webgpu` |
 | `--output` | `default` | CLI output format: `default`, `json`, `xml`, or `text` |
 
 The test command also generates a `browser-console.log` file in the results directory containing all browser console output, similar to `logcat.txt` on Android or `ios-device-log.txt` on iOS.
+
+#### Passing switches to the browser
+
+`--browser-args` takes a command-line fragment and splits it using shell quoting rules, so a
+switch whose value contains a space just needs quotes:
+
+```bash
+device-runners wasm test --app "$wwwroot" \
+  --browser-args='--enable-unsafe-webgpu "--host-resolver-rules=MAP a.test 127.0.0.1"'
+```
+
+It is repeatable, so this is equivalent:
+
+```bash
+device-runners wasm test --app "$wwwroot" \
+  --browser-args=--enable-unsafe-swiftshader \
+  --browser-args=--enable-unsafe-webgpu
+```
+
+Use the `=` form. Spectre.Console treats a following token that starts with `-` as another
+option, so `--browser-args --enable-unsafe-webgpu` is rejected.
+
+The switches are appended after everything the CLI sets itself, so they win for the switches
+where Chrome keeps only the last occurrence. The full command line is printed as
+`Browser args:` at the start of every run.
+
+> [!NOTE]
+> This configures the **browser**, not the app under test. The app is configured through the
+> runner's own query-string parameters (`?device-runners-autorun=1`), the WASM equivalent of
+> the `DEVICE_RUNNERS_*` environment variables used on the other platforms.
+
+This is a passthrough — the CLI adds no graphics-related switches of its own. See
+[WebGL and WebGPU](#webgl-and-webgpu) below for what those APIs need on a CI agent.
 
 ### `wasm serve`
 
@@ -102,6 +136,37 @@ If the app fails to boot, check the Blazor WebAssembly publish output to ensure 
 ### Console output is empty
 
 Ensure the test app calls `AddConsoleResultChannel()` in its `Program.cs`. When using `UseVisualTestRunner` on `WebAssemblyHostBuilder`, the CLI configuration is automatically injected — when the browser navigates to `?device-runners-autorun=1`, the `EventStreamFormatter` console output is enabled.
+
+### WebGL and WebGPU
+
+A browser on a machine with no usable GPU — most CI agents — reports WebGL as unavailable
+(`canvas.getContext("webgl")` returns `null`) and WebGPU as adapter-less
+(`navigator.gpu.requestAdapter()` resolves to `null`). Headless mode is not the cause: a
+visible browser behaves the same. The cause is the missing GPU.
+
+Chrome can fall back to the SwiftShader software renderer, but only when asked. Measured with
+Chrome 150 on GPU-less GitHub-hosted runners:
+
+| Host | For WebGL | For WebGPU |
+| --- | --- | --- |
+| Linux | *(works already)* | `--enable-unsafe-webgpu` |
+| macOS | `--enable-unsafe-swiftshader` | `--enable-unsafe-webgpu` |
+| Windows | *(works already, via D3D11 WARP)* | `--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` |
+
+Notes:
+
+- On **Windows**, `--enable-unsafe-swiftshader` moves ANGLE onto the SwiftShader Vulkan
+  device, after which Dawn cannot enumerate any WebGPU adapter. Don't combine it with the
+  WebGPU switches there.
+- `--use-webgpu-adapter=swiftshader` forces software rendering even when a real GPU is
+  present, so apply it on CI rather than everywhere.
+- Avoid passing `--disable-gpu`. On Windows it removes the fallback WebGPU needs, and
+  `requestAdapter()` returns `null` even with `--use-webgpu-adapter=swiftshader`.
+- `navigator.gpu` only exists in a [secure context]. The built-in server uses
+  `http://127.0.0.1`, which qualifies; a plain `http://` LAN address does not, and WebGPU
+  silently disappears there.
+
+[secure context]: https://developer.mozilla.org/docs/Web/Security/Secure_Contexts
 
 ### Debugging with headed mode
 

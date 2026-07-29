@@ -22,7 +22,19 @@ public class BrowserService : IAsyncDisposable
 
 	public event EventHandler<string>? ConsoleMessageReceived;
 
-	public async Task LaunchAsync(string url, bool headless = true)
+	/// <summary>
+	/// The full argument list the browser was launched with. Useful for diagnostics.
+	/// </summary>
+	public IReadOnlyList<string> LaunchArguments { get; private set; } = [];
+
+	/// <param name="extraArguments">
+	/// Extra switches appended to the browser command line. They come last, so they win
+	/// for the switches where Chrome keeps only the final occurrence.
+	/// </param>
+	public async Task LaunchAsync(
+		string url,
+		bool headless = true,
+		IEnumerable<string>? extraArguments = null)
 	{
 		var chromePath = FindChrome();
 		if (chromePath is null)
@@ -33,37 +45,27 @@ public class BrowserService : IAsyncDisposable
 		_userDataDir = Path.Combine(Path.GetTempPath(), "device-runners-chrome-" + Guid.NewGuid().ToString("N")[..8]);
 		Directory.CreateDirectory(_userDataDir);
 
-		var args = new List<string>
+		var args = BuildLaunchArguments(_userDataDir, extraArguments, headless);
+
+		LaunchArguments = args;
+
+		var startInfo = new ProcessStartInfo
 		{
-			"--remote-debugging-port=0",
-			$"--user-data-dir={_userDataDir}",
-			"--no-first-run",
-			"--no-default-browser-check",
-			"--disable-extensions",
-			"--disable-background-networking",
-			"--disable-sync",
-			"--disable-translate",
-			"--metrics-recording-only",
-			"--safebrowsing-disable-auto-update",
+			FileName = chromePath,
+			RedirectStandardError = true,
+			RedirectStandardOutput = true,
+			UseShellExecute = false,
+			CreateNoWindow = true,
 		};
 
-		if (headless)
-			args.Add("--headless=new");
+		// ArgumentList quotes each entry as needed. Joining into a single Arguments
+		// string would split any argument that contains a space, and Chrome would treat
+		// the trailing part as an extra page to open ("Multiple targets are not
+		// supported in headless mode").
+		foreach (var arg in args)
+			startInfo.ArgumentList.Add(arg);
 
-		args.Add("about:blank");
-
-		_chromeProcess = new Process
-		{
-			StartInfo = new ProcessStartInfo
-			{
-				FileName = chromePath,
-				Arguments = string.Join(' ', args),
-				RedirectStandardError = true,
-				RedirectStandardOutput = true,
-				UseShellExecute = false,
-				CreateNoWindow = true,
-			}
-		};
+		_chromeProcess = new Process { StartInfo = startInfo };
 
 		_chromeProcess.Start();
 
@@ -86,6 +88,39 @@ public class BrowserService : IAsyncDisposable
 		// Navigate to the test URL
 		await SendCdpCommandAsync("Page.enable");
 		await SendCdpCommandAsync("Page.navigate", new CdpNavigateParams { Url = url });
+	}
+
+	/// <summary>
+	/// Assembles the browser command line. Caller arguments are placed after everything
+	/// the CLI sets itself, because Chrome keeps only the last occurrence of most
+	/// switches — so a caller can always override a default. The target URL stays last,
+	/// since a positional value after it would be treated as a second page to open.
+	/// </summary>
+	internal static List<string> BuildLaunchArguments(string userDataDir, IEnumerable<string>? extraArguments, bool headless)
+	{
+		var args = new List<string>
+		{
+			"--remote-debugging-port=0",
+			$"--user-data-dir={userDataDir}",
+			"--no-first-run",
+			"--no-default-browser-check",
+			"--disable-extensions",
+			"--disable-background-networking",
+			"--disable-sync",
+			"--disable-translate",
+			"--metrics-recording-only",
+			"--safebrowsing-disable-auto-update",
+		};
+
+		if (headless)
+			args.Add("--headless=new");
+
+		if (extraArguments is not null)
+			args.AddRange(extraArguments.Where(a => !string.IsNullOrWhiteSpace(a)));
+
+		args.Add("about:blank");
+
+		return args;
 	}
 
 	static async Task<string> ReadDevToolsUrlAsync(Process process, TimeSpan timeout)
