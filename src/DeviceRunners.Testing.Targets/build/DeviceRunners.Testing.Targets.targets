@@ -249,8 +249,18 @@
     <Error Text="Published WASM output not found at '$(PublishDir)'. Make sure the project publishes successfully."
            Condition="!Exists('$(_DeviceRunnersWasmDir)')" />
     <PropertyGroup>
+      <!--
+        The property is a command-line fragment, passed through as a single value and
+        split by the CLI using shell quoting rules.
+
+        The "- -browser-args=value" form is required: Spectre.Console treats a following
+        token that starts with "-" as another option rather than as this option's value.
+        Inner quotes are escaped as \" so they survive both cmd.exe and /bin/sh.
+      -->
+      <_DeviceRunnersBrowserArgs Condition="'$(DeviceRunnersWasmBrowserArgs)' != ''"> --browser-args=&quot;$(DeviceRunnersWasmBrowserArgs.Replace('&quot;', '\&quot;'))&quot;</_DeviceRunnersBrowserArgs>
+
       <!-- WASM uses different CLI flags: no port/TCP, instead uses browser console capture -->
-      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg) --timeout $(DeviceRunnersWasmTimeout)</_DeviceRunnersCliArgs>
+      <_DeviceRunnersCliArgs>wasm test --app &quot;$(_DeviceRunnersWasmDir)&quot; --results-directory &quot;$(_DeviceRunnersResultsDir)&quot;$(_DeviceRunnersLoggerArg)$(_DeviceRunnersFilterArg) --timeout $(DeviceRunnersWasmTimeout)$(_DeviceRunnersBrowserArgs)</_DeviceRunnersCliArgs>
     </PropertyGroup>
     <Message Importance="high" Text="DeviceRunners: running WASM browser tests from $(_DeviceRunnersWasmDir)" />
   </Target>

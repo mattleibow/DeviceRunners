@@ -67,6 +67,41 @@ To change the test execution timeout, set `DeviceRunnersWasmTimeout` (default: 3
 dotnet test MyApp.BrowserTests.csproj -p:DeviceRunnersWasmTimeout=600
 ```
 
+### Passing switches to the browser
+
+`DeviceRunnersWasmBrowserArgs` sets extra switches on the browser the CLI launches:
+
+```bash
+dotnet test MyApp.BrowserTests.csproj -p:DeviceRunnersWasmBrowserArgs=--enable-unsafe-webgpu
+```
+
+```xml
+<PropertyGroup>
+  <DeviceRunnersWasmBrowserArgs>--enable-unsafe-swiftshader --enable-unsafe-webgpu</DeviceRunnersWasmBrowserArgs>
+</PropertyGroup>
+```
+
+The value is a command-line fragment, not an MSBuild list. Separate switches with spaces and
+quote any value that contains one, exactly as you would in a shell:
+
+```xml
+<PropertyGroup>
+  <DeviceRunnersWasmBrowserArgs>--enable-unsafe-webgpu "--host-resolver-rules=MAP a.test 127.0.0.1"</DeviceRunnersWasmBrowserArgs>
+</PropertyGroup>
+```
+
+The switches are appended after everything the CLI sets itself, so they win for the switches
+where Chrome keeps only the last occurrence. The full command line is printed as `Browser
+args:` at the start of every run.
+
+> [!NOTE]
+> This configures the **browser**, not the app under test. The app is configured through the
+> runner's own query-string parameters (`?device-runners-autorun=1`), which is the WASM
+> equivalent of the `DEVICE_RUNNERS_*` environment variables used on the other platforms.
+
+This is a passthrough — the CLI adds no graphics-related switches of its own. See
+[WebGL and WebGPU](#webgl-and-webgpu) for the switches those APIs need on a CI agent.
+
 ## Troubleshooting
 
 ### Chrome not found
@@ -76,6 +111,44 @@ The CLI searches for Chrome/Chromium in standard installation paths. If your Chr
 ### Tests hang or timeout
 
 If the app fails to boot, check the Blazor WebAssembly publish output to ensure the `wwwroot` directory contains `_framework/blazor.webassembly.js` and the app's DLLs. The default timeout is 300 seconds — use `--timeout` to increase it for large test suites.
+
+### WebGL and WebGPU
+
+A browser on a machine with no usable GPU — which describes most CI agents — reports WebGL as
+unavailable (`canvas.getContext("webgl")` returns `null`) and WebGPU as adapter-less
+(`navigator.gpu.requestAdapter()` resolves to `null`). This is not caused by headless mode: a
+visible browser behaves the same way. It is caused by there being no GPU.
+
+Chrome can fall back to the SwiftShader software renderer, but only when asked. Measured with
+Chrome 150 on GPU-less GitHub-hosted runners:
+
+| Host | For WebGL | For WebGPU |
+| --- | --- | --- |
+| Linux | *(works already)* | `--enable-unsafe-webgpu` |
+| macOS | `--enable-unsafe-swiftshader` | `--enable-unsafe-webgpu` |
+| Windows | *(works already, via D3D11 WARP)* | `--enable-unsafe-webgpu --use-webgpu-adapter=swiftshader` |
+
+For example, on a GPU-less Linux or macOS agent:
+
+```bash
+dotnet test MyApp.BrowserTests.csproj \
+  -p:DeviceRunnersWasmBrowserArgs="--enable-unsafe-swiftshader --enable-unsafe-webgpu"
+```
+
+Notes:
+
+- On **Windows**, `--enable-unsafe-swiftshader` moves ANGLE onto the SwiftShader Vulkan
+  device, after which Dawn cannot enumerate any WebGPU adapter. Don't combine it with the
+  WebGPU switches there.
+- `--use-webgpu-adapter=swiftshader` forces software rendering even when a real GPU is
+  present, so apply it on CI rather than in a checked-in property.
+- Avoid `--disable-gpu`. On Windows it removes the fallback WebGPU needs, and
+  `requestAdapter()` returns `null` even with `--use-webgpu-adapter=swiftshader`.
+- `navigator.gpu` only exists in a [secure context]. The built-in server uses
+  `http://127.0.0.1`, which qualifies; a plain `http://` LAN address does not, and WebGPU
+  silently disappears there.
+
+[secure context]: https://developer.mozilla.org/docs/Web/Security/Secure_Contexts
 
 ### Console output is empty
 
