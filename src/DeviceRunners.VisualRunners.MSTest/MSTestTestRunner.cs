@@ -1,3 +1,5 @@
+using Microsoft.Testing.Platform.ServerMode.Client;
+
 namespace DeviceRunners.VisualRunners.MSTest;
 
 public class MSTestTestRunner : ITestRunner
@@ -75,16 +77,14 @@ public class MSTestTestRunner : ITestRunner
 			return;
 
 		// Restrict the run to exactly the requested tests by passing their UIDs to the platform.
-		var tests = testCaseLookup.Values
-			.Select(tc => new MSTestServerModeHost.TestNodeRef(tc.Uid, tc.DisplayName))
-			.ToList();
+		var testNodeUids = testCaseLookup.Keys.ToList();
 
-		void OnNode(WireTestNode node)
+		void OnNode(MtpTestNodeUpdate node)
 		{
-			if (!node.IsAction)
+			if (!node.IsAction())
 				return;
 
-			if (!testCaseLookup.TryGetValue(node.Uid, out var testCase))
+			if (node.Uid is not { } uid || !testCaseLookup.TryGetValue(uid, out var testCase))
 				return;
 
 			var result = MSTestTestResultInfo.TryCreate(testCase, node);
@@ -95,11 +95,6 @@ public class MSTestTestRunner : ITestRunner
 			_resultChannelManager?.RecordResult(result);
 		}
 
-		await MSTestServerModeHost.RunSessionAsync(
-			assemblyInfo.Assembly,
-			MSTestServerModeHost.RunTestsMethod,
-			tests,
-			OnNode,
-			cancellationToken);
+		await MSTestServerModeHost.RunTestsAsync(assemblyInfo.Assembly, testNodeUids, OnNode, cancellationToken);
 	}
 }

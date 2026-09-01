@@ -2,6 +2,8 @@ using System.Reflection;
 
 using Microsoft.Extensions.Logging;
 
+using Microsoft.Testing.Platform.ServerMode.Client;
+
 namespace DeviceRunners.VisualRunners.MSTest;
 
 public class MSTestTestDiscoverer : ITestDiscoverer
@@ -33,20 +35,15 @@ public class MSTestTestDiscoverer : ITestDiscoverer
 				var testAssembly = new MSTestTestAssemblyInfo(assemblyFileName, assm);
 				var testCases = new List<MSTestTestCaseInfo>();
 
-				void OnNode(WireTestNode node)
+				void OnNode(MtpTestNodeUpdate node)
 				{
 					// A discovery request reports each test as an 'action' node in the 'discovered'
 					// state, without executing anything.
-					if (node.IsAction && node.IsDiscovered)
+					if (node.IsAction() && node.IsDiscovered())
 						testCases.Add(MSTestTestCaseInfo.FromDiscoveredNode(testAssembly, node));
 				}
 
-				await MSTestServerModeHost.RunSessionAsync(
-					assm,
-					MSTestServerModeHost.DiscoverTestsMethod,
-					tests: null,
-					OnNode,
-					cancellationToken);
+				await MSTestServerModeHost.DiscoverTestsAsync(assm, OnNode, cancellationToken);
 
 				if (testCases.Count > 0)
 				{

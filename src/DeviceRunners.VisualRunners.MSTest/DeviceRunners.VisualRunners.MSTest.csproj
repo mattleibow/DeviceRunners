@@ -17,6 +17,10 @@
          attribute types from flowing transitively to consuming test libraries, which bring their
          own reference. -->
     <PackageReference Include="Microsoft.Testing.Platform" />
+    <PackageReference Include="Microsoft.Testing.Platform.ServerMode.Client.Sources">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MSTest.TestAdapter" PrivateAssets="compile;build;buildTransitive" />
   </ItemGroup>
 

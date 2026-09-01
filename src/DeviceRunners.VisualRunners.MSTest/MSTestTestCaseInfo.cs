@@ -1,3 +1,5 @@
+using Microsoft.Testing.Platform.ServerMode.Client;
+
 namespace DeviceRunners.VisualRunners.MSTest;
 
 class MSTestTestCaseInfo : ITestCaseInfo
@@ -24,13 +26,14 @@ class MSTestTestCaseInfo : ITestCaseInfo
 	/// Builds a test case from a discovered server-mode node, deriving the class namespace and
 	/// bare method name from the platform's <c>location.type</c> / <c>location.method</c> fields.
 	/// </summary>
-	public static MSTestTestCaseInfo FromDiscoveredNode(MSTestTestAssemblyInfo assembly, WireTestNode node)
+	public static MSTestTestCaseInfo FromDiscoveredNode(MSTestTestAssemblyInfo assembly, MtpTestNodeUpdate node)
 	{
-		var className = string.IsNullOrEmpty(node.LocationType) ? null : node.LocationType;
+		var uid = node.Uid ?? string.Empty;
+		var className = node.GetLocationType() is { Length: > 0 } locationType ? locationType : null;
 		var classNamespace = GetNamespace(className);
-		var methodName = StripParameters(node.LocationMethod);
+		var methodName = StripParameters(node.GetLocationMethod());
 
-		return new MSTestTestCaseInfo(assembly, node.Uid, node.DisplayName, classNamespace, className, methodName, node.Traits);
+		return new MSTestTestCaseInfo(assembly, uid, node.DisplayName ?? uid, classNamespace, className, methodName, node.GetTraits());
 	}
 
 	static string? GetNamespace(string? className)
