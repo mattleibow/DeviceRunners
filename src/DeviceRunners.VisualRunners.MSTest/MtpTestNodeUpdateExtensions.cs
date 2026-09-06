@@ -32,6 +32,20 @@ static class MtpTestNodeUpdateExtensions
 	public static bool IsSupersededRetry(this MtpTestNodeUpdate node) =>
 		node.Node.TryGetValue("retry.is-superseded", out var value) && value is true;
 
+	/// <summary>
+	/// Joins the node's captured standard output and standard error (MSTest's MTP adapter reports
+	/// <c>TestContext.WriteLine</c> and console writes through these), or returns <c>null</c> when the
+	/// node carried neither.
+	/// </summary>
+	public static string? CombinedOutput(this MtpTestNodeUpdate node)
+	{
+		var parts = new[] { node.StandardOutput, node.StandardError }
+			.Where(part => !string.IsNullOrEmpty(part));
+
+		var combined = string.Join(Environment.NewLine, parts);
+		return combined.Length == 0 ? null : combined;
+	}
+
 	/// <summary>Fully qualified declaring type name (namespace + type).</summary>
 	public static string? GetLocationType(this MtpTestNodeUpdate node) =>
 		node.GetString("location.type");

@@ -35,6 +35,7 @@ class MSTestTestResultInfo : ITestResultInfo
 			return null;
 
 		var duration = node.DurationInMilliseconds is { } ms ? TimeSpan.FromMilliseconds(ms) : TimeSpan.Zero;
+		var output = node.CombinedOutput();
 
 		return node.ExecutionState switch
 		{
@@ -42,11 +43,13 @@ class MSTestTestResultInfo : ITestResultInfo
 			{
 				Status = TestResultStatus.Passed,
 				Duration = duration,
+				Output = output,
 			},
 			"skipped" => new MSTestTestResultInfo(testCase)
 			{
 				Status = TestResultStatus.Skipped,
 				Duration = duration,
+				Output = output,
 				SkipReason = node.ErrorMessage,
 			},
 			// failed / error / timed-out / canceled all surface as a failure.
@@ -54,6 +57,7 @@ class MSTestTestResultInfo : ITestResultInfo
 			{
 				Status = TestResultStatus.Failed,
 				Duration = duration,
+				Output = output,
 				ErrorMessage = node.ErrorMessage,
 				ErrorStackTrace = node.ErrorStackTrace,
 			},
