@@ -87,6 +87,12 @@ public class MSTestTestRunner : ITestRunner
 			if (node.Uid is not { } uid || !testCaseLookup.TryGetValue(uid, out var testCase))
 				return;
 
+			// MSTest's [Retry] publishes every attempt under the same UID. Ignore the superseded
+			// earlier attempts so a fail-then-pass retry records only the final pass, rather than a
+			// failed result followed by a passed one.
+			if (node.IsSupersededRetry())
+				return;
+
 			var result = MSTestTestResultInfo.TryCreate(testCase, node);
 			if (result is null)
 				return;

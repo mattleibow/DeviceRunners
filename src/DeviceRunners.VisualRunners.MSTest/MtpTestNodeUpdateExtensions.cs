@@ -22,6 +22,16 @@ static class MtpTestNodeUpdateExtensions
 		_ => false,
 	};
 
+	/// <summary>
+	/// True when a later retry attempt for the same test node supersedes this update, so it is not the
+	/// test's final outcome. MSTest's <c>[Retry]</c> reports every attempt under the same UID, tagging
+	/// the earlier ones with the wire property <c>retry.is-superseded</c>. MTP's retry contract says
+	/// single-result consumers (TRX, JUnit, the process exit code — and this runner) skip these, so a
+	/// fail-then-pass retry reports only the final pass.
+	/// </summary>
+	public static bool IsSupersededRetry(this MtpTestNodeUpdate node) =>
+		node.Node.TryGetValue("retry.is-superseded", out var value) && value is true;
+
 	/// <summary>Fully qualified declaring type name (namespace + type).</summary>
 	public static string? GetLocationType(this MtpTestNodeUpdate node) =>
 		node.GetString("location.type");

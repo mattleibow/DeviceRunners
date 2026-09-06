@@ -21,6 +21,10 @@ public class UnitTests
 		(2, "second")
 	];
 
+	// Process-wide on purpose: MSTest's [Retry] re-runs the method in the same host, and a fresh
+	// class instance is created for every attempt, so instance state cannot survive between them.
+	static int _retryAttempts;
+
 	public TestContext TestContext { get; set; }
 
 	[TestMethod]
@@ -41,6 +45,20 @@ public class UnitTests
 	public void FailingTest()
 	{
 		throw new Exception("This is meant to fail.");
+	}
+
+	[TestMethod]
+	[TestCategory("Retry")]
+	[Retry(3)]
+	public void FlakyTestPassesOnRetry()
+	{
+		// Fails on the first attempt and passes on the retry. Microsoft.Testing.Platform reports
+		// every [Retry] attempt under the same test node UID, tagging the earlier one
+		// retry.is-superseded; the visual runner and result channels must record only the final
+		// passing attempt, not the superseded failure.
+		var attempt = Interlocked.Increment(ref _retryAttempts);
+		if (attempt == 1)
+			Assert.Fail("Simulated flaky failure on the first attempt; the retry is expected to pass.");
 	}
 
 	[TestMethod]
