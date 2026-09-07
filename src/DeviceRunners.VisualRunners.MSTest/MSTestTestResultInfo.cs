@@ -31,36 +31,18 @@ class MSTestTestResultInfo : ITestResultInfo
 	/// </summary>
 	public static MSTestTestResultInfo? TryCreate(MSTestTestCaseInfo testCase, MtpTestNodeUpdate node)
 	{
-		if (!node.IsTerminalResult())
+		if (node.TerminalStatus() is not { } status)
 			return null;
 
-		var duration = node.DurationInMilliseconds is { } ms ? TimeSpan.FromMilliseconds(ms) : TimeSpan.Zero;
-		var output = node.CombinedOutput();
-
-		return node.ExecutionState switch
+		return new MSTestTestResultInfo(testCase)
 		{
-			"passed" => new MSTestTestResultInfo(testCase)
-			{
-				Status = TestResultStatus.Passed,
-				Duration = duration,
-				Output = output,
-			},
-			"skipped" => new MSTestTestResultInfo(testCase)
-			{
-				Status = TestResultStatus.Skipped,
-				Duration = duration,
-				Output = output,
-				SkipReason = node.ErrorMessage,
-			},
-			// failed / error / timed-out / canceled all surface as a failure.
-			_ => new MSTestTestResultInfo(testCase)
-			{
-				Status = TestResultStatus.Failed,
-				Duration = duration,
-				Output = output,
-				ErrorMessage = node.ErrorMessage,
-				ErrorStackTrace = node.ErrorStackTrace,
-			},
+			Status = status,
+			Duration = node.Duration(),
+			Output = node.CombinedOutput(),
+			// error.message doubles as the skip reason on a skipped node.
+			SkipReason = status is TestResultStatus.Skipped ? node.ErrorMessage : null,
+			ErrorMessage = status is TestResultStatus.Failed ? node.ErrorMessage : null,
+			ErrorStackTrace = status is TestResultStatus.Failed ? node.ErrorStackTrace : null,
 		};
 	}
 }

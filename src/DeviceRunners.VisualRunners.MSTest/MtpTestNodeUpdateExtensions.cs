@@ -15,11 +15,17 @@ static class MtpTestNodeUpdateExtensions
 	public static bool IsDiscovered(this MtpTestNodeUpdate node) =>
 		string.Equals(node.ExecutionState, "discovered", StringComparison.Ordinal);
 
-	/// <summary>True for terminal execution states that carry a final result.</summary>
-	public static bool IsTerminalResult(this MtpTestNodeUpdate node) => node.ExecutionState switch
+	/// <summary>
+	/// Maps a terminal execution state to its <see cref="TestResultStatus"/>, or returns <c>null</c>
+	/// when the node is not carrying a final result (still running, discovered, ...).
+	/// </summary>
+	public static TestResultStatus? TerminalStatus(this MtpTestNodeUpdate node) => node.ExecutionState switch
 	{
-		"passed" or "skipped" or "failed" or "error" or "timed-out" or "canceled" => true,
-		_ => false,
+		"passed" => TestResultStatus.Passed,
+		"skipped" => TestResultStatus.Skipped,
+		// failed / error / timed-out / canceled all surface as a failure.
+		"failed" or "error" or "timed-out" or "canceled" => TestResultStatus.Failed,
+		_ => null,
 	};
 
 	/// <summary>
@@ -31,6 +37,13 @@ static class MtpTestNodeUpdateExtensions
 	/// </summary>
 	public static bool IsSupersededRetry(this MtpTestNodeUpdate node) =>
 		node.Node.TryGetValue("retry.is-superseded", out var value) && value is true;
+
+	/// <summary>
+	/// The node's reported execution time as a <see cref="TimeSpan"/> (wire <c>time.duration-ms</c>),
+	/// or <see cref="TimeSpan.Zero"/> when the node carried no duration.
+	/// </summary>
+	public static TimeSpan Duration(this MtpTestNodeUpdate node) =>
+		node.DurationInMilliseconds is { } ms ? TimeSpan.FromMilliseconds(ms) : TimeSpan.Zero;
 
 	/// <summary>
 	/// Joins the node's captured standard output and standard error (MSTest's MTP adapter reports
