@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- MSTest 4.x runs on Microsoft.Testing.Platform. This library only supplies the test
+         attributes; the device runner loads the assembly and discovers/runs it in-process via
+         DeviceRunners.VisualRunners.MSTest, so no MTP runner/adapter is referenced here.
+         PrivateAssets blocks MSTest's buildTransitive 'global using Microsoft.VisualStudio.TestTools.UnitTesting'
+         from flowing to the host app (whose own tests are xunit), which would make 'Assert' ambiguous. -->
+    <PackageReference Include="MSTest.TestFramework" PrivateAssets="build;buildTransitive" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DeviceTestingKitApp.Library\DeviceTestingKitApp.Library.csproj" />
+  </ItemGroup>
+
+</Project>
